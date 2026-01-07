@@ -1,0 +1,17 @@
+"Type: ✨ Feature":
+  - head-branch: [ '^feature/', '^feat/' ]
+
+"Type: 🐞 Bug":
+  - head-branch: [ '^bug/', '^fix/', '^hotfix/' ]
+
+"Type: ♻️ Refactoring":
+  - head-branch: [ '^refactor/' ]
+
+"Type: 📝 Docs":
+  - head-branch: [ '^docs/', '^doc/' ]
+
+"Type: ✅ Test":
+  - head-branch: [ '^test/', '^tests/' ]
+
+"Type: 🧹 Chore":
+  - head-branch: [ '^chore/' ]
