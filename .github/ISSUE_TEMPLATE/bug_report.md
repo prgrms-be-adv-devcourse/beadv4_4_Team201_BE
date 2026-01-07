@@ -2,7 +2,7 @@
 name: Bug Report
 about: 버그 신고 및 문제 해결
 title: '[BUG] '
-labels: 'Type: 🐞 Bug', 'Priority: 🔴 High'
+labels: [ "Type: 🐞 Bug", "Priority: 🔴 High" ]
 assignees: 'chan99k'
 ---
 
