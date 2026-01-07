@@ -1,0 +1,86 @@
+# Gradle Module Build - Composite Action
+# 특정 Gradle 모듈을 빌드하고 테스트하는 재사용 가능한 액션입니다.
+# 모노레포 환경에서 여러 모듈을 독립적으로 빌드할 때 사용합니다.
+name: 'Gradle Module Build'
+description: 'Build a specific Gradle module with Java 21 and Temurin'
+
+# 입력 파라미터 정의
+# 워크플로우에서 이 액션을 호출할 때 with: 블록을 통해 전달합니다.
+inputs:
+  module-path:
+    description: 'Gradle module path to build (e.g., :bounded-context:subscription:subscription-bootstrap:external-api)'
+    required: true  # 필수 파라미터: 빌드할 모듈의 Gradle 경로
+  java-version:
+    description: 'Java version to use'
+    required: false
+    default: '21'  # 기본값: Java 21
+  java-distribution:
+    description: 'Java distribution to use'
+    required: false
+    default: 'temurin'  # 기본값: Eclipse Temurin (구 AdoptOpenJDK)
+  gradle-cache:
+    description: 'Enable Gradle caching'
+    required: false
+    default: 'true'  # 기본값: Gradle 캐싱 활성화
+  upload-artifacts:
+    description: 'Upload test results and build reports'
+    required: false
+    default: 'true'  # 기본값: 아티팩트 업로드 활성화
+
+# Composite Action 실행 정의
+runs:
+  using: 'composite'  # 여러 스텝을 조합한 composite 타입 액션
+  steps:
+    # ❌ [Removed] actions/checkout is removed. The caller workflow must check out the code first.
+
+    # 2. JDK를 설치하고 Gradle 캐시를 설정합니다.
+    # inputs로 전달받은 값을 사용하여 유연하게 구성할 수 있습니다.
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: ${{ inputs.java-distribution }}
+        # gradle-cache가 'true'이면 'gradle' 캐시 사용, 아니면 빈 문자열(캐시 없음)
+        cache: ${{ inputs.gradle-cache == 'true' && 'gradle' || '' }}
+
+    - name: Skeleton Build (Skipped)
+      shell: bash
+      run: echo "Skipping build because Gradle is not yet initialized."
+
+    # 3. gradlew 스크립트에 실행 권한을 부여합니다.
+    # composite action의 모든 run 명령은 shell을 명시해야 합니다.
+    # - name: Grant execute permission for gradlew
+    #   shell: bash
+    #   run: chmod +x gradlew
+
+    # 4. 지정된 모듈을 빌드합니다.
+    # 예: ./gradlew :bounded-context:subscription:subscription-bootstrap:external-api:build
+    # - name: Build module
+    #   shell: bash
+    #   run: ./gradlew ${{ inputs.module-path }}:build
+
+    # 5. 지정된 모듈의 테스트를 실행합니다.
+    # 예: ./gradlew :bounded-context:subscription:subscription-bootstrap:external-api:test
+    # - name: Run tests
+    #   shell: bash
+    #   run: ./gradlew ${{ inputs.module-path }}:test
+
+    # 6. 테스트 결과를 아티팩트로 업로드합니다.
+    # always(): 테스트 실패 여부와 관계없이 항상 실행
+    # upload-artifacts가 'true'일 때만 업로드합니다.
+    # - name: Upload test results
+    #   if: ${{ always() && inputs.upload-artifacts == 'true' }}
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: test-results-${{ inputs.module-path }}
+    #     path: '**/build/test-results/test/*.xml'  # JUnit XML 형식 테스트 결과
+
+    # 7. 빌드 실패 시 상세 리포트를 업로드합니다.
+    # failure(): 이전 스텝이 실패했을 때만 실행
+    # upload-artifacts가 'true'일 때만 업로드합니다.
+    # - name: Upload build reports
+    #   if: ${{ failure() && inputs.upload-artifacts == 'true' }}
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: build-reports-${{ inputs.module-path }}
+    #     path: '**/build/reports/'  # HTML 형식의 빌드/테스트 리포트

@@ -1,0 +1,22 @@
+name: CI - Build & Test
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-module:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Check out code FIRST (Caller Responsibility)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Call the Composite Action
+      - name: Build Module
+        uses: ./.github/actions/gradle-build-module
+        with:
+          module-path: ':' # Root build (or specify specific module like :member-service)
+          gradle-cache: 'false' # Disabled until Gradle is initialized
