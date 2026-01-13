@@ -29,7 +29,8 @@ include(
     "bc",     // BC 부모 모듈
     "bc:shared",            // Shared Kernel
     "bc:member",            // Pragmatic Layered Architecture
-    "bc:auth"               // Vertical Slice Architecture
+    "bc:auth",              // Vertical Slice Architecture
+    "bc:funding"            // Funding 모듈
 )
 
 // Payment 모듈 - Hexagonal Architecture (bc 하위의 중첩 구조)
@@ -45,6 +46,7 @@ project(":bc").projectDir = file("bc")
 project(":bc:shared").projectDir = file("bc/shared")
 project(":bc:member").projectDir = file("bc/member")
 project(":bc:auth").projectDir = file("bc/auth")
+project(":bc:funding").projectDir = file("bc/funding")
 
 // Payment 계층적 매핑
 project(":bc:payment").projectDir = file("bc/payment")

@@ -111,6 +111,7 @@ configure(subprojects.filter {
             "implementation"(project(":bc:shared"))
             "implementation"(project(":bc:member"))
             "implementation"(project(":bc:auth"))
+            "implementation"(project(":bc:funding"))
 
             // Payment Adapter만 의존
             "implementation"(project(":bc:payment:adapter"))
