@@ -32,8 +32,9 @@ include(
     "bc:auth"               // Vertical Slice Architecture
 )
 
-// Money 모듈
+// Payment 모듈 - Hexagonal Architecture (bc 하위의 중첩 구조)
 include(
+    "bc:money",   // money 부모 모듈
     "bc:money:core",            // 순수 도메인
     "bc:money:application",     // 유스케이스
     "bc:money:adapter"          // 인프라
@@ -46,6 +47,7 @@ project(":bc:member").projectDir = file("bc/member")
 project(":bc:auth").projectDir = file("bc/auth")
 
 // money 계층적 매핑
+project(":bc:money").projectDir = file("bc/money")
 project(":bc:money:core").projectDir = file("bc/money/core")
 project(":bc:money:application").projectDir = file("bc/money/application")
 project(":bc:money:adapter").projectDir = file("bc/money/adapter")

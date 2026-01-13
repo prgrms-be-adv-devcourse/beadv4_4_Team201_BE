@@ -14,7 +14,7 @@ package app.giftify.payment.adapter.in.web;
    */
   @RestController
   @RequestMapping("/api/payment")
-  public class PaymentHealthController {
+  public class MoneyHealthController {
 
       @GetMapping("/health")
       public Map<String, Object> health() {
