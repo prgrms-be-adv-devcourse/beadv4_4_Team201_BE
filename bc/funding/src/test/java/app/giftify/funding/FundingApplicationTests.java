@@ -1,4 +1,4 @@
-package com.funding;
+package app.giftify.funding;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
