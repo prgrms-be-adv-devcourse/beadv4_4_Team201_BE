@@ -1,5 +1,4 @@
-package funding.usecase;
+package app;
 
 public class FundingCreateUseCase {
-    //
 }
