@@ -21,7 +21,6 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "giftify-be"
 
 
-
 // =============================================================================
 // 1. Business Capabilities (핵심 비즈니스 모듈) - 계층적 구조
 // =============================================================================
@@ -79,3 +78,8 @@ include(
 
 project(":bootstrap").projectDir = file("bootstrap")
 project(":bootstrap:api-server").projectDir = file("bootstrap/api-server")
+
+include("bc:member:core")
+include("bc:member:adapter")
+include("bc:member:application")
+include("bc:shared:member")
