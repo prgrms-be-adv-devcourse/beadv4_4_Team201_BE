@@ -8,24 +8,15 @@ package app.giftify.payment.adapter.in.web;
   import java.util.HashMap;
   import java.util.Map;
 
-  /**
-   * Payment 모듈 Health Check Endpoint
-   * Hexagonal Architecture - Inbound Web Adapter
-   */
   @RestController
-  @RequestMapping("/api/payment")
+  @RequestMapping("/api/money")
   public class MoneyHealthController {
 
       @GetMapping("/health")
       public Map<String, Object> health() {
           Map<String, Object> response = new HashMap<>();
-          response.put("module", "payment");
+          response.put("module", "money");
           response.put("status", "UP");
-          response.put("layers", Map.of(
-              "core", "Domain Logic",
-              "application", "Use Cases",
-              "adapter", "Infrastructure"
-          ));
           response.put("timestamp", LocalDateTime.now().toString());
           return response;
       }
