@@ -1,4 +1,4 @@
-package domain.funding;
+package domain;
 
 public class Funding {
 }
