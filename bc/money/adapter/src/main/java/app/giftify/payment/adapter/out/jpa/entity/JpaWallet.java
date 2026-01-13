@@ -15,6 +15,7 @@ public class JpaWallet {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", unique = true, nullable = false)
     private JpaMoneyMember member;
 
     @Embedded
