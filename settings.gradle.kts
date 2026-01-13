@@ -34,10 +34,10 @@ include(
 
 // Payment 모듈 - Hexagonal Architecture (bc 하위의 중첩 구조)
 include(
-    "bc:payment",   // Payment 부모 모듈
-    "bc:payment:core",            // 순수 도메인
-    "bc:payment:application",     // 유스케이스
-    "bc:payment:adapter"          // 인프라
+    "bc:money",   // money 부모 모듈
+    "bc:money:core",            // 순수 도메인
+    "bc:money:application",     // 유스케이스
+    "bc:money:adapter"          // 인프라
 )
 
 // 물리적 디렉토리 경로 매핑
@@ -46,11 +46,11 @@ project(":bc:shared").projectDir = file("bc/shared")
 project(":bc:member").projectDir = file("bc/member")
 project(":bc:auth").projectDir = file("bc/auth")
 
-// Payment 계층적 매핑
-project(":bc:payment").projectDir = file("bc/payment")
-project(":bc:payment:core").projectDir = file("bc/payment/core")
-project(":bc:payment:application").projectDir = file("bc/payment/application")
-project(":bc:payment:adapter").projectDir = file("bc/payment/adapter")
+// money 계층적 매핑
+project(":bc:money").projectDir = file("bc/money")
+project(":bc:money:core").projectDir = file("bc/money/core")
+project(":bc:money:application").projectDir = file("bc/money/application")
+project(":bc:money:adapter").projectDir = file("bc/money/adapter")
 
 // =============================================================================
 // 2. Support Modules (공통 인프라 지원)

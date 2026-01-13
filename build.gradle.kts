@@ -25,7 +25,7 @@ allprojects {
 // 모든 서브프로젝트 공통 설정 (기본 언어: Java)
 // =============================================================================
 // 부모 모듈 목록
-val parentModules = setOf("bc", "support", "bootstrap")
+val parentModules = setOf("bc", "support", "bootstrap", "money")
 
 subprojects {
     // 부모 모듈이 아닌 경우에만 java 플러그인 적용
@@ -67,7 +67,7 @@ subprojects {
 // =============================================================================
 // bc의 하위 모듈 중 shared가 아닌 모듈은 자동으로 bc:shared 의존
 configure(subprojects.filter {
-    it.parent?.name == "bc" && it.name != "shared" && it.name != "bc"
+    it.path.startsWith(":bc") && it.name != "shared" && it.name !in parentModules
 }) {
     dependencies {
         "implementation"(project(":bc:shared"))
@@ -112,8 +112,7 @@ configure(subprojects.filter {
             "implementation"(project(":bc:member"))
             "implementation"(project(":bc:auth"))
 
-            // Payment Adapter만 의존
-            "implementation"(project(":bc:payment:adapter"))
+            //"implementation"(project(":bc:money:adapter"))
 
             // 모든 Support 모듈 (경로 수정!)
             "implementation"(project(":support:common"))
