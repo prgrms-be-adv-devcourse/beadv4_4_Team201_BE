@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import app.product.ProductFacade;
 import domain.FundingMember;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,7 +30,8 @@ public class ProductController {
 
 	// 상품 등록
 	@PostMapping
-	public ResponseEntity<String> createProduct(@RequestBody ProductCreateRequestDto requestDto) { //todo response 형태
+	public ResponseEntity<String> createProduct(
+		@Valid @RequestBody ProductCreateRequestDto requestDto) { //todo response 형태
 		FundingMember seller = new FundingMember(1L); // todo auth
 
 		productFacade.createProduct(seller, requestDto);
