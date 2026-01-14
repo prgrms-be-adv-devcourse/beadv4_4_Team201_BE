@@ -4,5 +4,5 @@ import domain.wallet.Wallet;
 
 public interface WalletCreateUseCase {
 
-	Wallet createWallet(Long memberId);
+    Wallet createWallet(Long memberId);
 }

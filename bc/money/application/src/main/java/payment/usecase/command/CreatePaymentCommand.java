@@ -6,9 +6,9 @@ import domain.payment.PaymentType;
 
 public record CreatePaymentCommand(
 	Long payerId,
-	Long receiverId,
-	Long productId,
-	BigDecimal amount,
-	PaymentType paymentType
+    Long receiverId,
+    Long productId,
+    BigDecimal amount,
+    PaymentType paymentType
 ) {
 }
