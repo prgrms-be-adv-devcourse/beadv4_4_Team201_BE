@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  */
 public record Money(BigDecimal amount) {
 
-	public Money {
+    public Money {
 		if (amount.signum() < 0) {
 			// todo: 커스텀 예외 적용
 			throw new IllegalArgumentException("금액은 음수가 될 수 없습니다.");

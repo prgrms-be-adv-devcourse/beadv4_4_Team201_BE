@@ -8,11 +8,15 @@
       implementation("org.springframework.boot:spring-boot-starter-validation")
 
       implementation("io.github.cdimascio:dotenv-java:3.0.0")
-      implementation("org.springframework.boot:spring-boot-starter-security")
-      implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-      // JWT 검증이 필요한 경우
+
+      compileOnly("org.projectlombok:lombok")
+      annotationProcessor("org.projectlombok:lombok")
+      testCompileOnly("org.projectlombok:lombok")
+      testAnnotationProcessor("org.projectlombok:lombok")
+
       implementation("com.auth0:java-jwt:4.4.0")
 
-      // Security는 나중에 필요할 때 활성화
-      // implementation("org.springframework.boot:spring-boot-starter-security")
+      implementation("org.springframework.boot:spring-boot-starter-security")
+      implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+      implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   }

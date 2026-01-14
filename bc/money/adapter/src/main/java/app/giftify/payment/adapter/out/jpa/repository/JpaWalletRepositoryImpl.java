@@ -20,7 +20,7 @@ public class JpaWalletRepositoryImpl implements WalletRepository {
     // todo : save()가 Wallet을 반환해야 하는가?
     @Override
     public Wallet save(Wallet wallet) {
-        if (wallet.getId() == null){
+        if (wallet.getId() == null) {
             JpaWallet entity = JpaWallet.from(wallet.snapshot());
             return Wallet.restore(jpaWalletRepository.save(entity).toSnapshot());
         }
