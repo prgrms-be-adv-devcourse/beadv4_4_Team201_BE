@@ -80,3 +80,5 @@ include(
 
 project(":bootstrap").projectDir = file("bootstrap")
 project(":bootstrap:api-server").projectDir = file("bootstrap/api-server")
+
+include("support:common:EventPublisher")
