@@ -1,6 +1,9 @@
 package app.giftify.payment.adapter.out.jpa.entity;
 
+import domain.wallet.WalletSnapshot;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -10,13 +13,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @EntityListeners(value = AuditingEntityListener.class)
+@Getter
+@NoArgsConstructor
 public class JpaWallet {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", unique = true, nullable = false)
-    private JpaMoneyMember member;
+    @Column(unique = true)
+    private Long memberId;
 
     @Embedded
     private Money balance;
@@ -27,31 +31,36 @@ public class JpaWallet {
     @LastModifiedDate
     private LocalDateTime modifiedAt;
 
-    public JpaWallet() {
+    public JpaWallet(WalletSnapshot wallet) {
+        this.memberId = wallet.memberId();
+        this.balance = wallet.balance();
     }
 
-    public JpaWallet(JpaMoneyMember member, Money balance) {
-        this.member = member;
+    private JpaWallet(Long id, Long memberId, Money balance, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        this.id = id;
+        this.memberId = memberId;
         this.balance = balance;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
     }
 
-    public Long getId() {
-        return id;
+    public static JpaWallet from(WalletSnapshot wallet) {
+        return new JpaWallet(
+                wallet.id(),
+                wallet.memberId(),
+                wallet.balance(),
+                wallet.createdAt(),
+                wallet.modifiedAt()
+        );
     }
 
-    public JpaMoneyMember getMember() {
-        return member;
-    }
-
-    public Money getBalance() {
-        return balance;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
+    public WalletSnapshot toSnapshot() {
+        return new WalletSnapshot(
+                id,
+                memberId,
+                balance,
+                createdAt,
+                modifiedAt
+        );
     }
 }
