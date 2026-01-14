@@ -1,9 +1,16 @@
 package domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Getter
 public class Product {
-	private Long id;
+    @Id
+    private Long id;
 	private Long userId;
 	private String name;
 	private int price;
