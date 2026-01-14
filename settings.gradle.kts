@@ -61,7 +61,8 @@ include(
     "support:common",
     "support:logging",
     "support:security",
-    "support:web"
+    "support:web",
+    "support:jpa"
 )
 
 project(":support").projectDir = file("support")
@@ -69,6 +70,7 @@ project(":support:common").projectDir = file("support/common")
 project(":support:logging").projectDir = file("support/logging")
 project(":support:security").projectDir = file("support/security")
 project(":support:web").projectDir = file("support/web")
+project(":support:jpa").projectDir = file("support/jpa")
 
 // =============================================================================
 // 3. Bootstrap (애플리케이션 진입점)
