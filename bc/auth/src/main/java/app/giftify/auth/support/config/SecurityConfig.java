@@ -36,7 +36,7 @@ public class SecurityConfig {
     private String issuer;
 
     @Bean
-    public SecurityFilterChain loginLogoutTest(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
