@@ -17,6 +17,5 @@ spring:
         provider:
           auth0:
             issuer-uri: https://${AUTH0_DOMAIN}/
-
 auth0:
   audience: ${AUTH0_AUDIENCE}
