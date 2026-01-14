@@ -33,7 +33,7 @@ public class Product { //todo validation
 	private String description;
 	private int price;
 	private int stock;
-	// private ProductStatus status;
+	private ProductStatus status;
 
 	@CreatedDate
 	private LocalDateTime createdAt;
@@ -46,9 +46,14 @@ public class Product { //todo validation
 		this.description = description;
 		this.price = price;
 		this.stock = stock;
+		this.status = ProductStatus.DRAFT;
 	}
 
 	public ProductDto toDto() {
 		return new ProductDto(getId(), getSeller().getNickname(), getName(), getDescription(), getPrice(), getStock());
+	}
+
+	public void approveProduct() {
+		this.status = ProductStatus.ACTIVE;
 	}
 }

@@ -13,6 +13,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import domain.product.Product;
+import domain.product.ProductStatus;
 import domain.product.QProduct;
 import in.product.ProductSearchDto;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,9 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 	public Page<Product> search(ProductSearchDto searchDto) {
 		QProduct product = QProduct.product;
 		BooleanBuilder where = new BooleanBuilder();
+
+		// 기본 조건: 판매 중인 상품만 조회
+		where.and(product.status.eq(ProductStatus.ACTIVE));
 
 		if (searchDto.keyword() != null && !searchDto.keyword().isBlank()) {
 			String keyword = searchDto.keyword().trim(); // 문자열 앞 뒤 공백 제거

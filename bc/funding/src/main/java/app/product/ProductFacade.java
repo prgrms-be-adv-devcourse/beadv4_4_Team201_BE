@@ -18,6 +18,7 @@ public class ProductFacade {
 	private final ProductCreateUseCase productCreateUseCase;
 	private final ProductGetUseCase getProductsUseCase;
 	private final ProductSearchUseCase productSearchUseCase;
+	private final ProductApproveUseCase productApproveUseCase;
 
 	@Transactional
 	public void createProduct(FundingMember seller, ProductCreateRequestDto requestDto) {
@@ -32,5 +33,10 @@ public class ProductFacade {
 	@Transactional(readOnly = true)
 	public Page<ProductDto> search(ProductSearchDto searchDto) {
 		return productSearchUseCase.search(searchDto);
+	}
+
+	@Transactional
+	public void approveProduct(Long id) {
+		productApproveUseCase.approveProduct(id);
 	}
 }
