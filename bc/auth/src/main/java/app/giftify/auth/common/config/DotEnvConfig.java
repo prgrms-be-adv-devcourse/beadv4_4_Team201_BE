@@ -1,4 +1,4 @@
-package app.giftify.auth.global.config;
+package app.giftify.auth.common.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.PostConstruct;
