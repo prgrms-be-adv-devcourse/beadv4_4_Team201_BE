@@ -1,8 +1,2 @@
-plugins {
-    kotlin("jvm")
-}
-
-// Container module - disable build tasks
-tasks.withType<Jar> { enabled = false }
-tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> { enabled = false }
-tasks.withType<Test> { enabled = false }
+// Money 모듈 - Hexagonal Architecture
+// 부모 모듈: 공통 설정은 하위 모듈(core, application, adapter)에서 개별 관리

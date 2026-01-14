@@ -25,19 +25,19 @@ rootProject.name = "giftify-be"
 // 1. Business Capabilities (핵심 비즈니스 모듈) - 계층적 구조
 // =============================================================================
 include(
-    "bc",     // BC 부모 모듈
+    "bc",                   // BC 부모 모듈
     "bc:shared",            // Shared Kernel
-    "bc:member",            // Pragmatic Layered Architecture
-    "bc:auth",              // Vertical Slice Architecture
+    "bc:member",
+    "bc:auth",
     "bc:funding"            // Funding 모듈
 )
 
 // Payment 모듈 - Hexagonal Architecture (bc 하위의 중첩 구조)
 include(
     "bc:money",   // money 부모 모듈
-    "bc:money:core",            // 순수 도메인
-    "bc:money:application",     // 유스케이스
-    "bc:money:adapter"          // 인프라
+    "bc:money:core",
+    "bc:money:application",
+    "bc:money:adapter"
 )
 
 // 물리적 디렉토리 경로 매핑
@@ -57,7 +57,7 @@ project(":bc:money:adapter").projectDir = file("bc/money/adapter")
 // 2. Support Modules (공통 인프라 지원)
 // =============================================================================
 include(
-    "support",              // Support 부모 모듈
+    "support",
     "support:common",
     "support:logging",
     "support:security",
@@ -80,12 +80,3 @@ include(
 
 project(":bootstrap").projectDir = file("bootstrap")
 project(":bootstrap:api-server").projectDir = file("bootstrap/api-server")
-
-include("bc:member:core")
-include("bc:member:adapter")
-include("bc:member:application")
-include("bc:shared:member")
-include("bc:auth:core")
-include("bc:adapter")
-include("bc:auth:adapter")
-include("bc:auth:application")
