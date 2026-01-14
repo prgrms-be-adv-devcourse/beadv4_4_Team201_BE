@@ -1,4 +1,4 @@
-package app.giftify.auth.common.validator;
+package app.giftify.auth.integration.validator;
 
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
@@ -14,6 +14,7 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
         this.audience = audience;
     }
 
+    // OAuth2 관련 검증
     @Override
     public OAuth2TokenValidatorResult validate(Jwt jwt) {
         // Audience 존재 - 성공
