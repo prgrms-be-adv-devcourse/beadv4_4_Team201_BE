@@ -98,6 +98,7 @@ docs/workthroughs/
 scripts/
 .gw/
 .worktrees/
+.cursorignore
 
 # Ignore Gradle project-specific cache directory
 .gradle
