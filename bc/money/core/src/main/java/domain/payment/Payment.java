@@ -1,6 +1,6 @@
 package domain.payment;
 
-import vo.Money;
+import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +18,7 @@ public class Payment {
     private LocalDateTime refundedAt;
     private LocalDateTime settledAt;
 
-    private Payment(
+    private Payment( // FIXME Constructor has 12 parameters, which is greater than 7 authorized.
             Long paymentId, Long userId, PaymentType type, PaymentStatus status,
             Money amount, Long fundingId, String pgTransactionId, PaymentMethod method,
             LocalDateTime createdAt, LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt
