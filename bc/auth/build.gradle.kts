@@ -9,6 +9,11 @@
 
       implementation("io.github.cdimascio:dotenv-java:3.0.0")
 
+      compileOnly("org.projectlombok:lombok")
+      annotationProcessor("org.projectlombok:lombok")
+      testCompileOnly("org.projectlombok:lombok")
+      testAnnotationProcessor("org.projectlombok:lombok")
+
       implementation("com.auth0:java-jwt:4.4.0")
 
       implementation("org.springframework.boot:spring-boot-starter-security")
