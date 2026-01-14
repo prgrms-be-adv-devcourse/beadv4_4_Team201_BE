@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import vo.Money;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,20 +29,24 @@ class JpaWalletRepositoryImplTest {
     @InjectMocks
     JpaWalletRepositoryImpl walletRepository;
 
+    private final long memberId = 1L;
+    private final long notExistMemberId = 1L;
+
     @Test
     @DisplayName("지갑 저장 성공")
     void save_wallet() {
         // given
         Wallet wallet = new Wallet(
-                1L,
-                new MoneyMember(1L),
+                null,
+                new MoneyMember(memberId),
                 Money.zero(),
                 null,
                 null
         );
 
         JpaWallet savedJpaWallet = new JpaWallet(
-                new JpaMoneyMember(1L)
+                new JpaMoneyMember(memberId),
+                Money.zero()
         );
 
         when(jpaWalletRepository.save(any(JpaWallet.class)))
@@ -50,7 +56,8 @@ class JpaWalletRepositoryImplTest {
         Wallet result = walletRepository.save(wallet);
 
         // then
-        assertThat(result.getMember().getId()).isEqualTo(1L);
+        assertThat(result).isNotNull();
+        assertThat(result.getMember().getId()).isEqualTo(memberId);
     }
 
     @Test
@@ -58,8 +65,8 @@ class JpaWalletRepositoryImplTest {
     void save_wallet_fail_duplicate_member_wallet() {
         // given
         Wallet wallet = new Wallet(
-                1L,
-                new MoneyMember(1L),
+                null,
+                new MoneyMember(memberId),
                 Money.zero(),
                 null,
                 null
@@ -79,8 +86,8 @@ class JpaWalletRepositoryImplTest {
     void save_wallet_fail_non_existent_member() {
         // given
         Wallet wallet = new Wallet(
-                999L,
-                new MoneyMember(999L),
+                null,
+                new MoneyMember(notExistMemberId),
                 Money.zero(),
                 null,
                 null
@@ -100,8 +107,8 @@ class JpaWalletRepositoryImplTest {
     void save_wallet_fail_database_connection_error() {
         // given
         Wallet wallet = new Wallet(
-                1L,
-                new MoneyMember(1L),
+                null,
+                new MoneyMember(memberId),
                 Money.zero(),
                 null,
                 null
@@ -121,7 +128,7 @@ class JpaWalletRepositoryImplTest {
     void save_wallet_fail_null_member() {
         // given
         Wallet wallet = new Wallet(
-                1L,
+                null,
                 null,
                 Money.zero(),
                 null,
@@ -135,5 +142,72 @@ class JpaWalletRepositoryImplTest {
         assertThatThrownBy(() -> walletRepository.save(wallet))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Member cannot be null");
+    }
+
+    @Test
+    @DisplayName("지갑 조회 성공")
+    void findById_wallet_success() {
+        // given
+        Long walletId = 1L;
+
+        JpaMoneyMember jpaMoneyMember = new JpaMoneyMember(memberId);
+        JpaWallet jpaWallet = new JpaWallet(jpaMoneyMember, Money.of(1000L));
+
+        when(jpaWalletRepository.findById(walletId))
+                .thenReturn(Optional.of(jpaWallet));
+
+        // when
+        Optional<Wallet> result = walletRepository.findById(walletId);
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getMember().getId()).isEqualTo(1L);
+        assertThat(result.get().getBalance()).isEqualTo(jpaWallet.getBalance());
+    }
+
+    @Test
+    @DisplayName("지갑 조회 실패 - 존재하지 않는 지갑 ID")
+    void findById_wallet_not_found() {
+        // given
+        Long walletId = 999L;
+
+        when(jpaWalletRepository.findById(walletId))
+                .thenReturn(Optional.empty());
+
+        // when
+        Optional<Wallet> result = walletRepository.findById(walletId);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("지갑 조회 실패 - Null ID 입력")
+    void findById_wallet_fail_null_id() {
+        // given
+        Long walletId = null;
+
+        when(jpaWalletRepository.findById(walletId))
+                .thenThrow(new IllegalArgumentException("Wallet ID cannot be null"));
+
+        // when & then
+        assertThatThrownBy(() -> walletRepository.findById(walletId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Wallet ID cannot be null");
+    }
+
+    @Test
+    @DisplayName("지갑 조회 실패 - DB 연결 오류")
+    void findById_wallet_fail_database_connection_error() {
+        // given
+        Long walletId = 1L;
+
+        when(jpaWalletRepository.findById(walletId))
+                .thenThrow(new RuntimeException("Database connection failed"));
+
+        // when & then
+        assertThatThrownBy(() -> walletRepository.findById(walletId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Database connection");
     }
 }
