@@ -30,11 +30,7 @@ public class JpaWallet {
     public JpaWallet() {
     }
 
-    public JpaWallet(JpaMoneyMember member) {
-        this(member, Money.zero());
-    }
-
-    private JpaWallet(JpaMoneyMember member, Money balance) {
+    public JpaWallet(JpaMoneyMember member, Money balance) {
         this.member = member;
         this.balance = balance;
     }
