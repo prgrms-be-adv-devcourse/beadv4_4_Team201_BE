@@ -11,7 +11,7 @@ public class Payment {
 	private PaymentStatus status;
 	private Money amount;
 	private Long fundingId;             // nullable (펀딩 결제일 경우에만 활성화)
-	private String pgTransactionId;     // PG사 거래 ID
+	private String pgTransactionId; // PG사 거래 ID
 	private PaymentMethod method;
 	private LocalDateTime createdAt;
 	private LocalDateTime paidAt;
@@ -26,6 +26,11 @@ public class Payment {
 		PaymentMethod method,
 		LocalDateTime paidAt
 	) {
+		// 펀딩 결제일 경우 fundingId 필수
+		if (type == PaymentType.FUNDING && fundingId == null) {
+			throw new IllegalArgumentException("펀딩 결제는 fundingId가 필수입니다.");
+		}
+
 		this.userId = userId;
 		this.type = type;
 		this.status = status;
@@ -75,6 +80,9 @@ public class Payment {
 	}
 
 	public void markAsPaid(String pgTransactionId) {
+		if (this.status != PaymentStatus.PENDING) {
+			throw new IllegalStateException("결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다.");
+		}
 		this.status = PaymentStatus.PAID;
 		this.pgTransactionId = pgTransactionId;
 		this.paidAt = LocalDateTime.now();
