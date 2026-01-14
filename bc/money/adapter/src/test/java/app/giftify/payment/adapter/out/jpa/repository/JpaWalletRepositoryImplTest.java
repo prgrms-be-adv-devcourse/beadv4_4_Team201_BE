@@ -1,8 +1,6 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
-import app.giftify.payment.adapter.out.jpa.entity.JpaMoneyMember;
 import app.giftify.payment.adapter.out.jpa.entity.JpaWallet;
-import domain.member.MoneyMember;
 import domain.wallet.Wallet;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,48 +27,32 @@ class JpaWalletRepositoryImplTest {
     @InjectMocks
     JpaWalletRepositoryImpl walletRepository;
 
-    private final long memberId = 1L;
-    private final long notExistMemberId = 1L;
+    private final Long memberId = 1L;
 
     @Test
     @DisplayName("지갑 저장 성공")
     void save_wallet() {
         // given
-        Wallet wallet = new Wallet(
-                null,
-                new MoneyMember(memberId),
-                Money.zero(),
-                null,
-                null
-        );
+        Wallet wallet = new Wallet(memberId, Money.zero());
 
-        JpaWallet savedJpaWallet = new JpaWallet(
-                new JpaMoneyMember(memberId),
-                Money.zero()
-        );
+        JpaWallet saved = JpaWallet.from(wallet.snapshot());
 
         when(jpaWalletRepository.save(any(JpaWallet.class)))
-                .thenReturn(savedJpaWallet);
+                .thenReturn(saved);
 
         // when
         Wallet result = walletRepository.save(wallet);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getMember().getId()).isEqualTo(memberId);
+        assertThat(result.getMemberId()).isEqualTo(memberId);
     }
 
     @Test
     @DisplayName("지갑 저장 실패 - 이미 존재하는 회원의 지갑 (Unique 제약 조건 위반)")
     void save_wallet_fail_duplicate_member_wallet() {
         // given
-        Wallet wallet = new Wallet(
-                null,
-                new MoneyMember(memberId),
-                Money.zero(),
-                null,
-                null
-        );
+        Wallet wallet = new Wallet(memberId, Money.zero());
 
         when(jpaWalletRepository.save(any(JpaWallet.class)))
                 .thenThrow(new DataIntegrityViolationException("Duplicate entry for member"));
@@ -85,13 +67,7 @@ class JpaWalletRepositoryImplTest {
     @DisplayName("지갑 저장 실패 - 존재하지 않는 회원 ID (외래 키 제약 조건 위반)")
     void save_wallet_fail_non_existent_member() {
         // given
-        Wallet wallet = new Wallet(
-                null,
-                new MoneyMember(notExistMemberId),
-                Money.zero(),
-                null,
-                null
-        );
+        Wallet wallet = new Wallet(999L, Money.zero());
 
         when(jpaWalletRepository.save(any(JpaWallet.class)))
                 .thenThrow(new DataIntegrityViolationException("Foreign key constraint violation"));
@@ -106,13 +82,7 @@ class JpaWalletRepositoryImplTest {
     @DisplayName("지갑 저장 실패 - DB 연결 오류")
     void save_wallet_fail_database_connection_error() {
         // given
-        Wallet wallet = new Wallet(
-                null,
-                new MoneyMember(memberId),
-                Money.zero(),
-                null,
-                null
-        );
+        Wallet wallet = new Wallet(memberId, Money.zero());
 
         when(jpaWalletRepository.save(any(JpaWallet.class)))
                 .thenThrow(new RuntimeException("Database connection failed"));
@@ -127,13 +97,7 @@ class JpaWalletRepositoryImplTest {
     @DisplayName("지갑 저장 실패 - Null 회원 정보")
     void save_wallet_fail_null_member() {
         // given
-        Wallet wallet = new Wallet(
-                null,
-                null,
-                Money.zero(),
-                null,
-                null
-        );
+        Wallet wallet = new Wallet(null, Money.zero());
 
         when(jpaWalletRepository.save(any(JpaWallet.class)))
                 .thenThrow(new IllegalArgumentException("Member cannot be null"));
@@ -150,8 +114,8 @@ class JpaWalletRepositoryImplTest {
         // given
         Long walletId = 1L;
 
-        JpaMoneyMember jpaMoneyMember = new JpaMoneyMember(memberId);
-        JpaWallet jpaWallet = new JpaWallet(jpaMoneyMember, Money.of(1000L));
+        Wallet wallet = new Wallet(memberId, Money.of(1000L));
+        JpaWallet jpaWallet = JpaWallet.from(wallet.snapshot());
 
         when(jpaWalletRepository.findById(walletId))
                 .thenReturn(Optional.of(jpaWallet));
@@ -161,7 +125,7 @@ class JpaWalletRepositoryImplTest {
 
         // then
         assertThat(result).isPresent();
-        assertThat(result.get().getMember().getId()).isEqualTo(1L);
+        assertThat(result.get().getMemberId()).isEqualTo(memberId);
         assertThat(result.get().getBalance()).isEqualTo(jpaWallet.getBalance());
     }
 
