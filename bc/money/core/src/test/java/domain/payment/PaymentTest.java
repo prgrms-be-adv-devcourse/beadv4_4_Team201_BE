@@ -81,4 +81,30 @@ class PaymentTest {
 		// 상태 확인
 		assertThat(payment.isRefundable()).isFalse();
 	}
+
+	@Test
+	@DisplayName("PAID 상태의 결제는 수령 확정(SETTLED)할 수 있다")
+	void settle_ShouldSucceed_WhenStatusIsPaid() {
+		// given
+		Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+
+		// when
+		payment.settle();
+
+		// then
+		assertThat(payment.isRefundable()).isFalse(); // SETTLED 상태이므로 환불 불가
+		assertThat(payment.isCancelable()).isFalse(); // SETTLED 상태이므로 취소 불가
+	}
+
+	@Test
+	@DisplayName("PAID 상태의 결제는 다시 완료 처리할 수 없다")
+	void markAsPaid_ShouldThrowException_WhenStatusIsPaid() {
+		// given
+		Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+
+		// when & then
+		assertThatThrownBy(() -> payment.markAsPaid("PG_TX_123"))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다");
+	}
 }
