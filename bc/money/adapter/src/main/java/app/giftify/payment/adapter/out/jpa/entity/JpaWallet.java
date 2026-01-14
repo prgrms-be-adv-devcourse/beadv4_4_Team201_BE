@@ -31,11 +31,6 @@ public class JpaWallet {
     @LastModifiedDate
     private LocalDateTime modifiedAt;
 
-    public JpaWallet(WalletSnapshot wallet) {
-        this.memberId = wallet.memberId();
-        this.balance = wallet.balance();
-    }
-
     private JpaWallet(Long id, Long memberId, Money balance, LocalDateTime createdAt, LocalDateTime modifiedAt) {
         this.id = id;
         this.memberId = memberId;
@@ -62,5 +57,9 @@ public class JpaWallet {
                 createdAt,
                 modifiedAt
         );
+    }
+
+    public void updateFrom(WalletSnapshot wallet) {
+        this.balance = wallet.balance();
     }
 }
