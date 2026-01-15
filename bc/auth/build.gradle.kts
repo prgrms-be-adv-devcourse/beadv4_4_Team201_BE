@@ -1,18 +1,15 @@
-  // Auth 모듈
+  // Auth 모듈 - Vertical Slice Architecture
 
   dependencies {
       // 1. Internal Project Dependencies
       // (bc:shared는 부모(bc)에서 자동 추가됨)
+      implementation(project(":support:common"))
+      implementation(project(":support:security"))
 
       // 2. External Libraries (Spring Boot Starters)
       implementation(libs.spring.boot.starter.web)
       implementation(libs.spring.boot.starter.data.jpa)
       implementation(libs.spring.boot.starter.validation)
-      implementation(project(":support:security"))
-
-      implementation("org.springframework.boot:spring-boot-starter-web")
-      implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-      implementation("org.springframework.boot:spring-boot-starter-validation")
 
       // 3. Security & OAuth2
       implementation(libs.spring.boot.starter.security)
