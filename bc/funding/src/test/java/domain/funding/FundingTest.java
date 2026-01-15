@@ -1,7 +1,10 @@
 package domain.funding;
 
-import domain.FundingMember;
-import domain.product.Product;
+import app.giftify.domain.FundingMember;
+import app.giftify.domain.funding.Funding;
+import app.giftify.domain.funding.FundingStatus;
+import app.giftify.domain.funding.FundingWishlistItem;
+import app.giftify.domain.product.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
