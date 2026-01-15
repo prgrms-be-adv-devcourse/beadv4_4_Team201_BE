@@ -1,15 +1,12 @@
 package domain.funding;
 
 import app.giftify.support.jpa.BaseJpaEntity;
-import domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -20,13 +17,6 @@ public class Funding extends BaseJpaEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funding_wishlist_item_id", nullable = false)
     private FundingWishlistItem fundingWishlistItem;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @OneToMany(mappedBy = "funding", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FundingParticipantMember> participants = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer targetAmount;
@@ -50,11 +40,10 @@ public class Funding extends BaseJpaEntity {
         this.endAt = LocalDateTime.now().plusDays(15);
     }
 
-    public static Funding startFunding(Long participantId, FundingWishlistItem item, Integer amount) {
+    public static Funding startFunding(FundingWishlistItem item, Integer amount) {
         validateAmount(amount);
         
         Funding funding = new Funding(item, amount);
-        funding.addParticipant(participantId, amount);
         
         return funding;
     }
@@ -68,14 +57,13 @@ public class Funding extends BaseJpaEntity {
     /**
      * 펀딩 참여
      */
-    public void contribute(Long memberId, Integer amount) {
+    public void contribute(Integer amount) {
         if (this.status != FundingStatus.IN_PROGRESS) {
             throw new IllegalStateException("진행 중인 펀딩만 참여할 수 있습니다.");
         }
 
         validateAmount(amount);
 
-        addParticipant(memberId, amount);
         this.currentAmount += amount;
 
         if (this.currentAmount >= this.targetAmount) {
@@ -105,11 +93,6 @@ public class Funding extends BaseJpaEntity {
      */
     public boolean isAchieved() {
         return this.currentAmount >= this.targetAmount;
-    }
-
-    private void addParticipant(Long memberId, Integer amount) {
-        FundingParticipantMember participant = new FundingParticipantMember(this, memberId, amount);
-        this.participants.add(participant);
     }
 
 }
