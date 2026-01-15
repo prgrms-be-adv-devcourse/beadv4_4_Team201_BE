@@ -1,7 +1,7 @@
 package app.giftify.auth.support.config;
 
 import app.giftify.auth.core.service.AuthService;
-import app.giftify.auth.integration.validator.AudienceValidator;
+import app.giftify.security.common.validator.AudienceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +36,7 @@ public class SecurityConfig {
     private String issuer;
 
     @Bean
-    public SecurityFilterChain loginLogoutTest(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session

@@ -1,8 +1,12 @@
 package app.giftify.auth.core.service;
 
-import app.giftify.auth.integration.event.UserAuthenticatedEvent;
+import event.auth.UserAuthenticatedEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -11,6 +15,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
@@ -20,6 +27,17 @@ public class AuthService extends OidcUserService {
 
     private final ApplicationEventPublisher eventPublisher;
     private final JwtDecoder jwtDecoder;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${spring.security.oauth2.client.registration.auth0.client-id}")
+    private String clientId;
+
+    @Value("${spring.security.oauth2.client.registration.auth0.client-secret}")
+    private String clientSecret;
+
+    @Value("${spring.security.oauth2.client.provider.auth0.issuer-uri}")
+    private String issuerUri;
 
     // 생성자 주입 (@Lazy를 사용하여 SecurityConfig와의 순환 참조 방지)
     public AuthService(ApplicationEventPublisher eventPublisher, @Lazy JwtDecoder jwtDecoder) {
@@ -54,10 +72,26 @@ public class AuthService extends OidcUserService {
     }
 
     // [토큰 갱신]
-    // Refresh Token을 이용하여 새로운 Access Token을 발급받는 로직
-    public String refreshToken(String refreshToken) {
-        // Auth0 API 또는 내부 로직을 통한 토큰 갱신
-        return "new-access-token";
+    // Refresh Token을 이용하여 새로운 Access Token을 발급받는 로직 (Auth0 위임 방식)
+    public Map<String, Object> refreshToken(String refreshToken) {
+        String url = issuerUri + "oauth/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "refresh_token");
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        try {
+            return restTemplate.postForObject(url, request, Map.class);
+        } catch (Exception e) {
+            throw new OAuth2AuthenticationException("토큰 갱신에 실패했습니다: " + e.getMessage());
+        }
     }
 
     // [토큰 검증 메서드]
