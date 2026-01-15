@@ -1,8 +1,6 @@
 // Support Security - 보안 유틸리티
 
 dependencies {
-    implementation(project(":support:common"))
-
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
 
     compileOnly("org.projectlombok:lombok")
