@@ -1,32 +1,26 @@
 package app.giftify.shared.domain.payment;
 
+import java.time.LocalDateTime;
+
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
-public class PaymentSucceededEvent extends BaseDomainEvent {
+public class PaymentSettledEvent extends BaseDomainEvent {
     private final Long paymentId;
-    private final String pgTransactionId;
     private final Long userId;
     private final Money amount;
-    private final PaymentType type;
-    private final Long fundingId;
+    private final LocalDateTime settledAt;
 
-    public PaymentSucceededEvent(Long paymentId, String pgTransactionId, Long userId, Money amount, PaymentType type, Long fundingId) {
+    public PaymentSettledEvent(Long paymentId, Long userId, Money amount, LocalDateTime settledAt) {
         super();
         this.paymentId = paymentId;
-        this.pgTransactionId = pgTransactionId;
         this.userId = userId;
         this.amount = amount;
-        this.type = type;
-        this.fundingId = fundingId;
+        this.settledAt = settledAt;
     }
 
     public Long getPaymentId() {
         return paymentId;
-    }
-
-    public String getPgTransactionId() {
-        return pgTransactionId;
     }
 
     public Long getUserId() {
@@ -37,23 +31,17 @@ public class PaymentSucceededEvent extends BaseDomainEvent {
         return amount;
     }
 
-    public PaymentType getType() {
-        return type;
-    }
-
-    public Long getFundingId() {
-        return fundingId;
+    public LocalDateTime getSettledAt() {
+        return settledAt;
     }
 
     @Override
     public String toString() {
-        return "PaymentSucceededEvent{" +
+        return "PaymentSettledEvent{" +
                 "paymentId=" + paymentId +
-                ", pgTransactionId='" + pgTransactionId + "'" +
                 ", userId=" + userId +
                 ", amount=" + amount +
-                ", type=" + type +
-                ", fundingId=" + fundingId +
+                ", settledAt=" + settledAt +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';

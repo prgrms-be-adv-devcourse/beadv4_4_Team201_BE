@@ -3,19 +3,19 @@ package app.giftify.shared.domain.payment;
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
-public class PaymentFailedEvent extends BaseDomainEvent {
+public class PaymentRefundedEvent extends BaseDomainEvent {
     private final Long paymentId;
+    private final String refundId;
     private final Long userId;
-    private final Money amount;
-    private final PaymentType type;
+    private final Money refundAmount;
     private final String reason;
 
-    public PaymentFailedEvent(Long paymentId, Long userId, Money amount, PaymentType type, String reason) {
+    public PaymentRefundedEvent(Long paymentId, String refundId, Long userId, Money refundAmount, String reason) {
         super();
         this.paymentId = paymentId;
+        this.refundId = refundId;
         this.userId = userId;
-        this.amount = amount;
-        this.type = type;
+        this.refundAmount = refundAmount;
         this.reason = reason;
     }
 
@@ -23,16 +23,16 @@ public class PaymentFailedEvent extends BaseDomainEvent {
         return paymentId;
     }
 
+    public String getRefundId() {
+        return refundId;
+    }
+
     public Long getUserId() {
         return userId;
     }
 
-    public Money getAmount() {
-        return amount;
-    }
-
-    public PaymentType getType() {
-        return type;
+    public Money getRefundAmount() {
+        return refundAmount;
     }
 
     public String getReason() {
@@ -41,11 +41,11 @@ public class PaymentFailedEvent extends BaseDomainEvent {
 
     @Override
     public String toString() {
-        return "PaymentFailedEvent{" +
+        return "PaymentRefundedEvent{" +
                 "paymentId=" + paymentId +
+                ", refundId='" + refundId + "'" +
                 ", userId=" + userId +
-                ", amount=" + amount +
-                ", type=" + type +
+                ", refundAmount=" + refundAmount +
                 ", reason='" + reason + "'" +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +

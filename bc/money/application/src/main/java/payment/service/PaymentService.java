@@ -81,10 +81,11 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			// 성공 이벤트 발행 -> After Commit으로
 			eventPublisher.publish(new PaymentSucceededEvent(
 				payment.getPaymentId(),
+				payment.getPgTransactionId(),
 				payment.getUserId(),
 				payment.getAmount(),
 				payment.getType(),
-				LocalDateTime.now()
+				payment.getFundingId()
 			));
 
 		} else {
@@ -98,8 +99,7 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 				payment.getUserId(),
 				payment.getAmount(),
 				payment.getType(),
-				"PG사 승인 거절",
-				LocalDateTime.now()
+				"PG사 승인 거절"
 			));
 		}
 	}
