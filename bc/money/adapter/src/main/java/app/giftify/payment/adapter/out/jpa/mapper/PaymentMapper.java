@@ -27,7 +27,7 @@ public class PaymentMapper {
 			.userId(entity.getUserId())
 			.type(entity.getType())
 			.status(entity.getStatus())
-			.amount(Money.ofBigDecimal(entity.getAmount()))
+			.amount(Money.of(entity.getAmount()))
 			.fundingId(entity.getFundingId())
 			.pgTransactionId(entity.getPgTransactionId())
 			.method(entity.getMethod())

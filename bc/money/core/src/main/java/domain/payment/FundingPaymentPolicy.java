@@ -9,7 +9,7 @@ public class FundingPaymentPolicy implements PaymentPolicy {
 		return type.equals(PaymentType.FUNDING);
 	}
 
-	private static final Money MIN_FUNDING_AMOUNT = Money.ofBigDecimal(new java.math.BigDecimal("1000"));
+	private static final Money MIN_FUNDING_AMOUNT = Money.of(new java.math.BigDecimal("1000"));
 
 	@Override
 	public void validate(PaymentCreateContext context) {

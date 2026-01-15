@@ -23,7 +23,7 @@ public record Money(BigDecimal amount) {
 		return of(0);
 	}
 
-	public static Money ofBigDecimal(BigDecimal amount) {
+	public static Money of(BigDecimal amount) {
 		return new Money(amount);
 	}
 
