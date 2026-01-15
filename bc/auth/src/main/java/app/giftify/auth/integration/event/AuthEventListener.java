@@ -1,5 +1,6 @@
 package app.giftify.auth.integration.event;
 
+import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -14,16 +15,9 @@ public class AuthEventListener {
         System.out.println("ID: " + event.getSub());
         System.out.println("Email: " + event.getEmail());
 
-        // Member 모듈이 구독할 토픽으로 데이터를 쏩니다.
-        // Map<String, Object> message = Map.of(
-        //     "sub", event.getSub(),
-        //     "email", event.getEmail(),
-        //     "name", event.getName()
-        // );
-        // kafkaTemplate.send("member-signup-topic", message);
-
         System.out.println("Kafka Topic [member-signup-topic]으로 메시지 발송 완료");
         System.out.println("이 정보를 Member 모듈로 전송할 준비를 합니다.");
+
         // TODO: 여기서 외부 브로커(Kafka 등)로 메시지 발행
     }
 }

@@ -20,21 +20,23 @@ dependencies {
     implementation(project(":support:security"))
     implementation(project(":support:web"))
 
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
+
     // Spring Boot Starters
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.actuator)
 
     // Database
-    runtimeOnly("com.mysql:mysql-connector-j")
-    runtimeOnly("com.h2database:h2")
+    runtimeOnly(libs.mysql.connector)
+    runtimeOnly(libs.h2)
 
     // Monitoring
-    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly(libs.micrometer.registry.prometheus)
 
     // Testing
-    testImplementation("io.rest-assured:rest-assured")
+    testImplementation(libs.rest.assured)
 }
 
 // 실행 가능한 JAR 생성

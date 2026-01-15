@@ -14,6 +14,7 @@ spring:
               - openid
               - profile
               - email
+              - offline_access
         provider:
           auth0:
             issuer-uri: https://${AUTH0_DOMAIN}/

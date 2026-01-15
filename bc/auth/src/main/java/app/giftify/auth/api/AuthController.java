@@ -62,8 +62,8 @@ public class AuthController {
 
     // [토큰 갱신]
     @GetMapping("/refresh")
-    public ResponseEntity<String> refreshToken(String token) {
-        String newToken = authService.refreshToken(token);
-        return ResponseEntity.ok(newToken);
+    public ResponseEntity<?> refreshToken(String token) {
+        Map<String, Object> tokenResponse = authService.refreshToken(token);
+        return ResponseEntity.ok(tokenResponse);
     }
 }

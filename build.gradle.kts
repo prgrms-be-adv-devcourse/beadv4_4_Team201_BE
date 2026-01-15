@@ -25,7 +25,7 @@ allprojects {
 // 모든 서브프로젝트 공통 설정 (기본 언어: Java)
 // =============================================================================
 // 부모 모듈 목록
-val parentModules = setOf("bc", "support", "bootstrap", "money")
+val parentModules = setOf("bc", "support", "bootstrap")
 
 subprojects {
     // 부모 모듈이 아닌 경우에만 java 플러그인 적용

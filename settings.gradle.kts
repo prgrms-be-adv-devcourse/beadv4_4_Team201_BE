@@ -21,18 +21,14 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "giftify-be"
 
 
-// =============================================================================
-// 1. Business Capabilities (핵심 비즈니스 모듈) - 계층적 구조
-// =============================================================================
 include(
-    "bc",                   // BC 부모 모듈
+    "bc",     // BC 부모 모듈
     "bc:shared",            // Shared Kernel
     "bc:member",
     "bc:auth",
     "bc:funding"            // Funding 모듈
 )
 
-// Payment 모듈 - Hexagonal Architecture (bc 하위의 중첩 구조)
 include(
     "bc:money",   // money 부모 모듈
     "bc:money:core",
@@ -40,28 +36,28 @@ include(
     "bc:money:adapter"
 )
 
-// 물리적 디렉토리 경로 매핑
+// 물리적 디렉토리 경로와 논리적 모듈명 매핑 (bc-shared 처럼 모듈명 지으려고 했는데 어째 까먹어부렀네?)
 project(":bc").projectDir = file("bc")
 project(":bc:shared").projectDir = file("bc/shared")
 project(":bc:member").projectDir = file("bc/member")
 project(":bc:auth").projectDir = file("bc/auth")
 project(":bc:funding").projectDir = file("bc/funding")
 
-// money 계층적 매핑
 project(":bc:money").projectDir = file("bc/money")
 project(":bc:money:core").projectDir = file("bc/money/core")
 project(":bc:money:application").projectDir = file("bc/money/application")
 project(":bc:money:adapter").projectDir = file("bc/money/adapter")
 
 // =============================================================================
-// 2. Support Modules (공통 인프라 지원)
+// Support Modules (공통 인프라 지원)
 // =============================================================================
 include(
     "support",
     "support:common",
     "support:logging",
     "support:security",
-    "support:web"
+    "support:web",
+    "support:jpa"
 )
 
 project(":support").projectDir = file("support")
@@ -69,9 +65,10 @@ project(":support:common").projectDir = file("support/common")
 project(":support:logging").projectDir = file("support/logging")
 project(":support:security").projectDir = file("support/security")
 project(":support:web").projectDir = file("support/web")
+project(":support:jpa").projectDir = file("support/jpa")
 
 // =============================================================================
-// 3. Bootstrap (애플리케이션 진입점)
+//  Bootstrap (애플리케이션 진입점)
 // =============================================================================
 include(
     "bootstrap",            // Bootstrap 부모 모듈

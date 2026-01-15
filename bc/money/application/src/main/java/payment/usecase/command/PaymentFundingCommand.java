@@ -1,6 +1,6 @@
 package payment.usecase.command;
 
-import vo.Money;
+import app.giftify.shared.domain.vo.Money;
 
 public record PaymentFundingCommand(
         Long fundingId,
