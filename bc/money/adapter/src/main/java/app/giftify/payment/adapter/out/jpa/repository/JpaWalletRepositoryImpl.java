@@ -1,10 +1,9 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
-import app.giftify.payment.adapter.out.jpa.entity.JpaMoneyMember;
 import app.giftify.payment.adapter.out.jpa.entity.JpaWallet;
-import domain.member.MoneyMember;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -18,31 +17,25 @@ public class JpaWalletRepositoryImpl implements WalletRepository {
         this.jpaWalletRepository = jpaWalletRepository;
     }
 
+    // todo : save()가 Wallet을 반환해야 하는가?
     @Override
     public Wallet save(Wallet wallet) {
-        JpaMoneyMember jpaMoneyMember = new JpaMoneyMember(wallet.getId());
-        JpaWallet jpaWallet = new JpaWallet(jpaMoneyMember, wallet.getBalance());
+        if (wallet.getId() == null) {
+            JpaWallet entity = JpaWallet.from(wallet.snapshot());
+            return Wallet.restore(jpaWalletRepository.save(entity).toSnapshot());
+        }
 
-        JpaWallet savedJpaWallet = jpaWalletRepository.save(jpaWallet);
+        JpaWallet entity = jpaWalletRepository.findById(wallet.getId())
+                .orElseThrow(EntityNotFoundException::new);
 
-        return new Wallet(
-                savedJpaWallet.getId(),
-                new MoneyMember(savedJpaWallet.getMember().getId()),
-                savedJpaWallet.getBalance(),
-                savedJpaWallet.getCreatedAt(),
-                savedJpaWallet.getModifiedAt()
-        );
+        entity.updateFrom(wallet.snapshot());
+
+        return Wallet.restore(entity.toSnapshot());
     }
 
     @Override
     public Optional<Wallet> findById(Long id) {
         return jpaWalletRepository.findById(id)
-                .map(jpaWallet -> new Wallet(
-                        jpaWallet.getId(),
-                        new MoneyMember(jpaWallet.getMember().getId()),
-                        jpaWallet.getBalance(),
-                        jpaWallet.getCreatedAt(),
-                        jpaWallet.getModifiedAt()
-                ));
+                .map(entity -> Wallet.restore(entity.toSnapshot()));
     }
 }
