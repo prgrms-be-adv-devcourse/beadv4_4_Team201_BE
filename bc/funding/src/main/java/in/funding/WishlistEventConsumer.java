@@ -1,21 +1,17 @@
-package in;
+package in.funding;
 
 import app.funding.FundingSyncItemUseCase;
-import in.event.WishlistItemCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
-
-import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 
 @Component
 @RequiredArgsConstructor
 public class WishlistEventConsumer {
-    
+
     private final FundingSyncItemUseCase fundingSyncItemUseCase;
-    
+
+    // TODO: Member BC에 WishlistItemCreatedEvent 구현 후 주석 해제
+    /*
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleWishlistItemCreated(WishlistItemCreatedEvent event) {
@@ -24,5 +20,6 @@ public class WishlistEventConsumer {
             event.getProductId()
         );
     }
+    */
 }
 
