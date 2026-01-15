@@ -27,6 +27,7 @@ public class AuthService extends OidcUserService {
 
     private final ApplicationEventPublisher eventPublisher;
     private final JwtDecoder jwtDecoder;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${spring.security.oauth2.client.registration.auth0.client-id}")
