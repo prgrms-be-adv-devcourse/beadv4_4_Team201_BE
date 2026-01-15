@@ -10,9 +10,10 @@
       implementation(libs.spring.boot.starter.data.jpa)
       implementation(libs.spring.boot.starter.validation)
       
+      compileOnly("org.projectlombok:lombok")
+      annotationProcessor("org.projectlombok:lombok")
 
       // 테스트 시에도 Lombok 어노테이션 처리
-      testImplementation("org.projectlombok:lombok")
+      testCompileOnly("org.projectlombok:lombok")
       testAnnotationProcessor("org.projectlombok:lombok")
-      annotationProcessor("org.projectlombok:lombok")
   }
