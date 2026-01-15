@@ -128,8 +128,8 @@ configure(subprojects.filter {
             "implementation"("org.springframework.boot:spring-boot-starter-actuator")
 
             // Database Drivers
-            "runtimeOnly"("com.mysql:mysql-connector-j")
             "runtimeOnly"("com.h2database:h2")
+            "runtimeOnly"("org.postgresql:postgresql")
 
             // Monitoring
             "runtimeOnly"("io.micrometer:micrometer-registry-prometheus")
