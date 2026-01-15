@@ -63,6 +63,8 @@ spring-modulith-starter-test = { module = "org.springframework.modulith:spring-m
 # --- Database ---
 mysql-connector = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+querydsl-jpa = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" } # 런타임 lib
+querydsl-apt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" } # 컴파일 lib
 
 # --- Testing ---
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
