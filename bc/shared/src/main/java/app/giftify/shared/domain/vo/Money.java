@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  */
 public record Money(BigDecimal amount) {
 
-    public Money {
+	public Money {
 		if (amount.signum() < 0) {
 			// todo: 커스텀 예외 적용
 			throw new IllegalArgumentException("금액은 음수가 될 수 없습니다.");
@@ -21,5 +21,23 @@ public record Money(BigDecimal amount) {
 
 	public static Money zero() {
 		return of(0);
+	}
+
+	public static Money of(BigDecimal amount) {
+		return new Money(amount);
+	}
+
+	// Money 비교용
+
+	public boolean isLessThan(Money other) {
+		return this.amount.compareTo(other.amount) < 0;
+	}
+
+	public boolean isGreaterThan(Money other) {
+		return this.amount.compareTo(other.amount) > 0;
+	}
+
+	public boolean isGreaterThanOrEqual(Money other) {
+		return this.amount.compareTo(other.amount) >= 0;
 	}
 }
