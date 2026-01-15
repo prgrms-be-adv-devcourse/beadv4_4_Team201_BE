@@ -95,11 +95,34 @@ git clone https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE.git
 cd giftify-be
 ```
 
-### 2. 데이터베이스 실행
+### 2. 환경 변수 설정
 
-N/A - Docker Compose 설정이 추가될 예정입니다.
+```bash
+# .env.sample을 복사하여 .env 파일 생성
+cp .env.sample .env
 
-### 3. 애플리케이션 실행
+# .env 파일을 편집하여 필요한 환경 변수 설정
+# - PostgreSQL 데이터베이스 설정
+# - Auth0 인증 설정
+```
+
+### 3. Docker Compose로 실행
+
+#### 옵션 A: 로컬 빌드
+
+```bash
+# Docker Compose로 PostgreSQL + API 서버 실행
+docker-compose up -d
+
+# 로그 확인
+docker-compose logs -f api-server
+
+# 중지
+docker-compose down
+```
+
+
+### 4. 애플리케이션 직접 실행 (Docker 없이)
 
 ```bash
 # 빌드 (테스트 제외)
@@ -109,7 +132,7 @@ N/A - Docker Compose 설정이 추가될 예정입니다.
 ./gradlew :bootstrap:api-server:bootRun
 ```
 
-### 4. Health Check
+### 5. Health Check
 
 ```bash
 # Root Health Check
@@ -121,8 +144,19 @@ curl http://localhost:8080/member/health
 # Auth Health Check
 curl http://localhost:8080/auth/health
 
-# Payment Health Check
-curl http://localhost:8080/payment/health
+```
+
+---
+
+#### 로컬에서 이미지 빌드
+
+```bash
+# Dockerfile로 직접 빌드
+docker build -t giftify-api-server:local .
+
+# 또는 docker-compose로 빌드
+docker-compose build
+docker-compose up -d
 ```
 
 ---
@@ -142,12 +176,6 @@ N/A - API 문서 설정이 추가될 예정입니다.
 | GET | `/health` | 루트 헬스체크 |
 | GET | `/member/health` | 회원 모듈 헬스체크 |
 | GET | `/auth/health` | 인증 모듈 헬스체크 |
-| GET | `/payment/health` | 결제 모듈 헬스체크 |
-
-### 비즈니스 API
-
-N/A - 비즈니스 API가 구현될 예정입니다.
-
 
 ---
 
