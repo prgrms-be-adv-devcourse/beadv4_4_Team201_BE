@@ -80,3 +80,14 @@ include(
 
 project(":bootstrap").projectDir = file("bootstrap")
 project(":bootstrap:api-server").projectDir = file("bootstrap/api-server")
+
+include("bc:member:core")
+include("bc:member:adapter")
+include("bc:member:application")
+include("bc:shared:member")
+include("bc:auth:core")
+include("bc:adapter")
+include("bc:auth:adapter")
+include("bc:auth:application")
+include("bc:funding")
+include("support:common:EventPublisher")
