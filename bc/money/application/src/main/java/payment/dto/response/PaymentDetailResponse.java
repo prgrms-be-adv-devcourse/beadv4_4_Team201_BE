@@ -1,7 +1,7 @@
 package payment.dto.response;
 
 import domain.payment.PaymentStatus;
-import domain.payment.PaymentType;
+import app.giftify.shared.domain.payment.PaymentType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
