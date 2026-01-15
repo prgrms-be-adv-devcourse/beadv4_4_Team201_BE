@@ -1,13 +1,12 @@
 package domain.payment;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import app.giftify.shared.domain.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PaymentTest {
 
@@ -108,6 +107,35 @@ class PaymentTest {
         assertThatThrownBy(() -> payment.markAsPaid("PG_TX_123"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다");
+    }
+
+    @Test
+    @DisplayName("PENDING 상태가 아닌 결제는 실패 처리할 수 없다")
+    void markAsFailed_ShouldThrowException_WhenStatusIsNotPending() {
+        // given
+        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000)); // PAID 상태
+
+        // when & then
+        assertThatThrownBy(payment::markAsFailed)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("대기 중인 결제만 실패 처리할 수 있습니다");
+    }
+
+    @Test
+    @DisplayName("PAID 상태가 아닌 결제는 수령 확정(SETTLED)할 수 없다")
+    void settle_ShouldThrowException_WhenStatusIsNotPaid() {
+        // given
+        Payment payment = Payment.builder()
+                .userId(1L)
+                .type(PaymentType.CHARGE)
+                .status(PaymentStatus.PENDING)
+                .amount(Money.of(10000))
+                .build();
+
+        // when & then
+        assertThatThrownBy(payment::settle)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("결제 완료(PAID) 상태에서만 확정할 수 있습니다");
     }
 
     @Test
