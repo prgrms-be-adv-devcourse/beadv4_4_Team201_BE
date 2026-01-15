@@ -1,7 +1,7 @@
 package in;
 
-import app.funding.FundingSyncItemUseCase;
-import in.event.WishlistItemCreatedEvent;
+import app.funding.FundingFacade;
+import in.event.PaymentCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -12,17 +12,17 @@ import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMI
 
 @Component
 @RequiredArgsConstructor
-public class FundingEventListener {
+public class PaymentEventConsumer {
     
-    private final FundingSyncItemUseCase fundingSyncItemUseCase;
+    private final FundingFacade fundingFacade;
     
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handleWishlistItemCreated(WishlistItemCreatedEvent event) {
-        fundingSyncItemUseCase.syncItem(
+    public void handlePaymentCompleted(PaymentCompletedEvent event) {
+        fundingFacade.createFunding(
+            event.getPayerId(),
             event.getWishlistItemId(),
-            event.getProductId()
+            event.getAmount()
         );
     }
 }
-

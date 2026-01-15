@@ -2,7 +2,6 @@ package domain.funding;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import jpa.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

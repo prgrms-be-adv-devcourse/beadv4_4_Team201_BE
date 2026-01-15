@@ -1,11 +1,10 @@
 package domain.funding;
 
-import domain.Product;
+import domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jpa.BaseEntity;
 
 @Entity
 @Table(name = "FUNDING_WISHLIST_ITEM")

@@ -4,4 +4,6 @@
 dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+    // EventPublisher용 (최소 의존성)
+    implementation("org.springframework:spring-context")
 }

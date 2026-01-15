@@ -1,4 +1,4 @@
-package jpa;
+package domain.funding;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-
 
 @Getter
 @MappedSuperclass
@@ -33,4 +32,3 @@ public abstract class BaseEntity {
     @LastModifiedBy
     private String updatedBy;
 }
-

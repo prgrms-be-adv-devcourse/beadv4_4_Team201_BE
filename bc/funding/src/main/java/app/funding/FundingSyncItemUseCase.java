@@ -1,7 +1,7 @@
 package app.funding;
 
-import domain.Product;
 import domain.funding.FundingWishlistItem;
+import domain.product.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

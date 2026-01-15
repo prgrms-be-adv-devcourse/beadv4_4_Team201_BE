@@ -1,10 +1,10 @@
 package domain.funding;
 
+import domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jpa.BaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +19,10 @@ public class Funding extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funding_wishlist_item_id", nullable = false)
     private FundingWishlistItem fundingWishlistItem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @OneToMany(mappedBy = "funding", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FundingParticipantMember> participants = new ArrayList<>();
@@ -39,8 +43,7 @@ public class Funding extends BaseEntity {
 
     private Funding(FundingWishlistItem item, Integer currentAmount) {
         this.fundingWishlistItem = item;
-        // TODO : 수연님 product 받아서 수정
-//        this.targetAmount = item.getProduct().getPrice();
+        this.targetAmount = item.getProduct().getPrice();
         this.currentAmount = currentAmount;
         this.status = FundingStatus.IN_PROGRESS;
         this.endAt = LocalDateTime.now().plusDays(15);
