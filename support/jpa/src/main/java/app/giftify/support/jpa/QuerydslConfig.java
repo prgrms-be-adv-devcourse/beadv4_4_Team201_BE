@@ -1,4 +1,4 @@
-package app.giftify;
+package app.giftify.support.jpa;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
