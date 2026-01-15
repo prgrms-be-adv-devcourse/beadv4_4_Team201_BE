@@ -1,5 +1,6 @@
 package domain.funding;
 
+import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "FUNDING_PARTICIPANT_MEMBER")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FundingParticipantMember extends BaseEntity {
+public class FundingParticipantMember extends BaseJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funding_id", nullable = false)

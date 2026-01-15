@@ -1,5 +1,6 @@
 package domain.funding;
 
+import app.giftify.support.jpa.BaseJpaEntity;
 import domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "FUNDING_WISHLIST_ITEM")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FundingWishlistItem extends BaseEntity {
+public class FundingWishlistItem extends BaseJpaEntity {
 
     public enum WishListItemStatus {
         PENDING,                // 위시리스트에 담긴 상태
