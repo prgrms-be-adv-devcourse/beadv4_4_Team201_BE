@@ -89,7 +89,7 @@ public class AuthService extends OidcUserService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
-            return restTemplate.postForObject(url, request, Map.class);
+            return restTemplate.postForObject(url, request, Map.class); // FIXME :: ParameterizedTypeReference 로 수정 검토
         } catch (Exception e) {
             throw new OAuth2AuthenticationException("토큰 갱신에 실패했습니다: " + e.getMessage());
         }
