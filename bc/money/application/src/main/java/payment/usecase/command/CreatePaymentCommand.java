@@ -2,7 +2,7 @@ package payment.usecase.command;
 
 import java.math.BigDecimal;
 
-import domain.payment.PaymentType;
+import app.giftify.shared.domain.payment.PaymentType;
 
 public record CreatePaymentCommand(
 	Long payerId,

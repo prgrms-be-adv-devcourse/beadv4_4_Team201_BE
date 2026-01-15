@@ -1,8 +1,9 @@
 package domain.payment;
 
-import app.giftify.shared.domain.vo.Money;
-
 import java.time.LocalDateTime;
+
+import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.vo.Money;
 
 public class Payment {
     private Long paymentId;

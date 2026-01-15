@@ -2,6 +2,8 @@ package domain.payment;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import app.giftify.shared.domain.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 import static org.assertj.core.api.Assertions.assertThat;
