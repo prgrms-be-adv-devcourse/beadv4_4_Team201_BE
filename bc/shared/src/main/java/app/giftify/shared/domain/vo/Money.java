@@ -1,4 +1,4 @@
-package vo;
+package app.giftify.shared.domain.vo;
 
 import java.math.BigDecimal;
 

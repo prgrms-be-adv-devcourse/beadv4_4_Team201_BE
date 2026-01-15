@@ -1,6 +1,6 @@
 package app.giftify.auth.integration.event;
 
-import event.auth.UserAuthenticatedEvent;
+import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package domain.wallet;
 
-import vo.Money;
+import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
 

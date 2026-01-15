@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import vo.Money;
+import app.giftify.shared.domain.vo.Money;
 
 import java.util.Optional;
 
