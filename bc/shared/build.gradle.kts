@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    // Lombok 제거됨 (Pure Java)
+
 }
