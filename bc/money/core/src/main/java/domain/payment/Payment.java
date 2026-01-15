@@ -23,11 +23,6 @@ public class Payment {
             Money amount, Long fundingId, String pgTransactionId, PaymentMethod method,
             LocalDateTime createdAt, LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt
     ) {
-        // 펀딩 결제일 경우 fundingId 필수
-        if (type == PaymentType.FUNDING && fundingId == null) {
-            throw new IllegalArgumentException("펀딩 결제는 fundingId가 필수입니다.");
-        }
-
         this.paymentId = paymentId;
         this.userId = userId;
         this.type = type;
