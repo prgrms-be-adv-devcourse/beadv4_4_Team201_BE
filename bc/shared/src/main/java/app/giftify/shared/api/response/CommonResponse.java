@@ -1,8 +1,6 @@
 package app.giftify.shared.api.response;
 
-/**
- * API 공통 응답 규격
- */
+// API 공통 응답 규격
 public final class CommonResponse<T> {
     private final Result result;
     private final T data;
