@@ -2,5 +2,5 @@
 
 dependencies {
     implementation(project(":support:common"))
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation(libs.spring.boot.starter)
 }

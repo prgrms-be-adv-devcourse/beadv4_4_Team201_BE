@@ -6,10 +6,10 @@
       implementation(project(":bc:money:application"))
 
       // 모든 인프라 기술 허용
-      implementation("org.springframework.boot:spring-boot-starter-web")
-      implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-      implementation("org.springframework.boot:spring-boot-starter-validation")
-      implementation("org.projectlombok:lombok")
+      implementation(libs.spring.boot.starter.web)
+      implementation(libs.spring.boot.starter.data.jpa)
+      implementation(libs.spring.boot.starter.validation)
+      
 
       // 테스트 시에도 Lombok 어노테이션 처리
       testImplementation("org.projectlombok:lombok")
