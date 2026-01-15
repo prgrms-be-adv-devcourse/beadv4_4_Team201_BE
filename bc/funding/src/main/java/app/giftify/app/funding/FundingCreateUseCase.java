@@ -1,14 +1,14 @@
-package app.funding;
+package app.giftify.app.funding;
 
-import domain.funding.Funding;
-import domain.funding.FundingWishlistItem;
+import app.giftify.domain.funding.Funding;
+import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.support.common.event.funding.FundingCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import out.FundingRepository;
-import out.FundingWishlistItemRepository;
+import app.giftify.out.FundingRepository;
+import app.giftify.out.FundingWishlistItemRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +26,6 @@ public class FundingCreateUseCase {
 
         // Member BC에서 수신하여 WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
         eventPublisher.publish(new FundingCreatedEvent(
-            this,
             funding.getId(),
             wishlistItem.getWishlistId()
         ));
