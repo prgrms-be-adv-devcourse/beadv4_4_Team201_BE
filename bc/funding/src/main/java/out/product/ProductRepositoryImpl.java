@@ -28,32 +28,39 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 		QProduct product = QProduct.product;
 		BooleanBuilder where = new BooleanBuilder();
 
+		String keyword = searchDto.getKeyword();
+		Integer minPrice = searchDto.getMinPrice();
+		Integer maxPrice = searchDto.getMaxPrice();
+		Boolean inStock = searchDto.getInStock();
+		int page = searchDto.getPage();
+		int size = searchDto.getSize();
+
 		// 기본 조건: 판매 중인 상품만 조회
 		where.and(product.status.eq(ProductStatus.ACTIVE));
 
-		if (searchDto.keyword() != null && !searchDto.keyword().isBlank()) {
-			String keyword = searchDto.keyword().trim(); // 문자열 앞 뒤 공백 제거
+		if (keyword != null && !keyword.isBlank()) {
+			keyword = keyword.trim(); // 문자열 앞 뒤 공백 제거
 			where.and(
 				product.name.containsIgnoreCase(keyword)
 					.or(product.description.containsIgnoreCase(keyword))
 			);
 		}
-		if (searchDto.minPrice() != null)
-			where.and(product.price.goe(searchDto.minPrice()));
-		if (searchDto.maxPrice() != null)
-			where.and(product.price.loe(searchDto.maxPrice()));
+		if (minPrice != null)
+			where.and(product.price.goe(minPrice));
+		if (maxPrice != null)
+			where.and(product.price.loe(maxPrice));
 
 		// 재고 유무 옵션 처리
-		if (Boolean.TRUE.equals(searchDto.inStock()))
+		if (Boolean.TRUE.equals(inStock))
 			where.and(product.stock.gt(0));
 
 		// 데이터 조회
 		List<Product> content = queryFactory
 			.selectFrom(product)
 			.where(where)
-			.orderBy(toOrderSpecifier(searchDto.sort(), product)) // 정렬 조건
-			.offset((long)searchDto.page() * searchDto.size()) // 페이지 시작 위치
-			.limit(searchDto.size()) // 페이지 크기
+			.orderBy(toOrderSpecifier(keyword, product)) // 정렬 조건
+			.offset((long)page * size) // 페이지 시작 위치
+			.limit(size) // 페이지 크기
 			.fetch();
 
 		Long total = queryFactory
@@ -64,7 +71,7 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 
 		long totalElements = (total == null) ? 0 : total;
 
-		Pageable pageable = PageRequest.of(searchDto.page(), searchDto.size());
+		Pageable pageable = PageRequest.of(page, size);
 
 		return new PageImpl<>(content, pageable, totalElements);
 	}
