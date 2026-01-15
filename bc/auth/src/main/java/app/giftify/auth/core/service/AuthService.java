@@ -1,6 +1,6 @@
 package app.giftify.auth.core.service;
 
-import app.giftify.auth.integration.event.UserAuthenticatedEvent;
+import event.auth.UserAuthenticatedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
