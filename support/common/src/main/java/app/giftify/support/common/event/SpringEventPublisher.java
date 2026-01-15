@@ -3,7 +3,7 @@ package app.giftify.support.common.event;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import event.EventPublisher;
+import app.giftify.shared.domain.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
 
 @Component

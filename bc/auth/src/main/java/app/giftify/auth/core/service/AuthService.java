@@ -1,6 +1,7 @@
 package app.giftify.auth.core.service;
 
-import event.auth.UserAuthenticatedEvent;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
@@ -19,7 +20,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
+import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 
 // 핵심 비즈니스 로직 (인증 프로세스 처리, 토큰 유효성 검증, 갱신)
 @Service

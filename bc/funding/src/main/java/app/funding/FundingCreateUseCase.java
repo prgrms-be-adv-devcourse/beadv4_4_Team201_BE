@@ -2,7 +2,7 @@ package app.funding;
 
 import domain.funding.Funding;
 import domain.funding.FundingWishlistItem;
-import event.EventPublisher;
+import app.giftify.shared.domain.event.EventPublisher;
 import in.event.FundingCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,4 +33,3 @@ public class FundingCreateUseCase {
         return funding;
     }
 }
-
