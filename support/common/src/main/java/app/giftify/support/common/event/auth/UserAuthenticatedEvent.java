@@ -1,9 +1,12 @@
-package event.auth;
+package app.giftify.support.common.event.auth;
 
-import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
-// 인증 성공 이벤트를 공유 모듈에서 관리하여 모든 모듈이 구독할 수 있도록 구현.
+import lombok.Getter;
+
+/**
+ * 인증 성공 스프링 이벤트.
+ */
 @Getter
 public class UserAuthenticatedEvent extends ApplicationEvent {
     private final String sub;

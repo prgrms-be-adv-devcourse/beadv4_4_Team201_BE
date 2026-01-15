@@ -3,7 +3,7 @@ package wallet.service;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
 import org.springframework.stereotype.Service;
-import vo.Money;
+import app.giftify.shared.domain.vo.Money;
 import wallet.usecase.WalletCreateUseCase;
 import wallet.usecase.WalletQueryUseCase;
 
