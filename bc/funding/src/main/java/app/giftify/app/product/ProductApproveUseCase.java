@@ -6,7 +6,7 @@ import app.giftify.domain.product.Product;
 
 import app.giftify.out.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
-
+import app.giftify.out.product.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
