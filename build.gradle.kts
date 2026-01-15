@@ -26,6 +26,7 @@ allprojects {
 // =============================================================================
 // 부모 모듈 목록
 val parentModules = setOf("bc", "support", "bootstrap")
+val jacocoVersion = libs.versions.jacoco.get()
 
 subprojects {
     // 부모 모듈이 아닌 경우에만 java 플러그인 적용
@@ -52,6 +53,86 @@ subprojects {
         // 테스트 설정
         tasks.withType<Test> {
             useJUnitPlatform()
+            finalizedBy("jacocoTestReport")
+        }
+
+        apply(plugin = "jacoco")
+
+        extensions.configure<JacocoPluginExtension> {
+            toolVersion = jacocoVersion
+        }
+
+        tasks.withType<JacocoReport> {
+            reports {
+                html.required.set(true)
+                xml.required.set(true)
+                csv.required.set(false)
+            }
+            // 정말 필요없는 경우 제외하고 테스트 채워서 통과하게끔 하여야 함!!!!!!!
+            val exclusions = listOf(
+                "**/Q*",
+                "**/*Application*",
+                "**/*Config*",
+                "**/*Configuration*",
+                "**/*Dto*",
+                "**/*Request*",
+                "**/*Response*",
+                "**/*Exception*",
+                "**/*Interceptor*",
+                "**/*Filter*",
+                "**/*Entity*",
+                "**/*Mapper*",
+                "**/*Command*",
+                "**/*Query*",
+                "**/*Policy*",
+                "**/*Context*",
+                "**/*Snapshot*"
+            )
+
+            classDirectories.setFrom(
+                files(classDirectories.files.map {
+                    fileTree(it).matching {
+                        exclude(exclusions)
+                    }
+                })
+            )
+            
+            finalizedBy("jacocoTestCoverageVerification")
+        }
+
+        tasks.withType<JacocoCoverageVerification> {
+            val exclusions = listOf(
+                "*.Q*",
+                "*.Application",
+                "*Config*",
+                "*Configuration",
+                "*Dto",
+                "*Request",
+                "*Response",
+                "*Exception",
+                "*Interceptor",
+                "*Filter",
+                "*Entity",
+                "*Mapper",
+                "*Command",
+                "*Query",
+                "*Policy",
+                "*Context",
+                "*Snapshot"
+            )
+
+            violationRules {
+                rule {
+                    element = "BUNDLE"
+                    enabled = true
+                    limit {
+                        counter = "LINE"
+                        value = "COVEREDRATIO"
+                        minimum = 0.10.toBigDecimal()
+                    }
+                    excludes = exclusions
+                }
+            }
         }
 
         // 공통 테스트 의존성

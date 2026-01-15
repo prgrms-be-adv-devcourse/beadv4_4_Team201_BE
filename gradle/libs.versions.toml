@@ -27,6 +27,7 @@ restAssured = "5.4.0"
 
 # Monitoring
 micrometer = "1.12.2"
+jacoco = "0.8.11"
 
 [libraries]
 # --- Spring Boot ---
