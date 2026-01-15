@@ -20,6 +20,8 @@ dependencies {
     implementation(project(":support:security"))
     implementation(project(":support:web"))
 
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
+
     // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
