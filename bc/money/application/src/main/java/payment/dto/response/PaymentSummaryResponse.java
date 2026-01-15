@@ -1,16 +1,16 @@
 package payment.dto.response;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 import domain.payment.PaymentStatus;
 import domain.payment.PaymentType;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 public record PaymentSummaryResponse(
-	Long paymentId,
-	PaymentType type,
-	PaymentStatus status,
-	BigDecimal amount,
-	LocalDateTime paidAt
+        Long paymentId,
+        PaymentType type,
+        PaymentStatus status,
+        BigDecimal amount,
+        LocalDateTime paidAt
 ) {
 }
