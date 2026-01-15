@@ -1,61 +1,46 @@
 package app.giftify.payment.adapter.out.jpa.entity;
 
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.jpa.BaseJpaEntity;
 import domain.wallet.WalletSnapshot;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import app.giftify.shared.domain.vo.Money;
-
-import java.time.LocalDateTime;
 
 @Entity
 @EntityListeners(value = AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
-public class JpaWallet {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class JpaWallet extends BaseJpaEntity {
     @Column(unique = true)
     private Long memberId;
 
     @Embedded
     private Money balance;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime modifiedAt;
-
-    private JpaWallet(Long id, Long memberId, Money balance, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        this.id = id;
+    private JpaWallet(Long memberId, Money balance) {
         this.memberId = memberId;
         this.balance = balance;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
     }
 
     public static JpaWallet from(WalletSnapshot wallet) {
         return new JpaWallet(
-                wallet.id(),
                 wallet.memberId(),
-                wallet.balance(),
-                wallet.createdAt(),
-                wallet.modifiedAt()
+                wallet.balance()
         );
     }
 
     public WalletSnapshot toSnapshot() {
         return new WalletSnapshot(
-                id,
+                super.getId(),
                 memberId,
                 balance,
-                createdAt,
-                modifiedAt
+                super.getCreatedAt(),
+                super.getUpdatedAt()
         );
     }
 

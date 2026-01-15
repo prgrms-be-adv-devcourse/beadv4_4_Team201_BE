@@ -1,5 +1,6 @@
 package wallet.service;
 
+import app.giftify.shared.domain.vo.Money;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
 import domain.wallet.WalletSnapshot;
@@ -10,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import app.giftify.shared.domain.vo.Money;
 
 import java.util.Optional;
 
