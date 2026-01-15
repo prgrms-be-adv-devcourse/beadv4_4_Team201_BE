@@ -190,6 +190,14 @@ public class Payment {
         this.paidAt = LocalDateTime.now();
     }
 
+    public void markAsFailed() {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
+        }
+        this.status = PaymentStatus.FAILED;
+    }
+
+
     public boolean isRefundable() {
         return this.status == PaymentStatus.PAID && this.refundedAt == null && this.settledAt == null;
     }
