@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 public class Member extends BaseDomainModel {
     private final String email;
     private final String password; // Auth0 사용 시 비어있거나 더미값
-    private final String nickname;
+    private String nickname;
     private final LocalDate birthday;
-    private final MemberRole role;
-    private final String address;
-    private final Long phoneNum;
+    private MemberRole role;
+    private String address;
+    private Long phoneNum;
     private final String name;
-    private final MemberStatus status;
+    private MemberStatus status;
     private final String authSub; // Auth0 연동 키
 
     @Builder
@@ -30,16 +30,18 @@ public class Member extends BaseDomainModel {
                   String email, String password, String nickname, LocalDate birthday,
                   MemberRole role, String address, Long phoneNum, String name,
                   MemberStatus status, String authSub) {
+
         super(id, createdAt, updatedAt);
+
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.birthday = birthday;
-        this.role = role;
+        this.role = role != null ? role : MemberRole.BUYER;
         this.address = address;
         this.phoneNum = phoneNum;
         this.name = name;
-        this.status = status;
+        this.status = status != null ? status : MemberStatus.ACTIVE;
         this.authSub = authSub;
     }
 }
