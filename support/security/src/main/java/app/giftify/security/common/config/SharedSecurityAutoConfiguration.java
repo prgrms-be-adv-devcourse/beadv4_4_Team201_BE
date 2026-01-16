@@ -1,5 +1,6 @@
 package app.giftify.security.common.config;
 
+import app.giftify.security.common.resolver.AuthenticatedMemberArgumentResolver;
 import app.giftify.security.common.validator.AudienceValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -8,9 +9,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @AutoConfiguration
-public class SharedSecurityAutoConfiguration {
+public class SharedSecurityAutoConfiguration implements WebMvcConfigurer {
 
     @Value("${auth0.audience}")
     private String audience;
@@ -30,5 +35,10 @@ public class SharedSecurityAutoConfiguration {
         jwtDecoder.setJwtValidator(withAudience);
 
         return jwtDecoder;
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new AuthenticatedMemberArgumentResolver());
     }
 }
