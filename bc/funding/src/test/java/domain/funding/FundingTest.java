@@ -1,9 +1,9 @@
 package domain.funding;
 
 import app.giftify.domain.funding.Funding;
+import app.giftify.domain.funding.FundingException;
 import app.giftify.domain.funding.FundingStatus;
 import app.giftify.domain.funding.FundingWishlistItem;
-import app.giftify.shared.api.exception.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ class FundingTest {
     void validateAmount_fail_when_amount_is_null() {
         // when & then
         assertThatThrownBy(() -> Funding.validateAmount(null))
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
     }
 
@@ -39,15 +39,15 @@ class FundingTest {
     void validateAmount_fail_when_amount_less_than_1000() {
         // when & then
         assertThatThrownBy(() -> Funding.validateAmount(999))
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
 
         assertThatThrownBy(() -> Funding.validateAmount(0))
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
 
         assertThatThrownBy(() -> Funding.validateAmount(-100))
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
     }
 
@@ -72,7 +72,7 @@ class FundingTest {
 
         // when & then
         assertThatThrownBy(() -> Funding.startFunding(item, 500))
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
     }
 
@@ -136,7 +136,7 @@ class FundingTest {
 
         // when & then
         assertThatThrownBy(() -> funding.contribute(50000)) // 40000원 초과 시도
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("잔여 금액")
                 .hasMessageContaining("40000");
     }
@@ -166,7 +166,7 @@ class FundingTest {
 
         // when & then
         assertThatThrownBy(() -> funding.contribute(500))
-                .isInstanceOf(DomainException.class)
+                .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
     }
 
