@@ -1,12 +1,15 @@
 package domain.wallet;
 
 import app.giftify.shared.domain.vo.Money;
+import domain.errorCode.WalletErrorCode;
+import domain.exception.WalletException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class WalletTest {
     @Test
@@ -70,4 +73,52 @@ class WalletTest {
     @DisplayName("0원 충전 시 예외가 발생한다")
     void charge_zero_amount_fail() {
     }
+
+    @Test
+    @DisplayName("지갑에서 출금을 성공적으로 수행하면 잔액이 차감된다")
+    void withdraw_Success() {
+        // given
+        Wallet wallet = Wallet.create(1L, Money.of(50000)); // 초기 잔액 50,000원
+        Money withdrawAmount = Money.of(30000); // 출금 금액 30,000원
+
+        // when
+        wallet.withdraw(withdrawAmount);
+
+        // then
+        assertThat(wallet.getBalance()).isEqualTo(Money.of(20000)); // 잔액이 20,000원이 되어야 함
+    }
+
+    @Test
+    @DisplayName("잔액보다 큰 금액을 출금하려고 하면 예외가 발생한다")
+    void withdraw_Failure_InsufficientBalance() {
+        // given
+        Wallet wallet = Wallet.create(1L, Money.of(10000)); // 초기 잔액 10,000원
+        Money withdrawAmount = Money.of(20000); // 출금 금액 20,000원
+
+        // when & then
+        assertThatThrownBy(() -> wallet.withdraw(withdrawAmount))
+                .isInstanceOf(WalletException.class) // 커스텀 예외 확인
+                .hasMessage(WalletErrorCode.INSUFFICIENT_BALANCE.getMessage()); // 에러 메시지 확인
+
+        // 잔액이 변경되지 않아야 함
+        assertThat(wallet.getBalance()).isEqualTo(Money.of(10000));
+    }
+
+    @Test
+    @DisplayName("출금 금액이 null이면 예외가 발생한다")
+    void withdraw_Failure_NullAmount() {
+        // given
+        Wallet wallet = Wallet.create(1L, Money.of(10000)); // 초기 잔액 10,000원
+        Money withdrawAmount = null; // null 금액
+
+        // when & then
+        assertThatThrownBy(() -> wallet.withdraw(withdrawAmount))
+                .isInstanceOf(WalletException.class) // 커스텀 예외 확인
+                .hasMessage(WalletErrorCode.INVALID_NULL_AMOUNT.getMessage()); // 에러 메시지 확인
+
+        // 잔액이 변경되지 않아야 함
+        assertThat(wallet.getBalance()).isEqualTo(Money.of(10000));
+    }
+
+
 }

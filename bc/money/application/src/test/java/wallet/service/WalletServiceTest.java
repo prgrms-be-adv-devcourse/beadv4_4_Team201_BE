@@ -2,8 +2,11 @@ package wallet.service;
 
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
+import app.giftify.shared.domain.event.wallet.WalletWithdrawnEvent;
 import app.giftify.shared.domain.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
+import domain.errorCode.WalletErrorCode;
+import domain.exception.WalletException;
 import domain.payment.Payment;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
@@ -324,5 +327,113 @@ class WalletServiceTest {
         verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository).save(wallet);
         verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
+    }
+
+    @Test
+    @DisplayName("성공적으로 출금이 수행되면 잔액이 차감되고 이벤트가 발행된다")
+    void withdraw_Success() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(10000);
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        Wallet wallet = Wallet.create(memberId, Money.of(20000)); // 초기 잔액 20,000원
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
+
+        // when
+        walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId);
+
+        // then
+        // WalletRepository.save() 호출 검증
+        verify(walletRepository, times(1)).save(wallet);
+        assertThat(wallet.getBalance()).isEqualTo(Money.of(10000)); // 잔액이 10,000원이 남아야 함
+
+        // EventPublisher.publish() 호출 및 이벤트 검증
+        ArgumentCaptor<WalletWithdrawnEvent> eventCaptor = ArgumentCaptor.forClass(WalletWithdrawnEvent.class);
+        verify(eventPublisher, times(1)).publish(eventCaptor.capture());
+
+        WalletWithdrawnEvent publishedEvent = eventCaptor.getValue();
+        assertThat(publishedEvent.getWalletId()).isEqualTo(wallet.getId());
+        assertThat(publishedEvent.getAmount()).isEqualTo(amount);
+        assertThat(publishedEvent.getBalanceAfter()).isEqualTo(wallet.getBalance());
+        assertThat(publishedEvent.getTransactionType()).isEqualTo(transactionType);
+        assertThat(publishedEvent.getReferenceType()).isEqualTo(referenceType);
+        assertThat(publishedEvent.getReferenceId()).isEqualTo(referenceId);
+    }
+
+    @Test
+    @DisplayName("지갑이 존재하지 않을 경우 예외가 발생한다")
+    void withdraw_Failure_WalletNotFound() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(10000);
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다.");
+
+        // save 호출되지 않았는지 검증
+        verify(walletRepository, never()).save(any(Wallet.class));
+
+        // 이벤트 발행되지 않았는지 검증
+        verify(eventPublisher, never()).publish(any(WalletWithdrawnEvent.class));
+    }
+
+    @Test
+    @DisplayName("출금 금액이 잔액보다 크면 예외가 발생한다")
+    void withdraw_Failure_InsufficientFunds() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(30000); // 출금 금액 30,000원
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        Wallet wallet = Wallet.create(memberId, Money.of(20000)); // 초기 잔액 20,000원
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
+
+        // when & then
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(WalletException.class)
+                .hasMessage(WalletErrorCode.INSUFFICIENT_BALANCE.getMessage());
+
+        // save 호출되지 않았는지 검증
+        verify(walletRepository, never()).save(wallet);
+
+        // 이벤트 발행되지 않았는지 검증
+        verify(eventPublisher, never()).publish(any(WalletWithdrawnEvent.class));
+    }
+
+    @Test
+    @DisplayName("출금 금액이 null이면 예외가 발생한다")
+    void withdraw_Failure_NullAmount() {
+        // given
+        Long memberId = 1L;
+        Money amount = null; // null 금액
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        Wallet wallet = Wallet.create(memberId, Money.of(20000)); // 초기 잔액 20,000원
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
+
+        // when & then
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(WalletException.class)
+                .hasMessage(WalletErrorCode.INVALID_NULL_AMOUNT.getMessage());
+
+        // save 호출되지 않았는지 검증
+        verify(walletRepository, never()).save(wallet);
+
+        // 이벤트 발행되지 않았는지 검증
+        verify(eventPublisher, never()).publish(any(WalletWithdrawnEvent.class));
     }
 }
