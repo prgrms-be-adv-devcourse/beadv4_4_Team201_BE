@@ -18,5 +18,5 @@ jobs:
       - name: Build Module
         uses: ./.github/actions/gradle-build-module
         with:
-          module-path: ':' # Root build (or specify specific module like :member-service)
-          gradle-cache: 'false' # Disabled until Gradle is initialized
+          module-path: '' # Root build
+          gradle-cache: 'true' # Enabled now that Gradle is initialized
