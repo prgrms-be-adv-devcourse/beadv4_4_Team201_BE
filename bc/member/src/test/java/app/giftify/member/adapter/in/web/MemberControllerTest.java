@@ -1,8 +1,11 @@
 package app.giftify.member.adapter.in.web;
 
+import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberRole;
@@ -13,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,13 +26,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
-@Import(MemberExceptionHandler.class)
 class MemberControllerTest {
 
     @Autowired
@@ -44,6 +44,12 @@ class MemberControllerTest {
 
     @MockBean
     private RegisterMemberUseCase registerMemberUseCase;
+
+    @MockBean
+    private UpdateMemberUseCase updateMemberUseCase;
+
+    @MockBean
+    private WithdrawMemberUseCase withdrawMemberUseCase;
 
     @Test
     @DisplayName("[가입 상태 확인] 가입되지 않은 사용자")
@@ -92,7 +98,7 @@ class MemberControllerTest {
                 "tester",
                 LocalDate.of(1990, 1, 1),
                 "Seoul, Korea",
-                1012345678L,
+                "1012345678L",
                 "Hong Gil Dong"
         );
 
@@ -131,7 +137,7 @@ class MemberControllerTest {
                 "", // nickname blank
                 null, // birthday null
                 "Seoul, Korea",
-                1012345678L,
+                "1012345678L",
                 "Hong Gil Dong"
         );
 
@@ -159,7 +165,7 @@ class MemberControllerTest {
                 "tester",
                 LocalDate.of(1990, 1, 1),
                 "Seoul",
-                1012345678L,
+                "1012345678L",
                 "Hong"
         );
         given(registerMemberUseCase.registerMember(any())).willThrow(new DuplicateMemberException("test@example.com"));
@@ -172,5 +178,57 @@ class MemberControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("M002"))
                 .andExpect(jsonPath("$.message", containsString("이미 가입된 이메일입니다")));
+    }
+
+    @Test
+    @DisplayName("[내 정보 조회] 성공")
+    void getMyInfo_Success() throws Exception {
+        // given
+        String authSub = "auth0|12345";
+        Member member = Member.builder()
+                .authSub(authSub)
+                .nickname("tester")
+                .build();
+        given(getMemberUseCase.getMemberByAuthSub(authSub)).willReturn(Optional.of(member));
+
+        // when & then
+        mockMvc.perform(get("/api/members/getMyInfo")
+                        .with(jwt().jwt(builder -> builder.subject(authSub))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickname").value("tester"));
+    }
+
+    @Test
+    @DisplayName("[회원 수정] 성공")
+    void updateMyInfo_Success() throws Exception {
+        // given
+        String authSub = "auth0|12345";
+        MemberUpdateRequest request = new MemberUpdateRequest("1234", "newNick", authSub, "New Address", "1011112222L", "New Name");
+        Member updatedMember = Member.builder()
+                .authSub(authSub)
+                .nickname("newNick")
+                .build();
+
+        given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
+
+        // when & then
+        mockMvc.perform(patch("/api/members/updateMyInfo")
+                        .with(jwt().jwt(builder -> builder.subject(authSub)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickname").value("newNick"));
+    }
+
+    @Test
+    @DisplayName("[회원 탈퇴] 성공")
+    void withdraw_Success() throws Exception {
+        // given
+        String authSub = "auth0|12345";
+
+        // when & then
+        mockMvc.perform(delete("/api/members/withdraw")
+                        .with(jwt().jwt(builder -> builder.subject(authSub))))
+                .andExpect(status().isNoContent());
     }
 }

@@ -1,10 +1,12 @@
 package app.giftify.member.application.service;
 
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.core.domain.member.MemberStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +45,7 @@ class MemberServiceTest {
                 "tester",
                 LocalDate.of(1990, 1, 1),
                 "Seoul",
-                1012345678L,
+                "1012345678L",
                 "Hong"
         );
 
@@ -77,7 +79,7 @@ class MemberServiceTest {
                 "tester",
                 LocalDate.of(1990, 1, 1),
                 "Seoul",
-                1012345678L,
+                "1012345678L",
                 "Hong"
         );
 
@@ -110,5 +112,58 @@ class MemberServiceTest {
         assertThat(result.get().getAuthSub()).isEqualTo(authSub);
         verify(memberRepositoryPort).findByAuthSub(authSub);
         verify(memberEventPublisher).publishMemberLoggedIn(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("[회원 수정] 성공")
+    void updateMember_Success() {
+        // given
+        String authSub = "auth0|12345";
+        UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
+                authSub,
+                "1234",
+                "newNick",
+                "New Address",
+                "01011112222L",
+                "New Name"
+        );
+        Member member = Member.builder()
+                .authSub(authSub)
+                .nickname("oldNick")
+                .name("oldName")
+                .build();
+
+        given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(member));
+        given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        Member result = memberService.updateMember(command);
+
+        // then
+        assertThat(result.getNickname()).isEqualTo("newNick");
+        assertThat(result.getAddress()).isEqualTo("New Address");
+        assertThat(result.getName()).isEqualTo("New Name");
+        verify(memberRepositoryPort).save(any(Member.class));
+    }
+
+    @Test
+    @DisplayName("[회원 탈퇴] 성공")
+    void withdrawMember_Success() {
+        // given
+        String authSub = "auth0|12345";
+        Member member = Member.builder()
+                .authSub(authSub)
+                .status(MemberStatus.ACTIVE)
+                .build();
+
+        given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(member));
+        given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        memberService.withdrawMember(authSub);
+
+        // then
+        assertThat(member.getStatus()).isEqualTo(MemberStatus.WITHDRAWN);
+        verify(memberRepositoryPort).save(member);
     }
 }

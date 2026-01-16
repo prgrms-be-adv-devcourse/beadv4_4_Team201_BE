@@ -40,7 +40,7 @@ public class MemberJpaEntity {
 
     private String address;
 
-    private Long phoneNum;
+    private String phoneNum;
 
     private String name;
 

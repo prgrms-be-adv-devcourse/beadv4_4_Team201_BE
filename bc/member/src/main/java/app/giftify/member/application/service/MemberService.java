@@ -2,9 +2,12 @@ package app.giftify.member.application.service;
 
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
+import app.giftify.member.core.domain.exception.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +18,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MemberService implements GetMemberUseCase, RegisterMemberUseCase {
+public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
 
     private final MemberRepositoryPort memberRepositoryPort;
     private final MemberEventPublisher memberEventPublisher;
@@ -42,6 +45,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase {
                 .ifPresent(m -> {
                     throw new DuplicateMemberException(command.email());
                 });
+
         Member newMember = Member.builder()
                 .email(command.email())
                 .authSub(command.authSub())
@@ -57,5 +61,27 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase {
         memberEventPublisher.publishMemberRegistered(savedMember.getId(), savedMember.getEmail(), savedMember.getAuthSub());
 
         return savedMember;
+    }
+
+    @Override
+    @Transactional
+    public Member updateMember(UpdateCommand command) {
+        Member member = memberRepositoryPort.findByAuthSub(command.authSub())
+                .orElseThrow(() -> new MemberNotFoundException(command.authSub()));
+
+        member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(), command.name());
+
+        return memberRepositoryPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void withdrawMember(String authSub) {
+        Member member = memberRepositoryPort.findByAuthSub(authSub)
+                .orElseThrow(() -> new MemberNotFoundException(authSub));
+
+        member.withdraw();
+
+        memberRepositoryPort.save(member);
     }
 }

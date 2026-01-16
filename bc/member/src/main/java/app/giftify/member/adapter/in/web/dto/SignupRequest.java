@@ -19,7 +19,7 @@ public record SignupRequest(
         String address,
 
         @NotNull(message = "전화번호는 필수입니다.")
-        Long phoneNum,
+        String phoneNum,
 
         @NotBlank(message = "실명은 필수입니다.")
         String name

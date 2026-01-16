@@ -18,7 +18,7 @@ public interface RegisterMemberUseCase {
             String nickname,
             LocalDate birthday,
             String address,
-            Long phoneNum,
+            String phoneNum,
             String name
     ) {
     }
