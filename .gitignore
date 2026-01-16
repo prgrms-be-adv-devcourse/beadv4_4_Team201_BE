@@ -98,6 +98,9 @@ scripts/
 .worktrees/
 .cursorignore
 
+### Docker Compose override - 로컬 개인 개발 환경용
+docker-compose.override.yml
+
 # Ignore Gradle project-specific cache directory
 .gradle
 
