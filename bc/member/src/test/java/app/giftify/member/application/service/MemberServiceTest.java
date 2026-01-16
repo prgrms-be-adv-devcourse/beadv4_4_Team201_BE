@@ -1,6 +1,7 @@
 package app.giftify.member.application.service;
 
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.out.MemberEventSpringPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.exception.DuplicateMemberException;
@@ -16,7 +17,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -25,6 +26,9 @@ class MemberServiceTest {
 
     @Mock
     private MemberRepositoryPort memberRepositoryPort;
+
+    @Mock
+    private MemberEventSpringPublisher memberEventSpringPublisher;
 
     @InjectMocks
     private MemberService memberService;
@@ -43,8 +47,15 @@ class MemberServiceTest {
                 "Hong"
         );
 
+        Member savedMember = Member.builder()
+                .id(1L)
+                .email(command.email())
+                .authSub(command.authSub())
+                .nickname(command.nickname())
+                .build();
+
         given(memberRepositoryPort.findByAuthSub(command.authSub())).willReturn(Optional.empty());
-        given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(memberRepositoryPort.save(any(Member.class))).willReturn(savedMember);
 
         // when
         Member result = memberService.registerMember(command);
@@ -53,6 +64,7 @@ class MemberServiceTest {
         assertThat(result.getEmail()).isEqualTo(command.email());
         assertThat(result.getNickname()).isEqualTo(command.nickname());
         verify(memberRepositoryPort).save(any(Member.class));
+        verify(memberEventSpringPublisher).publishMemberRegistered(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -97,5 +109,6 @@ class MemberServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get().getAuthSub()).isEqualTo(authSub);
         verify(memberRepositoryPort).findByAuthSub(authSub);
+        verify(memberEventSpringPublisher).publishMemberLoggedIn(anyLong(), anyString(), anyString());
     }
 }
