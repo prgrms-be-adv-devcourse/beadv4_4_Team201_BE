@@ -1,11 +1,11 @@
 package app.giftify.app.product;
 
-import static app.giftify.in.product.web.ProductErrorCode.*;
+import static app.giftify.domain.product.exception.ProductErrorCode.*;
 
 import org.springframework.stereotype.Component;
 
 import app.giftify.domain.product.Product;
-import app.giftify.in.product.web.ProductException;
+import app.giftify.domain.product.exception.ProductException;
 import app.giftify.out.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 

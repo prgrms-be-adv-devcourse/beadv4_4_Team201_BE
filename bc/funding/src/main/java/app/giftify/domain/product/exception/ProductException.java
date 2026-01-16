@@ -1,4 +1,4 @@
-package app.giftify.in.product.web;
+package app.giftify.domain.product.exception;
 
 import app.giftify.shared.api.exception.DomainException;
 

@@ -1,7 +1,7 @@
 package app.giftify.domain.product;
 
 import static app.giftify.domain.product.ProductStatus.*;
-import static app.giftify.in.product.web.ProductErrorCode.*;
+import static app.giftify.domain.product.exception.ProductErrorCode.*;
 import static jakarta.persistence.GenerationType.*;
 
 import java.time.LocalDateTime;
@@ -10,8 +10,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import app.giftify.domain.FundingMember;
+import app.giftify.domain.product.exception.ProductException;
 import app.giftify.in.product.ProductDto;
-import app.giftify.in.product.web.ProductException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -44,6 +44,17 @@ public class Product { //todo validation
 	private LocalDateTime modifiedAt;
 
 	public Product(FundingMember seller, String name, String description, int price, int stock) {
+		if (seller == null)
+			throw new ProductException(PRODUCT_SELLER_REQUIRED);
+		if (name == null || name.isBlank())
+			throw new ProductException(INVALID_PRODUCT_NAME);
+		if (description == null || description.isBlank())
+			throw new ProductException(INVALID_PRODUCT_DESCRIPTION);
+		if (price <= 0)
+			throw new ProductException(INVALID_PRODUCT_PRICE);
+		if (stock < 0)
+			throw new ProductException(PRODUCT_OUT_OF_STOCK);
+
 		this.seller = seller;
 		this.name = name;
 		this.description = description;

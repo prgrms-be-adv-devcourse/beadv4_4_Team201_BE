@@ -1,6 +1,6 @@
 package app.giftify.out.product;
 
-import static app.giftify.in.product.web.ProductErrorCode.*;
+import static app.giftify.domain.product.exception.ProductErrorCode.*;
 
 import java.util.List;
 
@@ -17,9 +17,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStatus;
 import app.giftify.domain.product.QProduct;
+import app.giftify.domain.product.exception.ProductException;
 import app.giftify.in.product.MyProductSearchDto;
 import app.giftify.in.product.ProductSearchDto;
-import app.giftify.in.product.web.ProductException;
 import lombok.RequiredArgsConstructor;
 
 @Repository
