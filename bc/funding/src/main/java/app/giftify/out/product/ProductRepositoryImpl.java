@@ -1,22 +1,20 @@
 package app.giftify.out.product;
 
-import java.util.List;
-
+import app.giftify.domain.product.Product;
+import app.giftify.domain.product.ProductStatus;
+import app.giftify.domain.product.QProduct;
+import app.giftify.in.product.ProductSearchDto;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
-import app.giftify.domain.product.Product;
-import app.giftify.domain.product.ProductStatus;
-import app.giftify.domain.product.QProduct;
-import app.giftify.in.product.ProductSearchDto;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 
 @Repository

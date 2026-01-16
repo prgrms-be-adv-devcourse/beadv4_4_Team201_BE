@@ -5,6 +5,8 @@ import app.giftify.in.product.ProductDto;
 import app.giftify.in.product.ProductSearchDto;
 import app.giftify.out.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
