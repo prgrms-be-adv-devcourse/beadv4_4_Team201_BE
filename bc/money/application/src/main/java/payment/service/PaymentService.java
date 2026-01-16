@@ -1,12 +1,12 @@
 package payment.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.payment.PaymentType;
 import domain.payment.Payment;
@@ -55,7 +55,6 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			.amount(command.amount())
 			.type(type)
 			.status(PaymentStatus.PENDING)
-			.createdAt(LocalDateTime.now())
 			.build();
 
 		var savedPayment = paymentRepository.save(payment);
@@ -91,14 +90,14 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			payment.markAsFailed();
 			paymentRepository.save(payment);
 
-			// 실패 이벤트 발행
-			// eventPublisher.publish(new PaymentFailedEvent(
-			// 	payment.getPaymentId(),
-			// 	payment.getUserId(),
-			// 	payment.getAmount(),
-			// 	payment.getType(),
-			// 	"PG사 승인 거절"
-			// ));
+			eventPublisher.publish(new PaymentFailedEvent(
+				payment.getPaymentId(),
+				payment.getModelType(),
+				payment.getUserId(),
+				payment.getAmount(),
+				payment.getType(),
+				"PG사 승인 거절"
+			));
 		}
 	}
 }

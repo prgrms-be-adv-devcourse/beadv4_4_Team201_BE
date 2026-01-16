@@ -1,17 +1,17 @@
 package app.giftify.payment.adapter.out.jpa.entity;
 
+import java.math.BigDecimal;
+
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.support.jpa.BaseJpaEntity;
 import domain.wallet.WalletSnapshot;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.math.BigDecimal;
 
 @Entity
 @EntityListeners(value = AuditingEntityListener.class)
@@ -40,9 +40,7 @@ public class JpaWallet extends BaseJpaEntity {
         return new WalletSnapshot(
                 super.getId(),
                 memberId,
-                Money.of(balance),
-                super.getCreatedAt(),
-                super.getUpdatedAt()
+                Money.of(balance)
         );
     }
 

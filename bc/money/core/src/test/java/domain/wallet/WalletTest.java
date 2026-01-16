@@ -1,12 +1,11 @@
 package domain.wallet;
 
-import app.giftify.shared.domain.vo.Money;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import app.giftify.shared.domain.vo.Money;
 
 class WalletTest {
     @Test
@@ -46,9 +45,7 @@ class WalletTest {
         WalletSnapshot snapshot = new WalletSnapshot(
                 10L,
                 1L,
-                Money.of(20_000),
-                LocalDateTime.now().minusDays(1),
-                LocalDateTime.now()
+                Money.of(20_000)
         );
 
         // when
