@@ -1,7 +1,9 @@
 package app.giftify.domain.funding;
 
 import app.giftify.support.jpa.BaseJpaEntity;
+
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

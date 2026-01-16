@@ -5,8 +5,9 @@ import org.springframework.stereotype.Service;
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.Product;
 import app.giftify.in.product.ProductCreateRequestDto;
-import lombok.RequiredArgsConstructor;
+
 import app.giftify.out.product.ProductRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

@@ -5,6 +5,7 @@ public enum PaymentStatus {
     PAID,       // 결제 완료
     SETTLED,    // 수령 확정 (환불 불가)
     CANCELED,   // 결제 취소
+    FAILED,     // 결제 실패
     REFUNDED;   // 환불 완료
 
     public boolean canRefund() {

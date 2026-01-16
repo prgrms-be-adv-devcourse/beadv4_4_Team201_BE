@@ -1,8 +1,10 @@
 package app.giftify.domain.funding;
 
+
 import app.giftify.support.jpa.BaseJpaEntity;
 import app.giftify.domain.product.Product;
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,5 +39,4 @@ public class FundingWishlistItem extends BaseJpaEntity {
         this.product = product;
         this.status = status;
     }
-
 }

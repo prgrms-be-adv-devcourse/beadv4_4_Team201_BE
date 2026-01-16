@@ -8,9 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import app.giftify.out.FundingWishlistItemRepository;
 import app.giftify.out.product.ProductRepository;
 
+
 @Service
 @RequiredArgsConstructor
 public class FundingSyncItemUseCase {
+
     private final FundingWishlistItemRepository fundingWishlistItemRepository;
     private final ProductRepository productRepository;
 
@@ -26,4 +28,5 @@ public class FundingSyncItemUseCase {
 
         return fundingWishlistItemRepository.save(fundingWishlistItem);
     }
+
 }

@@ -5,6 +5,7 @@ import app.giftify.domain.funding.FundingWishlistItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+
 @Service
 @RequiredArgsConstructor
 public class FundingFacade {

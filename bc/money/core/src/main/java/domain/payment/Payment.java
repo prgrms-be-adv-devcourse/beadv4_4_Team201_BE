@@ -1,8 +1,9 @@
 package domain.payment;
 
-import app.giftify.shared.domain.vo.Money;
-
 import java.time.LocalDateTime;
+
+import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.vo.Money;
 
 public class Payment {
     private Long paymentId;
@@ -23,11 +24,6 @@ public class Payment {
             Money amount, Long fundingId, String pgTransactionId, PaymentMethod method,
             LocalDateTime createdAt, LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt
     ) {
-        // 펀딩 결제일 경우 fundingId 필수
-        if (type == PaymentType.FUNDING && fundingId == null) {
-            throw new IllegalArgumentException("펀딩 결제는 fundingId가 필수입니다.");
-        }
-
         this.paymentId = paymentId;
         this.userId = userId;
         this.type = type;
@@ -193,6 +189,14 @@ public class Payment {
         this.pgTransactionId = pgTransactionId;
         this.paidAt = LocalDateTime.now();
     }
+
+    public void markAsFailed() {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
+        }
+        this.status = PaymentStatus.FAILED;
+    }
+
 
     public boolean isRefundable() {
         return this.status == PaymentStatus.PAID && this.refundedAt == null && this.settledAt == null;
