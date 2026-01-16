@@ -18,6 +18,7 @@ import app.giftify.domain.product.QProduct;
 import app.giftify.in.product.ProductSearchDto;
 import lombok.RequiredArgsConstructor;
 
+
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductQueryRepository {
