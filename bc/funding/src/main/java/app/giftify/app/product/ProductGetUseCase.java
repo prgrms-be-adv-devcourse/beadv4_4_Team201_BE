@@ -11,6 +11,7 @@ import app.giftify.out.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import app.giftify.out.product.ProductRepository;
 
+
 @Service
 @RequiredArgsConstructor
 public class ProductGetUseCase {

@@ -17,7 +17,7 @@ public class FundingFacade {
     public Funding startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
         // 1. WishlistItem 복제
         FundingWishlistItem syncedItem = fundingSyncItemUseCase.syncItem(wishlistItemDto);
-        
+
         // 2. Funding 생성 (첫 결제 금액으로)
         return fundingCreateUseCase.createFunding(syncedItem.getId(), amount);
     }

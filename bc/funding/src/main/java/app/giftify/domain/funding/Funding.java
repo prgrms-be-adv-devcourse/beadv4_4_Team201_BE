@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -43,9 +42,9 @@ public class Funding extends BaseJpaEntity {
 
     public static Funding startFunding(FundingWishlistItem item, Integer amount) {
         validateAmount(amount);
-        
+
         Funding funding = new Funding(item, amount);
-        
+
         return funding;
     }
 
@@ -74,7 +73,7 @@ public class Funding extends BaseJpaEntity {
         if (amount > remainingAmount) {
             throw new FundingException(
                 FundingErrorCode.EXCEED_REMAINING_AMOUNT,
-                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 요청 금액: %d원", 
+                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 요청 금액: %d원",
                     remainingAmount, amount)
             );
         }

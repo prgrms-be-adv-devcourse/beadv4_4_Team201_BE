@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class FundingCreateUseCase {
-    
+
     private final FundingRepository fundingRepository;
     private final FundingWishlistItemRepository fundingWishlistItemRepository;
     private final EventPublisher eventPublisher;
@@ -37,7 +37,7 @@ public class FundingCreateUseCase {
             funding.getId(),
             wishlistItem.getWishlistId()
         ));
-        
+
         return funding;
     }
 }
