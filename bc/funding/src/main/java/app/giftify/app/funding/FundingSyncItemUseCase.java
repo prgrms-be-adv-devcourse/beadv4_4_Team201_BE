@@ -1,28 +1,33 @@
 package app.giftify.app.funding;
 
 import app.giftify.domain.funding.FundingWishlistItem;
-import app.giftify.domain.product.Product;
+import app.giftify.in.funding.WishlistItemDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import app.giftify.out.FundingWishlistItemRepository;
-import app.giftify.out.product.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
 public class FundingSyncItemUseCase {
 
     private final FundingWishlistItemRepository fundingWishlistItemRepository;
-    private final ProductRepository productRepository;
 
+    /**
+     * Member BC의 WishlistItem을 Funding BC로 복제 (스냅샷 생성)
+     * 
+     * 시점: Payment 완료 시 (결제 시점의 상품 정보를 스냅샷으로 저장)
+     * 목적: Funding 생성 시 필요한 상품 정보(ID, 이름, 가격)를 값으로 복제
+     */
     @Transactional
-    public FundingWishlistItem syncItem(Long wishlistItemId, Long productId) {
-        Product product = productRepository.getReferenceById(productId);
-
+    public FundingWishlistItem syncItem(WishlistItemDto dto) {
+        // DTO 정보를 그대로 FundingWishlistItem에 저장 (스냅샷)
         FundingWishlistItem fundingWishlistItem = new FundingWishlistItem(
-            wishlistItemId,
-            product,
-            FundingWishlistItem.WishListItemStatus.PENDING
+            dto.wishlistItemId(),
+            dto.productId(),
+            dto.productName(),
+            dto.productPrice(),
+            FundingWishlistItem.WishListItemStatus.IN_PROGRESS
         );
 
         return fundingWishlistItemRepository.save(fundingWishlistItem);

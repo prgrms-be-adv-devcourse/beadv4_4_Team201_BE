@@ -2,7 +2,6 @@ package app.giftify.domain.funding;
 
 
 import app.giftify.support.jpa.BaseJpaEntity;
-import app.giftify.domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,18 +23,26 @@ public class FundingWishlistItem extends BaseJpaEntity {
     @Column(nullable = false)
     private Long wishlistId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    // Product 정보를 값으로 직접 저장 (스냅샷)
+    @Column(nullable = false)
+    private Long productId;
+
+    @Column(nullable = false)
+    private String productName;
+
+    @Column(nullable = false)
+    private int productPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private WishListItemStatus status;
 
 
-    public FundingWishlistItem(Long wishlistId, Product product, WishListItemStatus status) {
+    public FundingWishlistItem(Long wishlistId, Long productId, String productName, int productPrice, WishListItemStatus status) {
         this.wishlistId = wishlistId;
-        this.product = product;
+        this.productId = productId;
+        this.productName = productName;
+        this.productPrice = productPrice;
         this.status = status;
     }
 
