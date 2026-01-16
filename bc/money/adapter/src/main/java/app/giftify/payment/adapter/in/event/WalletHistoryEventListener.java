@@ -1,6 +1,7 @@
 package app.giftify.payment.adapter.in.event;
 
 import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
+import app.giftify.shared.domain.event.wallet.WalletWithdrawnEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,24 @@ public class WalletHistoryEventListener {
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Transactional(propagation = REQUIRES_NEW)
     public void handle(WalletChargeCompletedEvent event) {
+        try {
+            walletHistoryRecorder.record(
+                    event.getWalletId(),
+                    event.getTransactionType(),
+                    event.getAmount(),
+                    event.getBalanceAfter(),
+                    event.getReferenceType(),
+                    event.getReferenceId()
+            );
+        } catch (Exception e) {
+            // todo: 이력 보정 수행
+        }
+    }
+
+    // todo: 이벤트 추상화를 통해 코드 중복 제거
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    @Transactional(propagation = REQUIRES_NEW)
+    public void handle(WalletWithdrawnEvent event) {
         try {
             walletHistoryRecorder.record(
                     event.getWalletId(),
