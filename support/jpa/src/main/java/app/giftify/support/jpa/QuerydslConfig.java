@@ -1,4 +1,4 @@
-package app.giftify.config;
+package app.giftify.support.jpa;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +10,8 @@ import jakarta.persistence.EntityManager;
 @Configuration
 public class QuerydslConfig {
 
-    @Bean
-    public JPAQueryFactory jpaQueryFactory(EntityManager em) {
-        return new JPAQueryFactory(em);
-    }
+	@Bean
+	public JPAQueryFactory jpaQueryFactory(EntityManager em) {
+		return new JPAQueryFactory(em);
+	}
 }

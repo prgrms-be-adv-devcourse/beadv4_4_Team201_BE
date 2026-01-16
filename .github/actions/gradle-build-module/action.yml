@@ -57,27 +57,32 @@ runs:
       run: ./gradlew ${{ inputs.module-path }}:build
 
     # 5. 지정된 모듈의 테스트를 실행합니다.
-    # 예: ./gradlew :bounded-context:subscription:subscription-bootstrap:external-api:test
+    # 테스트 완료 후 JaCoCo 리포트가 자동 생성됩니다 (finalizedBy 설정)
     - name: Run tests
       shell: bash
       run: ./gradlew ${{ inputs.module-path }}:test
 
     # 6. 테스트 결과를 아티팩트로 업로드합니다.
     # always(): 테스트 실패 여부와 관계없이 항상 실행
-    # upload-artifacts가 'true'일 때만 업로드합니다.
     - name: Upload test results
       if: ${{ always() && inputs.upload-artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ inputs.module-path != '' && inputs.module-path || 'root' }}
-        path: '**/build/test-results/test/*.xml'  # JUnit XML 형식 테스트 결과
+        path: '**/build/test-results/test/*.xml'
 
-    # 7. 빌드 실패 시 상세 리포트를 업로드합니다.
-    # failure(): 이전 스텝이 실패했을 때만 실행
-    # upload-artifacts가 'true'일 때만 업로드합니다.
+    # 7. JaCoCo 커버리지 리포트를 업로드합니다.
+    - name: Upload JaCoCo Reports
+      if: ${{ always() && inputs.upload-artifacts == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report-${{ inputs.module-path != '' && inputs.module-path || 'root' }}
+        path: '**/build/reports/jacoco/test/html/**'
+
+    # 8. 빌드 실패 시 상세 리포트를 업로드합니다.
     - name: Upload build reports
       if: ${{ failure() && inputs.upload-artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: build-reports-${{ inputs.module-path != '' && inputs.module-path || 'root' }}
-        path: '**/build/reports/'  # HTML 형식의 빌드/테스트 리포트
+        path: '**/build/reports/'
