@@ -3,7 +3,7 @@ package domain.funding;
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingStatus;
 import app.giftify.domain.funding.FundingWishlistItem;
-import app.giftify.shared.api.exception.BusinessException;
+import app.giftify.shared.api.exception.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,25 +12,25 @@ import static org.assertj.core.api.Assertions.*;
 class FundingTest {
 
     // ===== 테스트 헬퍼 메서드 =====
-    
+
     private FundingWishlistItem createTestWishlistItem(Long wishlistId, Long productId, String productName, int productPrice) {
         return new FundingWishlistItem(
-            wishlistId,
-            productId,
-            productName,
-            productPrice,
-            FundingWishlistItem.WishListItemStatus.PENDING
+                wishlistId,
+                productId,
+                productName,
+                productPrice,
+                FundingWishlistItem.WishListItemStatus.PENDING
         );
     }
 
     // ===== validateAmount 테스트 =====
-    
+
     @Test
     @DisplayName("validateAmount - 금액이 null이면 예외 발생")
     void validateAmount_fail_when_amount_is_null() {
         // when & then
         assertThatThrownBy(() -> Funding.validateAmount(null))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("1,000원");
     }
 
@@ -39,15 +39,15 @@ class FundingTest {
     void validateAmount_fail_when_amount_less_than_1000() {
         // when & then
         assertThatThrownBy(() -> Funding.validateAmount(999))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("1,000원");
-        
+
         assertThatThrownBy(() -> Funding.validateAmount(0))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("1,000원");
-        
+
         assertThatThrownBy(() -> Funding.validateAmount(-100))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("1,000원");
     }
 
@@ -63,7 +63,7 @@ class FundingTest {
     }
 
     // ===== startFunding 테스트 =====
-    
+
     @Test
     @DisplayName("startFunding - 금액이 1000원 미만이면 예외 발생")
     void startFunding_fail_when_amount_less_than_1000() {
@@ -72,7 +72,7 @@ class FundingTest {
 
         // when & then
         assertThatThrownBy(() -> Funding.startFunding(item, 500))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("1,000원");
     }
 
@@ -95,7 +95,7 @@ class FundingTest {
     }
 
     // ===== contribute 테스트 =====
-    
+
     @Test
     @DisplayName("contribute - 진행 중인 펀딩에 참여 성공")
     void contribute_success() {
@@ -136,7 +136,7 @@ class FundingTest {
 
         // when & then
         assertThatThrownBy(() -> funding.contribute(50000)) // 40000원 초과 시도
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("잔여 금액")
                 .hasMessageContaining("40000");
     }
@@ -166,12 +166,12 @@ class FundingTest {
 
         // when & then
         assertThatThrownBy(() -> funding.contribute(500))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("1,000원");
     }
 
     // ===== expire 테스트 =====
-    
+
     @Test
     @DisplayName("expire - 진행 중인 펀딩 만료 처리")
     void expire_success() {
@@ -187,22 +187,22 @@ class FundingTest {
     }
 
     // ===== isAchieved 테스트 =====
-    
+
     @Test
     @DisplayName("isAchieved - 목표 금액 달성 여부 확인")
     void isAchieved_test() {
         // given
         FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
-        
+
         // when - 목표 미달
         Funding funding1 = Funding.startFunding(item, 10000);
-        
+
         // then
         assertThat(funding1.isAchieved()).isFalse();
-        
+
         // when - 목표 달성
         Funding funding2 = Funding.startFunding(item, 50000);
-        
+
         // then
         assertThat(funding2.isAchieved()).isTrue();
     }

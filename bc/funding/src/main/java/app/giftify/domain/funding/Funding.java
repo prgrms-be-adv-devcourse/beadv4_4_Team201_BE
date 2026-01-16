@@ -1,6 +1,6 @@
 package app.giftify.domain.funding;
 
-import app.giftify.shared.api.exception.BusinessException;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -52,7 +52,7 @@ public class Funding extends BaseJpaEntity {
 
     public static void validateAmount(Integer amount) {
         if (amount == null || amount < 1000) {
-            throw new BusinessException(FundingErrorCode.INVALID_AMOUNT);
+            throw new DomainException(FundingErrorCode.INVALID_AMOUNT);
         }
     }
 
@@ -61,17 +61,19 @@ public class Funding extends BaseJpaEntity {
      */
     public void contribute(Integer amount) {
         if (this.status != FundingStatus.IN_PROGRESS) {
-            throw new BusinessException(FundingErrorCode.NOT_IN_PROGRESS);
+            throw new DomainException(FundingErrorCode.NOT_IN_PROGRESS);
         }
 
         validateAmount(amount);
 
         // 잔여 금액 계산
         int remainingAmount = this.targetAmount - this.currentAmount;
-        
+
+        // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
+        // TODO: useCase로 옮길지 추후 고민
         // 잔여 금액 초과 검증
         if (amount > remainingAmount) {
-            throw new BusinessException(
+            throw new DomainException(
                 FundingErrorCode.EXCEED_REMAINING_AMOUNT,
                 String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 요청 금액: %d원", 
                     remainingAmount, amount)
@@ -90,7 +92,7 @@ public class Funding extends BaseJpaEntity {
      */
     public void expire() {
         if (this.status == FundingStatus.CLOSED) {
-            throw new BusinessException(FundingErrorCode.ALREADY_CLOSED);
+            throw new DomainException(FundingErrorCode.ALREADY_CLOSED);
         }
         this.status = FundingStatus.EXPIRED;
     }
