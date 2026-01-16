@@ -8,6 +8,5 @@ public interface FundingWishlistItemRepository extends JpaRepository<FundingWish
     FundingWishlistItem save(FundingWishlistItem item);
 
     FundingWishlistItem getReferenceById(Long id);
-
 }
 
