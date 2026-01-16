@@ -1,17 +1,24 @@
 package wallet.service;
 
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
+import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.vo.Money;
+import domain.payment.Payment;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
-import domain.wallet.WalletSnapshot;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import app.giftify.shared.domain.vo.Money;
 
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,42 +27,66 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// todo: 지갑 생성 테스트 시나리오 재작성
+// todo: 지갑 조회 테스트 시나리오 재작성
 @ExtendWith(MockitoExtension.class)
 class WalletServiceTest {
 
     @Mock
     private WalletRepository walletRepository;
 
+    @Mock
+    private EventPublisher eventPublisher;
+
     @InjectMocks
     private WalletService walletService;
 
-    private final long memberId = 1L;
-    private final long walletId = 2L;
+    private static Wallet wallet;
+
+    @BeforeAll
+    static void setUpClass() throws Exception {
+        Class<? super Wallet> parent = Wallet.class.getSuperclass();
+        Field id = parent.getDeclaredField("id");
+        Field createdAt = parent.getDeclaredField("createdAt");
+        Field updatedAt = parent.getDeclaredField("updatedAt");
+
+        wallet = new Wallet(null, null);
+        Field memberId = Wallet.class.getDeclaredField("memberId");
+        Field balance = Wallet.class.getDeclaredField("balance");
+
+        id.setAccessible(true);
+        createdAt.setAccessible(true);
+        updatedAt.setAccessible(true);
+        memberId.setAccessible(true);
+        balance.setAccessible(true);
+
+        id.set(wallet, 1L);
+        createdAt.set(wallet, LocalDateTime.now());
+        updatedAt.set(wallet, LocalDateTime.now());
+        memberId.set(wallet, 2L);
+        balance.set(wallet, Money.of(10000L));
+    }
 
     @Test
     @DisplayName("지갑 생성 성공")
     void createWallet_success() {
         // given
-        WalletSnapshot snapshot = new WalletSnapshot(
-                walletId,
-                memberId,
-                Money.zero(),
-                null,
-                null
-        );
-        Wallet savedWallet = Wallet.restore(snapshot);
-
         when(walletRepository.save(any(Wallet.class)))
-                .thenReturn(savedWallet);
+                .thenReturn(wallet);
 
         // when
-        Wallet result = walletService.createWallet(memberId);
+        Wallet result = walletService.createWallet(wallet.getMemberId());
 
         // then
-        assertNotNull(result);
-        assertEquals(walletId, result.getId());
-        assertEquals(memberId, result.getMemberId());
-        verify(walletRepository, times(1)).save(any(Wallet.class));
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(wallet.getId(), result.getId()),
+                () -> assertEquals(wallet.getBalance(), result.getBalance()),
+                () -> assertEquals(wallet.getMemberId(), result.getMemberId()),
+                () -> assertNotNull(result.getCreatedAt()),
+                () -> assertNotNull(result.getUpdatedAt()),
+                () -> verify(walletRepository, times(1)).save(any(Wallet.class))
+        );
     }
 
     @Test
@@ -67,7 +98,7 @@ class WalletServiceTest {
 
         // when & then
         assertThrows(DataIntegrityViolationException.class,
-                () -> walletService.createWallet(memberId));
+                () -> walletService.createWallet(wallet.getMemberId()));
         verify(walletRepository, times(1)).save(any(Wallet.class));
     }
 
@@ -105,7 +136,7 @@ class WalletServiceTest {
 
         // when & then
         assertThrows(RuntimeException.class,
-                () -> walletService.createWallet(memberId));
+                () -> walletService.createWallet(wallet.getMemberId()));
         verify(walletRepository, times(1)).save(any(Wallet.class));
     }
 
@@ -117,7 +148,7 @@ class WalletServiceTest {
                 .thenReturn(null);
 
         // when
-        Wallet result = walletService.createWallet(memberId);
+        Wallet result = walletService.createWallet(wallet.getMemberId());
 
         // then
         assertNull(result);
@@ -141,25 +172,14 @@ class WalletServiceTest {
     @DisplayName("지갑 조회 성공")
     void getBalance_success() {
         // given
-        Money expectedBalance = Money.of(10000);
-
-        WalletSnapshot snapshot = new WalletSnapshot(
-                walletId,
-                memberId,
-                expectedBalance,
-                null,
-                null
-        );
-        Wallet wallet = Wallet.restore(snapshot);
-
-        when(walletRepository.findById(walletId))
+        when(walletRepository.findById(wallet.getId()))
                 .thenReturn(Optional.of(wallet));
 
         // when
-        Wallet result = walletService.getWallet(walletId);
+        Wallet result = walletService.getWallet(wallet.getId());
 
         // then
-        assertThat(result.getBalance()).isEqualTo(expectedBalance);
+        assertThat(result.getBalance()).isEqualTo(wallet.getBalance());
     }
 
     @Test
@@ -205,12 +225,104 @@ class WalletServiceTest {
     @DisplayName("지갑 조회 실패 - Repository 예외 발생")
     void getBalance_fail_repository_exception() {
         // given
-        when(walletRepository.findById(walletId))
+        when(walletRepository.findById(wallet.getId()))
                 .thenThrow(new RuntimeException("데이터베이스 조회 오류"));
 
         // when & then
-        assertThatThrownBy(() -> walletService.getWallet(walletId))
+        assertThatThrownBy(() -> walletService.getWallet(wallet.getId()))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("데이터베이스 조회 오류");
+    }
+
+    @Test
+    @DisplayName("지갑 충전 성공")
+    void chargeSuccess() {
+        // given
+        when(walletRepository.findByMemberId(wallet.getMemberId()))
+                .thenReturn(Optional.of(wallet));
+
+        // when
+        String transactionType = PaymentType.CHARGE.name();
+        String referenceType = Payment.class.getSimpleName();
+        Long referenceId = 3L;
+        Money amount = Money.of(1000L);
+        Money balanceBefore = wallet.getBalance();
+
+        walletService.charge(
+                wallet.getMemberId(),
+                amount,
+                PaymentType.CHARGE.name(),
+                Payment.class.getSimpleName(),
+                referenceId
+        );
+
+        // then
+        verify(walletRepository).findByMemberId(wallet.getMemberId());
+        verify(eventPublisher).publish(any(WalletChargeCompletedEvent.class));
+
+        // 이벤트 내용 검증
+        ArgumentCaptor<WalletChargeCompletedEvent> eventCaptor = ArgumentCaptor.forClass(WalletChargeCompletedEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        WalletChargeCompletedEvent publishedEvent = eventCaptor.getValue();
+
+        assertAll(
+                () -> assertThat(publishedEvent.getWalletId()).isEqualTo(wallet.getId()),
+                () -> assertThat(publishedEvent.getAmount()).isEqualTo(amount),
+                () -> assertThat(publishedEvent.getTransactionType()).isEqualTo(transactionType),
+                () -> assertThat(publishedEvent.getBalanceAfter()).isEqualTo(balanceBefore.plus(amount)),
+                () -> assertThat(publishedEvent.getReferenceType()).isEqualTo(referenceType),
+                () -> assertThat(publishedEvent.getReferenceId()).isEqualTo(referenceId)
+        );
+    }
+
+    @Test
+    @DisplayName("지갑 충전 실패 - 지갑이 존재하지 않음")
+    void chargeFailWalletNotFound() {
+        // given
+        when(walletRepository.findByMemberId(wallet.getMemberId()))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() ->
+                walletService.charge(
+                        wallet.getMemberId(),
+                        null,
+                        null,
+                        null,
+                        null
+                ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다.");
+
+        verify(walletRepository).findByMemberId(wallet.getMemberId());
+        verify(walletRepository, never()).save(any(Wallet.class));
+        verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
+    }
+
+    @Test
+    @DisplayName("지갑 충전 실패 - 저장 과정 중 예외 발생")
+    void chargeFailSaveError() {
+        // given
+        when(walletRepository.findByMemberId(wallet.getMemberId()))
+                .thenReturn(Optional.of(wallet));
+
+        when(walletRepository.save(wallet))
+                .thenThrow(new RuntimeException("DB 저장 오류"));
+
+        // when & then
+        assertThatThrownBy(() ->
+                walletService.charge(
+                        wallet.getMemberId(),
+                        Money.of(10000L),
+                        null,
+                        null,
+                        null
+                ))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("DB 저장 오류");
+
+        verify(walletRepository).findByMemberId(wallet.getMemberId());
+        verify(walletRepository).save(wallet);
+        verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
     }
 }

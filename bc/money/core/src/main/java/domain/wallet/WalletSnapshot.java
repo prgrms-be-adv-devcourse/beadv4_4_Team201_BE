@@ -9,6 +9,6 @@ public record WalletSnapshot(
         Long memberId,
         Money balance,
         LocalDateTime createdAt,
-        LocalDateTime modifiedAt
+        LocalDateTime updatedAt
 ) {
 }
