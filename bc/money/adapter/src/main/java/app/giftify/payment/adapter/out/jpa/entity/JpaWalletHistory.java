@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,11 +21,11 @@ public class JpaWalletHistory extends BaseJpaHistoryEntity {
     @Column(updatable = false)
     private String transactionType;
 
-    @Embedded
-    private Money amount;
+    @Column
+    private BigDecimal amount;
 
-    @Embedded
-    private Money balanceAfter;
+    @Column
+    private BigDecimal balanceAfter;
 
     @Column(updatable = false)
     private String referenceType;
@@ -42,8 +43,8 @@ public class JpaWalletHistory extends BaseJpaHistoryEntity {
     ) {
         this.walletId = walletId;
         this.transactionType = transactionType;
-        this.amount = amount;
-        this.balanceAfter = balanceAfter;
+        this.amount = amount.amount();
+        this.balanceAfter = balanceAfter.amount();
         this.referenceType = referenceType;
         this.referenceId = referenceId;
     }

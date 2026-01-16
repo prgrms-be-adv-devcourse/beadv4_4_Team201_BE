@@ -56,8 +56,8 @@ class JpaWalletHistoryAdapterTest {
         JpaWalletHistory capturedWalletHistory = captor.getValue();
         assertThat(capturedWalletHistory.getWalletId()).isEqualTo(walletId);
         assertThat(capturedWalletHistory.getTransactionType()).isEqualTo(transactionType);
-        assertThat(capturedWalletHistory.getAmount().amount()).isEqualTo(new BigDecimal("5000"));
-        assertThat(capturedWalletHistory.getBalanceAfter().amount()).isEqualTo(new BigDecimal("15000"));
+        assertThat(capturedWalletHistory.getAmount()).isEqualTo(new BigDecimal("5000"));
+        assertThat(capturedWalletHistory.getBalanceAfter()).isEqualTo(new BigDecimal("15000"));
         assertThat(capturedWalletHistory.getReferenceType()).isEqualTo(referenceType);
         assertThat(capturedWalletHistory.getReferenceId()).isEqualTo(referenceId);
     }
