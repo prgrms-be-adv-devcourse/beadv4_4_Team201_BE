@@ -96,6 +96,8 @@ docs/workthroughs/
 .gw/
 .worktrees/
 .cursorignore
+bc/funding/src/main/generated/
+support/jpa/src/main/generated/
 
 ### Docker Compose override - 로컬 개인 개발 환경용
 docker-compose.override.yml
