@@ -93,7 +93,6 @@ bin/
 ### Custom
 .env
 docs/workthroughs/
-scripts/
 .gw/
 .worktrees/
 .cursorignore
