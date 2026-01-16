@@ -1,29 +1,22 @@
 package domain.wallet;
 
+import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
 
-public class Wallet {
-	private Long id;
-    private Long memberId;
+public class Wallet extends BaseDomainModel {
+    private final Long memberId;
 	private Money balance;
-	private LocalDateTime createdAt;
-	private LocalDateTime modifiedAt;
-
-	public Wallet() {
-	}
 
     public Wallet(Long memberId, Money balance) {
         this(null, memberId, balance, null, null);
     }
 
-    private Wallet(Long id, Long memberId, Money balance, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-		this.id = id;
+    private Wallet(Long id, Long memberId, Money balance, LocalDateTime createdAt, LocalDateTime updatedAt) {
+		super(id, createdAt, updatedAt);
         this.memberId = memberId;
 		this.balance = balance;
-		this.createdAt = createdAt;
-		this.modifiedAt = modifiedAt;
 	}
 
     public static Wallet create(Long memberId, Money balance) {
@@ -36,22 +29,24 @@ public class Wallet {
                 snapshot.memberId(),
                 snapshot.balance(),
                 snapshot.createdAt(),
-                snapshot.modifiedAt()
+                snapshot.updatedAt()
         );
     }
 
     public WalletSnapshot snapshot() {
         return new WalletSnapshot(
-                id,
+                super.getId(),
                 memberId,
                 balance,
-                createdAt,
-                modifiedAt
+                super.getCreatedAt(),
+				super.getUpdatedAt()
         );
 	}
 
-	public Long getId() {
-		return id;
+	public void charge(Money amount) {
+        validateCharge(amount);
+
+		balance = balance.plus(amount);
 	}
 
     public Long getMemberId() {
@@ -62,11 +57,12 @@ public class Wallet {
 		return balance;
 	}
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public LocalDateTime getModifiedAt() {
-		return modifiedAt;
-	}
+    private void validateCharge(Money amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
+        }
+        if (amount.equals(Money.zero())) {
+            throw new IllegalArgumentException("충전 금액은 최소 1000원이어야 합니다.");
+        }
+    }
 }

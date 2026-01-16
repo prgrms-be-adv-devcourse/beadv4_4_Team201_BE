@@ -38,4 +38,10 @@ public class JpaWalletRepositoryImpl implements WalletRepository {
         return jpaWalletRepository.findById(id)
                 .map(entity -> Wallet.restore(entity.toSnapshot()));
     }
+
+    @Override
+    public Optional<Wallet> findByMemberId(Long memberId) {
+        return jpaWalletRepository.findById(memberId)
+                .map(entity -> Wallet.restore(entity.toSnapshot()));
+    }
 }
