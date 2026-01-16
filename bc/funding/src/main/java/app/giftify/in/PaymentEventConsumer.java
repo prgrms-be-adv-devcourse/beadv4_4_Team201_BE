@@ -22,7 +22,7 @@ public class PaymentEventConsumer {
 	public void handlePaymentCompleted(PaymentCompletedEvent event) {
 		fundingFacade.createFunding(
 			event.getPayerId(),
-			event.getWishlistItemId(),
+//			event.getWishlistItemId(),
 			event.getAmount()
 		);
 	}
