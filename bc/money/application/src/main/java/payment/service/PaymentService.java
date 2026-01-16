@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import domain.payment.Payment;
 import domain.payment.PaymentCreateContext;
 import domain.payment.PaymentPolicy;

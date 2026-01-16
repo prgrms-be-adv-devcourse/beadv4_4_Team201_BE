@@ -3,7 +3,7 @@ package domain.payment;
 import java.time.LocalDateTime;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {

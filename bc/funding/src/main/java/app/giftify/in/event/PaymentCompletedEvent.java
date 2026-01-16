@@ -15,4 +15,3 @@ public class PaymentCompletedEvent {
 	private final Long wishlistItemId;
 	private final Integer amount;
 }
-

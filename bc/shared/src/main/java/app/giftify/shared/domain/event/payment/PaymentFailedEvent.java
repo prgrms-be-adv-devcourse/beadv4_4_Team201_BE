@@ -1,26 +1,24 @@
-package app.giftify.shared.domain.payment;
-
-import java.time.LocalDateTime;
+package app.giftify.shared.domain.event.payment;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
-public class PaymentSettledEvent extends BaseDomainEvent {
+public class PaymentFailedEvent extends BaseDomainEvent {
     private final Long paymentId;
     private final String sourceType;
     private final Long userId;
     private final Money amount;
-    private final LocalDateTime settledAt;
     private final PaymentType type;
+    private final String reason;
 
-    public PaymentSettledEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, LocalDateTime settledAt) {
+    public PaymentFailedEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, String reason) {
         super();
         this.paymentId = paymentId;
         this.sourceType = sourceType;
         this.userId = userId;
         this.amount = amount;
         this.type = type;
-        this.settledAt = settledAt;
+        this.reason = reason;
     }
 
     public Long getPaymentId() {
@@ -43,19 +41,19 @@ public class PaymentSettledEvent extends BaseDomainEvent {
         return type;
     }
 
-    public LocalDateTime getSettledAt() {
-        return settledAt;
+    public String getReason() {
+        return reason;
     }
 
     @Override
     public String toString() {
-        return "PaymentSettledEvent{" +
+        return "PaymentFailedEvent{" +
                 "paymentId=" + paymentId + 
                 ", sourceType='" + sourceType + "'" + 
                 ", userId=" + userId + 
                 ", amount=" + amount + 
                 ", type=" + type + 
-                ", settledAt=" + settledAt + 
+                ", reason='" + reason + "'" + 
                 ", eventId='" + getEventId() + "'" + 
                 ", occurredAt=" + getOccurredAt() + 
                 '}';

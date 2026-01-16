@@ -3,7 +3,7 @@ package app.giftify.payment.adapter.out.jpa.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.support.jpa.BaseJpaEntity;
 import domain.payment.PaymentMethod;
 import domain.payment.PaymentStatus;
