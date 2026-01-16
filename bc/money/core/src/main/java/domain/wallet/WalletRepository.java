@@ -7,6 +7,5 @@ public interface WalletRepository {
 
     Optional<Wallet> findById(Long id);
 
-    // todo: findByUserId(Long userId) -> findByMemberId(Long memberId)
-    Optional<Wallet> findByUserId(Long userId);
+    Optional<Wallet> findByMemberId(Long userId);
 }

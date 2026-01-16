@@ -23,7 +23,7 @@ public class WalletEventListener {
                     event.getUserId(),
                     event.getAmount(),
                     event.getType().name(),
-                    null, // todo: PaymentSucceededEvent에 event.getModelType() 요청
+                    event.getSourceType(),
                     event.getPaymentId()
             );
         } catch (Exception e) {

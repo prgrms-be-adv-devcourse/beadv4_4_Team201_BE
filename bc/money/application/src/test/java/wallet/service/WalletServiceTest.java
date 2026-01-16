@@ -238,7 +238,7 @@ class WalletServiceTest {
     @DisplayName("지갑 충전 성공")
     void chargeSuccess() {
         // given
-        when(walletRepository.findByUserId(wallet.getMemberId()))
+        when(walletRepository.findByMemberId(wallet.getMemberId()))
                 .thenReturn(Optional.of(wallet));
 
         // when
@@ -257,7 +257,7 @@ class WalletServiceTest {
         );
 
         // then
-        verify(walletRepository).findByUserId(wallet.getMemberId());
+        verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(eventPublisher).publish(any(WalletChargeCompletedEvent.class));
 
         // 이벤트 내용 검증
@@ -279,7 +279,7 @@ class WalletServiceTest {
     @DisplayName("지갑 충전 실패 - 지갑이 존재하지 않음")
     void chargeFailWalletNotFound() {
         // given
-        when(walletRepository.findByUserId(wallet.getMemberId()))
+        when(walletRepository.findByMemberId(wallet.getMemberId()))
                 .thenReturn(Optional.empty());
 
         // when & then
@@ -294,7 +294,7 @@ class WalletServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다.");
 
-        verify(walletRepository).findByUserId(wallet.getMemberId());
+        verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository, never()).save(any(Wallet.class));
         verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
     }
@@ -303,7 +303,7 @@ class WalletServiceTest {
     @DisplayName("지갑 충전 실패 - 저장 과정 중 예외 발생")
     void chargeFailSaveError() {
         // given
-        when(walletRepository.findByUserId(wallet.getMemberId()))
+        when(walletRepository.findByMemberId(wallet.getMemberId()))
                 .thenReturn(Optional.of(wallet));
 
         when(walletRepository.save(wallet))
@@ -313,7 +313,7 @@ class WalletServiceTest {
         assertThatThrownBy(() ->
                 walletService.charge(
                         wallet.getMemberId(),
-                        Money.zero(),
+                        Money.of(10000L),
                         null,
                         null,
                         null
@@ -321,7 +321,7 @@ class WalletServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("DB 저장 오류");
 
-        verify(walletRepository).findByUserId(wallet.getMemberId());
+        verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository).save(wallet);
         verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
     }

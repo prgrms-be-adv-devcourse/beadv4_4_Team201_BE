@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
+
 @Entity
 @EntityListeners(value = AuditingEntityListener.class)
 @Getter
@@ -19,12 +21,12 @@ public class JpaWallet extends BaseJpaEntity {
     @Column(unique = true)
     private Long memberId;
 
-    @Embedded
-    private Money balance;
+    @Column
+    private BigDecimal balance;
 
     private JpaWallet(Long memberId, Money balance) {
         this.memberId = memberId;
-        this.balance = balance;
+        this.balance = balance.amount();
     }
 
     public static JpaWallet from(WalletSnapshot wallet) {
@@ -38,13 +40,13 @@ public class JpaWallet extends BaseJpaEntity {
         return new WalletSnapshot(
                 super.getId(),
                 memberId,
-                balance,
+                Money.of(balance),
                 super.getCreatedAt(),
                 super.getUpdatedAt()
         );
     }
 
     public void updateFrom(WalletSnapshot wallet) {
-        this.balance = wallet.balance();
+        this.balance = wallet.balance().amount();
     }
 }

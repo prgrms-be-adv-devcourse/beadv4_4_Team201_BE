@@ -40,8 +40,8 @@ public class JpaWalletRepositoryImpl implements WalletRepository {
     }
 
     @Override
-    public Optional<Wallet> findByUserId(Long userId) {
-        return jpaWalletRepository.findById(userId)
+    public Optional<Wallet> findByMemberId(Long memberId) {
+        return jpaWalletRepository.findById(memberId)
                 .map(entity -> Wallet.restore(entity.toSnapshot()));
     }
 }

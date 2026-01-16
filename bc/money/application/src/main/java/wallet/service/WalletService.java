@@ -37,7 +37,7 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
     @Override
     @Transactional(readOnly = true)
     public Wallet getWalletByUserId(Long userId) {
-        return walletRepository.findByUserId(userId)
+        return walletRepository.findByMemberId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다."));
     }
 

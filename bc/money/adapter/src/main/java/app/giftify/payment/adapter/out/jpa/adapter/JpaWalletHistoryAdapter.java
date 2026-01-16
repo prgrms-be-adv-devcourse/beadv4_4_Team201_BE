@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import walletHistory.port.WalletHistoryPort;
 
-import java.time.LocalDateTime;
-
 @Component
 @RequiredArgsConstructor
 public class JpaWalletHistoryAdapter implements WalletHistoryPort {
@@ -22,8 +20,7 @@ public class JpaWalletHistoryAdapter implements WalletHistoryPort {
             Money amount,
             Money balanceAfter,
             String referenceType,
-            Long referenceId,
-            LocalDateTime occurredAt
+            Long referenceId
     ) {
         JpaWalletHistory walletHistory = new JpaWalletHistory(
                 walletId,
@@ -31,8 +28,7 @@ public class JpaWalletHistoryAdapter implements WalletHistoryPort {
                 amount,
                 balanceAfter,
                 referenceType,
-                referenceId,
-                occurredAt
+                referenceId
         );
 
         walletHistoryRepository.save(walletHistory);

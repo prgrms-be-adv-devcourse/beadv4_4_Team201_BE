@@ -61,7 +61,7 @@ public class Wallet extends BaseDomainModel {
         if (amount == null) {
             throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
         }
-        if (amount == Money.zero()) {
+        if (amount.equals(Money.zero())) {
             throw new IllegalArgumentException("충전 금액은 최소 1000원이어야 합니다.");
         }
     }

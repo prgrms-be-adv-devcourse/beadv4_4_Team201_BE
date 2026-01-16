@@ -36,7 +36,6 @@ class JpaWalletHistoryAdapterTest {
         Money balanceAfter = Money.of(15000);
         String referenceType = "ORDER";
         Long referenceId = 1234L;
-        LocalDateTime occurredAt = LocalDateTime.now();
 
         // when
         walletHistoryAdapter.record(
@@ -45,8 +44,7 @@ class JpaWalletHistoryAdapterTest {
                 amount,
                 balanceAfter,
                 referenceType,
-                referenceId,
-                occurredAt
+                referenceId
         );
 
         // then
@@ -62,7 +60,6 @@ class JpaWalletHistoryAdapterTest {
         assertThat(capturedWalletHistory.getBalanceAfter().amount()).isEqualTo(new BigDecimal("15000"));
         assertThat(capturedWalletHistory.getReferenceType()).isEqualTo(referenceType);
         assertThat(capturedWalletHistory.getReferenceId()).isEqualTo(referenceId);
-        assertThat(capturedWalletHistory.getOccurredAt()).isEqualTo(occurredAt);
     }
 
     @Test
@@ -75,7 +72,6 @@ class JpaWalletHistoryAdapterTest {
         Money balanceAfter = Money.of(15000);
         String referenceType = "ORDER";
         Long referenceId = 1234L;
-        LocalDateTime occurredAt = LocalDateTime.now();
 
         // JpaWalletHistoryRepository.save()가 예외를 발생시키도록 설정
         doThrow(new RuntimeException("데이터베이스 오류"))
@@ -83,7 +79,7 @@ class JpaWalletHistoryAdapterTest {
 
         // when & then
         try {
-            walletHistoryAdapter.record(walletId, transactionType, amount, balanceAfter, referenceType, referenceId, occurredAt);
+            walletHistoryAdapter.record(walletId, transactionType, amount, balanceAfter, referenceType, referenceId);
         } catch (RuntimeException e) {
             // 예외 메시지 확인
             assertThat(e.getMessage()).isEqualTo("데이터베이스 오류");

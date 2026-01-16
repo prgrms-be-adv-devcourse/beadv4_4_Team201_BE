@@ -12,7 +12,6 @@ public interface WalletHistoryPort {
             Money amount,
             Money balanceAfter,
             String referenceType,
-            Long referenceId,
-            LocalDateTime occurredAt
+            Long referenceId
     );
 }

@@ -1,4 +1,4 @@
-package walletHistory.recoder;
+package walletHistory.recorder;
 
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class WalletHistoryRecoder {
+public class WalletHistoryRecorder {
 
     private final WalletHistoryPort walletHistoryPort;
 
@@ -19,8 +19,7 @@ public class WalletHistoryRecoder {
             Money amount,
             Money balanceAfter,
             String referenceType,
-            Long referenceId,
-            LocalDateTime occurredAt
+            Long referenceId
     ) {
         walletHistoryPort.record(
                 walletId,
@@ -28,8 +27,7 @@ public class WalletHistoryRecoder {
                 amount,
                 balanceAfter,
                 referenceType,
-                referenceId,
-                occurredAt
+                referenceId
         );
     }
 }
