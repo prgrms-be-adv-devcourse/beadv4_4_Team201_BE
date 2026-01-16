@@ -31,6 +31,7 @@ subprojects {
     // 부모 모듈이 아닌 경우에만 java 플러그인 적용
     if (name !in parentModules) {
         apply(plugin = "java")
+        apply(plugin = "jacoco")
         apply(plugin = "io.spring.dependency-management")
 
         // Java 21 설정
@@ -52,6 +53,15 @@ subprojects {
         // 테스트 설정
         tasks.withType<Test> {
             useJUnitPlatform()
+            finalizedBy(tasks.named("jacocoTestReport"))
+        }
+
+        // JaCoCo 리포트 설정
+        tasks.withType<JacocoReport> {
+            reports {
+                xml.required.set(true)
+                html.required.set(true)
+            }
         }
 
         // 공통 테스트 의존성
