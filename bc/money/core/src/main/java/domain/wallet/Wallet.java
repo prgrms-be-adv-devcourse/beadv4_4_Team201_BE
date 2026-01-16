@@ -2,6 +2,8 @@ package domain.wallet;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.vo.Money;
+import domain.errorCode.WalletErrorCode;
+import domain.exception.WalletException;
 
 import java.time.LocalDateTime;
 
@@ -58,11 +60,21 @@ public class Wallet extends BaseDomainModel {
 	}
 
     private void validateCharge(Money amount) {
+        // todo: 커스텀 예외 적용
         if (amount == null) {
             throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
         }
         if (amount.equals(Money.zero())) {
             throw new IllegalArgumentException("충전 금액은 최소 1000원이어야 합니다.");
+        }
+    }
+
+    private void validateWithdraw(Money amount) {
+        if (amount == null) {
+            throw new WalletException(WalletErrorCode.INVALID_NULL_AMOUNT);
+        }
+        if (balance.isLessThan(amount)) {
+            throw new WalletException(WalletErrorCode.INSUFFICIENT_BALANCE);
         }
     }
 }
