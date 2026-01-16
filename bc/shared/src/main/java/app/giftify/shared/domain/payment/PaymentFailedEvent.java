@@ -5,14 +5,16 @@ import app.giftify.shared.domain.vo.Money;
 
 public class PaymentFailedEvent extends BaseDomainEvent {
     private final Long paymentId;
+    private final String sourceType;
     private final Long userId;
     private final Money amount;
     private final PaymentType type;
     private final String reason;
 
-    public PaymentFailedEvent(Long paymentId, Long userId, Money amount, PaymentType type, String reason) {
+    public PaymentFailedEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, String reason) {
         super();
         this.paymentId = paymentId;
+        this.sourceType = sourceType;
         this.userId = userId;
         this.amount = amount;
         this.type = type;
@@ -21,6 +23,10 @@ public class PaymentFailedEvent extends BaseDomainEvent {
 
     public Long getPaymentId() {
         return paymentId;
+    }
+
+    public String getSourceType() {
+        return sourceType;
     }
 
     public Long getUserId() {
@@ -42,13 +48,14 @@ public class PaymentFailedEvent extends BaseDomainEvent {
     @Override
     public String toString() {
         return "PaymentFailedEvent{" +
-                "paymentId=" + paymentId +
-                ", userId=" + userId +
-                ", amount=" + amount +
-                ", type=" + type +
-                ", reason='" + reason + "'" +
-                ", eventId='" + getEventId() + "'" +
-                ", occurredAt=" + getOccurredAt() +
+                "paymentId=" + paymentId + 
+                ", sourceType='" + sourceType + "'" + 
+                ", userId=" + userId + 
+                ", amount=" + amount + 
+                ", type=" + type + 
+                ", reason='" + reason + "'" + 
+                ", eventId='" + getEventId() + "'" + 
+                ", occurredAt=" + getOccurredAt() + 
                 '}';
     }
 }

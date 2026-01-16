@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.payment.PaymentType;
 import domain.payment.Payment;
@@ -40,7 +39,7 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 
 		PaymentPolicy policy = policies.stream().filter(p -> p.support(type))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("지원하지 않는 결제 타입입니다"));
+			.orElseThrow(() -> new IllegalArgumentException("[Payment] 지원하지 않는 결제 타입입니다"));
 
 		PaymentCreateContext chargeContext = new PaymentCreateContext(
 			command.userId(),
@@ -71,7 +70,7 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 	@Override
 	public void complete(Long paymentId, String pgTransactionId, boolean isSuccess) {
 		Payment payment = paymentRepository.findById(paymentId)
-			.orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다: " + paymentId));
+			.orElseThrow(() -> new IllegalArgumentException("[Payment] 결제 내역을 찾을 수 없습니다: " + paymentId));
 
 		if (isSuccess) {
 			// 성공 처리: 도메인 상태 변경 (PENDING -> PAID)
@@ -81,11 +80,10 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			// 성공 이벤트 발행 -> After Commit으로
 			eventPublisher.publish(new PaymentSucceededEvent(
 				payment.getPaymentId(),
-				payment.getPgTransactionId(),
+				payment.getModelType(),
 				payment.getUserId(),
 				payment.getAmount(),
-				payment.getType(),
-				payment.getFundingId()
+				payment.getType()
 			));
 
 		} else {
@@ -94,13 +92,13 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			paymentRepository.save(payment);
 
 			// 실패 이벤트 발행
-			eventPublisher.publish(new PaymentFailedEvent(
-				payment.getPaymentId(),
-				payment.getUserId(),
-				payment.getAmount(),
-				payment.getType(),
-				"PG사 승인 거절"
-			));
+			// eventPublisher.publish(new PaymentFailedEvent(
+			// 	payment.getPaymentId(),
+			// 	payment.getUserId(),
+			// 	payment.getAmount(),
+			// 	payment.getType(),
+			// 	"PG사 승인 거절"
+			// ));
 		}
 	}
 }
