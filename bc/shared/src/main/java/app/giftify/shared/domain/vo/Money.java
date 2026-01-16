@@ -9,6 +9,10 @@ import java.math.BigDecimal;
 public record Money(BigDecimal amount) {
 
 	public Money {
+		if (amount == null) {
+			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
+		}
+
 		if (amount.signum() < 0) {
 			// todo: 커스텀 예외 적용
 			throw new IllegalArgumentException("금액은 음수가 될 수 없습니다.");
@@ -39,5 +43,13 @@ public record Money(BigDecimal amount) {
 
 	public boolean isGreaterThanOrEqual(Money other) {
 		return this.amount.compareTo(other.amount) >= 0;
+	}
+
+	public Money plus(Money money) {
+		if (money == null) {
+			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
+		}
+
+		return new Money(this.amount.add(money.amount));
 	}
 }
