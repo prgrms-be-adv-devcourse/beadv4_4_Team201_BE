@@ -52,7 +52,7 @@ class PaymentServiceTest {
 
         assertThatThrownBy(() -> emptyPolicyService.charge(command))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("지원하지 않는 결제 타입입니다");
+            .hasMessage("[Payment]  지원하지 않는 결제 타입입니다");
     }
 
     @Test
@@ -63,7 +63,7 @@ class PaymentServiceTest {
 
         assertThatThrownBy(() -> paymentService.complete(paymentId, "pg_123", true))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("결제 내역을 찾을 수 없습니다");
+            .hasMessageContaining("[Payment]  결제 내역을 찾을 수 없습니다");
     }
 
     @Test
@@ -83,6 +83,6 @@ class PaymentServiceTest {
 
         assertThatThrownBy(() -> paymentService.complete(paymentId, "pg_123", true))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다.");
+            .hasMessage("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다.");
     }
 }
