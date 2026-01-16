@@ -13,6 +13,7 @@ springDependencyManagement = "1.1.4"
 # Database
 mysql = "8.3.0"
 h2 = "2.2.224"
+postgresql = "42.7.3"
 querydsl = "5.0.0"
 
 # Security & Utils
@@ -63,6 +64,7 @@ spring-modulith-starter-test = { module = "org.springframework.modulith:spring-m
 # --- Database ---
 mysql-connector = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 
 # --- Testing ---
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
