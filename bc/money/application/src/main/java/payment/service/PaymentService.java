@@ -84,8 +84,7 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 				payment.getPgTransactionId(),
 				payment.getUserId(),
 				payment.getAmount(),
-				payment.getType(),
-				payment.getFundingId()
+				payment.getType()
 			));
 
 		} else {
