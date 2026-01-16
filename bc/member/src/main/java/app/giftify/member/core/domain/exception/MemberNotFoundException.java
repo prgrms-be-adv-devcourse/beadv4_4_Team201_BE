@@ -7,7 +7,7 @@ public class MemberNotFoundException extends MemberDomainException {
         super(MemberErrorCode.MEMBER_NOT_FOUND, "해당 ID의 회원을 찾을 수 없습니다: " + memberId);
     }
 
-    public MemberNotFoundException(String email) {
-        super(MemberErrorCode.MEMBER_NOT_FOUND, "해당 이메일의 회원을 찾을 수 없습니다: " + email);
+    public MemberNotFoundException(String emailOrSub) {
+        super(MemberErrorCode.MEMBER_NOT_FOUND, "해당 정보의 회원을 찾을 수 없습니다: " + emailOrSub);
     }
 }
