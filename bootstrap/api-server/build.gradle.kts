@@ -29,8 +29,8 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
 
     // Database
-    runtimeOnly(libs.mysql.connector)
     runtimeOnly(libs.h2)
+    runtimeOnly("org.postgresql:postgresql")
 
     // Monitoring
     runtimeOnly(libs.micrometer.registry.prometheus)
