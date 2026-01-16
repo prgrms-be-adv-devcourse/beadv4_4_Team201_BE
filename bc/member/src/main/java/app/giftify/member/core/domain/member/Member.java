@@ -7,11 +7,6 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Member 도메인 엔티티
- * 헥사고날 아키텍처 원칙에 따라 순수 자바 객체로 구성하며,
- * 공유 모듈의 BaseDomainModel을 상속받아 식별자와 생성/수정일을 관리합니다.
- */
 @Getter
 public class Member extends BaseDomainModel {
     private final String email;
