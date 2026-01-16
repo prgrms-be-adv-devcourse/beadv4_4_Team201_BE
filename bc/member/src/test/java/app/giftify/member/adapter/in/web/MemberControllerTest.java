@@ -3,6 +3,7 @@ package app.giftify.member.adapter.in.web;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberRole;
 import app.giftify.member.core.domain.member.MemberStatus;
@@ -12,12 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -27,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
+@Import(MemberExceptionHandler.class)
 class MemberControllerTest {
 
     @Autowired
@@ -144,5 +148,29 @@ class MemberControllerTest {
     void checkRegistration_Unauthorized() throws Exception {
         mockMvc.perform(get("/api/members/check-registration"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("[예외처리] DuplicateMemberException 발생 시 400 에러 및 메시지 확인")
+    void handleDuplicateMemberException() throws Exception {
+        // given
+        String authSub = "auth0|12345";
+        SignupRequest request = new SignupRequest(
+                "tester",
+                LocalDate.of(1990, 1, 1),
+                "Seoul",
+                1012345678L,
+                "Hong"
+        );
+        given(registerMemberUseCase.registerMember(any())).willThrow(new DuplicateMemberException("test@example.com"));
+
+        // when & then
+        mockMvc.perform(post("/api/members/signup")
+                        .with(jwt().jwt(builder -> builder.subject(authSub).claim("email", "test@example.com")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("M002"))
+                .andExpect(jsonPath("$.message", containsString("이미 가입된 이메일입니다")));
     }
 }

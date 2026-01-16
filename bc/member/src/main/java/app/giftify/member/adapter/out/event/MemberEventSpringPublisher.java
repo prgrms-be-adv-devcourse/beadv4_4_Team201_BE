@@ -1,6 +1,6 @@
 package app.giftify.member.adapter.out.event;
 
-import app.giftify.member.application.port.out.MemberEventSpringPublisher;
+import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.shared.domain.event.member.MemberLoggedInEvent;
 import app.giftify.shared.domain.event.member.MemberRegisteredEvent;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class MemberEventPublisher implements MemberEventSpringPublisher {
+public class MemberEventSpringPublisher implements MemberEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
 

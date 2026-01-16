@@ -2,10 +2,10 @@ package app.giftify.member.application.service;
 
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.out.MemberEventSpringPublisher;
+import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
+import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
-import app.giftify.member.core.exception.DuplicateMemberException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +18,13 @@ import java.util.Optional;
 public class MemberService implements GetMemberUseCase, RegisterMemberUseCase {
 
     private final MemberRepositoryPort memberRepositoryPort;
-    private final MemberEventSpringPublisher memberEventSpringPublisher;
+    private final MemberEventPublisher memberEventPublisher;
 
     @Override
     public Optional<Member> getMemberByAuthSub(String authSub) {
         return memberRepositoryPort.findByAuthSub(authSub)
                 .map(member -> {
-                    memberEventSpringPublisher.publishMemberLoggedIn(member.getId(), member.getEmail(), member.getAuthSub());
+                    memberEventPublisher.publishMemberLoggedIn(member.getId(), member.getEmail(), member.getAuthSub());
                     return member;
                 });
     }
@@ -54,7 +54,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase {
 
         Member savedMember = memberRepositoryPort.save(newMember);
 
-        memberEventSpringPublisher.publishMemberRegistered(savedMember.getId(), savedMember.getEmail(), savedMember.getAuthSub());
+        memberEventPublisher.publishMemberRegistered(savedMember.getId(), savedMember.getEmail(), savedMember.getAuthSub());
 
         return savedMember;
     }

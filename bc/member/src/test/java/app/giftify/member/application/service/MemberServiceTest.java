@@ -1,10 +1,10 @@
 package app.giftify.member.application.service;
 
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.out.MemberEventSpringPublisher;
+import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
+import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
-import app.giftify.member.core.exception.DuplicateMemberException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ class MemberServiceTest {
     private MemberRepositoryPort memberRepositoryPort;
 
     @Mock
-    private MemberEventSpringPublisher memberEventSpringPublisher;
+    private MemberEventPublisher memberEventPublisher;
 
     @InjectMocks
     private MemberService memberService;
@@ -64,7 +64,7 @@ class MemberServiceTest {
         assertThat(result.getEmail()).isEqualTo(command.email());
         assertThat(result.getNickname()).isEqualTo(command.nickname());
         verify(memberRepositoryPort).save(any(Member.class));
-        verify(memberEventSpringPublisher).publishMemberRegistered(anyLong(), anyString(), anyString());
+        verify(memberEventPublisher).publishMemberRegistered(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -109,6 +109,6 @@ class MemberServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get().getAuthSub()).isEqualTo(authSub);
         verify(memberRepositoryPort).findByAuthSub(authSub);
-        verify(memberEventSpringPublisher).publishMemberLoggedIn(anyLong(), anyString(), anyString());
+        verify(memberEventPublisher).publishMemberLoggedIn(anyLong(), anyString(), anyString());
     }
 }
