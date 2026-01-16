@@ -44,6 +44,8 @@ public class Wallet extends BaseDomainModel {
 	}
 
 	public void charge(Money amount) {
+        validateCharge(amount);
+
 		balance = balance.plus(amount);
 	}
 
@@ -54,4 +56,13 @@ public class Wallet extends BaseDomainModel {
 	public Money getBalance() {
 		return balance;
 	}
+
+    private void validateCharge(Money amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
+        }
+        if (amount == Money.zero()) {
+            throw new IllegalArgumentException("충전 금액은 최소 1000원이어야 합니다.");
+        }
+    }
 }
