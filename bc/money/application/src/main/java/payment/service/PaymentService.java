@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.payment.PaymentType;
 import domain.payment.Payment;
@@ -93,13 +92,13 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			paymentRepository.save(payment);
 
 			// 실패 이벤트 발행
-			eventPublisher.publish(new PaymentFailedEvent(
-				payment.getPaymentId(),
-				payment.getUserId(),
-				payment.getAmount(),
-				payment.getType(),
-				"PG사 승인 거절"
-			));
+			// eventPublisher.publish(new PaymentFailedEvent(
+			// 	payment.getPaymentId(),
+			// 	payment.getUserId(),
+			// 	payment.getAmount(),
+			// 	payment.getType(),
+			// 	"PG사 승인 거절"
+			// ));
 		}
 	}
 }
