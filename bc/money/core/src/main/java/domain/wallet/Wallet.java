@@ -21,6 +21,14 @@ public class Wallet extends BaseDomainModel {
 		this.balance = balance;
 	}
 
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public Money getBalance() {
+        return balance;
+    }
+
     public static Wallet create(Long memberId, Money balance) {
         return new Wallet(null, memberId, balance, null, null);
     }
@@ -51,13 +59,11 @@ public class Wallet extends BaseDomainModel {
 		balance = balance.plus(amount);
 	}
 
-    public Long getMemberId() {
-        return memberId;
-	}
+    public void withdraw(Money amount) {
+        validateWithdraw(amount);
 
-	public Money getBalance() {
-		return balance;
-	}
+        balance = balance.minus(amount);
+    }
 
     private void validateCharge(Money amount) {
         // todo: 커스텀 예외 적용
