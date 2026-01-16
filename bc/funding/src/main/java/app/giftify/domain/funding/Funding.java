@@ -1,24 +1,13 @@
 package app.giftify.domain.funding;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import app.giftify.domain.product.Product;
 import app.giftify.support.jpa.BaseJpaEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -26,98 +15,85 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funding extends BaseJpaEntity {
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "funding_wishlist_item_id", nullable = false)
-	private FundingWishlistItem fundingWishlistItem;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "funding_wishlist_item_id", nullable = false)
+    private FundingWishlistItem fundingWishlistItem;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "product_id", nullable = false)
-	private Product product;
+    @Column(nullable = false)
+    private Integer targetAmount;
 
-	@OneToMany(mappedBy = "funding", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<FundingParticipantMember> participants = new ArrayList<>();
+    @Column(nullable = false)
+    private Integer currentAmount;
 
-	@Column(nullable = false)
-	private Integer targetAmount;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private FundingStatus status;
 
-	@Column(nullable = false)
-	private Integer currentAmount;
+    @Column(nullable = false)
+    private LocalDateTime endAt;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20)
-	private FundingStatus status;
 
-	@Column(nullable = false)
-	private LocalDateTime endAt;
+    private Funding(FundingWishlistItem item, Integer currentAmount) {
+        this.fundingWishlistItem = item;
+        this.targetAmount = item.getProduct().getPrice();
+        this.currentAmount = currentAmount;
+        this.status = FundingStatus.IN_PROGRESS;
+        this.endAt = LocalDateTime.now().plusDays(15);
+    }
 
-	private Funding(FundingWishlistItem item, Integer currentAmount) {
-		this.fundingWishlistItem = item;
-		this.targetAmount = item.getProduct().getPrice();
-		this.currentAmount = currentAmount;
-		this.status = FundingStatus.IN_PROGRESS;
-		this.endAt = LocalDateTime.now().plusDays(15);
-	}
+    public static Funding startFunding(FundingWishlistItem item, Integer amount) {
+        validateAmount(amount);
+        
+        Funding funding = new Funding(item, amount);
+        
+        return funding;
+    }
 
-	public static Funding startFunding(Long participantId, FundingWishlistItem item, Integer amount) {
-		validateAmount(amount);
+    public static void validateAmount(Integer amount) {
+        if (amount == null || amount < 1000) {
+            throw new IllegalArgumentException("참여 금액은 1,000원 이상이여야 합니다");
+        }
+    }
 
-		Funding funding = new Funding(item, amount);
-		funding.addParticipant(participantId, amount);
+    /**
+     * 펀딩 참여
+     */
+    public void contribute(Integer amount) {
+        if (this.status != FundingStatus.IN_PROGRESS) {
+            throw new IllegalStateException("진행 중인 펀딩만 참여할 수 있습니다.");
+        }
 
-		return funding;
-	}
+        validateAmount(amount);
 
-	public static void validateAmount(Integer amount) {
-		if (amount == null || amount < 1000) {
-			throw new IllegalArgumentException("참여 금액은 1,000원 이상이여야 합니다");
-		}
-	}
+        this.currentAmount += amount;
 
-	/**
-	 * 펀딩 참여
-	 */
-	public void contribute(Long memberId, Integer amount) {
-		if (this.status != FundingStatus.IN_PROGRESS) {
-			throw new IllegalStateException("진행 중인 펀딩만 참여할 수 있습니다.");
-		}
+        if (this.currentAmount >= this.targetAmount) {
+            this.status = FundingStatus.ACHIEVED;
+        }
+    }
 
-		validateAmount(amount);
+    /**
+     * 펀딩 만료 처리
+     */
+    public void expire() {
+        if (this.status == FundingStatus.CLOSED) {
+            throw new IllegalStateException("이미 완료된 펀딩은 만료 처리할 수 없습니다.");
+        }
+        this.status = FundingStatus.EXPIRED;
+    }
 
-		addParticipant(memberId, amount);
-		this.currentAmount += amount;
+    /**
+     * 펀딩 기간 종료 여부
+     */
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(this.endAt);
+    }
 
-		if (this.currentAmount >= this.targetAmount) {
-			this.status = FundingStatus.ACHIEVED;
-		}
-	}
-
-	/**
-	 * 펀딩 만료 처리
-	 */
-	public void expire() {
-		if (this.status == FundingStatus.CLOSED) {
-			throw new IllegalStateException("이미 완료된 펀딩은 만료 처리할 수 없습니다.");
-		}
-		this.status = FundingStatus.EXPIRED;
-	}
-
-	/**
-	 * 펀딩 기간 종료 여부
-	 */
-	public boolean isExpired() {
-		return LocalDateTime.now().isAfter(this.endAt);
-	}
-
-	/**
-	 * 목표 금액 달성 여부
-	 */
-	public boolean isAchieved() {
-		return this.currentAmount >= this.targetAmount;
-	}
-
-	private void addParticipant(Long memberId, Integer amount) {
-		FundingParticipantMember participant = new FundingParticipantMember(this, memberId, amount);
-		this.participants.add(participant);
-	}
+    /**
+     * 목표 금액 달성 여부
+     */
+    public boolean isAchieved() {
+        return this.currentAmount >= this.targetAmount;
+    }
 
 }
