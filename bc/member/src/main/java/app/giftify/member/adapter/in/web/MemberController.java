@@ -91,8 +91,8 @@ public class MemberController {
         String authSub = jwt.getSubject();
 
         Optional<Member> member = getMemberUseCase.getMemberByAuthSub(authSub);
-        if (member.isPresent() && isNotActive(member.get())) {
-            return ResponseEntity.status(401).build();
+        if (member.isPresent() && member.get().getStatus() != MemberStatus.ACTIVE) {
+            return ResponseEntity.status(403).build();
         }
 
         UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
@@ -120,9 +120,5 @@ public class MemberController {
         withdrawMemberUseCase.withdrawMember(authSub);
 
         return ResponseEntity.noContent().build();
-    }
-
-    private boolean isNotActive(Member member) {
-        return member.getStatus() == MemberStatus.ACTIVE;
     }
 }

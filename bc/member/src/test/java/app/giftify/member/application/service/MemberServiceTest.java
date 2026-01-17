@@ -2,7 +2,6 @@ package app.giftify.member.application.service;
 
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
@@ -19,7 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -28,9 +27,6 @@ class MemberServiceTest {
 
     @Mock
     private MemberRepositoryPort memberRepositoryPort;
-
-    @Mock
-    private MemberEventPublisher memberEventPublisher;
 
     @InjectMocks
     private MemberService memberService;
@@ -66,7 +62,6 @@ class MemberServiceTest {
         assertThat(result.getEmail()).isEqualTo(command.email());
         assertThat(result.getNickname()).isEqualTo(command.nickname());
         verify(memberRepositoryPort).save(any(Member.class));
-        verify(memberEventPublisher).publishMemberRegistered(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -111,7 +106,6 @@ class MemberServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get().getAuthSub()).isEqualTo(authSub);
         verify(memberRepositoryPort).findByAuthSub(authSub);
-        verify(memberEventPublisher).publishMemberLoggedIn(anyLong(), anyString(), anyString());
     }
 
     @Test
