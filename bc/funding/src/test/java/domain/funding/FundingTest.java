@@ -275,7 +275,7 @@ class FundingTest {
         // given
         FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
         Funding funding = Funding.startFunding(item, 10000);
-        
+
         // endAt을 과거로 설정하기 위해 리플렉션 사용
         try {
             java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
@@ -284,7 +284,7 @@ class FundingTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
         funding.expire(); // 만료 처리
 
         // when & then

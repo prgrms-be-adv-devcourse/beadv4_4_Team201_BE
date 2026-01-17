@@ -1,4 +1,4 @@
-package app.giftify.shared.domain.payment;
+package app.giftify.shared.domain.event.payment;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;

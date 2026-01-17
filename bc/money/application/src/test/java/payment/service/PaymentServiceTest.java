@@ -3,7 +3,6 @@ package payment.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 import domain.payment.PaymentPolicy;
@@ -76,7 +75,6 @@ class PaymentServiceTest {
             .amount(Money.of(10000))
             .type(PaymentType.CHARGE)
             .status(PaymentStatus.PAID) // 이미 완료된 상태
-            .createdAt(LocalDateTime.now())
             .build();
 
         given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));

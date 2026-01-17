@@ -1,4 +1,4 @@
-package app.giftify.shared.domain.payment;
+package app.giftify.shared.domain.event.payment;
 
 // 이거 여기서 정책 검증하면 망한다
 public enum PaymentType {
