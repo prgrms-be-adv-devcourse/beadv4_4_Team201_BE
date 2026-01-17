@@ -13,10 +13,6 @@ public class FundingPaymentPolicy implements PaymentPolicy {
 
 	@Override
 	public void validate(PaymentCreateContext context) {
-		if (context.fundingId() == null) {
-			throw new IllegalArgumentException("펀딩 결제는 펀딩 ID(fundingId)가 필수입니다.");
-		}
-
 		if (context.amount().isLessThan(MIN_FUNDING_AMOUNT)) {
 			throw new IllegalArgumentException("펀딩 최소 참여 금액은 1,000원입니다.");
 		}

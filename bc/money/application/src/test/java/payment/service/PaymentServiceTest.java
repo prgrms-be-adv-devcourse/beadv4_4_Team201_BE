@@ -81,6 +81,6 @@ class PaymentServiceTest {
 
         assertThatThrownBy(() -> paymentService.complete(paymentId, "pg_123", true))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다.");
+            .hasMessage("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: PAID");
     }
 }

@@ -44,7 +44,6 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 		PaymentCreateContext chargeContext = new PaymentCreateContext(
 			command.userId(),
 			command.amount(),
-			null, // 예치금 충전엔 필요 없음
 			type
 		);
 

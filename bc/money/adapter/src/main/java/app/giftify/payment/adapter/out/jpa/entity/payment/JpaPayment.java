@@ -21,6 +21,8 @@ public class JpaPayment extends BaseJpaEntity {
 	@Column(nullable = false)
 	private Long userId;
 
+	private String pgTransactionId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private PaymentType type;
@@ -32,10 +34,6 @@ public class JpaPayment extends BaseJpaEntity {
 	@Column(nullable = false)
 	private BigDecimal amount;
 
-	private Long fundingId;
-
-	private String pgTransactionId;
-
 	@Enumerated(EnumType.STRING)
 	private PaymentMethod method;
 
@@ -43,14 +41,13 @@ public class JpaPayment extends BaseJpaEntity {
 	private LocalDateTime refundedAt;
 	private LocalDateTime settledAt;
 
-	private JpaPayment(Long userId, PaymentType type, PaymentStatus status, BigDecimal amount, Long fundingId,
+	private JpaPayment(Long userId, PaymentType type, PaymentStatus status, BigDecimal amount,
 					   String pgTransactionId, PaymentMethod method,
 					   LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt) {
 		this.userId = userId;
 		this.type = type;
 		this.status = status;
 		this.amount = amount;
-		this.fundingId = fundingId;
 		this.pgTransactionId = pgTransactionId;
 		this.method = method;
 		this.paidAt = paidAt;
@@ -63,7 +60,6 @@ public class JpaPayment extends BaseJpaEntity {
 		this.type = domain.getType();
 		this.status = domain.getStatus();
 		this.amount = domain.getAmount().amount();
-		this.fundingId = domain.getFundingId();
 		this.pgTransactionId = domain.getPgTransactionId();
 		this.method = domain.getMethod();
 		this.paidAt = domain.getPaidAt();
@@ -80,7 +76,6 @@ public class JpaPayment extends BaseJpaEntity {
 		private PaymentType type;
 		private PaymentStatus status;
 		private BigDecimal amount;
-		private Long fundingId;
 		private String pgTransactionId;
 		private PaymentMethod method;
 		private LocalDateTime paidAt;
@@ -107,10 +102,6 @@ public class JpaPayment extends BaseJpaEntity {
 			return this;
 		}
 
-		public JpaPayment.Builder fundingId(Long fundingId) {
-			this.fundingId = fundingId;
-			return this;
-		}
 
 		public JpaPayment.Builder pgTransactionId(String pgTransactionId) {
 			this.pgTransactionId = pgTransactionId;
@@ -143,7 +134,6 @@ public class JpaPayment extends BaseJpaEntity {
 				type,
 				status,
 				amount,
-				fundingId,
 				pgTransactionId,
 				method,
 				paidAt,

@@ -11,7 +11,6 @@ public class PaymentMapper {
 			.type(domain.getType())
 			.status(domain.getStatus())
 			.amount(domain.getAmount().amount()) // Money -> BigDecimal
-			.fundingId(domain.getFundingId())
 			.pgTransactionId(domain.getPgTransactionId())
 			.method(domain.getMethod())
 			.paidAt(domain.getPaidAt())
@@ -28,7 +27,6 @@ public class PaymentMapper {
 			.type(entity.getType())
 			.status(entity.getStatus())
 			.amount(Money.of(entity.getAmount()))
-			.fundingId(entity.getFundingId())
 			.pgTransactionId(entity.getPgTransactionId())
 			.method(entity.getMethod())
 			.paidAt(entity.getPaidAt())
