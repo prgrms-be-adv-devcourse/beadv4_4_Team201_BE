@@ -10,8 +10,6 @@ public class MemberMapper {
 
         return Member.builder()
                 .id(entity.getId())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getModifiedAt())
                 .email(entity.getEmail())
                 .password(entity.getPassword())
                 .nickname(entity.getNickname())
