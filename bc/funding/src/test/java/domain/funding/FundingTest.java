@@ -27,38 +27,38 @@ class FundingTest {
 
     @Test
     @DisplayName("validateAmount - 금액이 null이면 예외 발생")
-    void validateAmount_fail_when_amount_is_null() {
+    void validateAmount_fail_when_Least_amount_is_null() {
         // when & then
-        assertThatThrownBy(() -> Funding.validateAmount(null))
+        assertThatThrownBy(() -> Funding.validateLeastAmount(null))
                 .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
     }
 
     @Test
     @DisplayName("validateAmount - 금액이 1000원 미만이면 예외 발생")
-    void validateAmount_fail_when_amount_less_than_1000() {
+    void validateAmount_fail_when_Least_amount_less_than_1000() {
         // when & then
-        assertThatThrownBy(() -> Funding.validateAmount(999))
+        assertThatThrownBy(() -> Funding.validateLeastAmount(999))
                 .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
 
-        assertThatThrownBy(() -> Funding.validateAmount(0))
+        assertThatThrownBy(() -> Funding.validateLeastAmount(0))
                 .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
 
-        assertThatThrownBy(() -> Funding.validateAmount(-100))
+        assertThatThrownBy(() -> Funding.validateLeastAmount(-100))
                 .isInstanceOf(FundingException.class)
                 .hasMessageContaining("1,000원");
     }
 
     @Test
     @DisplayName("validateAmount - 금액이 1000원 이상이면 성공")
-    void validateAmount_success_when_amount_greater_or_equal_1000() {
+    void validateAmount_success_when_Least_amount_greater_or_equal_1000() {
         // when & then - 예외 발생하지 않음
         assertThatCode(() -> {
-            Funding.validateAmount(1000);
-            Funding.validateAmount(5000);
-            Funding.validateAmount(100000);
+            Funding.validateLeastAmount(1000);
+            Funding.validateLeastAmount(5000);
+            Funding.validateLeastAmount(100000);
         }).doesNotThrowAnyException();
     }
 
@@ -92,6 +92,42 @@ class FundingTest {
         assertThat(funding.getStatus()).isEqualTo(FundingStatus.IN_PROGRESS);
         assertThat(funding.getFundingWishlistItem()).isEqualTo(item);
         assertThat(funding.getEndAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("startFunding - 첫 결제 금액이 목표 금액과 같으면 ACHIEVED 상태")
+    void startFunding_achieved_when_amount_equals_target() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+
+        // when
+        Funding funding = Funding.startFunding(item, 50000);
+
+        // then
+        assertThat(funding).isNotNull();
+        assertThat(funding.getTargetAmount()).isEqualTo(50000);
+        assertThat(funding.getCurrentAmount()).isEqualTo(50000);
+        assertThat(funding.getStatus()).isEqualTo(FundingStatus.ACHIEVED); // 바로 달성!
+        assertThat(funding.isAchieved()).isTrue();
+        assertThat(funding.getFundingWishlistItem()).isEqualTo(item);
+        assertThat(funding.getEndAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("startFunding - 첫 결제 금액이 목표 금액보다 적으면 IN_PROGRESS 상태")
+    void startFunding_in_progress_when_amount_less_than_target() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+
+        // when
+        Funding funding = Funding.startFunding(item, 30000);
+
+        // then
+        assertThat(funding).isNotNull();
+        assertThat(funding.getCurrentAmount()).isEqualTo(30000);
+        assertThat(funding.getTargetAmount()).isEqualTo(50000);
+        assertThat(funding.getStatus()).isEqualTo(FundingStatus.IN_PROGRESS); // 아직 진행 중
+        assertThat(funding.isAchieved()).isFalse();
     }
 
     // ===== contribute 테스트 =====
@@ -173,17 +209,118 @@ class FundingTest {
     // ===== expire 테스트 =====
 
     @Test
-    @DisplayName("expire - 진행 중인 펀딩 만료 처리")
-    void expire_success() {
+    @DisplayName("expire - 이미 종료된 펀딩(CLOSED)은 만료 불가")
+    void expire_fail_when_already_closed() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+        Funding funding = Funding.startFunding(item, 10000);
+        funding.close(); // 먼저 종료
+
+        // when & then
+        assertThatThrownBy(() -> funding.expire())
+                .isInstanceOf(FundingException.class)
+                .hasMessageContaining("완료");
+    }
+
+    // ===== close 테스트 =====
+
+    @Test
+    @DisplayName("close - 진행 중인 펀딩 강제 종료 성공")
+    void close_success_when_in_progress() {
         // given
         FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
         Funding funding = Funding.startFunding(item, 10000);
 
         // when
-        funding.expire();
+        funding.close();
 
         // then
-        assertThat(funding.getStatus()).isEqualTo(FundingStatus.EXPIRED);
+        assertThat(funding.getStatus()).isEqualTo(FundingStatus.CLOSED);
+        assertThat(funding.getClosedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("close - 목표 달성 펀딩도 종료 가능")
+    void close_success_when_achieved() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+        Funding funding = Funding.startFunding(item, 10000); // 첫 결제 10,000원
+        funding.contribute(40000); // 추가로 40,000원 → 목표 달성
+
+        // when
+        funding.close();
+
+        // then
+        assertThat(funding.getStatus()).isEqualTo(FundingStatus.CLOSED);
+        assertThat(funding.getClosedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("close - 이미 종료된 펀딩은 재종료 불가")
+    void close_fail_when_already_closed() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+        Funding funding = Funding.startFunding(item, 10000);
+        funding.close(); // 먼저 종료
+
+        // when & then
+        assertThatThrownBy(() -> funding.close())
+                .isInstanceOf(FundingException.class)
+                .hasMessageContaining("완료");
+    }
+
+    @Test
+    @DisplayName("close - 이미 만료된 펀딩은 종료 불가")
+    void close_fail_when_already_expired() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+        Funding funding = Funding.startFunding(item, 10000);
+        
+        // endAt을 과거로 설정하기 위해 리플렉션 사용
+        try {
+            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
+            endAtField.setAccessible(true);
+            endAtField.set(funding, java.time.LocalDateTime.now().minusDays(1));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        
+        funding.expire(); // 만료 처리
+
+        // when & then
+        assertThatThrownBy(() -> funding.close())
+                .isInstanceOf(FundingException.class)
+                .hasMessageContaining("완료");
+    }
+
+    // ===== 상태 전환 통합 테스트 =====
+
+    @Test
+    @DisplayName("contribute 후 CLOSED 상태에서는 추가 contribute 불가")
+    void contribute_fail_after_closed() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+        Funding funding = Funding.startFunding(item, 10000);
+        funding.close();
+
+        // when & then
+        assertThatThrownBy(() -> funding.contribute(5000))
+                .isInstanceOf(FundingException.class)
+                .hasMessageContaining("진행 중");
+    }
+
+    @Test
+    @DisplayName("ACHIEVED 상태에서는 추가 contribute 불가")
+    void contribute_fail_after_achieved() {
+        // given
+        FundingWishlistItem item = createTestWishlistItem(1L, 100L, "테스트 상품", 50000);
+        Funding funding = Funding.startFunding(item, 10000); // 첫 결제 10,000원
+        funding.contribute(40000); // 추가로 40,000원 → 목표 달성
+
+        // when & then
+        assertThatThrownBy(() -> funding.contribute(1000))
+                .isInstanceOf(FundingException.class)
+                .hasMessageContaining("진행 중");
     }
 
     // ===== isAchieved 테스트 =====
@@ -201,7 +338,8 @@ class FundingTest {
         assertThat(funding1.isAchieved()).isFalse();
 
         // when - 목표 달성
-        Funding funding2 = Funding.startFunding(item, 50000);
+        Funding funding2 = Funding.startFunding(item, 10000); // 첫 결제 10,000원
+        funding2.contribute(40000); // 추가로 40,000원 → 목표 달성
 
         // then
         assertThat(funding2.isAchieved()).isTrue();
