@@ -4,6 +4,7 @@
       // bc:shared는 부모(bc)에서 자동 추가됨
       implementation(project(":support:security"))
       implementation(project(":support:common"))
+      implementation(project(":support:jpa"))
       implementation(project(":bc:shared"))
 
       implementation("org.springframework.boot:spring-boot-starter-web")
