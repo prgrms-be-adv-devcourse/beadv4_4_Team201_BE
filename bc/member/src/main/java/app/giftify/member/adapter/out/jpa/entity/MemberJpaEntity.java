@@ -4,12 +4,9 @@ import app.giftify.member.core.domain.member.MemberRole;
 import app.giftify.member.core.domain.member.MemberStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "members")
@@ -47,13 +44,6 @@ public class MemberJpaEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MemberStatus status;
-
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime modifiedAt;
 
     @Column(unique = true)
     private String authSub;
