@@ -1,5 +1,8 @@
-package app.giftify.member.adapter.out.persistence;
+package app.giftify.member.adapter.out.jpa.adapter;
 
+import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
+import app.giftify.member.adapter.out.jpa.mapper.MemberMapper;
+import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.core.domain.member.Member;
 import lombok.RequiredArgsConstructor;

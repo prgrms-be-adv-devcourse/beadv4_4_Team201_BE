@@ -1,5 +1,6 @@
-package app.giftify.member.adapter.out.persistence;
+package app.giftify.member.adapter.out.jpa.mapper;
 
+import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
 import app.giftify.member.core.domain.member.Member;
 
 // 도메인 모델(Member)과 JPA 엔티티(MemberJpaEntity) 간의 변환 담당
