@@ -1,4 +1,4 @@
-package app.giftify.payment.adapter.out.jpa.entity;
+package app.giftify.payment.adapter.out.jpa.entity.payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

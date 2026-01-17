@@ -1,6 +1,6 @@
-package app.giftify.payment.adapter.out.jpa.repository;
+package app.giftify.payment.adapter.out.jpa.repository.payment;
 
-import app.giftify.payment.adapter.out.jpa.entity.JpaPayment;
+import app.giftify.payment.adapter.out.jpa.entity.payment.JpaPayment;
 import app.giftify.payment.adapter.out.jpa.mapper.PaymentMapper;
 import domain.payment.Payment;
 import domain.payment.PaymentRepository;
