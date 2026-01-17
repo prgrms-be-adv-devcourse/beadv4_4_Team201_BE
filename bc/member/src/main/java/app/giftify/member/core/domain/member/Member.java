@@ -21,13 +21,12 @@ public class Member extends BaseDomainModel {
 
     @Builder
     public Member(Long id,
-                  String email, String password, String nickname, LocalDate birthday,
+                  String email, String nickname, LocalDate birthday,
                   MemberRole role, String address, String phoneNum, String name,
                   MemberStatus status, String authSub) {
 
         super(id);
         this.email = email;
-        this.password = password;
         this.nickname = nickname;
         this.birthday = birthday;
         this.role = role != null ? role : MemberRole.BUYER;
@@ -36,6 +35,30 @@ public class Member extends BaseDomainModel {
         this.name = name;
         this.status = status != null ? status : MemberStatus.ACTIVE;
         this.authSub = authSub;
+    }
+
+    public static Member create(
+            String email,
+            String nickname,
+            LocalDate birthday,
+            String address,
+            String phoneNum,
+            String name,
+            String authSub
+    ) {
+        validate(email, nickname, authSub);
+
+        return Member.builder()
+                .email(email)
+                .nickname(nickname)
+                .birthday(birthday)
+                .address(address)
+                .phoneNum(phoneNum)
+                .name(name)
+                .authSub(authSub)
+                .role(MemberRole.BUYER)
+                .status(MemberStatus.ACTIVE)
+                .build();
     }
 
     public void updateInfo(String nickname, String password, String address, String phoneNum, String name) {
@@ -58,5 +81,17 @@ public class Member extends BaseDomainModel {
 
     public void withdraw() {
         this.status = MemberStatus.WITHDRAWN;
+    }
+
+    private static void validate(String email, String nickname, String authSub) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email은 필수입니다.");
+        }
+        if (nickname == null || nickname.isBlank()) {
+            throw new IllegalArgumentException("nickname은 필수입니다.");
+        }
+        if (authSub == null || authSub.isBlank()) {
+            throw new IllegalArgumentException("authSub는 필수입니다.");
+        }
     }
 }

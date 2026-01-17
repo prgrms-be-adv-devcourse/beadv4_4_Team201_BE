@@ -9,11 +9,10 @@ import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.core.domain.exception.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.security.common.context.AuthenticatedMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -33,13 +32,11 @@ public class MemberController {
     // Auth0 인증 정보(JWT)를 기반으로 가입여부 확인
     @GetMapping("/check-registration")
     public ResponseEntity<?> checkRegistration(
-            @AuthenticationPrincipal Jwt jwt
+            @AuthenticatedMember String authSub
     ) {
-        if (jwt == null) {
+        if (authSub == null) {
             return ResponseEntity.status(401).body(Map.of("message", "인증 정보(JWT)가 누락되었습니다."));
         }
-
-        String authSub = jwt.getSubject();
 
         return getMemberUseCase.getMemberByAuthSub(authSub)
                 .map(member -> ResponseEntity.ok().body((Object) member))
@@ -49,33 +46,26 @@ public class MemberController {
     // 신규 회원 가입 (추가 정보 입력)
     @PostMapping("/signup")
     public ResponseEntity<Member> signup(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticatedMember String authSub,
             @RequestBody @Valid SignupRequest request
     ) {
-        if (jwt == null) {
+        if (authSub == null) {
             return ResponseEntity.status(401).build();
         }
 
-        RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
-                jwt.getClaimAsString("email"),
-                jwt.getSubject(),
-                request.nickname(),
-                request.birthday(),
-                request.address(),
-                request.phoneNum(),
-                request.name()
-        );
+        Member member = registerMemberUseCase.signup(authSub, request);
 
-        Member member = registerMemberUseCase.registerMember(command);
         return ResponseEntity.ok(member);
     }
 
     // 내 정보 조회
     @GetMapping("/getMyInfo")
     public ResponseEntity<?> getMyInfo(
-            @AuthenticationPrincipal Jwt jwt
+            @AuthenticatedMember String authSub
     ) {
-        String authSub = jwt.getSubject();
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
         return getMemberUseCase.getMemberByAuthSub(authSub)
                 .map(ResponseEntity::ok)
@@ -85,10 +75,12 @@ public class MemberController {
     // 회원 정보 수정
     @PatchMapping("/updateMyInfo")
     public ResponseEntity<Member> updateMyInfo(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticatedMember String authSub,
             @RequestBody @Valid MemberUpdateRequest request
     ) {
-        String authSub = jwt.getSubject();
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
         Optional<Member> member = getMemberUseCase.getMemberByAuthSub(authSub);
         if (member.isPresent() && member.get().getStatus() != MemberStatus.ACTIVE) {
@@ -110,12 +102,13 @@ public class MemberController {
     }
 
     // 회원 탈퇴
-    // TODO: 탈퇴(WITHDRAW로 상태 변경) -> 언제까지 가지고 있을지 정책 생각하기(ref.인스타그램)
     @DeleteMapping("/withdraw")
     public ResponseEntity<Void> withdraw(
-            @AuthenticationPrincipal Jwt jwt
+            @AuthenticatedMember String authSub
     ) {
-        String authSub = jwt.getSubject();
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
         withdrawMemberUseCase.withdrawMember(authSub);
 
