@@ -12,7 +12,7 @@ public class AuthEventListener {
     public void handleUserAuthenticated(UserAuthenticatedEvent event) {
         // 인증 성공 사건을 인지함
         System.out.println("===== 인증 이벤트 수신 =====");
-        System.out.println("ID: " + event.getSub());
+        System.out.println("ID: " + event.getAuthSub());
         System.out.println("Email: " + event.getEmail());
 
         System.out.println("Kafka Topic [member-signup-topic]으로 메시지 발송 완료");

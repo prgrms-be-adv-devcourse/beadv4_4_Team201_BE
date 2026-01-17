@@ -1,6 +1,7 @@
 package app.giftify.auth.core.service;
 
 import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
@@ -22,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 // 핵심 비즈니스 로직 (인증 프로세스 처리, 토큰 유효성 검증, 갱신)
+@Slf4j
 @Service
 public class AuthService extends OidcUserService {
 
@@ -60,8 +62,10 @@ public class AuthService extends OidcUserService {
         String email = (String) attributes.get("email");
         String name = (String) attributes.getOrDefault("name", "User");
 
+        log.info("[AuthService] 사용자 인증 성공, 이벤트 발행 시도: {}", email);
         // 인증 성공 이벤트를 발행하여 멤버 모듈에 알림
-        eventPublisher.publishEvent(new UserAuthenticatedEvent(this, nickname, email, name));
+        eventPublisher.publishEvent(new UserAuthenticatedEvent(this, oidcUser.getSubject(), nickname, email, name));
+        log.info("[AuthService] 이벤트 발행 완료");
     }
 
     // [JWT 검증]
