@@ -2,6 +2,7 @@ package app.giftify.member.adapter.out.jpa.entity;
 
 import app.giftify.member.core.domain.member.MemberRole;
 import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class MemberJpaEntity {
+public class MemberJpaEntity extends BaseJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
