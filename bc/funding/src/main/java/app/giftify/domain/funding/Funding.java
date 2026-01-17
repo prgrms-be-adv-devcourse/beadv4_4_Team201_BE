@@ -44,14 +44,19 @@ public class Funding extends BaseJpaEntity {
     }
 
     public static Funding startFunding(FundingWishlistItem item, Integer amount) {
-        validateAmount(amount);
+        validateLeastAmount(amount);
 
         Funding funding = new Funding(item, amount);
+
+        // 첫 결제 금액이 목표 금액과 같으면 바로 달성 상태로 변경
+        if (amount.equals(funding.targetAmount)) {
+            funding.status = FundingStatus.ACHIEVED;
+        }
 
         return funding;
     }
 
-    public static void validateAmount(Integer amount) {
+    public static void validateLeastAmount(Integer amount) {
         if (amount == null || amount < 1000) {
             throw new FundingException(FundingErrorCode.INVALID_AMOUNT);
         }
@@ -65,12 +70,11 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.NOT_IN_PROGRESS);
         }
 
-        validateAmount(amount);
+        validateLeastAmount(amount);
 
         int remainingAmount = this.targetAmount - this.currentAmount;
 
         // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
-        // TODO: useCase로 옮길지 추후 고민
         // 잔여 금액 초과 검증
         if (amount > remainingAmount) {
             throw new FundingException(
@@ -82,7 +86,8 @@ public class Funding extends BaseJpaEntity {
 
         this.currentAmount += amount;
 
-        if (this.currentAmount == this.targetAmount) {
+        // Integer 타입은 == 비교 시 캐싱 범위(-128~127) 밖에서는 false가 될 수 있음
+        if (this.currentAmount.equals(this.targetAmount)) {
             this.status = FundingStatus.ACHIEVED;
         }
     }
@@ -114,7 +119,7 @@ public class Funding extends BaseJpaEntity {
     }
 
     public boolean isAchieved() {
-        return this.currentAmount == this.targetAmount;
+        return this.currentAmount.equals(this.targetAmount);
     }
 
 }
