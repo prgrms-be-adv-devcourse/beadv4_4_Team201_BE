@@ -203,7 +203,7 @@ class MemberControllerTest {
     void updateMyInfo_Success() throws Exception {
         // given
         String authSub = "auth0|12345";
-        MemberUpdateRequest request = new MemberUpdateRequest("1234", "newNick", authSub, "New Address", "1011112222L", "New Name");
+        MemberUpdateRequest request = new MemberUpdateRequest("1234", "newNick", "New Address", "1011112222L", "New Name");
         Member updatedMember = Member.builder()
                 .authSub(authSub)
                 .nickname("newNick")

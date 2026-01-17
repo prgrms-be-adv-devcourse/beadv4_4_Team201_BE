@@ -4,7 +4,6 @@ import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.in.WithdrawMemberUseCase;
-import app.giftify.member.application.port.out.MemberEventPublisher;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.exception.MemberNotFoundException;
@@ -21,15 +20,10 @@ import java.util.Optional;
 public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
 
     private final MemberRepositoryPort memberRepositoryPort;
-    private final MemberEventPublisher memberEventPublisher;
 
     @Override
     public Optional<Member> getMemberByAuthSub(String authSub) {
-        return memberRepositoryPort.findByAuthSub(authSub)
-                .map(member -> {
-                    memberEventPublisher.publishMemberLoggedIn(member.getId(), member.getEmail(), member.getAuthSub());
-                    return member;
-                });
+        return memberRepositoryPort.findByAuthSub(authSub);
     }
 
     @Override
@@ -56,11 +50,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                 .name(command.name())
                 .build();
 
-        Member savedMember = memberRepositoryPort.save(newMember);
-
-        memberEventPublisher.publishMemberRegistered(savedMember.getId(), savedMember.getEmail(), savedMember.getAuthSub());
-
-        return savedMember;
+        return memberRepositoryPort.save(newMember);
     }
 
     @Override
