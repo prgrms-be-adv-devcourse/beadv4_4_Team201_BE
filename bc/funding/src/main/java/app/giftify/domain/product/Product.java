@@ -75,7 +75,7 @@ public class Product extends BaseJpaEntity {
 	}
 
 	// 상품 상태 변경
-	public void updateProductStatus(ProductStatus status) {
+	private void updateProductStatus(ProductStatus status) {
 		switch (status) {
 			case DRAFT -> throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
 			case REJECTED -> {
