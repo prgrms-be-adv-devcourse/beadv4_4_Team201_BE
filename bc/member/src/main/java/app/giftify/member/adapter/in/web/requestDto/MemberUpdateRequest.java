@@ -1,4 +1,4 @@
-package app.giftify.member.adapter.in.web.dto;
+package app.giftify.member.adapter.in.web.requestDto;
 
 public record MemberUpdateRequest(
         String password,

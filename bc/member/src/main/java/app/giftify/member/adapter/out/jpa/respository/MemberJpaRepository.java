@@ -1,5 +1,6 @@
-package app.giftify.member.adapter.out.persistence;
+package app.giftify.member.adapter.out.jpa.respository;
 
+import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
