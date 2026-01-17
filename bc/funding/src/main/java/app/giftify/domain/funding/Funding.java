@@ -29,7 +29,10 @@ public class Funding extends BaseJpaEntity {
     private FundingStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime endAt;
+    private LocalDateTime endAt;        // 펀딩 종료 예정 시점
+
+    @Column
+    private LocalDateTime closedAt;     // 펀딩이 실제 종료된 시점
 
 
     private Funding(FundingWishlistItem item, Integer currentAmount) {
@@ -64,7 +67,6 @@ public class Funding extends BaseJpaEntity {
 
         validateAmount(amount);
 
-        // 잔여 금액 계산
         int remainingAmount = this.targetAmount - this.currentAmount;
 
         // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
@@ -73,40 +75,46 @@ public class Funding extends BaseJpaEntity {
         if (amount > remainingAmount) {
             throw new FundingException(
                 FundingErrorCode.EXCEED_REMAINING_AMOUNT,
-                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 요청 금액: %d원",
+                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 신청 금액: %d원",
                     remainingAmount, amount)
             );
         }
 
         this.currentAmount += amount;
 
-        if (this.currentAmount >= this.targetAmount) {
+        if (this.currentAmount == this.targetAmount) {
             this.status = FundingStatus.ACHIEVED;
         }
     }
 
-    /**
-     * 펀딩 만료 처리
-     */
     public void expire() {
         if (this.status == FundingStatus.CLOSED) {
-            throw new FundingException(FundingErrorCode.ALREADY_CLOSED);
+            throw new FundingException(FundingErrorCode.ALREADY_TERMINATED);
         }
+
+        if (!isExpired()) {
+            throw new FundingException(FundingErrorCode.IS_NOT_EXPIRED);
+        }
+
         this.status = FundingStatus.EXPIRED;
+        this.closedAt = LocalDateTime.now();
     }
 
-    /**
-     * 펀딩 기간 종료 여부
-     */
+    public void close() {
+        if (this.getStatus() == FundingStatus.CLOSED || this.getStatus() == FundingStatus.EXPIRED) {
+            throw new FundingException(FundingErrorCode.ALREADY_TERMINATED);
+        }
+
+        this.status = FundingStatus.CLOSED;
+        this.closedAt = LocalDateTime.now();
+    }
+
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(this.endAt);
     }
 
-    /**
-     * 목표 금액 달성 여부
-     */
     public boolean isAchieved() {
-        return this.currentAmount >= this.targetAmount;
+        return this.currentAmount == this.targetAmount;
     }
 
 }
