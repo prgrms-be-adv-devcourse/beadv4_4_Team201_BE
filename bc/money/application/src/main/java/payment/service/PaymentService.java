@@ -79,8 +79,8 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 				payment.getModelType(),
 				payment.getUserId(),
 				payment.getAmount(),
-				payment.getType()
-				// history.occurredAt()
+				payment.getType(),
+				history.occurredAt()
 			));
 
 		} else {
