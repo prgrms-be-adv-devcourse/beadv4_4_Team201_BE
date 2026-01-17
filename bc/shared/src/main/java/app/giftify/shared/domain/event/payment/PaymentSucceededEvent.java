@@ -1,24 +1,22 @@
-package app.giftify.shared.domain.payment;
+package app.giftify.shared.domain.event.payment;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
-public class PaymentFailedEvent extends BaseDomainEvent {
+public class PaymentSucceededEvent extends BaseDomainEvent {
     private final Long paymentId;
     private final String sourceType;
     private final Long userId;
     private final Money amount;
     private final PaymentType type;
-    private final String reason;
 
-    public PaymentFailedEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, String reason) {
+    public PaymentSucceededEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type) {
         super();
         this.paymentId = paymentId;
         this.sourceType = sourceType;
         this.userId = userId;
         this.amount = amount;
         this.type = type;
-        this.reason = reason;
     }
 
     public Long getPaymentId() {
@@ -41,21 +39,17 @@ public class PaymentFailedEvent extends BaseDomainEvent {
         return type;
     }
 
-    public String getReason() {
-        return reason;
-    }
 
     @Override
     public String toString() {
-        return "PaymentFailedEvent{" +
-                "paymentId=" + paymentId + 
-                ", sourceType='" + sourceType + "'" + 
-                ", userId=" + userId + 
-                ", amount=" + amount + 
-                ", type=" + type + 
-                ", reason='" + reason + "'" + 
-                ", eventId='" + getEventId() + "'" + 
-                ", occurredAt=" + getOccurredAt() + 
+        return "PaymentSucceededEvent{" +
+                "paymentId=" + paymentId +
+                ", sourceType='" + sourceType + '\'' +
+                ", userId=" + userId +
+                ", amount=" + amount +
+                ", type=" + type +
+                ", eventId='" + getEventId() + "'" +
+                ", occurredAt=" + getOccurredAt() +
                 '}';
     }
 }

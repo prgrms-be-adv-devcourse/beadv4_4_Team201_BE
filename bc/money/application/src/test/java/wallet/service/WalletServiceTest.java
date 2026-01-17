@@ -1,12 +1,13 @@
 package wallet.service;
 
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
-import app.giftify.shared.domain.payment.PaymentType;
-import app.giftify.shared.domain.vo.Money;
-import domain.payment.Payment;
-import domain.wallet.Wallet;
-import domain.wallet.WalletRepository;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.reflect.Field;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,15 +18,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
+import app.giftify.shared.domain.vo.Money;
+import domain.payment.Payment;
+import domain.wallet.Wallet;
+import domain.wallet.WalletRepository;
 
 // todo: 지갑 생성 테스트 시나리오 재작성
 // todo: 지갑 조회 테스트 시나리오 재작성
@@ -47,22 +46,16 @@ class WalletServiceTest {
     static void setUpClass() throws Exception {
         Class<? super Wallet> parent = Wallet.class.getSuperclass();
         Field id = parent.getDeclaredField("id");
-        Field createdAt = parent.getDeclaredField("createdAt");
-        Field updatedAt = parent.getDeclaredField("updatedAt");
 
         wallet = new Wallet(null, null);
         Field memberId = Wallet.class.getDeclaredField("memberId");
         Field balance = Wallet.class.getDeclaredField("balance");
 
         id.setAccessible(true);
-        createdAt.setAccessible(true);
-        updatedAt.setAccessible(true);
         memberId.setAccessible(true);
         balance.setAccessible(true);
 
         id.set(wallet, 1L);
-        createdAt.set(wallet, LocalDateTime.now());
-        updatedAt.set(wallet, LocalDateTime.now());
         memberId.set(wallet, 2L);
         balance.set(wallet, Money.of(10000L));
     }
@@ -83,8 +76,6 @@ class WalletServiceTest {
                 () -> assertEquals(wallet.getId(), result.getId()),
                 () -> assertEquals(wallet.getBalance(), result.getBalance()),
                 () -> assertEquals(wallet.getMemberId(), result.getMemberId()),
-                () -> assertNotNull(result.getCreatedAt()),
-                () -> assertNotNull(result.getUpdatedAt()),
                 () -> verify(walletRepository, times(1)).save(any(Wallet.class))
         );
     }
