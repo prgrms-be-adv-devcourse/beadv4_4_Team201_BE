@@ -2,33 +2,24 @@ package app.giftify.domain.product;
 
 import static app.giftify.domain.product.ProductStatus.*;
 import static app.giftify.domain.product.exception.ProductErrorCode.*;
-import static jakarta.persistence.GenerationType.*;
-
-import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.exception.ProductException;
 import app.giftify.in.product.ProductDto;
+import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "PRODUCT")
-@NoArgsConstructor
 @Getter
-public class Product { //todo validation
-	@Id
-	@GeneratedValue(strategy = IDENTITY)
-	private Long id;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Product extends BaseJpaEntity {
 	@ManyToOne
 	@JoinColumn(name = "member_id")
 	private FundingMember seller;
@@ -37,11 +28,6 @@ public class Product { //todo validation
 	private int price;
 	private int stock;
 	private ProductStatus status;
-
-	@CreatedDate
-	private LocalDateTime createdAt;
-	@LastModifiedDate
-	private LocalDateTime modifiedAt;
 
 	public Product(FundingMember seller, String name, String description, int price, int stock) {
 		if (seller == null)
