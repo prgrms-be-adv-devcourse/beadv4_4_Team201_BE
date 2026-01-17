@@ -3,33 +3,29 @@ package domain.wallet;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.vo.Money;
 
-import java.time.LocalDateTime;
-
 public class Wallet extends BaseDomainModel {
     private final Long memberId;
 	private Money balance;
 
     public Wallet(Long memberId, Money balance) {
-        this(null, memberId, balance, null, null);
+        this(null, memberId, balance);
     }
 
-    private Wallet(Long id, Long memberId, Money balance, LocalDateTime createdAt, LocalDateTime updatedAt) {
-		super(id, createdAt, updatedAt);
+    private Wallet(Long id, Long memberId, Money balance) {
+		super(id);
         this.memberId = memberId;
 		this.balance = balance;
 	}
 
     public static Wallet create(Long memberId, Money balance) {
-        return new Wallet(null, memberId, balance, null, null);
+        return new Wallet(null, memberId, balance);
     }
 
     public static Wallet restore(WalletSnapshot snapshot) {
         return new Wallet(
                 snapshot.id(),
                 snapshot.memberId(),
-                snapshot.balance(),
-                snapshot.createdAt(),
-                snapshot.updatedAt()
+                snapshot.balance()
         );
     }
 
@@ -37,9 +33,7 @@ public class Wallet extends BaseDomainModel {
         return new WalletSnapshot(
                 super.getId(),
                 memberId,
-                balance,
-                super.getCreatedAt(),
-				super.getUpdatedAt()
+                balance
         );
 	}
 

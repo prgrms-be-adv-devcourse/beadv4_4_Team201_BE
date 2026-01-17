@@ -1,12 +1,13 @@
 package app.giftify.payment.adapter.in.event;
 
-import app.giftify.shared.domain.payment.PaymentSucceededEvent;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
+import lombok.RequiredArgsConstructor;
 import wallet.service.WalletService;
 
 @Component
