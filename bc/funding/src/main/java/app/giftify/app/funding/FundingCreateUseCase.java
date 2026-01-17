@@ -10,7 +10,6 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.support.common.event.funding.FundingCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -21,7 +20,6 @@ public class FundingCreateUseCase {
     private final FundingWishlistItemRepository fundingWishlistItemRepository;
     private final EventPublisher eventPublisher;
 
-    @Transactional
     public Funding createFunding(Long itemId, Integer amount) {
         FundingWishlistItem wishlistItem = fundingWishlistItemRepository.findById(itemId).orElseThrow(() ->
             new FundingException(
