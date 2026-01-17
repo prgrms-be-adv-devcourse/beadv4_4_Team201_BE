@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 public class Member extends BaseDomainModel {
@@ -21,13 +20,12 @@ public class Member extends BaseDomainModel {
     private final String authSub; // Auth0 연동 키
 
     @Builder
-    public Member(Long id, LocalDateTime createdAt, LocalDateTime updatedAt,
+    public Member(Long id,
                   String email, String password, String nickname, LocalDate birthday,
                   MemberRole role, String address, String phoneNum, String name,
                   MemberStatus status, String authSub) {
 
-        super(id, createdAt, updatedAt);
-
+        super(id);
         this.email = email;
         this.password = password;
         this.nickname = nickname;

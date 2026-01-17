@@ -1,4 +1,4 @@
-package app.giftify.member.adapter.in.web;
+package app.giftify.member.adapter.in.web.controller;
 
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;

@@ -1,5 +1,6 @@
 package app.giftify.member.adapter.in.web;
 
+import app.giftify.member.adapter.in.web.controller.MemberController;
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
