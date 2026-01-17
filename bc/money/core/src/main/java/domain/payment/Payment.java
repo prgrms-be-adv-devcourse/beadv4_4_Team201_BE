@@ -10,288 +10,309 @@ import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
-    private final Long userId;
-    private final PaymentType type;
-    private PaymentStatus status;
-    private final Money amount;
-    private String pgTransactionId;
-    private final PaymentMethod method;
-    private LocalDateTime paidAt;
-    private LocalDateTime refundedAt;
-    private LocalDateTime settledAt;
+	private final Long userId;
+	private final PaymentType type;
+	private PaymentStatus status;
+	private final Money amount;
+	private String pgTransactionId;
+	private final PaymentMethod method;
 
-    private final List<PaymentHistory> uncommittedHistory = new ArrayList<>();
+	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>();
 
-    private Payment(
-            Long id, Long userId, PaymentType type, PaymentStatus status,
-            Money amount, String pgTransactionId, PaymentMethod method,
-            LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt
-    ) {
-        super(id);
-        this.userId = userId;
-        this.type = type;
-        this.status = status;
-        this.amount = amount;
-        this.pgTransactionId = pgTransactionId;
-        this.method = method;
-        this.paidAt = paidAt;
-        this.refundedAt = refundedAt;
-        this.settledAt = settledAt;
-    }
+	private Payment(
+		Long id, Long userId, PaymentType type, PaymentStatus status,
+		Money amount, String pgTransactionId, PaymentMethod method
+	) {
+		super(id);
+		this.userId = userId;
+		this.type = type;
+		this.status = status;
+		this.amount = amount;
+		this.pgTransactionId = pgTransactionId;
+		this.method = method;
+	}
 
-    public static Builder builder() {
-        return new Builder();
-    }
+	public static Builder builder() {
+		return new Builder();
+	}
 
-    // ========== 정적 팩토리 메서드 ========== //
+	// ========== 정적 팩토리 메서드 ========== //
 
-    /**
-     * 결제를 생성합니다. 초기 상태는 항상 PENDING 입니다.
-     */
-    public static Payment create(
-        Long userId,
-        PaymentType type,
-        Money amount,
-        PaymentMethod method
-    ) {
-        LocalDateTime now = LocalDateTime.now();
+	/**
+	 * 결제를 생성합니다. 초기 상태는 항상 PENDING 입니다.
+	 */
+	public static Payment create(
+		Long userId,
+		PaymentType type,
+		Money amount,
+		PaymentMethod method
+	) {
+		LocalDateTime now = LocalDateTime.now();
 
-        Payment payment = Payment.builder()
-            .userId(userId)
-            .type(type)
-            .status(PaymentStatus.PENDING) // 항상 대기 상태로 시작
-            .amount(amount)
-            .method(method)
-            .build();
+		Payment payment = Payment.builder()
+			.userId(userId)
+			.type(type)
+			.status(PaymentStatus.PENDING) // 항상 대기 상태로 시작
+			.amount(amount)
+			.method(method)
+			.build();
 
-        payment.uncommittedHistory.add(new PaymentHistory(
-            null,           // paymentId - 저장 후 할당
-            null,                   // idempotencyKey - CREATED는 null OK
-            PaymentEventType.CREATED,
-            now,
-            null            // metadata
-        ));
+		payment.uncommittedHistory.add(new PaymentHistory(
+			null,           // paymentId - 저장 후 할당
+			null,                   // idempotencyKey - CREATED는 null OK
+			PaymentEventType.CREATED,
+			now,
+			null            // metadata
+		));
 
-        return payment;
-    }
+		return payment;
+	}
 
-    // ========== 상태 변경 메서드 ========== //
+	// ========== 상태 변경 메서드 ========== //
 
-    public PaymentHistory markAsPaid(String pgTransactionId) {
-        if (this.status != PaymentStatus.PENDING) {
-            throw new IllegalStateException("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: " + this.status);
-        }
+	public PaymentHistory markAsPaid(String pgTransactionId) {
+		if (this.status != PaymentStatus.PENDING) {
+			throw new IllegalStateException("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: " + this.status);
+		}
 
-        LocalDateTime now = LocalDateTime.now();
-        this.status = PaymentStatus.PAID;
-        this.pgTransactionId = pgTransactionId;
-        this.paidAt = now;
+		LocalDateTime now = LocalDateTime.now();
+		this.status = PaymentStatus.PAID;
+		this.pgTransactionId = pgTransactionId;
 
-        PaymentHistory history = new PaymentHistory(
-            getId(),
-            pgTransactionId,
-            PaymentEventType.PAID,
-            now,
-            "{\"pgTransactionId\":\"" + (pgTransactionId != null ? pgTransactionId : "") + "\"}"
-        );
+		PaymentHistory history = new PaymentHistory(
+			getId(),
+			pgTransactionId,
+			PaymentEventType.PAID,
+			now,
+			"{\"pgTransactionId\":\"" + (pgTransactionId != null ? pgTransactionId : "") + "\"}"
+		);
 
-        this.uncommittedHistory.add(history);
+		this.uncommittedHistory.add(history);
 
-        return history;
-    }
+		return history;
+	}
 
-    public PaymentHistory settle() {
-        if (this.status != PaymentStatus.PAID) {
-            throw new IllegalStateException("[Payment] 결제 완료(PAID) 상태에서만 확정할 수 있습니다. 현재 상태: " + this.status);
-        }
+	public PaymentHistory settle() {
+		if (this.status != PaymentStatus.PAID) {
+			throw new IllegalStateException("[Payment] 결제 완료(PAID) 상태에서만 확정할 수 있습니다. 현재 상태: " + this.status);
+		}
 
-        LocalDateTime now = LocalDateTime.now();
-        this.status = PaymentStatus.SETTLED;
-        this.settledAt = now;
+		LocalDateTime now = LocalDateTime.now();
+		this.status = PaymentStatus.SETTLED;
 
-        PaymentHistory history = new PaymentHistory(
-            getId(),
-            null,
-            PaymentEventType.SETTLED,
-            now,
-            null
-        );
+		PaymentHistory history = new PaymentHistory(
+			getId(),
+			null,
+			PaymentEventType.SETTLED,
+			now,
+			null
+		);
 
-        this.uncommittedHistory.add(history);
+		this.uncommittedHistory.add(history);
 
-        return history;
-    }
+		return history;
+	}
 
-    public PaymentHistory refund() {
-        if (this.status == PaymentStatus.SETTLED) {
-            throw new IllegalStateException("[Payment] 이미 정산(수령) 처리되어 환불할 수 없습니다.");
-        }
-        if (!this.status.canRefund()) {
-            throw new IllegalStateException("[Payment] 환불 불가능한 상태입니다: " + this.status);
-        }
+	public PaymentHistory refund() {
+		if (this.status == PaymentStatus.SETTLED) {
+			throw new IllegalStateException("[Payment] 이미 정산(수령) 처리되어 환불할 수 없습니다.");
+		}
+		if (!this.status.canRefund()) {
+			throw new IllegalStateException("[Payment] 환불 불가능한 상태입니다: " + this.status);
+		}
 
-        LocalDateTime now = LocalDateTime.now();
-        this.status = PaymentStatus.REFUNDED;
-        this.refundedAt = now;
+		LocalDateTime now = LocalDateTime.now();
+		this.status = PaymentStatus.REFUNDED;
 
-        PaymentHistory history = new PaymentHistory(
-            getId(),
-            null,
-            PaymentEventType.REFUNDED,
-            now,
-            null
-        );
+		PaymentHistory history = new PaymentHistory(
+			getId(),
+			null,
+			PaymentEventType.REFUNDED,
+			now,
+			null
+		);
 
-        this.uncommittedHistory.add(history);
+		this.uncommittedHistory.add(history);
 
-        return history;
-    }
+		return history;
+	}
 
-    public PaymentHistory cancel() {
-        if (!this.status.canCancel()) {
-            throw new IllegalStateException("[Payment] 취소 불가능한 상태입니다: " + this.status);
-        }
+	public PaymentHistory cancel() {
+		if (!this.status.canCancel()) {
+			throw new IllegalStateException("[Payment] 취소 불가능한 상태입니다: " + this.status);
+		}
 
-        LocalDateTime now = LocalDateTime.now();
-        this.status = PaymentStatus.CANCELED;
+		LocalDateTime now = LocalDateTime.now();
+		this.status = PaymentStatus.CANCELED;
 
-        PaymentHistory history = new PaymentHistory(
-            getId(),
-            null,
-            PaymentEventType.CANCELED,
-            now,
-            null
-        );
+		PaymentHistory history = new PaymentHistory(
+			getId(),
+			null,
+			PaymentEventType.CANCELED,
+			now,
+			null
+		);
 
-        this.uncommittedHistory.add(history);
+		this.uncommittedHistory.add(history);
 
-        return history;
-    }
+		return history;
+	}
 
-    public PaymentHistory markAsFailed() {
-        if (this.status != PaymentStatus.PENDING) {
-            throw new IllegalStateException("[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
-        }
+	public PaymentHistory markAsFailed() {
+		if (this.status != PaymentStatus.PENDING) {
+			throw new IllegalStateException("[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
+		}
 
-        LocalDateTime now = LocalDateTime.now();
-        this.status = PaymentStatus.FAILED;
+		LocalDateTime now = LocalDateTime.now();
+		this.status = PaymentStatus.FAILED;
 
-        PaymentHistory history = new PaymentHistory(
-            getId(),
-            null,
-            PaymentEventType.FAILED,
-            now,
-            null
-        );
+		PaymentHistory history = new PaymentHistory(
+			getId(),
+			null,
+			PaymentEventType.FAILED,
+			now,
+			null
+		);
 
-        this.uncommittedHistory.add(history);
+		this.uncommittedHistory.add(history);
 
-        return history;
-    }
+		return history;
+	}
 
-    // ========== 이벤트 이력 관리 ========== //
+	// ========== 이벤트 이력 관리 ========== //
 
-    public List<PaymentHistory> getUncommittedHistory() {
-        return Collections.unmodifiableList(uncommittedHistory);
-    }
+	public List<PaymentHistory> getUncommittedHistory() {
+		return Collections.unmodifiableList(uncommittedHistory);
+	}
 
-    public void clearUncommittedHistory() {
-        uncommittedHistory.clear();
-    }
+	public void clearUncommittedHistory() {
+		uncommittedHistory.clear();
+	}
 
-    // ========== 상태 조회 메서드 ========== //
+	// ========== 상태 조회 메서드 ========== //
 
-    public boolean isRefundable() {
-        return this.status == PaymentStatus.PAID && this.refundedAt == null && this.settledAt == null;
-    }
+	public boolean isRefundable() {
+		return this.status == PaymentStatus.PAID;
+	}
 
-    public boolean isCancelable() {
-        return this.status == PaymentStatus.PENDING;
-    }
+	public boolean isCancelable() {
+		return this.status == PaymentStatus.PENDING;
+	}
 
-    // ========== Getter ========== //
+	// ========== Getter ========== //
 
-    public Long getPaymentId() { return getId(); }
-    public Long getUserId() { return userId; }
-    public PaymentType getType() { return type; }
-    public PaymentStatus getStatus() { return status; }
-    public Money getAmount() { return amount; }
-    public String getPgTransactionId() { return pgTransactionId; }
-    public PaymentMethod getMethod() { return method; }
-    public LocalDateTime getPaidAt() { return paidAt; }
-    public LocalDateTime getRefundedAt() { return refundedAt; }
-    public LocalDateTime getSettledAt() { return settledAt; }
+	public Long getPaymentId() {
+		return getId();
+	}
 
-    public Payment withId(Long id) {
-        Payment newPayment = Payment.builder()
-            .paymentId(id)
-            .userId(this.userId)
-            .type(this.type)
-            .status(this.status)
-            .amount(this.amount)
-            .pgTransactionId(this.pgTransactionId)
-            .method(this.method)
-            .paidAt(this.paidAt)
-            .refundedAt(this.refundedAt)
-            .settledAt(this.settledAt)
-            .build();
+	public Long getUserId() {
+		return userId;
+	}
 
-        // uncommittedHistory도 복사
-        newPayment.uncommittedHistory.addAll(this.uncommittedHistory);
+	public PaymentType getType() {
+		return type;
+	}
 
-        return newPayment;
-    }
+	public PaymentStatus getStatus() {
+		return status;
+	}
 
-    @Override
-    public String toString() {
-        return "Payment{" +
-            "id=" + getId() +
-            ", userId=" + userId +
-            ", type=" + type +
-            ", status=" + status +
-            ", amount=" + amount +
-            '}';
-    }
+	public Money getAmount() {
+		return amount;
+	}
 
-    // ========== Builder ==========
+	public String getPgTransactionId() {
+		return pgTransactionId;
+	}
 
-    public static class Builder {
-        private Long paymentId;
-        private Long userId;
-        private PaymentType type;
-        private PaymentStatus status;
-        private Money amount;
-        private String pgTransactionId;
-        private PaymentMethod method;
-        private LocalDateTime paidAt;
-        private LocalDateTime refundedAt;
-        private LocalDateTime settledAt;
+	public PaymentMethod getMethod() {
+		return method;
+	}
 
-        public Builder paymentId(Long paymentId) { this.paymentId = paymentId; return this; }
-        public Builder userId(Long userId) { this.userId = userId; return this; }
-        public Builder type(PaymentType type) { this.type = type; return this; }
-        public Builder status(PaymentStatus status) { this.status = status; return this; }
-        public Builder amount(Money amount) { this.amount = amount; return this; }
-        public Builder pgTransactionId(String pgTransactionId) { this.pgTransactionId = pgTransactionId; return this; }
-        public Builder method(PaymentMethod method) { this.method = method; return this; }
-        public Builder paidAt(LocalDateTime paidAt) { this.paidAt = paidAt; return this; }
-        public Builder refundedAt(LocalDateTime refundedAt) { this.refundedAt = refundedAt; return this; }
-        public Builder settledAt(LocalDateTime settledAt) { this.settledAt = settledAt; return this; }
+	public Payment withId(Long id) {
+		Payment newPayment = Payment.builder()
+			.paymentId(id)
+			.userId(this.userId)
+			.type(this.type)
+			.status(this.status)
+			.amount(this.amount)
+			.pgTransactionId(this.pgTransactionId)
+			.method(this.method)
+			.build();
 
-        public Payment build() {
-            LocalDateTime now = LocalDateTime.now();
-            return new Payment(
-                paymentId,
-                userId,
-                type,
-                status,
-                amount,
-                pgTransactionId,
-                method,
-                paidAt,
-                refundedAt,
-                settledAt
-            );
-        }
-    }
+		newPayment.uncommittedHistory.addAll(this.uncommittedHistory);
+
+		return newPayment;
+	}
+
+	@Override
+	public String toString() {
+		return "Payment{" +
+			"id=" + getId() +
+			", userId=" + userId +
+			", type=" + type +
+			", status=" + status +
+			", amount=" + amount +
+			'}';
+	}
+
+	// ========== Builder ==========
+
+	public static class Builder {
+		private Long paymentId;
+		private String pgTransactionId;
+		private Long userId;
+		private PaymentType type;
+		private PaymentStatus status;
+		private Money amount;
+
+		private PaymentMethod method;
+
+		public Builder paymentId(Long paymentId) {
+			this.paymentId = paymentId;
+			return this;
+		}
+
+		public Builder userId(Long userId) {
+			this.userId = userId;
+			return this;
+		}
+
+		public Builder type(PaymentType type) {
+			this.type = type;
+			return this;
+		}
+
+		public Builder status(PaymentStatus status) {
+			this.status = status;
+			return this;
+		}
+
+		public Builder amount(Money amount) {
+			this.amount = amount;
+			return this;
+		}
+
+		public Builder pgTransactionId(String pgTransactionId) {
+			this.pgTransactionId = pgTransactionId;
+			return this;
+		}
+
+		public Builder method(PaymentMethod method) {
+			this.method = method;
+			return this;
+		}
+
+		public Payment build() {
+			return new Payment(
+				paymentId,
+				userId,
+				type,
+				status,
+				amount,
+				pgTransactionId,
+				method
+			);
+		}
+	}
 }

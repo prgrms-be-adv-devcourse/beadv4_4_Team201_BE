@@ -11,9 +11,9 @@ import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.payment.PaymentType;
 import domain.payment.Payment;
 import domain.payment.PaymentCreateContext;
+import domain.payment.PaymentHistory;
 import domain.payment.PaymentPolicy;
 import domain.payment.PaymentRepository;
-import domain.payment.PaymentStatus;
 import payment.usecase.PaymentChargeUseCase;
 import payment.usecase.PaymentCompleteUseCase;
 import payment.usecase.command.PaymentChargeCommand;
@@ -49,12 +49,12 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 
 		policy.validate(chargeContext);
 
-		Payment payment = Payment.builder()
-			.userId(command.userId())
-			.amount(command.amount())
-			.type(type)
-			.status(PaymentStatus.PENDING)
-			.build();
+		Payment payment = Payment.create(
+			command.userId(),
+			type,
+			command.amount(),
+			null  // PaymentMethod - 필요시 command에서 받기
+		);
 
 		var savedPayment = paymentRepository.save(payment);
 
@@ -71,22 +71,20 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			.orElseThrow(() -> new IllegalArgumentException("[Payment] 결제 내역을 찾을 수 없습니다: " + paymentId));
 
 		if (isSuccess) {
-			// 성공 처리: 도메인 상태 변경 (PENDING -> PAID)
-			payment.markAsPaid(pgTransactionId);
+			PaymentHistory history = payment.markAsPaid(pgTransactionId);
 			paymentRepository.save(payment);
 
-			// 성공 이벤트 발행 -> After Commit으로
 			eventPublisher.publish(new PaymentSucceededEvent(
 				payment.getPaymentId(),
 				payment.getModelType(),
 				payment.getUserId(),
 				payment.getAmount(),
 				payment.getType()
+				// history.occurredAt()
 			));
 
 		} else {
-			// 실패 처리
-			payment.markAsFailed();
+			PaymentHistory history = payment.markAsFailed();
 			paymentRepository.save(payment);
 
 			eventPublisher.publish(new PaymentFailedEvent(

@@ -1,21 +1,19 @@
 package app.giftify.payment.adapter.out.jpa.entity.payment;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.support.jpa.BaseJpaEntity;
 import domain.payment.PaymentMethod;
 import domain.payment.PaymentStatus;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "PAYMENT_PAYMENT")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JpaPayment extends BaseJpaEntity {
 
 	@Column(nullable = false)
@@ -37,22 +35,24 @@ public class JpaPayment extends BaseJpaEntity {
 	@Enumerated(EnumType.STRING)
 	private PaymentMethod method;
 
-	private LocalDateTime paidAt;
-	private LocalDateTime refundedAt;
-	private LocalDateTime settledAt;
+	public static Builder builder() {
+		return new Builder();
+	}
 
-	private JpaPayment(Long userId, PaymentType type, PaymentStatus status, BigDecimal amount,
-					   String pgTransactionId, PaymentMethod method,
-					   LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt) {
+	protected JpaPayment() {
+	}
+
+	private JpaPayment(Long userId, String pgTransactionId,
+		PaymentType type, PaymentStatus status,
+		BigDecimal amount,
+		PaymentMethod method
+	) {
 		this.userId = userId;
 		this.type = type;
 		this.status = status;
 		this.amount = amount;
 		this.pgTransactionId = pgTransactionId;
 		this.method = method;
-		this.paidAt = paidAt;
-		this.refundedAt = refundedAt;
-		this.settledAt = settledAt;
 	}
 
 	public void update(domain.payment.Payment domain) {
@@ -62,25 +62,39 @@ public class JpaPayment extends BaseJpaEntity {
 		this.amount = domain.getAmount().amount();
 		this.pgTransactionId = domain.getPgTransactionId();
 		this.method = domain.getMethod();
-		this.paidAt = domain.getPaidAt();
-		this.refundedAt = domain.getRefundedAt();
-		this.settledAt = domain.getSettledAt();
 	}
 
-	public static Builder builder() {
-		return new Builder();
+	public Long getUserId() {
+		return userId;
+	}
+
+	public String getPgTransactionId() {
+		return pgTransactionId;
+	}
+
+	public PaymentType getType() {
+		return type;
+	}
+
+	public PaymentStatus getStatus() {
+		return status;
+	}
+
+	public BigDecimal getAmount() {
+		return amount;
+	}
+
+	public PaymentMethod getMethod() {
+		return method;
 	}
 
 	public static class Builder {
 		private Long userId;
+		private String pgTransactionId;
 		private PaymentType type;
 		private PaymentStatus status;
 		private BigDecimal amount;
-		private String pgTransactionId;
 		private PaymentMethod method;
-		private LocalDateTime paidAt;
-		private LocalDateTime refundedAt;
-		private LocalDateTime settledAt;
 
 		public JpaPayment.Builder userId(Long userId) {
 			this.userId = userId;
@@ -102,7 +116,6 @@ public class JpaPayment extends BaseJpaEntity {
 			return this;
 		}
 
-
 		public JpaPayment.Builder pgTransactionId(String pgTransactionId) {
 			this.pgTransactionId = pgTransactionId;
 			return this;
@@ -113,32 +126,14 @@ public class JpaPayment extends BaseJpaEntity {
 			return this;
 		}
 
-		public JpaPayment.Builder paidAt(LocalDateTime paidAt) {
-			this.paidAt = paidAt;
-			return this;
-		}
-
-		public JpaPayment.Builder refundedAt(LocalDateTime refundedAt) {
-			this.refundedAt = refundedAt;
-			return this;
-		}
-
-		public JpaPayment.Builder settledAt(LocalDateTime settledAt) {
-			this.settledAt = settledAt;
-			return this;
-		}
-
 		public JpaPayment build() {
 			return new JpaPayment(
 				userId,
+				pgTransactionId,
 				type,
 				status,
 				amount,
-				pgTransactionId,
-				method,
-				paidAt,
-				refundedAt,
-				settledAt
+				method
 			);
 		}
 	}

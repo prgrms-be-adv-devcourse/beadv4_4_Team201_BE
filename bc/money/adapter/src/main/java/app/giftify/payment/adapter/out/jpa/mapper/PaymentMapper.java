@@ -13,10 +13,6 @@ public class PaymentMapper {
 			.amount(domain.getAmount().amount()) // Money -> BigDecimal
 			.pgTransactionId(domain.getPgTransactionId())
 			.method(domain.getMethod())
-			.paidAt(domain.getPaidAt())
-			.refundedAt(domain.getRefundedAt())
-			.settledAt(domain.getSettledAt())
-			// createdAt은 BaseJpaEntity에서 자동 관리되므로 넘기지 않습니다.
 			.build();
 	}
 
@@ -29,9 +25,6 @@ public class PaymentMapper {
 			.amount(Money.of(entity.getAmount()))
 			.pgTransactionId(entity.getPgTransactionId())
 			.method(entity.getMethod())
-			.paidAt(entity.getPaidAt())
-			.refundedAt(entity.getRefundedAt())
-			.settledAt(entity.getSettledAt())
 			.build();
 	}
 
