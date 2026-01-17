@@ -1,7 +1,6 @@
 package app.giftify.auth.core.service;
 
-import java.util.Map;
-
+import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
@@ -20,7 +19,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
+import java.util.Map;
 
 // 핵심 비즈니스 로직 (인증 프로세스 처리, 토큰 유효성 검증, 갱신)
 @Service
@@ -57,12 +56,12 @@ public class AuthService extends OidcUserService {
     // 인증 성공 후 사용자 정보를 추출하여 이벤트를 발행합니다.
     private void processUserAuthentication(OidcUser oidcUser) {
         Map<String, Object> attributes = oidcUser.getAttributes();
-        String sub = (String) attributes.get("sub");
+        String nickname = (String) attributes.get("nickname");
         String email = (String) attributes.get("email");
         String name = (String) attributes.getOrDefault("name", "User");
 
         // 인증 성공 이벤트를 발행하여 멤버 모듈에 알림
-        eventPublisher.publishEvent(new UserAuthenticatedEvent(this, sub, email, name));
+        eventPublisher.publishEvent(new UserAuthenticatedEvent(this, nickname, email, name));
     }
 
     // [JWT 검증]
