@@ -126,7 +126,7 @@ class JpaWalletRepositoryImplTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().getMemberId()).isEqualTo(memberId);
-        assertThat(result.get().getBalance()).isEqualTo(jpaWallet.getBalance());
+        assertThat(result.get().getBalance().amount()).isEqualTo(jpaWallet.getBalance());
     }
 
     @Test

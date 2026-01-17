@@ -1,19 +1,15 @@
 package app.giftify.shared.domain.base;
 
-import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * 모든 도메인 모델의 최상위 부모 클래스
  */
 public abstract class BaseDomainModel {
 	private final Long id;
-	private final LocalDateTime createdAt;
-	private final LocalDateTime updatedAt;
 
-	protected BaseDomainModel(Long id, LocalDateTime createdAt, LocalDateTime updatedAt) {
+	protected BaseDomainModel(Long id) {
 		this.id = id;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
 	}
 
 	public String getModelType() {
@@ -24,11 +20,17 @@ public abstract class BaseDomainModel {
 		return id;
 	}
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
+	@Override
+	public boolean equals(Object object) {
+		if (object == null || getClass() != object.getClass())
+			return false;
+
+		BaseDomainModel that = (BaseDomainModel)object;
+		return Objects.equals(id, that.id);
 	}
 
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
 	}
 }

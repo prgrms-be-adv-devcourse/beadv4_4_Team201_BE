@@ -3,15 +3,11 @@ package app.giftify.payment.adapter.out.jpa.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.support.jpa.BaseJpaEntity;
 import domain.payment.PaymentMethod;
 import domain.payment.PaymentStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

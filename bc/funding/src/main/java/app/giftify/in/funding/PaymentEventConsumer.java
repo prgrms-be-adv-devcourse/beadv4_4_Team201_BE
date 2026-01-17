@@ -12,15 +12,14 @@ public class PaymentEventConsumer {
 
     // TODO: PaymentCompletedEvent 구현 후 주석 해제
 
-    /*
-    @TransactionalEventListener(phase = AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handlePaymentCompleted(PaymentCompletedEvent event) {
-        fundingFacade.createFunding(
-            event.getPayerId(),
-            event.getWishlistItemId(),
-            event.getAmount()
-        );
-    }
-    */
+
+//    @TransactionalEventListener(phase = AFTER_COMMIT)
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    public void handlePaymentCompleted(PaymentCompletedEvent event) {
+//        fundingFacade.startFunding(
+//            new WishlistItemDto(
+//            )
+//        );
+//    }
+//
 }

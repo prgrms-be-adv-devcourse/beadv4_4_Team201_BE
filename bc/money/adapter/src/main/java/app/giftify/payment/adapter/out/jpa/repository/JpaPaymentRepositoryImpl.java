@@ -1,13 +1,12 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
-import java.util.Optional;
-
-import org.springframework.stereotype.Repository;
-
 import app.giftify.payment.adapter.out.jpa.entity.JpaPayment;
 import app.giftify.payment.adapter.out.jpa.mapper.PaymentMapper;
 import domain.payment.Payment;
 import domain.payment.PaymentRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public class JpaPaymentRepositoryImpl implements PaymentRepository {

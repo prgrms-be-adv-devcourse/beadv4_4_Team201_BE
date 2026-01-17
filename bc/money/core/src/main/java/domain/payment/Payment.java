@@ -3,7 +3,7 @@ package domain.payment;
 import java.time.LocalDateTime;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.payment.PaymentType;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
@@ -21,10 +21,9 @@ public class Payment extends BaseDomainModel {
     private Payment(
             Long id, Long userId, PaymentType type, PaymentStatus status,
             Money amount, Long fundingId, String pgTransactionId, PaymentMethod method,
-            LocalDateTime createdAt, LocalDateTime updatedAt,
             LocalDateTime paidAt, LocalDateTime refundedAt, LocalDateTime settledAt
     ) {
-        super(id, createdAt, updatedAt);
+        super(id);
         this.userId = userId;
         this.type = type;
         this.status = status;
@@ -50,8 +49,6 @@ public class Payment extends BaseDomainModel {
         private Long fundingId;
         private String pgTransactionId;
         private PaymentMethod method;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
         private LocalDateTime paidAt;
         private LocalDateTime refundedAt;
         private LocalDateTime settledAt;
@@ -96,16 +93,6 @@ public class Payment extends BaseDomainModel {
             return this;
         }
 
-        public Builder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        public Builder updatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-            return this;
-        }
-
         public Builder paidAt(LocalDateTime paidAt) {
             this.paidAt = paidAt;
             return this;
@@ -122,7 +109,6 @@ public class Payment extends BaseDomainModel {
         }
 
         public Payment build() {
-            LocalDateTime now = LocalDateTime.now();
             return new Payment(
                     paymentId,
                     userId,
@@ -132,8 +118,6 @@ public class Payment extends BaseDomainModel {
                     fundingId,
                     pgTransactionId,
                     method,
-                    createdAt != null ? createdAt : now,
-                    updatedAt != null ? updatedAt : now,
                     paidAt,
                     refundedAt,
                     settledAt
@@ -163,8 +147,6 @@ public class Payment extends BaseDomainModel {
             .fundingId(this.fundingId)
             .pgTransactionId(this.pgTransactionId)
             .method(this.method)
-            .createdAt(this.getCreatedAt())
-            .updatedAt(this.getUpdatedAt())
             .paidAt(this.paidAt)
             .refundedAt(this.refundedAt)
             .settledAt(this.settledAt)
@@ -278,7 +260,6 @@ public class Payment extends BaseDomainModel {
                 ", fundingId=" + fundingId +
                 ", pgTransactionId='" + pgTransactionId + "'" +
                 ", method=" + method +
-                ", createdAt=" + getCreatedAt() +
                 ", paidAt=" + paidAt +
                 ", refundedAt=" + refundedAt +
                 ", settledAt=" + settledAt +
