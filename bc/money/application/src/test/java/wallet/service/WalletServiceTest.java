@@ -1,9 +1,9 @@
 package wallet.service;
 
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
 import app.giftify.shared.domain.event.wallet.WalletWithdrawnEvent;
-import app.giftify.shared.domain.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.errorCode.WalletErrorCode;
 import domain.exception.WalletException;
@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,22 +49,16 @@ class WalletServiceTest {
     static void setUpClass() throws Exception {
         Class<? super Wallet> parent = Wallet.class.getSuperclass();
         Field id = parent.getDeclaredField("id");
-        Field createdAt = parent.getDeclaredField("createdAt");
-        Field updatedAt = parent.getDeclaredField("updatedAt");
 
         wallet = new Wallet(null, null);
         Field memberId = Wallet.class.getDeclaredField("memberId");
         Field balance = Wallet.class.getDeclaredField("balance");
 
         id.setAccessible(true);
-        createdAt.setAccessible(true);
-        updatedAt.setAccessible(true);
         memberId.setAccessible(true);
         balance.setAccessible(true);
 
         id.set(wallet, 1L);
-        createdAt.set(wallet, LocalDateTime.now());
-        updatedAt.set(wallet, LocalDateTime.now());
         memberId.set(wallet, 2L);
         balance.set(wallet, Money.of(10000L));
     }
@@ -86,8 +79,6 @@ class WalletServiceTest {
                 () -> assertEquals(wallet.getId(), result.getId()),
                 () -> assertEquals(wallet.getBalance(), result.getBalance()),
                 () -> assertEquals(wallet.getMemberId(), result.getMemberId()),
-                () -> assertNotNull(result.getCreatedAt()),
-                () -> assertNotNull(result.getUpdatedAt()),
                 () -> verify(walletRepository, times(1)).save(any(Wallet.class))
         );
     }

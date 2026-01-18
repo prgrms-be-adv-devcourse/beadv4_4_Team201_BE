@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,7 +34,7 @@ public class Funding extends BaseJpaEntity {
 
     private Funding(FundingWishlistItem item, Integer currentAmount) {
         this.fundingWishlistItem = item;
-        this.targetAmount = item.getProduct().getPrice();
+        this.targetAmount = item.getProductPrice();
         this.currentAmount = currentAmount;
         this.status = FundingStatus.IN_PROGRESS;
         this.endAt = LocalDateTime.now().plusDays(15);
@@ -43,15 +42,15 @@ public class Funding extends BaseJpaEntity {
 
     public static Funding startFunding(FundingWishlistItem item, Integer amount) {
         validateAmount(amount);
-        
+
         Funding funding = new Funding(item, amount);
-        
+
         return funding;
     }
 
     public static void validateAmount(Integer amount) {
         if (amount == null || amount < 1000) {
-            throw new IllegalArgumentException("참여 금액은 1,000원 이상이여야 합니다");
+            throw new FundingException(FundingErrorCode.INVALID_AMOUNT);
         }
     }
 
@@ -60,10 +59,24 @@ public class Funding extends BaseJpaEntity {
      */
     public void contribute(Integer amount) {
         if (this.status != FundingStatus.IN_PROGRESS) {
-            throw new IllegalStateException("진행 중인 펀딩만 참여할 수 있습니다.");
+            throw new FundingException(FundingErrorCode.NOT_IN_PROGRESS);
         }
 
         validateAmount(amount);
+
+        // 잔여 금액 계산
+        int remainingAmount = this.targetAmount - this.currentAmount;
+
+        // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
+        // TODO: useCase로 옮길지 추후 고민
+        // 잔여 금액 초과 검증
+        if (amount > remainingAmount) {
+            throw new FundingException(
+                FundingErrorCode.EXCEED_REMAINING_AMOUNT,
+                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 요청 금액: %d원",
+                    remainingAmount, amount)
+            );
+        }
 
         this.currentAmount += amount;
 
@@ -77,7 +90,7 @@ public class Funding extends BaseJpaEntity {
      */
     public void expire() {
         if (this.status == FundingStatus.CLOSED) {
-            throw new IllegalStateException("이미 완료된 펀딩은 만료 처리할 수 없습니다.");
+            throw new FundingException(FundingErrorCode.ALREADY_CLOSED);
         }
         this.status = FundingStatus.EXPIRED;
     }

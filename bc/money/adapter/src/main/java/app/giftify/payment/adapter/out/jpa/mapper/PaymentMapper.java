@@ -31,7 +31,6 @@ public class PaymentMapper {
 			.fundingId(entity.getFundingId())
 			.pgTransactionId(entity.getPgTransactionId())
 			.method(entity.getMethod())
-			.createdAt(entity.getCreatedAt())
 			.paidAt(entity.getPaidAt())
 			.refundedAt(entity.getRefundedAt())
 			.settledAt(entity.getSettledAt())

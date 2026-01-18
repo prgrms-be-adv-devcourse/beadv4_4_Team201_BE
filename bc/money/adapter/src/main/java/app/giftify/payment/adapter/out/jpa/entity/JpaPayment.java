@@ -1,6 +1,9 @@
 package app.giftify.payment.adapter.out.jpa.entity;
 
-import app.giftify.shared.domain.payment.PaymentType;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.support.jpa.BaseJpaEntity;
 import domain.payment.PaymentMethod;
 import domain.payment.PaymentStatus;
@@ -8,9 +11,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "PAYMENT_PAYMENT")

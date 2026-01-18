@@ -2,6 +2,7 @@ package app.giftify.app.funding;
 
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingWishlistItem;
+import app.giftify.in.funding.WishlistItemDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,16 @@ public class FundingFacade {
     private final FundingSyncItemUseCase fundingSyncItemUseCase;
 
 
-    public FundingWishlistItem syncItem(Long wishlistItemId, Long productId) {
-        return fundingSyncItemUseCase.syncItem(wishlistItemId,productId);
+    public Funding startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
+        // 1. WishlistItem 복제
+        FundingWishlistItem syncedItem = fundingSyncItemUseCase.syncItem(wishlistItemDto);
+
+        // 2. Funding 생성 (첫 결제 금액으로)
+        return fundingCreateUseCase.createFunding(syncedItem.getId(), amount);
     }
 
-    public Funding createFunding(Long itemId, Integer amount) {
-        return fundingCreateUseCase.createFunding(itemId, amount);
+    public FundingWishlistItem syncItem(WishlistItemDto dto) {
+        return fundingSyncItemUseCase.syncItem(dto);
     }
 
 }

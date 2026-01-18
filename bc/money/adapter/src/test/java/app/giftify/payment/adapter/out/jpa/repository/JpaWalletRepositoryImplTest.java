@@ -1,6 +1,7 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
 import app.giftify.payment.adapter.out.jpa.entity.JpaWallet;
+import app.giftify.shared.domain.vo.Money;
 import domain.wallet.Wallet;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import app.giftify.shared.domain.vo.Money;
 
 import java.util.Optional;
 

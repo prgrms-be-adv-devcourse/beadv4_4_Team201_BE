@@ -9,6 +9,7 @@ import java.util.UUID;
 public abstract class BaseDomainEvent {
     private final String eventId;
     private final LocalDateTime occurredAt;
+    // TODO :: sourceType 을 여기다 포함하는게 맞지 않을까?
 
     protected BaseDomainEvent() {
         this.eventId = UUID.randomUUID().toString();
