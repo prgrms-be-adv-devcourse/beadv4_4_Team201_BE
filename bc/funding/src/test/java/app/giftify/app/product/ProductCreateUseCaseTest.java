@@ -47,4 +47,21 @@ class ProductCreateUseCaseTest {
 
 		verify(productRepository).save(any(Product.class));
 	}
+
+	@Test
+	@DisplayName("상품 생성 시 상품명과 설명의 앞/뒤 공백이 제거된다")
+	void createProduct_trimsNameAndDescription() {
+		// given
+		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		ProductCreateRequestDto requestDto = new ProductCreateRequestDto("  테스트 상품  ", "  테스트 설명  ", 10000, 100);
+
+		when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		// when
+		ProductDto result = productCreateUseCase.createProduct(seller, requestDto);
+
+		// then
+		assertThat(result.name()).isEqualTo("테스트 상품");
+		assertThat(result.description()).isEqualTo("테스트 설명");
+	}
 }
