@@ -6,6 +6,20 @@ spring:
     name: giftify-be
 
   profiles:
+    # ⚠️ active 프로파일을 여기서 고정 X
+    #
+    # [실행 가이드]
+    # - 로컬 개발:
+    #     -Dspring.profiles.active=local
+    #
+    # - 개발 서버:
+    #     -Dspring.profiles.active=dev
+    #
+    # - 운영 서버:
+    #     -Dspring.profiles.active=prod
+    #
+    # 실수로 운영 환경에서 local/dev 설정이 적용되는 것을 방지하기 위함
+
     include:
       - auth
     group:
