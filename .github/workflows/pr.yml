@@ -1,0 +1,103 @@
+# PR Pipeline
+# PR 생성/업데이트 시 코드 품질 검증 및 리뷰 지원
+name: PR Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  # 1. 빌드 및 테스트
+  build:
+    name: Build & Test
+    uses: ./.github/workflows/_build.yml
+    with:
+      java-version: '21'
+      run-tests: true
+      generate-coverage: true
+      publish-build-scan: true
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # 2. 커버리지 리포트 PR 코멘트
+  coverage-report:
+    name: Coverage Report
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Download Jacoco report
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report
+          path: .
+
+      - name: Add Coverage PR Comment
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: build/reports/jacoco/aggregated/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+          title: "## 테스트 커버리지 리포트"
+          update-comment: true
+
+  # 3. SonarCloud 정적 분석
+  sonarcloud:
+    name: SonarCloud
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Download Jacoco report
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report
+          path: .
+
+      - name: Set SonarCloud Project Key
+        run: |
+          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
+          ORG_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 1)
+          echo "SONAR_PROJECT_KEY=${ORG_NAME}_${REPO_NAME}" >> $GITHUB_ENV
+
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        # Quality Gate 실패 시 PR 차단을 원하면 아래 줄 제거
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_BOT }}
+          SONAR_TOKEN: ${{ secrets.SECRET_SONARQUBE }}
+        with:
+          args: |
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=f-lab-edu-1
+
+  # 4. 자동 리뷰어 할당
+  auto-assign:
+    name: Auto Assign
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auto Assign Reviewers
+        uses: kentaro-m/auto-assign-action@v2.0.0
+        with:
+          configuration-path: '.github/auto-assign.yml'

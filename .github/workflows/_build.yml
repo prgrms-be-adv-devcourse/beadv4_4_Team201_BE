@@ -1,0 +1,158 @@
+# Reusable Build Workflow
+# 다른 워크플로우에서 workflow_call로 호출하여 재사용
+
+name: Reusable Build
+
+on:
+  # workflow_call: 다른 워크플로우에서 "uses: ./.github/workflows/_build.yml"로 호출 가능하게 함
+  workflow_call:
+    # inputs: 호출하는 워크플로우에서 전달할 수 있는 매개변수 정의
+    inputs:
+      java-version:
+        description: 'Java version to use'
+        required: false
+        default: '21'
+        type: string
+      run-tests:
+        description: 'Run tests'
+        required: false
+        default: true
+        type: boolean
+      generate-coverage:
+        description: 'Generate Jacoco coverage report'
+        required: false
+        default: true
+        type: boolean
+      publish-build-scan:
+        description: 'Publish Gradle Build Scan'
+        required: false
+        default: true
+        type: boolean
+    # secrets: 호출하는 워크플로우에서 전달할 시크릿 정의
+    secrets:
+      SLACK_WEBHOOK_URL:
+        description: 'Slack Incoming Webhook URL for notifications'
+        required: false
+    # outputs: 이 워크플로우의 결과를 호출한 워크플로우에 반환
+    outputs:
+      build-outcome:
+        description: 'Build outcome (success/failure)'
+        # jobs.build.outputs.outcome 값을 외부로 노출
+        value: ${{ jobs.build.outputs.outcome }}
+      build-scan:
+        description: 'Gradle Build Scan URL'
+        value: ${{ jobs.build.outputs.build-scan }}
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    # outputs: 이 job의 결과를 다른 job이나 워크플로우에서 참조 가능하게 함
+    outputs:
+      outcome: ${{ steps.build.outcome }}
+      build-scan: ${{ steps.gradle-build.outputs.build-scan }}
+    # env: secrets를 환경변수로 변환 (if 조건에서 secrets 직접 참조 불가)
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 = 전체 히스토리 가져옴 (SonarCloud 분석에 필요)
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ inputs.java-version }}
+          # cache: gradle = ~/.gradle/caches 디렉토리를 자동으로 캐싱하여 빌드 속도 향상
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # build-scan-publish: true = Gradle Build Scan을 scans.gradle.com에 발행
+          # Build Scan은 빌드 성능, 의존성, 테스트 결과 등 상세 정보를 웹에서 확인 가능
+          build-scan-publish: ${{ inputs.publish-build-scan }}
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Build
+        # id: gradle-build = Build Scan URL을 outputs로 가져오기 위해 필요
+        id: gradle-build
+        # generate-coverage가 true면 'jacocoAggregatedReport' 추가, false면 빈 문자열
+        run: ./gradlew clean build --parallel ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          # path: | = 여러 경로를 멀티라인으로 지정
+          # **/build/classes/ = 모든 하위 디렉토리의 build/classes 폴더
+          path: |
+            **/build/classes/
+            **/build/resources/
+            **/build/libs/
+          # retention-days: 1 = 아티팩트 보관 기간 (1일 후 자동 삭제)
+          retention-days: 1
+
+      - name: Upload Jacoco report
+        # if: 조건부 실행 - generate-coverage가 true일 때만 실행
+        if: inputs.generate-coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            build/reports/jacoco/aggregated/
+            **/build/reports/jacoco/test/
+          retention-days: 14
+
+      - name: Upload test results
+        # always(): 이전 step이 실패해도 항상 실행 (테스트 실패 시에도 결과 업로드)
+        # inputs.run-tests && always(): 테스트 실행했을 때만 + 항상 실행
+        if: inputs.run-tests && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/build/test-results/'
+          retention-days: 7
+
+      # Slack 알림 (빌드 실패 시)
+      - name: Notify Slack on failure
+        # env.SLACK_WEBHOOK_URL 사용 (secrets는 if 조건에서 직접 참조 불가)
+        if: failure() && env.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ env.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          # payload: Slack 메시지 JSON 형식
+          payload: |
+            {
+              "text": "빌드 실패",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*빌드 실패*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* `${{ github.sha }}`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Build Scan:*\n${{ steps.gradle-build.outputs.build-scan || 'N/A' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                    }
+                  ]
+                }
+              ]
+            }
