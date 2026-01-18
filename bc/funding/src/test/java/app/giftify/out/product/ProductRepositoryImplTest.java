@@ -432,6 +432,7 @@ class ProductRepositoryImplTest {
 	}
 
 	@org.springframework.boot.test.context.TestConfiguration
+	@org.springframework.data.jpa.repository.config.EnableJpaAuditing
 	static class TestConfig {
 		@org.springframework.context.annotation.Bean
 		public JPAQueryFactory jpaQueryFactory(jakarta.persistence.EntityManager entityManager) {

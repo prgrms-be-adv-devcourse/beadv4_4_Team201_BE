@@ -157,13 +157,4 @@ class ProductTest {
 		assertThatThrownBy(product::inActive)
 			.isInstanceOf(ProductException.class);
 	}
-
-//	@Test
-//	@DisplayName("상품 상태 변경 실패 - DRAFT로 상태를 변경할 수 없다")
-//	void updateStatus_toDraft_throwsException() {
-//		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
-//
-//		assertThatThrownBy(() -> product.updateProductStatus(ProductStatus.DRAFT))
-//			.isInstanceOf(ProductException.class);
-//	}
 }
