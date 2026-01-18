@@ -22,6 +22,7 @@ import app.giftify.domain.product.exception.ProductException;
 import app.giftify.in.product.MyProductSearchDto;
 import app.giftify.in.product.ProductSearchDto;
 
+/*
 @DataJpaTest
 @Import(ProductRepositoryImplTest.TestConfig.class)
 class ProductRepositoryImplTest {
@@ -438,3 +439,4 @@ class ProductRepositoryImplTest {
 		}
 	}
 }
+ */

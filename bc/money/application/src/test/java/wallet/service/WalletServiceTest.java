@@ -2,8 +2,6 @@ package wallet.service;
 
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentType;
-import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
-import app.giftify.shared.domain.event.wallet.WalletWithdrawnEvent;
 import app.giftify.shared.domain.vo.Money;
 import domain.errorCode.WalletErrorCode;
 import domain.exception.WalletException;
@@ -14,11 +12,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import walletHistory.port.WalletHistoryRepository;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -36,6 +34,9 @@ class WalletServiceTest {
 
     @Mock
     private WalletRepository walletRepository;
+
+    @Mock
+    private WalletHistoryRepository walletHistoryRepository;
 
     @Mock
     private EventPublisher eventPublisher;
@@ -251,21 +252,14 @@ class WalletServiceTest {
         );
 
         // then
-        verify(walletRepository).findByMemberId(wallet.getMemberId());
-        verify(eventPublisher).publish(any(WalletChargeCompletedEvent.class));
-
-        // 이벤트 내용 검증
-        ArgumentCaptor<WalletChargeCompletedEvent> eventCaptor = ArgumentCaptor.forClass(WalletChargeCompletedEvent.class);
-        verify(eventPublisher).publish(eventCaptor.capture());
-        WalletChargeCompletedEvent publishedEvent = eventCaptor.getValue();
-
-        assertAll(
-                () -> assertThat(publishedEvent.getWalletId()).isEqualTo(wallet.getId()),
-                () -> assertThat(publishedEvent.getAmount()).isEqualTo(amount),
-                () -> assertThat(publishedEvent.getTransactionType()).isEqualTo(transactionType),
-                () -> assertThat(publishedEvent.getBalanceAfter()).isEqualTo(balanceBefore.plus(amount)),
-                () -> assertThat(publishedEvent.getReferenceType()).isEqualTo(referenceType),
-                () -> assertThat(publishedEvent.getReferenceId()).isEqualTo(referenceId)
+        verify(walletRepository, times(1)).findByMemberId(wallet.getMemberId());
+        verify(walletHistoryRepository, times(1)).record(
+                wallet.getId(),
+                transactionType,
+                amount,
+                balanceBefore.plus(amount),
+                referenceType,
+                referenceId
         );
     }
 
@@ -290,7 +284,7 @@ class WalletServiceTest {
 
         verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository, never()).save(any(Wallet.class));
-        verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -317,11 +311,11 @@ class WalletServiceTest {
 
         verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository).save(wallet);
-        verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
-    @DisplayName("성공적으로 출금이 수행되면 잔액이 차감되고 이벤트가 발행된다")
+    @DisplayName("성공적으로 출금이 수행되면 잔액이 차감되고 이력이 기록된다.")
     void withdraw_Success() {
         // given
         Long memberId = 1L;
@@ -330,28 +324,27 @@ class WalletServiceTest {
         String referenceType = "ORDER";
         Long referenceId = 123L;
 
-        Wallet wallet = Wallet.create(memberId, Money.of(20000)); // 초기 잔액 20,000원
+        Money balanceBefore = Money.of(20000);
+        Wallet wallet = Wallet.create(memberId, balanceBefore); // 초기 잔액 20,000원
         when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
 
         // when
         walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId);
 
         // then
-        // WalletRepository.save() 호출 검증
+        // walletHistoryRepository.save() 호출 검증
         verify(walletRepository, times(1)).save(wallet);
-        assertThat(wallet.getBalance()).isEqualTo(Money.of(10000)); // 잔액이 10,000원이 남아야 함
+        // walletHistoryRepository.record() 호출 검증
+        verify(walletHistoryRepository, times(1)).record(
+                wallet.getId(),
+                transactionType,
+                amount,
+                balanceBefore.minus(amount),
+                referenceType,
+                referenceId
+        );
 
-        // EventPublisher.publish() 호출 및 이벤트 검증
-        ArgumentCaptor<WalletWithdrawnEvent> eventCaptor = ArgumentCaptor.forClass(WalletWithdrawnEvent.class);
-        verify(eventPublisher, times(1)).publish(eventCaptor.capture());
-
-        WalletWithdrawnEvent publishedEvent = eventCaptor.getValue();
-        assertThat(publishedEvent.getWalletId()).isEqualTo(wallet.getId());
-        assertThat(publishedEvent.getAmount()).isEqualTo(amount);
-        assertThat(publishedEvent.getBalanceAfter()).isEqualTo(wallet.getBalance());
-        assertThat(publishedEvent.getTransactionType()).isEqualTo(transactionType);
-        assertThat(publishedEvent.getReferenceType()).isEqualTo(referenceType);
-        assertThat(publishedEvent.getReferenceId()).isEqualTo(referenceId);
+        assertThat(wallet.getBalance()).isEqualTo(balanceBefore.minus(amount)); // 잔액이 10,000원이 남아야 함
     }
 
     @Test
@@ -374,8 +367,8 @@ class WalletServiceTest {
         // save 호출되지 않았는지 검증
         verify(walletRepository, never()).save(any(Wallet.class));
 
-        // 이벤트 발행되지 않았는지 검증
-        verify(eventPublisher, never()).publish(any(WalletWithdrawnEvent.class));
+        // record 호출되지 않았는지 검증
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -399,8 +392,8 @@ class WalletServiceTest {
         // save 호출되지 않았는지 검증
         verify(walletRepository, never()).save(wallet);
 
-        // 이벤트 발행되지 않았는지 검증
-        verify(eventPublisher, never()).publish(any(WalletWithdrawnEvent.class));
+        // record 호출되지 않았는지 검증
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -424,7 +417,7 @@ class WalletServiceTest {
         // save 호출되지 않았는지 검증
         verify(walletRepository, never()).save(wallet);
 
-        // 이벤트 발행되지 않았는지 검증
-        verify(eventPublisher, never()).publish(any(WalletWithdrawnEvent.class));
+        // record 호출되지 않았는지 검증
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 }
