@@ -1,0 +1,28 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}/
+          jwk-set-uri: https://${AUTH0_DOMAIN}/.well-known/jwks.json
+      client:
+        registration:
+          auth0:
+            client-id: ${AUTH0_CLIENT_ID}
+            client-secret: ${AUTH0_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+              - offline_access
+        provider:
+          auth0:
+            issuer-uri: https://${AUTH0_DOMAIN}/
+
+auth0:
+  audience: ${AUTH0_AUDIENCE}
+  domain: ${AUTH0_DOMAIN}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
