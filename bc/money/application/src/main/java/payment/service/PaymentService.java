@@ -2,10 +2,13 @@ package payment.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.payment.PaymentType;
@@ -14,14 +17,19 @@ import domain.payment.PaymentCreateContext;
 import domain.payment.PaymentHistory;
 import domain.payment.PaymentPolicy;
 import domain.payment.PaymentRepository;
+import payment.usecase.PaymentCancelUseCase;
 import payment.usecase.PaymentChargeUseCase;
 import payment.usecase.PaymentCompleteUseCase;
+import payment.usecase.command.CancelPaymentCommand;
 import payment.usecase.command.PaymentChargeCommand;
 import payment.usecase.result.PaymentResult;
 
 @Service
 @Transactional
-public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseCase {
+public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseCase, PaymentCancelUseCase {
+
+	private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
 	private final List<PaymentPolicy> policies;
 	private final EventPublisher eventPublisher;
 	private final PaymentRepository paymentRepository;
@@ -96,5 +104,33 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 				"PG사 승인 거절"
 			));
 		}
+	}
+
+	@Override
+	public void cancel(CancelPaymentCommand command) {
+		Payment payment = paymentRepository.findById(command.paymentId())
+			.orElseThrow(() -> new IllegalArgumentException("[Payment] 결제를 찾을 수 없습니다: " + command.paymentId()));
+
+		// 취소 불가 상태 (이미 취소됨 등) 면 예외 없이 종료 -> 중복 메시지 루프에 빠지지 않기 위해
+		// 네트워크 이슈 등으로 "취소 완료" 처리는 했지만, 메시지 브로커(Kafka)에 "처리 완료(Ack)" 신호를 못 보내는 등의 경우,
+		// 예외를 던지면 메시지 브로커가 재시도하여 무한 루프에 빠질수도 있음
+		if (!payment.isCancelable()) {
+			log.info("[Payment] 이미 취소 가능하지 않은 상태입니다. 요청 무시됨. paymentId={}, status={}",
+				payment.getPaymentId(), payment.getStatus());
+			return;
+		}
+
+		PaymentHistory history = payment.cancel();
+		paymentRepository.save(payment);
+
+		eventPublisher.publish(new PaymentCanceledEvent(
+			payment.getPaymentId(),
+			payment.getModelType(),
+			payment.getUserId(),
+			payment.getAmount(),
+			payment.getType(),
+			command.reason().name(),
+			history.occurredAt()
+		));
 	}
 }

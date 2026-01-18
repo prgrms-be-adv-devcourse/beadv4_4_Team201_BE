@@ -1,5 +1,7 @@
 package app.giftify.payment.adapter.out.jpa.repository.payment;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -10,6 +12,7 @@ import app.giftify.payment.adapter.out.jpa.mapper.PaymentMapper;
 import domain.payment.Payment;
 import domain.payment.PaymentHistory;
 import domain.payment.PaymentRepository;
+import domain.payment.PaymentStatus;
 
 @Repository
 public class JpaPaymentRepositoryImpl implements PaymentRepository {
@@ -52,6 +55,19 @@ public class JpaPaymentRepositoryImpl implements PaymentRepository {
 	@Override
 	public Optional<Payment> findById(Long paymentId) {
 		return jpaPaymentRepository.findById(paymentId)
+			.map(mapper::toDomain);
+	}
+
+	@Override
+	public List<Payment> findPendingPaymentsBefore(LocalDateTime threshold) {
+		return jpaPaymentRepository.findByStatusAndCreatedAtBefore(
+			PaymentStatus.PENDING, threshold
+		).stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public Optional<Payment> findByPgTransactionId(String pgTransactionId) {
+		return jpaPaymentRepository.findByPgTransactionId(pgTransactionId)
 			.map(mapper::toDomain);
 	}
 
