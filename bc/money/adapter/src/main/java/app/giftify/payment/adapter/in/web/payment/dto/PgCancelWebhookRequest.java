@@ -1,4 +1,4 @@
-package app.giftify.payment.adapter.in.web.dto;
+package app.giftify.payment.adapter.in.web.payment.dto;
 
 public record PgCancelWebhookRequest(
 	String pgTransactionId,
