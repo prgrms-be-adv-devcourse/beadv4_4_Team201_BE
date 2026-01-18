@@ -21,7 +21,6 @@ spring:
 
 auth0:
   audience: ${AUTH0_AUDIENCE}
-  domain: ${AUTH0_DOMAIN}
 
 logging:
   level:
