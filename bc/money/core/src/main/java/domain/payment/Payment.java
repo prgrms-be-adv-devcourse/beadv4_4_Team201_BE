@@ -141,7 +141,7 @@ public class Payment extends BaseDomainModel {
 		return history;
 	}
 
-	public PaymentHistory cancel() {
+	public PaymentHistory cancel(String metadata) {
 		if (!this.status.canCancel()) {
 			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
 				"[Payment] 취소 불가능한 상태입니다: " + this.status);
@@ -150,17 +150,24 @@ public class Payment extends BaseDomainModel {
 		LocalDateTime now = LocalDateTime.now();
 		this.status = PaymentStatus.CANCELED;
 
+		// PaymentHistory 생성 시 metadata 전달
 		PaymentHistory history = new PaymentHistory(
 			getId(),
-			null,
+			null, // pgTransactionId는 취소 시점엔 null (필요시 추가 확장 가능)
 			PaymentEventType.CANCELED,
 			now,
-			null
+			metadata // <--- 이 부분에 저장
 		);
 
 		this.uncommittedHistory.add(history);
-
 		return history;
+	}
+
+	/**
+	 * @return 하위 호환성 제공용
+	 */
+	public PaymentHistory cancel() {
+		return cancel(null);
 	}
 
 	public PaymentHistory markAsFailed() {

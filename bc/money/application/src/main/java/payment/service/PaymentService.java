@@ -69,6 +69,8 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 
 		var savedPayment = paymentRepository.save(payment);
 
+		// FIXME 충전 완료 이벤트 발행 필요 -> Wallet 등으로
+
 		return new PaymentResult(
 			savedPayment.getPaymentId(),
 			savedPayment.getStatus(),
@@ -105,7 +107,8 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 				payment.getUserId(),
 				payment.getAmount(),
 				payment.getType(),
-				"PG사 승인 거절"
+				"PG사 승인 거절",
+				history.occurredAt()
 			));
 		}
 	}
@@ -125,8 +128,8 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 				payment.getPaymentId(), payment.getStatus());
 			return;
 		}
-
-		PaymentHistory history = payment.cancel();
+		String metadata = buildCancelMetadata(command);
+		PaymentHistory history = payment.cancel(metadata);
 		paymentRepository.save(payment);
 
 		eventPublisher.publish(new PaymentCanceledEvent(
@@ -138,5 +141,13 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			command.reason().name(),
 			history.occurredAt()
 		));
+	}
+
+	// FIXME :: 단순한 문자열을 JSON 으로 바꾸는 것이므로 그냥 이렇게 하는게 간편함. 다만 공통 유틸에 Jackson 을 추가하여 사용하도록 변경이 필요할 듯 함
+	private String buildCancelMetadata(CancelPaymentCommand command) {
+		if (command.metadata() != null && !command.metadata().isEmpty()) {
+			return command.metadata();
+		}
+		return "{\"reason\":\"" + command.reason().name() + "\"}";
 	}
 }
