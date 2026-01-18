@@ -1,10 +1,9 @@
-package wallet.usecase;
-
+package domain.wallet;
 
 import app.giftify.shared.domain.vo.Money;
 
-public interface WalletChargeUseCase {
-    void charge(
+public interface WalletWithdrawUseCase {
+    void withdraw(
             Long memberId,
             Money amount,
             String transactionType,

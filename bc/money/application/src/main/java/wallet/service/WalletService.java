@@ -2,19 +2,16 @@ package wallet.service;
 
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
+import app.giftify.shared.domain.event.wallet.WalletWithdrawnEvent;
 import app.giftify.shared.domain.vo.Money;
-import domain.wallet.Wallet;
-import domain.wallet.WalletRepository;
+import domain.wallet.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import wallet.usecase.WalletChargeUseCase;
-import wallet.usecase.WalletCreateUseCase;
-import wallet.usecase.WalletQueryUseCase;
 
 @Service
 @RequiredArgsConstructor
-public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, WalletChargeUseCase {
+public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, WalletChargeUseCase, WalletWithdrawUseCase {
 
     private final WalletRepository walletRepository;
     private final EventPublisher eventPublisher;
@@ -36,8 +33,8 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
 
     @Override
     @Transactional(readOnly = true)
-    public Wallet getWalletByUserId(Long userId) {
-        return walletRepository.findByMemberId(userId)
+    public Wallet getWalletByMemberId(Long memberId) {
+        return walletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다."));
     }
 
@@ -50,7 +47,7 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
             String referenceType,
             Long referenceId
     ) {
-        Wallet wallet = getWalletByUserId(memberId);
+        Wallet wallet = getWalletByMemberId(memberId);
         wallet.charge(amount);
 
         walletRepository.save(wallet);
@@ -67,4 +64,29 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
         );
     }
 
+    @Override
+    @Transactional
+    public void withdraw(
+            Long memberId,
+            Money amount,
+            String transactionType,
+            String referenceType,
+            Long referenceId
+    ) {
+        Wallet wallet = getWalletByMemberId(memberId);
+        wallet.withdraw(amount);
+
+        walletRepository.save(wallet);
+
+        eventPublisher.publish(
+                new WalletWithdrawnEvent(
+                        wallet.getId(),
+                        transactionType,
+                        amount,
+                        wallet.getBalance(),
+                        referenceType,
+                        referenceId
+                )
+        );
+    }
 }

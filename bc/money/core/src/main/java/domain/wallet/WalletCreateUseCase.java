@@ -1,6 +1,4 @@
-package wallet.usecase;
-
-import domain.wallet.Wallet;
+package domain.wallet;
 
 public interface WalletCreateUseCase {
 
