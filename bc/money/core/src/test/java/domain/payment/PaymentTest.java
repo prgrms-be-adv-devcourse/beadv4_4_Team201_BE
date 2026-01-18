@@ -28,7 +28,7 @@ class PaymentTest {
 		// Then
 		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
 		assertThat(payment.getUncommittedHistory()).hasSize(1);
-		assertThat(payment.getUncommittedHistory().get(0).eventType()).isEqualTo(PaymentEventType.CREATED);
+		assertThat(payment.getUncommittedHistory().getFirst().eventType()).isEqualTo(PaymentEventType.CREATED);
 	}
 
 	@Test
@@ -61,7 +61,7 @@ class PaymentTest {
 
 		// When & Then
 		assertThatThrownBy(() -> payment.markAsPaid("TX_2"))
-			.isInstanceOf(IllegalStateException.class)
+			.isInstanceOf(PaymentException.class)
 			.hasMessageContaining("PENDING");
 	}
 
@@ -89,7 +89,7 @@ class PaymentTest {
 
 		// When & Then
 		assertThatThrownBy(payment::cancel)
-			.isInstanceOf(IllegalStateException.class)
+			.isInstanceOf(PaymentException.class)
 			.hasMessageContaining("취소 불가능한 상태");
 	}
 
@@ -123,7 +123,7 @@ class PaymentTest {
 
 		// 정산 후 환불 시도 시 예외 발생 확인
 		assertThatThrownBy(payment::refund)
-			.isInstanceOf(IllegalStateException.class)
+			.isInstanceOf(PaymentException.class)
 			.hasMessageContaining("이미 정산(수령) 처리되어 환불할 수 없습니다");
 	}
 

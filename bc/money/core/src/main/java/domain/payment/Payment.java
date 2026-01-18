@@ -72,7 +72,8 @@ public class Payment extends BaseDomainModel {
 
 	public PaymentHistory markAsPaid(String pgTransactionId) {
 		if (this.status != PaymentStatus.PENDING) {
-			throw new IllegalStateException("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: " + this.status);
+			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
+				"[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: " + this.status);
 		}
 
 		LocalDateTime now = LocalDateTime.now();
@@ -94,7 +95,8 @@ public class Payment extends BaseDomainModel {
 
 	public PaymentHistory settle() {
 		if (this.status != PaymentStatus.PAID) {
-			throw new IllegalStateException("[Payment] 결제 완료(PAID) 상태에서만 확정할 수 있습니다. 현재 상태: " + this.status);
+			throw new PaymentException(PaymentErrorCode.NOT_SETTLEABLE,
+				"[Payment] 결제 완료(PAID) 상태에서만 확정할 수 있습니다. 현재 상태: " + this.status);
 		}
 
 		LocalDateTime now = LocalDateTime.now();
@@ -115,10 +117,12 @@ public class Payment extends BaseDomainModel {
 
 	public PaymentHistory refund() {
 		if (this.status == PaymentStatus.SETTLED) {
-			throw new IllegalStateException("[Payment] 이미 정산(수령) 처리되어 환불할 수 없습니다.");
+			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
+				"[Payment] 이미 정산(수령) 처리되어 환불할 수 없습니다.");
 		}
 		if (!this.status.canRefund()) {
-			throw new IllegalStateException("[Payment] 환불 불가능한 상태입니다: " + this.status);
+			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
+				"[Payment] 환불 불가능한 상태입니다: " + this.status);
 		}
 
 		LocalDateTime now = LocalDateTime.now();
@@ -139,7 +143,8 @@ public class Payment extends BaseDomainModel {
 
 	public PaymentHistory cancel() {
 		if (!this.status.canCancel()) {
-			throw new IllegalStateException("[Payment] 취소 불가능한 상태입니다: " + this.status);
+			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
+				"[Payment] 취소 불가능한 상태입니다: " + this.status);
 		}
 
 		LocalDateTime now = LocalDateTime.now();

@@ -23,6 +23,7 @@ import app.giftify.shared.domain.vo.Money;
 import domain.payment.CancelReason;
 import domain.payment.Payment;
 import domain.payment.PaymentCreateContext;
+import domain.payment.PaymentException;
 import domain.payment.PaymentPolicy;
 import domain.payment.PaymentRepository;
 import domain.payment.PaymentStatus;
@@ -57,8 +58,8 @@ class PaymentServiceTest {
 		PaymentChargeCommand command = new PaymentChargeCommand(1L, Money.of(10000));
 
 		assertThatThrownBy(() -> emptyPolicyService.charge(command))
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessage("[Payment] 지원하지 않는 결제 타입입니다");
+			.isInstanceOf(PaymentException.class)
+			.hasMessageContaining("[Payment] 지원하지 않는 결제 타입입니다"); // 포함 여부만 확인
 	}
 
 	@Test
@@ -68,7 +69,7 @@ class PaymentServiceTest {
 		given(paymentRepository.findById(paymentId)).willReturn(Optional.empty());
 
 		assertThatThrownBy(() -> paymentService.complete(paymentId, "pg_123", true))
-			.isInstanceOf(IllegalArgumentException.class)
+			.isInstanceOf(PaymentException.class)
 			.hasMessageContaining("[Payment] 결제 내역을 찾을 수 없습니다");
 	}
 
@@ -87,7 +88,7 @@ class PaymentServiceTest {
 		given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
 		assertThatThrownBy(() -> paymentService.complete(paymentId, "pg_123", true))
-			.isInstanceOf(IllegalStateException.class)
+			.isInstanceOf(PaymentException.class)
 			.hasMessage("[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: PAID");
 	}
 

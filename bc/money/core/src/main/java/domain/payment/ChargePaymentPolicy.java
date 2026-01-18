@@ -14,8 +14,9 @@ public class ChargePaymentPolicy implements PaymentPolicy {
 
 	@Override
 	public void validate(PaymentCreateContext context) {
-		if (context.amount().isLessThan(MIN_CHARGE_AMOUNT)) {
-			throw new IllegalArgumentException("충전 최소 금액은 " + MIN_CHARGE_AMOUNT + "원입니다.");
+		if (context.amount().isLessThan(Money.of(1000))) {
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+				"충전 최소 금액은 1000원입니다.");
 		}
 	}
 }

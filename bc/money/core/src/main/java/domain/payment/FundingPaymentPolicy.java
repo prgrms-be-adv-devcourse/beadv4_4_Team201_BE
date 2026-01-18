@@ -13,8 +13,9 @@ public class FundingPaymentPolicy implements PaymentPolicy {
 
 	@Override
 	public void validate(PaymentCreateContext context) {
+
 		if (context.amount().isLessThan(MIN_FUNDING_AMOUNT)) {
-			throw new IllegalArgumentException("펀딩 최소 참여 금액은 1,000원입니다.");
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE, "펀딩 최소 참여 금액은 1,000원입니다.");
 		}
 	}
 }
