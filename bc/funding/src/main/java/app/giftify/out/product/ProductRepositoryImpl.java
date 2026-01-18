@@ -1,65 +1,105 @@
 package app.giftify.out.product;
 
-import app.giftify.domain.product.Product;
-import app.giftify.domain.product.ProductStatus;
-import app.giftify.domain.product.QProduct;
-import app.giftify.in.product.ProductSearchDto;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
+import static app.giftify.domain.product.exception.ProductErrorCode.*;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import app.giftify.domain.product.Product;
+import app.giftify.domain.product.ProductStatus;
+import app.giftify.domain.product.QProduct;
+import app.giftify.domain.product.exception.ProductException;
+import app.giftify.in.product.MyProductSearchDto;
+import app.giftify.in.product.ProductSearchDto;
+import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductQueryRepository {
 	private final JPAQueryFactory queryFactory;
 
+	// 일반 상품 검색
 	@Override
-	public Page<Product> search(ProductSearchDto searchDto) {
+	public Page<Product> searchProducts(ProductSearchDto searchDto) {
 		QProduct product = QProduct.product;
 		BooleanBuilder where = new BooleanBuilder();
 
+		applyCommonFilter(searchDto, product, where);
+
+		// ACTIVE 상품만
+		where.and(product.status.eq(ProductStatus.ACTIVE));
+
+		return fetchPage(searchDto, product, where);
+	}
+
+	// 내가 판매하는 상품 조회
+	@Override
+	public Page<Product> searchMyProducts(Long sellerId, MyProductSearchDto searchDto) {
+		QProduct product = QProduct.product;
+		BooleanBuilder where = new BooleanBuilder();
+
+		applyCommonFilter(searchDto, product, where);
+
+		// sellerId 고정
+		where.and(product.seller.id.eq(sellerId));
+
+		// 상품 상태 필터
+		if (searchDto.getStatus() != null) {
+			where.and(product.status.eq(searchDto.getStatus()));
+		}
+
+		return fetchPage(searchDto, product, where);
+	}
+
+	// ---------------------------
+	// 일반 검색, 나의 상품 조회 공통 필터
+	private void applyCommonFilter(ProductSearchDto searchDto, QProduct product, BooleanBuilder where) {
 		String keyword = searchDto.getKeyword();
 		Integer minPrice = searchDto.getMinPrice();
 		Integer maxPrice = searchDto.getMaxPrice();
-		Boolean inStock = searchDto.getInStock();
-		int page = searchDto.getPage();
-		int size = searchDto.getSize();
 
-		// 기본 조건: 판매 중인 상품만 조회
-		where.and(product.status.eq(ProductStatus.ACTIVE));
-
-		if (keyword != null && !keyword.isBlank()) {
-			keyword = keyword.trim(); // 문자열 앞 뒤 공백 제거
-			where.and(
-				product.name.containsIgnoreCase(keyword)
-					.or(product.description.containsIgnoreCase(keyword))
-			);
+		if (keyword != null) {
+			keyword = keyword.trim();
+			if (!keyword.isBlank()) {
+				where.and(
+					product.name.containsIgnoreCase(keyword)
+						.or(product.description.containsIgnoreCase(keyword))
+				);
+			}
 		}
+
+		if (minPrice != null && maxPrice != null && minPrice > maxPrice)
+			throw new ProductException(INVALID_PRODUCT_SEARCH_PRICE_RANGE);
+
 		if (minPrice != null)
-			where.and(product.price.goe(minPrice));
+			where.and(product.price.goe(searchDto.getMinPrice()));
+
 		if (maxPrice != null)
-			where.and(product.price.loe(maxPrice));
+			where.and(product.price.loe(searchDto.getMaxPrice()));
 
-		// 재고 유무 옵션 처리
-		if (Boolean.TRUE.equals(inStock))
+		if (Boolean.TRUE.equals(searchDto.getInStock()))
 			where.and(product.stock.gt(0));
+	}
 
-		// 데이터 조회
+	private Page<Product> fetchPage(ProductSearchDto dto, QProduct product, BooleanBuilder where) {
+		int page = dto.getPage();
+		int size = dto.getSize();
+
 		List<Product> content = queryFactory
 			.selectFrom(product)
 			.where(where)
-			.orderBy(toOrderSpecifier(keyword, product)) // 정렬 조건
-			.offset((long)page * size) // 페이지 시작 위치
-			.limit(size) // 페이지 크기
+			.orderBy(toOrderSpecifier(dto.getSort(), product))
+			.offset((long)page * size)
+			.limit(size)
 			.fetch();
 
 		Long total = queryFactory
@@ -68,11 +108,8 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 			.where(where)
 			.fetchOne();
 
-		long totalElements = (total == null) ? 0 : total;
-
 		Pageable pageable = PageRequest.of(page, size);
-
-		return new PageImpl<>(content, pageable, totalElements);
+		return new PageImpl<>(content, pageable, total == null ? 0 : total);
 	}
 
 	private OrderSpecifier<?> toOrderSpecifier(String sort, QProduct product) {
