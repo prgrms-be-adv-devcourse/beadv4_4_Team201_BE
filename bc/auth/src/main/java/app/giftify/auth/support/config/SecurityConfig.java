@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -35,35 +34,32 @@ public class SecurityConfig {
     public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Stateless 모드: 서버가 세션(JSESSIONID)을 유지하지 않으므로, 페이지를 새로고침하거나 다시 접속하면 서버는 사용자를 기억하지 못하고 다시 Auth0로 보냄
+                .headers(headers -> headers
+                        // TODO: 개발 환경에서만 H2 콘솔을 허용하도록 추후 프로파일별 설정을 분리하거나, 코드 삭제
+                        .frameOptions(frame -> frame.sameOrigin())
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/auth/").permitAll() // 메인과 기본 안내 페이지는 허용
-                        .requestMatchers("/api/auth/login-success").authenticated() // 로그인이 필요한 페이지 명시
+                        .requestMatchers(
+                                "/",
+                                "/api/auth/**",
+                                "/h2-console/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(authorization -> authorization
-                                .authorizationRequestResolver(authorizationRequestResolver(this.clientRegistrationRepository))
-                        )
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(this.authService)
                         )
                         .defaultSuccessUrl("/api/auth/login-success", true)
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> {
-                        })
-                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
-                        .logoutSuccessHandler(oidcLogoutSuccessHandler()) // Auth0 로그아웃 연동
+                        .logoutSuccessHandler(oidcLogoutSuccessHandler())
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
-                )
-        ;
+                );
 
         return http.build();
     }
