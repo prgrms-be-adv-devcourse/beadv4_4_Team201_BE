@@ -35,6 +35,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
+                        // TODO: 개발 환경에서만 H2 콘솔을 허용하도록 추후 프로파일별 설정을 분리하거나, 코드 삭제
                         .frameOptions(frame -> frame.sameOrigin())
                 )
                 .authorizeHttpRequests(auth -> auth
