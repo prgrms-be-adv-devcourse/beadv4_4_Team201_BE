@@ -1,35 +1,33 @@
-# CI Pipeline
-# 브랜치 푸시 시 빠른 검증 (빌드, 테스트, 보안 스캔)
-# 목표: 5분 이내 피드백
+# CI Pipeline (Merge)
+# main/develop 브랜치 푸시 시 빠른 검증
 name: CI
 
 on:
   push:
-    branches:
-      - develop
-      - main
-    # 태그는 release.yml에서 처리
-    tags-ignore:
-      - '**'
+    branches: [ develop, main ]
+    tags-ignore: [ '**' ]
 
 jobs:
-  # 1. 빌드 및 테스트
+  # 1. 빌드 및 테스트 (Fast Mode)
   build:
     name: Build & Test
     uses: ./.github/workflows/_build.yml
     with:
       java-version: '21'
       run-tests: true
-      generate-coverage: true
+      # 머지 단계에서는 커버리지 리포트 생략 (PR에서 이미 검증됨)
+      generate-coverage: false
+      # 배포용 jar 업로드
+      upload-jar: true
       publish-build-scan: true
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  # 2. 의존성 그래프 및 보안 스캔
+  # 2. 보안 스캔 (선택적)
   security-scan:
     name: Security Scan
     needs: [ build ]
     runs-on: ubuntu-latest
+    # develop 브랜치에서만 실행 (main은 배포 속도 우선)
+    if: github.ref_name == 'develop'
     permissions:
       contents: write
       security-events: write
@@ -44,30 +42,25 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      # GitHub Dependency Graph에 의존성 정보 제출
-      # Security > Dependabot alerts에서 취약점 확인 가능
+      # Dependency Graph 제출 (레포 설정에서 활성화 필요)
+      # Settings > Code security > Dependency graph 활성화
       - name: Submit Dependency Graph
         uses: gradle/actions/dependency-submission@v4
-        with:
-          build-scan-publish: true
-          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
-          build-scan-terms-of-use-agree: "yes"
+        continue-on-error: true  # 레포 설정 미완료 시에도 워크플로 중단 방지
 
-      # 소스 코드 취약점 스캔 (develop 브랜치에서만)
+      # 소스 코드 취약점 스캔
       - name: Code Vulnerability Scan
-        if: github.ref_name == 'develop'
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v4
         id: scan
         with:
           path: "${{ github.workspace }}"
           fail-build: false
           severity-cutoff: high
 
+      # SARIF 업로드 (스캔 성공 시에만)
       - name: Upload Vulnerability Report
-        if: github.ref_name == 'develop' && failure()
+        if: steps.scan.outputs.sarif != ''
         uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}

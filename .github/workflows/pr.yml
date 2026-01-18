@@ -4,22 +4,22 @@ name: PR Pipeline
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main, develop ]
     types: [ opened, synchronize, reopened ]
 
 jobs:
-  # 1. 빌드 및 테스트
+  # 1. 빌드 및 테스트 (Strict Mode)
   build:
     name: Build & Test
     uses: ./.github/workflows/_build.yml
     with:
       java-version: '21'
       run-tests: true
+      # PR 단계에서는 커버리지 필수
       generate-coverage: true
+      # PR에서는 jar 불필요
+      upload-jar: false
       publish-build-scan: true
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   # 2. 커버리지 리포트 PR 코멘트
   coverage-report:
@@ -34,40 +34,36 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: jacoco-report
-          path: .
+          path: jacoco-report
 
       - name: Add Coverage PR Comment
         uses: madrapps/jacoco-report@v1.7.1
         with:
-          paths: build/reports/jacoco/aggregated/jacocoTestReport.xml
+          paths: jacoco-report/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
           title: "## 테스트 커버리지 리포트"
           update-comment: true
 
-  # 3. SonarCloud 정적 분석
+  # 3. SonarCloud 정적 분석 (선택적)
   sonarcloud:
     name: SonarCloud
     needs: [ build ]
     runs-on: ubuntu-latest
+    # SonarCloud 설정이 완료된 경우에만 실행
+    if: vars.SONARCLOUD_ENABLED == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: .
-
       - name: Download Jacoco report
         uses: actions/download-artifact@v4
         with:
           name: jacoco-report
-          path: .
+          path: jacoco-report
 
       - name: Set SonarCloud Project Key
         run: |
@@ -77,7 +73,6 @@ jobs:
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@master
-        # Quality Gate 실패 시 PR 차단을 원하면 아래 줄 제거
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_BOT }}
@@ -99,5 +94,6 @@ jobs:
 
       - name: Auto Assign Reviewers
         uses: kentaro-m/auto-assign-action@v2.0.0
+        continue-on-error: true
         with:
           configuration-path: '.github/auto-assign.yml'
