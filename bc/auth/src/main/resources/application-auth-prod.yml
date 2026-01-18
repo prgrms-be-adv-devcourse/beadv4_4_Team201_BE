@@ -3,13 +3,13 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://${AUTH0_DOMAIN_PROD}/
-          jwk-set-uri: https://${AUTH0_DOMAIN_PROD}/.well-known/jwks.json
+          issuer-uri: https://${AUTH0_DOMAIN}/
+          jwk-set-uri: https://${AUTH0_DOMAIN}/.well-known/jwks.json
       client:
         registration:
           auth0:
-            client-id: ${AUTH0_CLIENT_ID_PROD}
-            client-secret: ${AUTH0_CLIENT_SECRET_PROD}
+            client-id: ${AUTH0_CLIENT_ID}
+            client-secret: ${AUTH0_CLIENT_SECRET}
             scope:
               - openid
               - profile
@@ -17,11 +17,10 @@ spring:
               - offline_access
         provider:
           auth0:
-            issuer-uri: https://${AUTH0_DOMAIN_PROD}/
-
+            issuer-uri: https://${AUTH0_DOMAIN}/
 auth0:
-  audience: ${AUTH0_AUDIENCE_PROD}
-  domain: ${AUTH0_DOMAIN_PROD}
+  audience: ${AUTH0_AUDIENCE}
+  domain: ${AUTH0_DOMAIN}
 
 logging:
   level:
