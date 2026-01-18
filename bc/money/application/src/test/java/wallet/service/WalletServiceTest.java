@@ -264,6 +264,30 @@ class WalletServiceTest {
     }
 
     @Test
+    @DisplayName("중복된 트랜잭션 요청 무시 - 이미 존재하는 이력")
+    void chargeIgnoreWhenDuplicateTransactionExists() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(5000L);
+        String transactionType = "CHARGE";
+        String referenceType = "PAYMENT";
+        Long referenceId = 101L;
+
+        // `walletHistoryRepository.existsByReferenceIdAndReferenceType` 가 true 반환
+        when(walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType))
+                .thenReturn(true);
+
+        // when
+        walletService.charge(memberId, amount, transactionType, referenceType, referenceId);
+
+        // then
+        // 중복된 트랜잭션으로 충전 연산이 수행되지 않는지 검증
+        verify(walletHistoryRepository, times(1)).existsByReferenceIdAndReferenceType(referenceId, referenceType);
+        verify(walletRepository, never()).save(any(Wallet.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
     @DisplayName("지갑 충전 실패 - 지갑이 존재하지 않음")
     void chargeFailWalletNotFound() {
         // given
