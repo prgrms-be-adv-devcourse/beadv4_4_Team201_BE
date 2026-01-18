@@ -1,15 +1,11 @@
 package app.giftify.in.product;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class ProductSearchDto {
-	@NotNull
 	private String keyword;
 	private Integer minPrice;
 	private Integer maxPrice;

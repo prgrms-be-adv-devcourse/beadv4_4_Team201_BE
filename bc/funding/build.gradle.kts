@@ -19,4 +19,7 @@ dependencies {
     annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
     annotationProcessor("jakarta.annotation:jakarta.annotation-api")
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
+    // 5. Test Dependencies
+    testRuntimeOnly("com.h2database:h2")
 }

@@ -3,19 +3,15 @@ package app.giftify.app.product;
 import org.springframework.stereotype.Service;
 
 import app.giftify.domain.product.Product;
-
-import app.giftify.out.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import app.giftify.out.product.ProductRepository;
-
 
 @Service
 @RequiredArgsConstructor
 public class ProductApproveUseCase {
-	private final ProductRepository productRepository;
+	private final ProductSupport productSupport;
 
 	public void approveProduct(Long id) {
-		Product product = productRepository.findById(id).get();
-		product.approveProduct();
+		Product product = productSupport.findById(id);
+		product.approve();
 	}
 }
