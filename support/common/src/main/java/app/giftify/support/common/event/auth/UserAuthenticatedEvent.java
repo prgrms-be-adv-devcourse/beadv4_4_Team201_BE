@@ -1,21 +1,20 @@
 package app.giftify.support.common.event.auth;
 
+import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
-import lombok.Getter;
-
-/**
- * 인증 성공 스프링 이벤트.
- */
 @Getter
 public class UserAuthenticatedEvent extends ApplicationEvent {
-    private final String sub;
+    private final String authSub;
+    private final String nickname;
     private final String email;
     private final String name;
 
-    public UserAuthenticatedEvent(Object source, String sub, String email, String name) {
+    public UserAuthenticatedEvent(Object source, String authSub, String nickname, String email, String name) {
         super(source);
-        this.sub = sub;
+
+        this.authSub = authSub;
+        this.nickname = nickname;
         this.email = email;
         this.name = name;
     }
