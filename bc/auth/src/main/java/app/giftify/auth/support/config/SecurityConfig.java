@@ -10,6 +10,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -35,7 +36,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
-        boolean isDevOrLocal = isDevOrLocal();
+        boolean isDevOrLocal = isH2ConsoleAllowed();
 
         log.info("=== Security Configuration ===");
         log.info("Active profiles: {}", Arrays.toString(env.getActiveProfiles()));
@@ -43,7 +44,7 @@ public class SecurityConfig {
         log.info("H2 Console access: {}", isDevOrLocal ? "ALLOWED" : "DENIED");
 
         http
-                // CSRF 비활성화 (개발 편의를 위해, 운영 환경에서는 활성화 고려)
+                // CSRF 비활성화 (JWT 기반 API 중심 구조)
                 .csrf(csrf -> csrf.disable())
 
                 // Frame Options 설정: 개발/로컬 환경에서만 H2 콘솔 접근 허용
@@ -72,22 +73,19 @@ public class SecurityConfig {
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        // Auth0 Audience 파라미터 추가를 위한 커스터마이징
                         .authorizationEndpoint(authEndpoint -> authEndpoint
                                 .authorizationRequestResolver(
                                         authorizationRequestResolver(clientRegistrationRepository)
                                 )
                         )
-                        // OIDC 사용자 정보 처리
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(this.authService)
                         )
-                        // 로그인 성공 후 리다이렉트 URL
                         .defaultSuccessUrl("/api/auth/login-success", true)
                 )
 
                 // JWT 리소스 서버 설정
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 
                 // 로그아웃 설정
                 .logout(logout -> logout
@@ -103,7 +101,7 @@ public class SecurityConfig {
 
     // 현재 환경이 개발 또는 로컬 환경인지 확인
     // H2 콘솔 접근 권한을 제어하기 위해 사용
-    private boolean isDevOrLocal() {
+    private boolean isH2ConsoleAllowed() {
         String[] activeProfiles = env.getActiveProfiles();
 
         // [기본값] 프로파일이 설정되지 않은 경우
