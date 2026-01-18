@@ -21,7 +21,7 @@ services:
   api-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: bootstrap/api-server/Dockerfile
     platform: linux/amd64
     container_name: giftify-api-server
     environment:
