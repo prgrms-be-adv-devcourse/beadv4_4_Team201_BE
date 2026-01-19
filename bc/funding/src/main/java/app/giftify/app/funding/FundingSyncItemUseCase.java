@@ -2,10 +2,9 @@ package app.giftify.app.funding;
 
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.WishlistItemDto;
+import app.giftify.out.FundingWishlistItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import app.giftify.out.FundingWishlistItemRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +18,6 @@ public class FundingSyncItemUseCase {
      * 시점: Payment 완료 시 (결제 시점의 상품 정보를 스냅샷으로 저장)
      * 목적: Funding 생성 시 필요한 상품 정보(ID, 이름, 가격)를 값으로 복제
      */
-    @Transactional
     public FundingWishlistItem syncItem(WishlistItemDto dto) {
         // DTO 정보를 그대로 FundingWishlistItem에 저장 (스냅샷)
         FundingWishlistItem fundingWishlistItem = new FundingWishlistItem(
