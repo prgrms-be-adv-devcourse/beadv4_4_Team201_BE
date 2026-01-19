@@ -78,10 +78,14 @@
    echo "---------------------------------------------------"
 
    # 8. act 실행
-   # -j: 특정 job 실행 (build-module)
+   # -W: 특정 워크플로 파일 지정 (_build.yml 직접 실행)
+   # -j: 특정 job 실행 (build)
+   # -P: 플랫폼 이미지 지정 (Node 20+ 필요)
    # --rm: 실행 후 컨테이너 삭제
    act push \
-     -j build-module \
+     -W .github/workflows/_build.yml \
+     -j build \
+     -P ubuntu-latest=catthehacker/ubuntu:act-latest \
      --rm \
      "${ACT_OPTS[@]}"
 

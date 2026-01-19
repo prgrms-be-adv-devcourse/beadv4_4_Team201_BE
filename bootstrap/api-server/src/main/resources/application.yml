@@ -4,12 +4,24 @@ spring:
 
   application:
     name: giftify-be
+
   profiles:
-    # 기본적으로 포함할 모듈별 공통 설정
+    # ⚠️ active 프로파일을 여기서 고정 X
+    #
+    # [실행 가이드]
+    # - 로컬 개발:
+    #     -Dspring.profiles.active=local
+    #
+    # - 개발 서버:
+    #     -Dspring.profiles.active=dev
+    #
+    # - 운영 서버:
+    #     -Dspring.profiles.active=prod
+    #
+    # 실수로 운영 환경에서 local/dev 설정이 적용되는 것을 방지하기 위함
+
     include:
       - auth
-    # 환경별 프로파일 그룹 정의
-    # 예: local 프로파일로 실행 시, auth-local 프로파일도 활성화되어 application-auth-local.yml을 로드 시도함
     group:
       local:
         - auth-local
@@ -17,25 +29,6 @@ spring:
         - auth-dev
       prod:
         - auth-prod
-
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
 server:
   port: 8080

@@ -6,7 +6,6 @@ import app.giftify.shared.domain.vo.Money;
 public record PaymentCreateContext(
 	Long userId,
 	Money amount,
-	Long fundingId,
 	PaymentType type
 ) {
 }

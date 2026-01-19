@@ -29,6 +29,12 @@ public class AuthController {
         return "아무나 접근 가능한 페이지 입니다.";
     }
 
+    // Auth0 로그인 페이지로 리다이렉트
+    @GetMapping("/login")
+    public void login(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        response.sendRedirect("/oauth2/authorization/auth0");
+    }
+
     // [로그인 확인 및 토큰 반환]
     // Auth0 로그인이 성공했는지 확인하고 발급된 Access Token을 반환합니다.
     @GetMapping("/login-success")
