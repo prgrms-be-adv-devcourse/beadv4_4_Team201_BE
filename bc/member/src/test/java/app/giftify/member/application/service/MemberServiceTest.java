@@ -10,6 +10,8 @@ import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberStatus;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,6 +74,7 @@ class MemberServiceTest {
         assertThat(result.getEmail()).isEqualTo(command.email());
         assertThat(result.getNickname()).isEqualTo(command.nickname());
         verify(memberRepositoryPort).save(any(Member.class));
+        verify(eventPublisher).publish(any(MemberSignedEvent.class));
     }
 
     @Test
@@ -232,6 +235,7 @@ class MemberServiceTest {
         assertThat(result.getAddress()).isEqualTo("New Address");
         assertThat(result.getName()).isEqualTo("New Name");
         verify(memberRepositoryPort).save(any(Member.class));
+        verify(eventPublisher).publish(any(MemberUpdatedEvent.class));
     }
 
     @Test
