@@ -14,4 +14,7 @@ public interface GetMemberUseCase {
 
     // 내부 관리용 ID를 통해 회원 정보 조회
     Optional<Member> getMemberById(Long id);
+
+    // 닉네임 중복 확인용
+    boolean isNicknameDuplicated(String nickname);
 }

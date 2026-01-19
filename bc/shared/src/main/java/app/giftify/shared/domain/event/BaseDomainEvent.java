@@ -16,6 +16,14 @@ public abstract class BaseDomainEvent {
         this.occurredAt = LocalDateTime.now();
     }
 
+	/**
+     * 이벤트의 발생 시간을 외부 주입해주기 위한 생성자
+	 */
+    protected BaseDomainEvent(LocalDateTime occurredAt){
+        this.eventId = UUID.randomUUID().toString();
+        this.occurredAt = occurredAt;
+    }
+
     public String getEventId() {
         return eventId;
     }

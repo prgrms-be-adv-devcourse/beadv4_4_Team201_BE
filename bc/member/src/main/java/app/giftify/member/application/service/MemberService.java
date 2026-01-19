@@ -11,12 +11,17 @@ import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.exception.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,6 +29,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
 
     private final PreSignupPort preSignupPort;
     private final MemberRepositoryPort memberRepositoryPort;
+    private final EventPublisher eventPublisher;
 
     @Override
     public Optional<Member> getMemberByAuthSub(String authSub) {
@@ -36,8 +42,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
     }
 
     @Override
-    @Transactional
-    public Member registerPreSignupMember(RegisterCommand command) {
+    public Member registerMember(RegisterCommand command) {
         // [중복 가입 방지] 이미 가입된 회원인지 한 번 더 검증
         memberRepositoryPort.findByAuthSub(command.authSub())
                 .ifPresent(m -> {
@@ -54,7 +59,18 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                 .name(command.name())
                 .build();
 
-        return memberRepositoryPort.save(member);
+        Member savedMember = memberRepositoryPort.save(member);
+
+        eventPublisher.publish(
+                new MemberSignedEvent(
+                        savedMember.getId(),
+                        savedMember.getAuthSub(),
+                        savedMember.getNickname()
+
+                )
+        );
+
+        return savedMember;
     }
 
     @Override
@@ -73,7 +89,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                 authSub
         );
 
-        Member member = registerPreSignupMember(command);
+        Member member = registerMember(command);
 
         preSignupPort.deleteByAuthSub(authSub);
 
@@ -86,9 +102,21 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         Member member = memberRepositoryPort.findByAuthSub(command.authSub())
                 .orElseThrow(() -> new MemberNotFoundException(command.authSub()));
 
+        member.validateActiveStatus();
+
         member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(), command.name());
 
-        return memberRepositoryPort.save(member);
+        Member updatedMember = memberRepositoryPort.save(member);
+
+        eventPublisher.publish(
+                new MemberUpdatedEvent(
+                        updatedMember.getId(),
+                        updatedMember.getAuthSub(),
+                        updatedMember.getNickname()
+                )
+        );
+
+        return updatedMember;
     }
 
     @Override
@@ -96,6 +124,8 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
     public void withdrawMember(String authSub) {
         Member member = memberRepositoryPort.findByAuthSub(authSub)
                 .orElseThrow(() -> new MemberNotFoundException(authSub));
+
+        member.validateActiveStatus();
 
         member.withdraw();
 
@@ -105,5 +135,10 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
     @Override
     public boolean existsByEmail(String email) {
         return memberRepositoryPort.findByEmail(email).isPresent();
+    }
+
+    @Override
+    public boolean isNicknameDuplicated(String nickname) {
+        return memberRepositoryPort.findByNickname(nickname).isPresent();
     }
 }

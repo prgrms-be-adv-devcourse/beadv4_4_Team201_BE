@@ -19,3 +19,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name:giftify}
+      env: dev

@@ -1,19 +1,21 @@
 package wallet.service;
 
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
-import app.giftify.shared.domain.event.wallet.WalletWithdrawnEvent;
 import app.giftify.shared.domain.vo.Money;
 import domain.wallet.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import walletHistory.port.WalletHistoryRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, WalletChargeUseCase, WalletWithdrawUseCase {
 
     private final WalletRepository walletRepository;
+    private final WalletHistoryRepository walletHistoryRepository;
     private final EventPublisher eventPublisher;
 
     @Override
@@ -47,20 +49,23 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
             String referenceType,
             Long referenceId
     ) {
+        boolean isDuplicated = walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType);
+        if (isDuplicated) {
+            logDuplicatedTransaction(referenceType, referenceId);
+            return;
+        }
+
         Wallet wallet = getWalletByMemberId(memberId);
         wallet.charge(amount);
 
         walletRepository.save(wallet);
-
-        eventPublisher.publish(
-                new WalletChargeCompletedEvent(
-                        wallet.getId(),
-                        transactionType,
-                        amount,
-                        wallet.getBalance(),
-                        referenceType,
-                        referenceId
-                )
+        walletHistoryRepository.record(
+                wallet.getId(),
+                transactionType,
+                amount,
+                wallet.getBalance(),
+                referenceType,
+                referenceId
         );
     }
 
@@ -73,20 +78,27 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
             String referenceType,
             Long referenceId
     ) {
+        boolean isDuplicated = walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType);
+        if (isDuplicated) {
+            logDuplicatedTransaction(referenceType, referenceId);
+            return;
+        }
+
         Wallet wallet = getWalletByMemberId(memberId);
         wallet.withdraw(amount);
 
         walletRepository.save(wallet);
-
-        eventPublisher.publish(
-                new WalletWithdrawnEvent(
-                        wallet.getId(),
-                        transactionType,
-                        amount,
-                        wallet.getBalance(),
-                        referenceType,
-                        referenceId
-                )
+        walletHistoryRepository.record(
+                wallet.getId(),
+                transactionType,
+                amount,
+                wallet.getBalance(),
+                referenceType,
+                referenceId
         );
+    }
+
+    private static void logDuplicatedTransaction(String referenceType, Long referenceId) {
+        log.info("Skip duplicated transaction. refId={}, refType={}", referenceId, referenceType);
     }
 }

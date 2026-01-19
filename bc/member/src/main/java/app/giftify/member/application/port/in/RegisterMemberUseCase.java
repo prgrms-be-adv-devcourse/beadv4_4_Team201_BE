@@ -9,7 +9,7 @@ import java.time.LocalDate;
 // 사용자가 입력한 추가 정보를 바탕으로 회원가입 처리
 public interface RegisterMemberUseCase {
 
-    Member registerPreSignupMember(RegisterCommand command);
+    Member registerMember(RegisterCommand command);
 
     boolean existsByEmail(String email);
 

@@ -29,7 +29,10 @@ public class Funding extends BaseJpaEntity {
     private FundingStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime endAt;
+    private LocalDateTime deadline;        // 펀딩 종료 예정 시점
+
+    @Column
+    private LocalDateTime closedAt;     // 펀딩이 실제 종료된 시점
 
 
     private Funding(FundingWishlistItem item, Integer currentAmount) {
@@ -37,18 +40,23 @@ public class Funding extends BaseJpaEntity {
         this.targetAmount = item.getProductPrice();
         this.currentAmount = currentAmount;
         this.status = FundingStatus.IN_PROGRESS;
-        this.endAt = LocalDateTime.now().plusDays(15);
+        this.deadline = LocalDateTime.now().plusDays(15);
     }
 
     public static Funding startFunding(FundingWishlistItem item, Integer amount) {
-        validateAmount(amount);
+        validateLeastAmount(amount);
 
         Funding funding = new Funding(item, amount);
+
+        // 첫 결제 금액이 목표 금액과 같으면 바로 달성 상태로 변경
+        if (amount.equals(funding.targetAmount)) {
+            funding.status = FundingStatus.ACHIEVED;
+        }
 
         return funding;
     }
 
-    public static void validateAmount(Integer amount) {
+    public static void validateLeastAmount(Integer amount) {
         if (amount == null || amount < 1000) {
             throw new FundingException(FundingErrorCode.INVALID_AMOUNT);
         }
@@ -62,51 +70,56 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.NOT_IN_PROGRESS);
         }
 
-        validateAmount(amount);
+        validateLeastAmount(amount);
 
-        // 잔여 금액 계산
         int remainingAmount = this.targetAmount - this.currentAmount;
 
         // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
-        // TODO: useCase로 옮길지 추후 고민
         // 잔여 금액 초과 검증
         if (amount > remainingAmount) {
             throw new FundingException(
                 FundingErrorCode.EXCEED_REMAINING_AMOUNT,
-                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 요청 금액: %d원",
+                String.format("펀딩 잔여 금액(%d원)을 초과할 수 없습니다. 신청 금액: %d원",
                     remainingAmount, amount)
             );
         }
 
         this.currentAmount += amount;
 
-        if (this.currentAmount >= this.targetAmount) {
+        // Integer 타입은 == 비교 시 캐싱 범위(-128~127) 밖에서는 false가 될 수 있음
+        if (this.currentAmount.equals(this.targetAmount)) {
             this.status = FundingStatus.ACHIEVED;
         }
     }
 
-    /**
-     * 펀딩 만료 처리
-     */
     public void expire() {
         if (this.status == FundingStatus.CLOSED) {
-            throw new FundingException(FundingErrorCode.ALREADY_CLOSED);
+            throw new FundingException(FundingErrorCode.ALREADY_TERMINATED);
         }
+
+        if (!isExpired()) {
+            throw new FundingException(FundingErrorCode.IS_NOT_EXPIRED);
+        }
+
         this.status = FundingStatus.EXPIRED;
+        this.closedAt = LocalDateTime.now();
     }
 
-    /**
-     * 펀딩 기간 종료 여부
-     */
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(this.endAt);
+    public void close() {
+        if (this.getStatus() == FundingStatus.CLOSED || this.getStatus() == FundingStatus.EXPIRED) {
+            throw new FundingException(FundingErrorCode.ALREADY_TERMINATED);
+        }
+
+        this.status = FundingStatus.CLOSED;
+        this.closedAt = LocalDateTime.now();
     }
 
-    /**
-     * 목표 금액 달성 여부
-     */
+    public boolean isExpired(LocalDateTime now) {return now.isAfter(this.deadline); }
+
+    public boolean isExpired() {return LocalDateTime.now().isAfter(this.deadline); }
+
     public boolean isAchieved() {
-        return this.currentAmount >= this.targetAmount;
+        return this.currentAmount.equals(this.targetAmount);
     }
 
 }
