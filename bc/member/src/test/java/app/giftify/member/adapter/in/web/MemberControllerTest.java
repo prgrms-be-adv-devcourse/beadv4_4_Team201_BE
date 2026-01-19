@@ -231,4 +231,45 @@ class MemberControllerTest {
         mockMvc.perform(delete("/api/members/withdraw"))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    @DisplayName("[닉네임 중복 확인] 이미 존재하는 닉네임")
+    void checkNickname_Duplicated() throws Exception {
+        // given
+        String nickname = "duplicated";
+        given(getMemberUseCase.isNicknameDuplicated(nickname)).willReturn(true);
+
+        // when & then
+        mockMvc.perform(get("/api/members/check/nickname")
+                        .param("nickname", nickname))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DUPLICATED"));
+    }
+
+    @Test
+    @DisplayName("[닉네임 중복 확인] 사용 가능한 닉네임")
+    void checkNickname_Available() throws Exception {
+        // given
+        String nickname = "unique";
+        given(getMemberUseCase.isNicknameDuplicated(nickname)).willReturn(false);
+
+        // when & then
+        mockMvc.perform(get("/api/members/check/nickname")
+                        .param("nickname", nickname))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+    }
+
+    @Test
+    @DisplayName("[닉네임 중복 확인] 닉네임이 공백인 경우")
+    void checkNickname_Blank() throws Exception {
+        // given
+        String nickname = "";
+
+        // when & then
+        mockMvc.perform(get("/api/members/check/nickname")
+                        .param("nickname", nickname))
+                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
 }
