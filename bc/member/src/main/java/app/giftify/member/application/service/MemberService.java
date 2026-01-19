@@ -40,8 +40,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
     }
 
     @Override
-    @Transactional
-    public Member registerPreSignupMember(RegisterCommand command) {
+    public Member joinedMember(RegisterCommand command) {
         // [중복 가입 방지] 이미 가입된 회원인지 한 번 더 검증
         memberRepositoryPort.findByAuthSub(command.authSub())
                 .ifPresent(m -> {
@@ -88,7 +87,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                 authSub
         );
 
-        Member member = registerPreSignupMember(command);
+        Member member = joinedMember(command);
 
         preSignupPort.deleteByAuthSub(authSub);
 
@@ -133,10 +132,6 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
 
     @Override
     public boolean existsByEmail(String email) {
-        Member member = memberRepositoryPort.findByEmail(email).orElse(null);
-        if (member == null) {
-            throw new MemberNotFoundException(email);
-        }
-        return true;
+        return memberRepositoryPort.findByEmail(email).isPresent();
     }
 }
