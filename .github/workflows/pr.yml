@@ -8,7 +8,7 @@ on:
     types: [ opened, synchronize, reopened ]
 
 jobs:
-  # 1. 빌드 및 테스트 (Strict Mode)
+  # 1. 빌드 및 테스트
   build:
     name: Build & Test
     uses: ./.github/workflows/_build.yml
@@ -46,43 +46,7 @@ jobs:
           title: "## 테스트 커버리지 리포트"
           update-comment: true
 
-  # 3. SonarCloud 정적 분석 (선택적)
-  sonarcloud:
-    name: SonarCloud
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    # SonarCloud 설정이 완료된 경우에만 실행
-    if: vars.SONARCLOUD_ENABLED == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download Jacoco report
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report
-          path: jacoco-report
-
-      - name: Set SonarCloud Project Key
-        run: |
-          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
-          ORG_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 1)
-          echo "SONAR_PROJECT_KEY=${ORG_NAME}_${REPO_NAME}" >> $GITHUB_ENV
-
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@master
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_BOT }}
-          SONAR_TOKEN: ${{ secrets.SECRET_SONARQUBE }}
-        with:
-          args: |
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=f-lab-edu-1
-
-  # 4. 자동 리뷰어 할당
+  # 3. 자동 리뷰어 할당
   auto-assign:
     name: Auto Assign
     runs-on: ubuntu-latest

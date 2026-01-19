@@ -1,9 +1,14 @@
 # Reusable Build Workflow
 # 다른 워크플로우에서 workflow_call로 호출하여 재사용
+# 로컬에서는 act로 직접 테스트 가능: act push -W .github/workflows/_build.yml -j build
 
 name: Reusable Build
 
 on:
+  # 로컬 act 테스트용 (실제 GitHub에서는 트리거되지 않음)
+  push:
+    branches-ignore: [ '**' ]  # 모든 브랜치 무시 = 실제로 트리거 안됨
+
   workflow_call:
     inputs:
       java-version:
@@ -48,19 +53,19 @@ jobs:
       build-scan: ${{ steps.gradle-build.outputs.build-scan }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
 
-      - name: Set up JDK ${{ inputs.java-version }}
-        uses: actions/setup-java@v4
+      - name: Set up JDK ${{ inputs.java-version || '21' }}
+        uses: actions/setup-java@v4.6.0
         with:
           distribution: 'temurin'
-          java-version: ${{ inputs.java-version }}
+          java-version: ${{ inputs.java-version || '21' }}
           cache: gradle
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4.2.2
         with:
           build-scan-publish: ${{ inputs.publish-build-scan }}
           build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
@@ -79,7 +84,7 @@ jobs:
       # 배포용 Jar 업로드 (옵션)
       - name: Upload application jar
         if: inputs.upload-jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.5.0
         with:
           name: build-artifacts
           path: |
@@ -90,7 +95,7 @@ jobs:
       # Jacoco 리포트 업로드 (coverage 활성화 시)
       - name: Upload Jacoco report
         if: inputs.generate-coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.5.0
         with:
           name: jacoco-report
           path: build/reports/jacoco/aggregated/
@@ -99,7 +104,7 @@ jobs:
       # 테스트 결과 업로드 (실패 시 또는 coverage 활성화 시)
       - name: Upload test results
         if: inputs.run-tests && (failure() || inputs.generate-coverage)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.5.0
         with:
           name: test-results
           path: '**/build/test-results/'
