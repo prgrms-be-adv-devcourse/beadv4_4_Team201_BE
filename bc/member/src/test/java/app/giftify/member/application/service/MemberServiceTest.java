@@ -9,6 +9,7 @@ import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.shared.domain.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,9 @@ class MemberServiceTest {
 
     @Mock
     private PreSignupPort preSignupPort;
+
+    @Mock
+    private EventPublisher eventPublisher;
 
     @InjectMocks
     private MemberService memberService;
@@ -132,6 +136,20 @@ class MemberServiceTest {
 
         // then
         assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("[이메일 존재 확인] 이메일이 존재하지 않는 경우 false")
+    void existsByEmail_False() {
+        // given
+        String email = "notfound@example.com";
+        given(memberRepositoryPort.findByEmail(email)).willReturn(Optional.empty());
+
+        // when
+        boolean result = memberService.existsByEmail(email);
+
+        // then
+        assertThat(result).isFalse();
     }
 
     @Test
