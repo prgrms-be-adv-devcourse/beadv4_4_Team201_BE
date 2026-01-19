@@ -12,6 +12,7 @@ class FundingTest {
     private FundingWishlistItem createTestWishlistItem(Long wishlistId, Long productId, String productName, int productPrice) {
         return new FundingWishlistItem(
                 wishlistId,
+                999L,  // receiverId
                 productId,
                 productName,
                 productPrice,

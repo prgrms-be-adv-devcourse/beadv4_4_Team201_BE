@@ -1,11 +1,6 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingGetUseCase;
-import app.giftify.domain.funding.Funding;
-import app.giftify.domain.funding.FundingErrorCode;
-import app.giftify.domain.funding.FundingException;
-import app.giftify.domain.funding.FundingStatus;
-import app.giftify.domain.funding.FundingWishlistItem;
+import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingResponseDto;
 import app.giftify.out.FundingRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,8 +29,9 @@ class FundingGetUseCaseTest {
 
     private FundingWishlistItem createTestWishlistItem() {
         return new FundingWishlistItem(
-                1L,
-                100L,
+                1L,      // wishlistId
+                999L,    // receiverId
+                100L,    // productId
                 "테스트 상품",
                 50000,
                 FundingWishlistItem.WishListItemStatus.IN_PROGRESS

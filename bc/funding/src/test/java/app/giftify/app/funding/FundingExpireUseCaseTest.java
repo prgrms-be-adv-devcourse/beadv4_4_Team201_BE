@@ -40,8 +40,9 @@ class FundingExpireUseCaseTest {
 
     private FundingWishlistItem createTestWishlistItem() {
         return new FundingWishlistItem(
-                1L,
-                100L,
+                1L,      // wishlistId
+                999L,    // receiverId
+                100L,    // productId
                 "테스트 상품",
                 50000,
                 FundingWishlistItem.WishListItemStatus.IN_PROGRESS

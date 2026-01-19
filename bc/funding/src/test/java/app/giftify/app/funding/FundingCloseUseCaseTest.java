@@ -8,6 +8,7 @@ import app.giftify.domain.funding.FundingStatus;
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
+import app.giftify.shared.domain.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,6 +28,9 @@ class FundingCloseUseCaseTest {
     @Mock
     private FundingRepository fundingRepository;
 
+    @Mock
+    private EventPublisher eventPublisher;
+
     @InjectMocks
     private FundingCloseUseCase fundingCloseUseCase;
 
@@ -33,8 +38,9 @@ class FundingCloseUseCaseTest {
 
     private FundingWishlistItem createTestWishlistItem() {
         return new FundingWishlistItem(
-                1L,
-                100L,
+                1L,      // wishlistId
+                999L,    // receiverId
+                100L,    // productId
                 "테스트 상품",
                 50000,
                 FundingWishlistItem.WishListItemStatus.IN_PROGRESS
@@ -63,6 +69,7 @@ class FundingCloseUseCaseTest {
         assertThat(result.closeAt()).isNotNull();
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, times(1)).publish(any());
     }
 
     @Test
@@ -83,6 +90,7 @@ class FundingCloseUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.status()).isEqualTo(FundingStatus.CLOSED);
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, times(1)).publish(any());
     }
 
     @Test
@@ -99,6 +107,7 @@ class FundingCloseUseCaseTest {
                 .isEqualTo(FundingErrorCode.FUNDING_NOT_FOUND);
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -119,6 +128,7 @@ class FundingCloseUseCaseTest {
                 .isEqualTo(FundingErrorCode.ALREADY_TERMINATED);
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -149,6 +159,7 @@ class FundingCloseUseCaseTest {
                 .isEqualTo(FundingErrorCode.ALREADY_TERMINATED);
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, never()).publish(any());
     }
 }
 
