@@ -17,3 +17,10 @@ logging:
   level:
     root: WARN
     app.giftify: INFO
+
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name:giftify}
+      env: prod
