@@ -4,54 +4,33 @@ import app.giftify.shared.domain.event.BaseDomainEvent;
 
 public class MemberSignedEvent extends BaseDomainEvent {
     private final Long memberId;
+    private final String authSub;
     private final String nickname;
-    private final String name;
-    private final String email;
-    private final String phoneNum;
-    private final String address;
 
-    public MemberSignedEvent(Long memberId, String nickname, String name, String email, String phoneNum, String address) {
+    public MemberSignedEvent(Long memberId, String authSub, String nickname) {
         this.memberId = memberId;
+        this.authSub = authSub;
         this.nickname = nickname;
-        this.name = name;
-        this.email = email;
-        this.phoneNum = phoneNum;
-        this.address = address;
     }
 
     public Long getMemberId() {
         return memberId;
     }
 
+    public String getAuthSub() {
+        return authSub;
+    }
+
     public String getNickname() {
         return nickname;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhoneNum() {
-        return phoneNum;
-    }
-
-    public String getAddress() {
-        return address;
     }
 
     @Override
     public String toString() {
         return "MemberSignedEvent{" +
                 "memberId=" + memberId +
+                ", authSub='" + authSub + '\'' +
                 ", nickname='" + nickname + '\'' +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", phoneNum='" + phoneNum + '\'' +
-                ", address='" + address + '\'' +
                 '}';
     }
 }

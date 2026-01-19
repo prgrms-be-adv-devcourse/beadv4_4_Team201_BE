@@ -63,11 +63,9 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         eventPublisher.publish(
                 new MemberSignedEvent(
                         savedMember.getId(),
-                        savedMember.getNickname(),
-                        savedMember.getName(),
-                        savedMember.getEmail(),
-                        savedMember.getPhoneNum(),
-                        savedMember.getAddress()
+                        savedMember.getAuthSub(),
+                        savedMember.getNickname()
+
                 )
         );
 
@@ -110,11 +108,8 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         eventPublisher.publish(
                 new MemberUpdatedEvent(
                         updatedMember.getId(),
-                        updatedMember.getNickname(),
-                        updatedMember.getName(),
-                        updatedMember.getEmail(),
-                        updatedMember.getPhoneNum(),
-                        updatedMember.getAddress()
+                        updatedMember.getAuthSub(),
+                        updatedMember.getNickname()
                 )
         );
 
