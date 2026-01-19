@@ -68,6 +68,6 @@ class MemberTest {
 
         // then
         assertThat(member.isActive()).isFalse();
-        assertThatThrownBy(member::validActive).isInstanceOf(MemberStatusException.class);
+        assertThatThrownBy(member::validateActiveStatus).isInstanceOf(MemberStatusException.class);
     }
 }

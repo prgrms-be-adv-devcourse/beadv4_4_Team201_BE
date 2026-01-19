@@ -96,12 +96,14 @@ public class Member extends BaseDomainModel {
         }
     }
 
-    public void validActive() {
+    // 회원이 활성 상태가 아닐 경우 예외를 던집니다. (검증 및 흐름 제어용)
+    public void validateActiveStatus() {
         if (this.status != MemberStatus.ACTIVE) {
             throw new MemberStatusException();
         }
     }
 
+    // 현재 회원의 활성화 상태 여부를 boolean으로 반환합니다. (상태 체크용)
     public boolean isActive() {
         return this.status == MemberStatus.ACTIVE;
     }

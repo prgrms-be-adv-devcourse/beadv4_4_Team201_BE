@@ -44,8 +44,8 @@ class MemberServiceTest {
     private MemberService memberService;
 
     @Test
-    @DisplayName("[회원 가입] 성공 - registerPreSignupMember")
-    void registerPreSignupMember_Success() {
+    @DisplayName("[회원 가입] 성공 - registerMember")
+    void registerMember_Success() {
         // given
         RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
                 "test@example.com",
@@ -68,7 +68,7 @@ class MemberServiceTest {
         given(memberRepositoryPort.save(any(Member.class))).willReturn(savedMember);
 
         // when
-        Member result = memberService.joinedMember(command);
+        Member result = memberService.registerMember(command);
 
         // then
         assertThat(result.getEmail()).isEqualTo(command.email());
@@ -79,7 +79,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("[회원 가입] 이미 가입된 회원인 경우 예외 발생")
-    void registerPreSignupMember_DuplicateMember() {
+    void registerMember_DuplicateMember() {
         // given
         RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
                 "test@example.com",
@@ -95,7 +95,7 @@ class MemberServiceTest {
                 .willReturn(Optional.of(Member.builder().build()));
 
         // when & then
-        assertThatThrownBy(() -> memberService.joinedMember(command))
+        assertThatThrownBy(() -> memberService.registerMember(command))
                 .isInstanceOf(DuplicateMemberException.class);
     }
 
