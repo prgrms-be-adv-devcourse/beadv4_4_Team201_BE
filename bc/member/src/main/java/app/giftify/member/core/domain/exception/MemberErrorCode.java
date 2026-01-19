@@ -27,10 +27,12 @@ public enum MemberErrorCode implements ErrorCode {
     private final String code;
     private final String message;
 
+    @Override
     public String getCode() {
         return code;
     }
 
+    @Override
     public String getMessage() {
         return message;
     }
