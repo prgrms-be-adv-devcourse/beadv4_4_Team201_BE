@@ -41,6 +41,7 @@ public class FundingExpireUseCase {
     public List<FundingCompleteResponseDto> expireExpiredFundings() {
         LocalDateTime now = LocalDateTime.now();
 
+        //fixme: 데이터양이많아질경우
         List<Funding> expiredFundings = fundingRepository.findByEndAtBeforeAndStatusIn(
                 now,
                 List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED)

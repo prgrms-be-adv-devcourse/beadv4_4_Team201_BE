@@ -114,9 +114,9 @@ public class Funding extends BaseJpaEntity {
         this.closedAt = LocalDateTime.now();
     }
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(this.endAt);
-    }
+    public boolean isExpired(LocalDateTime now) {return now.isAfter(this.endAt); }
+
+    public boolean isExpired() {return LocalDateTime.now().isAfter(this.endAt); }
 
     public boolean isAchieved() {
         return this.currentAmount.equals(this.targetAmount);
