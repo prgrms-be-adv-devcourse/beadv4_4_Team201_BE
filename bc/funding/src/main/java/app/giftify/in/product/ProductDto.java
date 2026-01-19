@@ -8,7 +8,6 @@ public record ProductDto(
 	String name,
 	String description,
 	int price,
-	int stock,
 	LocalDateTime createdAt
 ) {
 }

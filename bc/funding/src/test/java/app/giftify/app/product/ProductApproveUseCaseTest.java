@@ -13,12 +13,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStatus;
+import app.giftify.shared.domain.event.EventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ProductApproveUseCaseTest {
 
 	@Mock
 	private ProductSupport productSupport;
+
+	@Mock
+	private EventPublisher eventPublisher;
 
 	@InjectMocks
 	private ProductApproveUseCase productApproveUseCase;

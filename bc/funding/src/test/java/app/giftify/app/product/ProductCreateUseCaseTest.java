@@ -16,12 +16,16 @@ import app.giftify.domain.product.Product;
 import app.giftify.in.product.ProductCreateRequestDto;
 import app.giftify.in.product.ProductDto;
 import app.giftify.out.product.ProductRepository;
+import app.giftify.shared.domain.event.EventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ProductCreateUseCaseTest {
 
 	@Mock
 	private ProductRepository productRepository;
+
+	@Mock
+	private EventPublisher eventPublisher;
 
 	@InjectMocks
 	private ProductCreateUseCase productCreateUseCase;
@@ -42,7 +46,6 @@ class ProductCreateUseCaseTest {
 		assertThat(result.name()).isEqualTo("테스트 상품");
 		assertThat(result.description()).isEqualTo("테스트 설명");
 		assertThat(result.price()).isEqualTo(10000);
-		assertThat(result.stock()).isEqualTo(100);
 		assertThat(result.sellerNickName()).isEqualTo("판매자");
 
 		verify(productRepository).save(any(Product.class));
