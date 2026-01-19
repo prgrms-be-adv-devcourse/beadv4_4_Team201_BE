@@ -1,14 +1,15 @@
 package app.giftify.auth.support.config;
 
-import app.giftify.auth.core.service.AuthService;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -17,74 +18,144 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import app.giftify.auth.core.service.AuthService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final AuthService authService;
+	private final ClientRegistrationRepository clientRegistrationRepository;
+	private final AuthService authService;
+	private final Environment env;
 
-    @Value("${auth0.audience}")
-    private String audience;
+	@Value("${auth0.audience}")
+	private String audience;
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuer;
+	@Bean
+	public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
+		boolean isLocal = isH2ConsoleAllowed();
 
-    @Bean
-    public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Stateless 모드: 서버가 세션(JSESSIONID)을 유지하지 않으므로, 페이지를 새로고침하거나 다시 접속하면 서버는 사용자를 기억하지 못하고 다시 Auth0로 보냄
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/auth/").permitAll() // 메인과 기본 안내 페이지는 허용
-                        .requestMatchers("/api/auth/login-success").authenticated() // 로그인이 필요한 페이지 명시
-                        .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(authorization -> authorization
-                                .authorizationRequestResolver(authorizationRequestResolver(this.clientRegistrationRepository))
-                        )
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(this.authService)
-                        )
-                        .defaultSuccessUrl("/api/auth/login-success", true)
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> {
-                        })
-                )
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
-                        .logoutSuccessHandler(oidcLogoutSuccessHandler()) // Auth0 로그아웃 연동
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                )
-        ;
+		log.info("=== Security Configuration ===");
+		log.info("Active profiles: {}", Arrays.toString(env.getActiveProfiles()));
+		log.info("Local environment (H2 enabled): {}", isLocal);
+		log.info("H2 Console access: {}", isLocal ? "ALLOWED" : "DENIED");
 
-        return http.build();
-    }
+		http
+			// CSRF 비활성화 (JWT 기반 API 중심 구조)
+			.csrf(csrf -> csrf.disable())
 
-    // Auth0 외부 로그아웃을 처리하는 핸들러입니다.
-    private LogoutSuccessHandler oidcLogoutSuccessHandler() {
-        OidcClientInitiatedLogoutSuccessHandler logoutSuccessHandler =
-                new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
+			// Frame Options 설정: 개발/로컬 환경에서만 H2 콘솔 접근 허용
+			.headers(headers -> {
+				if (isLocal) {
+					headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
+				} else {
+					headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny);
+				}
+			})
 
-        // 로그아웃 후 리다이렉트될 위치 (Auth0 대시보드에 Allowed Logout URLs로 등록되어 있어야 함)
-        logoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}/api/auth/");
-        return logoutSuccessHandler;
-    }
+			// 경로별 접근 권한 설정
+			.authorizeHttpRequests(auth -> {
+				// 공개 엔드포인트
+				auth.requestMatchers("/", "/api/auth/login").permitAll();
 
-    // Auth0 로그인 시 Audience 파라미터를 추가하여 JWT Access Token을 발급받도록 설정
-    private OAuth2AuthorizationRequestResolver authorizationRequestResolver(ClientRegistrationRepository repository) {
-        DefaultOAuth2AuthorizationRequestResolver resolver = new DefaultOAuth2AuthorizationRequestResolver(repository, "/oauth2/authorization");
-        resolver.setAuthorizationRequestCustomizer(customizer
-                -> customizer.additionalParameters(params
-                -> params.put("audience", audience)));
-        return resolver;
-    }
+				// Actuator 헬스체크 (Docker, K8s, 로드밸런서용)
+				auth.requestMatchers("/actuator/health", "/actuator/health/**").permitAll();
 
+				// H2 콘솔: 로컬 환경에서만 허용
+				if (isLocal) {
+					log.info("Permitting access to /h2-console/**");
+					auth.requestMatchers("/h2-console/**").permitAll();
+				}
+
+				// 나머지 모든 요청은 인증 필요
+				auth.anyRequest().authenticated();
+			})
+
+			// OAuth2 로그인 설정
+			.oauth2Login(oauth2 -> oauth2
+				.authorizationEndpoint(authEndpoint -> authEndpoint
+					.authorizationRequestResolver(
+						authorizationRequestResolver(clientRegistrationRepository)
+					)
+				)
+				.userInfoEndpoint(userInfo -> userInfo
+					.oidcUserService(this.authService)
+				)
+				.defaultSuccessUrl("/api/auth/login-success", true)
+			)
+
+			// JWT 리소스 서버 설정
+			.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+
+			// 로그아웃 설정
+			.logout(logout -> logout
+				.logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
+				.logoutSuccessHandler(oidcLogoutSuccessHandler())
+				.invalidateHttpSession(true)
+				.clearAuthentication(true)
+				.deleteCookies("JSESSIONID")
+			);
+
+		return http.build();
+	}
+
+	// 로컬 개발 환경인지 확인 (H2 콘솔 접근 권한 제어용)
+	// local 프로파일: IDE에서 직접 실행, H2 in-memory DB 사용
+	// dev 프로파일: docker-compose 환경, PostgreSQL 사용 -> H2 불필요
+	private boolean isH2ConsoleAllowed() {
+		String[] activeProfiles = env.getActiveProfiles();
+
+		// [기본값] 프로파일이 설정되지 않은 경우 - 로컬로 간주
+		if (activeProfiles.length == 0) {
+			log.warn("No active profiles detected. Treating as local environment for safety.");
+			return true;
+		}
+
+		// local 또는 default 프로파일에서만 H2 콘솔 허용
+		// dev 프로파일은 PostgreSQL을 사용하므로 제외
+		boolean result = Arrays.stream(activeProfiles)
+			.anyMatch(profile ->
+				profile.equalsIgnoreCase("local") ||
+					profile.equalsIgnoreCase("default")
+			);
+
+		log.debug("Profile check result - Active: {}, H2 Console Allowed: {}",
+			Arrays.toString(activeProfiles), result);
+
+		return result;
+	}
+
+	// Auth0 로그아웃 핸들러
+	// Auth0 로그아웃 페이지로 리다이렉트하여 완전한 로그아웃 처리
+	private LogoutSuccessHandler oidcLogoutSuccessHandler() {
+		OidcClientInitiatedLogoutSuccessHandler handler =
+			new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
+
+		// 로그아웃 후 리다이렉트 URL (Auth0 대시보드의 Allowed Logout URLs에 등록 필요)
+		handler.setPostLogoutRedirectUri("{baseUrl}/api/auth/");
+
+		return handler;
+	}
+
+	// Auth0 인증 요청 커스터마이징
+	// JWT Access Token 발급을 위해 audience 파라미터 추가
+	private OAuth2AuthorizationRequestResolver authorizationRequestResolver(
+		ClientRegistrationRepository repository) {
+		DefaultOAuth2AuthorizationRequestResolver resolver =
+			new DefaultOAuth2AuthorizationRequestResolver(
+				repository, "/oauth2/authorization");
+
+		// audience 파라미터 추가
+		resolver.setAuthorizationRequestCustomizer(customizer ->
+			customizer.additionalParameters(params ->
+				params.put("audience", audience)
+			)
+		);
+
+		return resolver;
+	}
 }

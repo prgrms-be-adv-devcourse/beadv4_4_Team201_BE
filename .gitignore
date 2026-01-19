@@ -72,6 +72,8 @@ application-local.yml
 application-*-local.yml
 application-local.properties
 application-*-local.properties
+**/application-local.yml
+**/application-*-local.yml
 
 # Logs
 logs/
@@ -92,6 +94,9 @@ bin/
 
 ### Custom
 .env
+.env.properties
+**/.env
+**/.env.properties
 docs/workthroughs/
 .gw/
 .worktrees/

@@ -1,30 +1,31 @@
 package wallet.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.lang.reflect.Field;
-import java.util.Optional;
-
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.vo.Money;
+import domain.errorCode.WalletErrorCode;
+import domain.exception.WalletException;
+import domain.payment.Payment;
+import domain.wallet.Wallet;
+import domain.wallet.WalletRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import walletHistory.port.WalletHistoryRepository;
 
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentType;
-import app.giftify.shared.domain.event.wallet.WalletChargeCompletedEvent;
-import app.giftify.shared.domain.vo.Money;
-import domain.payment.Payment;
-import domain.wallet.Wallet;
-import domain.wallet.WalletRepository;
+import java.lang.reflect.Field;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 // todo: 지갑 생성 테스트 시나리오 재작성
 // todo: 지갑 조회 테스트 시나리오 재작성
@@ -33,6 +34,9 @@ class WalletServiceTest {
 
     @Mock
     private WalletRepository walletRepository;
+
+    @Mock
+    private WalletHistoryRepository walletHistoryRepository;
 
     @Mock
     private EventPublisher eventPublisher;
@@ -248,22 +252,39 @@ class WalletServiceTest {
         );
 
         // then
-        verify(walletRepository).findByMemberId(wallet.getMemberId());
-        verify(eventPublisher).publish(any(WalletChargeCompletedEvent.class));
-
-        // 이벤트 내용 검증
-        ArgumentCaptor<WalletChargeCompletedEvent> eventCaptor = ArgumentCaptor.forClass(WalletChargeCompletedEvent.class);
-        verify(eventPublisher).publish(eventCaptor.capture());
-        WalletChargeCompletedEvent publishedEvent = eventCaptor.getValue();
-
-        assertAll(
-                () -> assertThat(publishedEvent.getWalletId()).isEqualTo(wallet.getId()),
-                () -> assertThat(publishedEvent.getAmount()).isEqualTo(amount),
-                () -> assertThat(publishedEvent.getTransactionType()).isEqualTo(transactionType),
-                () -> assertThat(publishedEvent.getBalanceAfter()).isEqualTo(balanceBefore.plus(amount)),
-                () -> assertThat(publishedEvent.getReferenceType()).isEqualTo(referenceType),
-                () -> assertThat(publishedEvent.getReferenceId()).isEqualTo(referenceId)
+        verify(walletRepository, times(1)).findByMemberId(wallet.getMemberId());
+        verify(walletHistoryRepository, times(1)).record(
+                wallet.getId(),
+                transactionType,
+                amount,
+                balanceBefore.plus(amount),
+                referenceType,
+                referenceId
         );
+    }
+
+    @Test
+    @DisplayName("중복된 트랜잭션 요청 무시 - 이미 존재하는 이력")
+    void chargeIgnoreWhenDuplicateTransactionExists() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(5000L);
+        String transactionType = "CHARGE";
+        String referenceType = "PAYMENT";
+        Long referenceId = 101L;
+
+        // `walletHistoryRepository.existsByReferenceIdAndReferenceType` 가 true 반환
+        when(walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType))
+                .thenReturn(true);
+
+        // when
+        walletService.charge(memberId, amount, transactionType, referenceType, referenceId);
+
+        // then
+        // 중복된 트랜잭션으로 충전 연산이 수행되지 않는지 검증
+        verify(walletHistoryRepository, times(1)).existsByReferenceIdAndReferenceType(referenceId, referenceType);
+        verify(walletRepository, never()).save(any(Wallet.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -287,7 +308,7 @@ class WalletServiceTest {
 
         verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository, never()).save(any(Wallet.class));
-        verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -314,6 +335,113 @@ class WalletServiceTest {
 
         verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository).save(wallet);
-        verify(eventPublisher, never()).publish(any(WalletChargeCompletedEvent.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("성공적으로 출금이 수행되면 잔액이 차감되고 이력이 기록된다.")
+    void withdraw_Success() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(10000);
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        Money balanceBefore = Money.of(20000);
+        Wallet wallet = Wallet.create(memberId, balanceBefore); // 초기 잔액 20,000원
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
+
+        // when
+        walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId);
+
+        // then
+        // walletHistoryRepository.save() 호출 검증
+        verify(walletRepository, times(1)).save(wallet);
+        // walletHistoryRepository.record() 호출 검증
+        verify(walletHistoryRepository, times(1)).record(
+                wallet.getId(),
+                transactionType,
+                amount,
+                balanceBefore.minus(amount),
+                referenceType,
+                referenceId
+        );
+
+        assertThat(wallet.getBalance()).isEqualTo(balanceBefore.minus(amount)); // 잔액이 10,000원이 남아야 함
+    }
+
+    @Test
+    @DisplayName("지갑이 존재하지 않을 경우 예외가 발생한다")
+    void withdraw_Failure_WalletNotFound() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(10000);
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다.");
+
+        // save 호출되지 않았는지 검증
+        verify(walletRepository, never()).save(any(Wallet.class));
+
+        // record 호출되지 않았는지 검증
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("출금 금액이 잔액보다 크면 예외가 발생한다")
+    void withdraw_Failure_InsufficientFunds() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(30000); // 출금 금액 30,000원
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        Wallet wallet = Wallet.create(memberId, Money.of(20000)); // 초기 잔액 20,000원
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
+
+        // when & then
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(WalletException.class)
+                .hasMessage(WalletErrorCode.INSUFFICIENT_BALANCE.getMessage());
+
+        // save 호출되지 않았는지 검증
+        verify(walletRepository, never()).save(wallet);
+
+        // record 호출되지 않았는지 검증
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("출금 금액이 null이면 예외가 발생한다")
+    void withdraw_Failure_NullAmount() {
+        // given
+        Long memberId = 1L;
+        Money amount = null; // null 금액
+        String transactionType = "WITHDRAW";
+        String referenceType = "ORDER";
+        Long referenceId = 123L;
+
+        Wallet wallet = Wallet.create(memberId, Money.of(20000)); // 초기 잔액 20,000원
+        when(walletRepository.findByMemberId(memberId)).thenReturn(Optional.of(wallet));
+
+        // when & then
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(WalletException.class)
+                .hasMessage(WalletErrorCode.INVALID_NULL_AMOUNT.getMessage());
+
+        // save 호출되지 않았는지 검증
+        verify(walletRepository, never()).save(wallet);
+
+        // record 호출되지 않았는지 검증
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 }
