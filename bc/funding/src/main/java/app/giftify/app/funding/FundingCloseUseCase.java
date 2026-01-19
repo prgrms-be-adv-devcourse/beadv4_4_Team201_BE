@@ -3,8 +3,11 @@ package app.giftify.app.funding;
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
+import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.funding.FundingCancelledEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,18 +15,25 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FundingCloseUseCase {
     private final FundingRepository fundingRepository;
+    private final EventPublisher eventPublisher;
 
-    /**
-     * 펀딩 강제 종료 (사용자/관리자 요청)
-     */
     public FundingCompleteResponseDto closeFunding(Long id) {
         Funding funding = fundingRepository.findById(id)
             .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
+        FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
+        Integer currentAmount = funding.getCurrentAmount();
+        
         funding.close();
 
-        // TODO: 환불 처리 이벤트 발행
-        // eventPublisher.publish(new FundingClosedEvent(funding.getId()));
+        // 환불 처리를 위한 이벤트 발행
+        eventPublisher.publish(new FundingCancelledEvent(
+            funding.getId(),
+            wishlistItem.getWishlistId(),
+            currentAmount,
+            wishlistItem.getProductId(),
+            wishlistItem.getReceiverId()
+        ));
 
         return new FundingCompleteResponseDto(
             funding.getId(),

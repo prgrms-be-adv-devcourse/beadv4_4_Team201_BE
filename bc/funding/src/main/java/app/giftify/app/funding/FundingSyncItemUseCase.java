@@ -22,6 +22,7 @@ public class FundingSyncItemUseCase {
         // DTO 정보를 그대로 FundingWishlistItem에 저장 (스냅샷)
         FundingWishlistItem fundingWishlistItem = new FundingWishlistItem(
             dto.wishlistItemId(),
+            dto.receiverId(),
             dto.productId(),
             dto.productName(),
             dto.productPrice(),

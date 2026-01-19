@@ -1,13 +1,10 @@
 package app.giftify.app.funding;
 
-import app.giftify.domain.funding.Funding;
-import app.giftify.domain.funding.FundingErrorCode;
-import app.giftify.domain.funding.FundingException;
-import app.giftify.domain.funding.FundingStatus;
+import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.support.common.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,9 +22,17 @@ public class FundingExpireUseCase {
         Funding funding = fundingRepository.findById(id)
                 .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
+        FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
+        Integer currentAmount = funding.getCurrentAmount();
+        
         funding.expire();
 
-         eventPublisher.publish(new FundingExpiredEvent(funding.getId()));
+        eventPublisher.publish(new FundingExpiredEvent(
+                funding.getId(),
+                wishlistItem.getWishlistId(),
+                currentAmount,
+                wishlistItem.getReceiverId()
+        ));
 
         return new FundingCompleteResponseDto(
                 funding.getId(),
@@ -48,8 +53,17 @@ public class FundingExpireUseCase {
         );
 
         for (Funding funding : expiredFundings) {
+            FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
+            Integer currentAmount = funding.getCurrentAmount();
+            
             funding.expire();
-            eventPublisher.publish(new FundingExpiredEvent(funding.getId()));
+
+            eventPublisher.publish(new FundingExpiredEvent(
+                    funding.getId(),
+                    wishlistItem.getWishlistId(),
+                    currentAmount,
+                    wishlistItem.getReceiverId()
+            ));
         }
 
         return expiredFundings.stream()
