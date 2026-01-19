@@ -153,6 +153,34 @@ class MemberServiceTest {
     }
 
     @Test
+    @DisplayName("[닉네임 중복 확인] 이미 존재하는 닉네임인 경우 true")
+    void isNicknameDuplicated_True() {
+        // given
+        String nickname = "duplicated";
+        given(memberRepositoryPort.findByNickname(nickname)).willReturn(Optional.of(Member.builder().build()));
+
+        // when
+        boolean result = memberService.isNicknameDuplicated(nickname);
+
+        // then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("[닉네임 중복 확인] 존재하지 않는 닉네임인 경우 false")
+    void isNicknameDuplicated_False() {
+        // given
+        String nickname = "unique";
+        given(memberRepositoryPort.findByNickname(nickname)).willReturn(Optional.empty());
+
+        // when
+        boolean result = memberService.isNicknameDuplicated(nickname);
+
+        // then
+        assertThat(result).isFalse();
+    }
+
+    @Test
     @DisplayName("[회원 조회] AuthSub으로 가입된 회원 조회 성공")
     void getMemberByAuthSub_Success() {
         // given
