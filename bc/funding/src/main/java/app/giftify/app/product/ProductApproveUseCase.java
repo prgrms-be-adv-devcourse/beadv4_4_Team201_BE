@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import app.giftify.domain.product.Product;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductModifiedEvent;
+import app.giftify.shared.domain.event.product.ProductVerifiedEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -17,9 +17,15 @@ public class ProductApproveUseCase {
 		Product product = productSupport.findById(id);
 		product.approve();
 
-		/**
-		 * todo 멤버모듈상품 sync Event
-		 */
-		eventPublisher.publish(new ProductModifiedEvent(product.toSnapshot()));
+		// 상품 승인되어 ProductVerifiedEvent 발행 (sync)
+		eventPublisher.publish(
+			new ProductVerifiedEvent(
+				product.getId(),
+				product.getName(),
+				product.getDescription(),
+				product.getPrice(),
+				product.getSeller().getNickname()
+			)
+		);
 	}
 }

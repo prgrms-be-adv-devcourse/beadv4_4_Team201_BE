@@ -2,12 +2,14 @@ package app.giftify.domain.product;
 
 import static app.giftify.domain.product.ProductStatus.*;
 import static app.giftify.domain.product.exception.ProductErrorCode.*;
+import static app.giftify.shared.domain.event.product.ProductSaleDisableReason.*;
 
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.exception.ProductException;
 import app.giftify.in.product.ProductDto;
-import app.giftify.shared.domain.event.product.ProductSnapshot;
-import app.giftify.shared.domain.event.product.ProductSoldoutEvent;
+import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
+import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
+import app.giftify.shared.domain.event.product.ProductVerifiedEvent;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -61,7 +63,7 @@ public class Product extends BaseJpaEntity {
 	/**
 	 * DTO 변환
 	 */
-	// response 응답용
+	// 일반 response 응답용
 	public ProductDto toDto() {
 		return new ProductDto(
 			getId(), getSeller().getNickname(), getName(),
@@ -69,43 +71,43 @@ public class Product extends BaseJpaEntity {
 		);
 	}
 
-	// sync 이벤트 등에 사용
-	public ProductSnapshot toSnapshot() {
-		return new ProductSnapshot(
-			getId(), getSeller().getNickname(), getName(),
-			getDescription(), getPrice(), getStock(),
-			getCreatedAt(), getUpdatedAt()
-		);
-	}
-
 	/**
 	 * 상품 상태 변경
+	 * todo 상품 상태 변경 이력 컬렉션
 	 */
 	// 상품 등록 승인
 	public void approve() {
 		validateTransition(INACTIVE); // 판매 대기 상태로
-		// todo 판매 상태 변경 이벤트
+		registerEvent(new ProductVerifiedEvent(
+			this.getId(),
+			this.getName(),
+			this.getDescription(),
+			this.getPrice(),
+			this.getSeller().getNickname()
+		));
 	}
 
 	// 상품 등록 거절
 	public void reject() {
 		validateTransition(REJECTED);
-		// todo 판매 상태 변경 이벤트
 	}
 
 	// 상품 판매 시작
 	public void active() {
 		validateTransition(ACTIVE);
-		// todo 판매 상태 변경 이벤트
+		registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
 	}
 
 	// 상품 판매 중지
 	public void inActive() {
 		validateTransition(INACTIVE);
-		// todo 판매 상태 변경 이벤트 (미완료된 펀딩 환불)
+		registerEvent(new ProductSaleDisabledEvent(
+			this.getId(),
+			STOPPED_BY_SELLER
+		)); // 판매 불가능 이벤트 발생
 	}
 
-	// 상품 상태 변경 가능 여부 검증
+	// 상품 상태 검증 및 변경
 	private void validateTransition(ProductStatus toStatus) {
 		switch (toStatus) {
 			case DRAFT -> throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
@@ -120,7 +122,7 @@ public class Product extends BaseJpaEntity {
 				this.status = ACTIVE;
 			}
 			case INACTIVE -> {
-				if (this.status == REJECTED)
+				if (this.status != DRAFT && this.status != ACTIVE)
 					throw new ProductException(PRODUCT_REJECTED_CANNOT_BE_ACTIVATED);
 				this.status = INACTIVE;
 			}
@@ -143,28 +145,35 @@ public class Product extends BaseJpaEntity {
 	}
 
 	public void updateStock(int newStock) {
-		// todo 재고이력관리
+		// todo 재고이력 컬렉션
 		int beforeStock = this.stock;
 		this.stock = newStock;
 
-		if (beforeStock > 0 && newStock == 0) {
-			registerEvent(new ProductSoldoutEvent(this.getId())); // 품절 이벤트 발생
-			// eventPublisher(new ProductSoldoutEvent(this.getId()));
+		if (beforeStock > 0 && newStock == 0 && this.status == ACTIVE) {
+			registerEvent(new ProductSaleDisabledEvent(this.getId(), SOLD_OUT)); // 품절 이벤트 발생
+		}
+		if (beforeStock == 0 && newStock > 0 && this.status == ACTIVE) {
+			registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
 		}
 	}
 
-	// 상품 재고 감소 todo 재고이력관리
+	// 상품 재고 감소 todo 재고이력 컬렉션
 	public void decreaseStock(int quantity) {
 		if (this.stock < quantity)
 			throw new ProductException(PRODUCT_OUT_OF_STOCK);
+
 		this.stock -= quantity;
-		if (this.stock == 0)
-			registerEvent(new ProductSoldoutEvent(this.getId())); // 품절 이벤트 발생
-		// eventPublisher(new ProductSoldoutEvent(this.getId()));
+
+		if (this.stock == 0 && this.status == ACTIVE)
+			registerEvent(new ProductSaleDisabledEvent(this.getId(), SOLD_OUT)); // 품절 이벤트 발생
 	}
 
-	// 상품 재고 추가 todo 재고이력관리
+	// 상품 재고 추가 todo 재고이력 컬렉션
 	public void increaseStock(int quantity) {
+		int beforeStock = this.stock;
 		this.stock += quantity;
+
+		if (beforeStock == 0 && this.status == ACTIVE)
+			registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
 	}
 }

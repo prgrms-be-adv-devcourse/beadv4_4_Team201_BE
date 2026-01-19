@@ -19,26 +19,20 @@ public record ProductUpdateRequestDto(
 ) {
 	public ProductUpdateRequestDto {
 		// DTO 입력 검증
-		if (isEmpty())
+		name = normalize(name);
+		description = normalize(description);
+
+		if (name == null && description == null && price == null && stock == null && status == null) {
 			throw new ProductException(PRODUCT_UPDATE_EMPTY_REQUEST);
+		}
 		if (status != null && status != ACTIVE && status != INACTIVE) {
 			throw new ProductException(INVALID_PRODUCT_STATUS);
 		}
-		name = normalize(name);
-		description = normalize(description);
 	}
 
 	private static String normalize(String value) { // 앞 뒤 공백 제거
 		if (value == null)
 			return null;
 		return value.trim().isBlank() ? null : value.trim();
-	}
-
-	public boolean isEmpty() {
-		return name == null
-			&& description == null
-			&& price == null
-			&& stock == null
-			&& status == null;
 	}
 }

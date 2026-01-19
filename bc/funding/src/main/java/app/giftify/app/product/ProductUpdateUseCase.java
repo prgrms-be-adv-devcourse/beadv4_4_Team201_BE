@@ -7,8 +7,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import app.giftify.domain.product.Product;
-import app.giftify.in.product.ProductDto;
 import app.giftify.in.product.ProductUpdateRequestDto;
+import app.giftify.in.product.ProductUpdateResponseDto;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductModifiedEvent;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class ProductUpdateUseCase {
 	private final EventPublisher eventPublisher;
 
 	// todo @Lock
-	public ProductDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
+	public ProductUpdateResponseDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
 		Product product = productSupport.findByIdAndSellerId(productId, sellerId);
 
 		// todo 더티체킹해서 변경사항 있을 때만 ProductModifiedEvent 발행하기?
@@ -29,14 +29,17 @@ public class ProductUpdateUseCase {
 		Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice); // 설명 수정
 		Optional.ofNullable(requestDto.stock()).ifPresent(product::updateStock); // 재고 수정
 
-		switch (requestDto.status()) {
-			case ACTIVE -> {
-				if (product.getStatus() != ACTIVE)
-					product.active();
-			}
-			case INACTIVE -> {
-				if (product.getStatus() != INACTIVE)
-					product.inActive();
+		var status = requestDto.status();
+		if (status != null) {
+			switch (status) {
+				case ACTIVE -> {
+					if (product.getStatus() != ACTIVE)
+						product.active();
+				}
+				case INACTIVE -> {
+					if (product.getStatus() != INACTIVE)
+						product.inActive();
+				}
 			}
 		}
 
@@ -49,8 +52,14 @@ public class ProductUpdateUseCase {
 		/** 어플리케이션 이벤트 발행
 		 * todo 멤버모듈상품 sync Event
 		 */
-		eventPublisher.publish(new ProductModifiedEvent(product.toSnapshot()));
+		eventPublisher.publish(new ProductModifiedEvent(
+			product.getId(),
+			product.getName(),
+			product.getDescription(),
+			product.getPrice(),
+			product.getSeller().getNickname()
+		));
 
-		return product.toDto();
+		return ProductUpdateResponseDto.from(product);
 	}
 }

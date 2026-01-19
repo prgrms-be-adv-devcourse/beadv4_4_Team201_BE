@@ -31,9 +31,10 @@ public enum ProductErrorCode implements ErrorCode {
 	INVALID_PRODUCT_STOCK(BAD_REQUEST, "P015", "재고량이 올바르지 않습니다."),
 
 	// 상품 수정 에러코드
-	PRODUCT_UPDATE_EMPTY_REQUEST(BAD_REQUEST, "P016", "수정 내용이 없습니다."),
-	INVALID_PRODUCT_STATUS(BAD_REQUEST, "P017", "허용되지 않은 상태값입니다.");
+	PRODUCT_UPDATE_EMPTY_REQUEST(NO_CONTENT, "P016", "수정할 내용이 없습니다."),
+	INVALID_PRODUCT_STATUS(BAD_REQUEST, "P017", "허용되지 않은 상태값입니다."),
 
+	INVALID_APPROVAL_ACTION(BAD_REQUEST, "P015", "올바르지 않은 액션값입니다.");
 	private final HttpStatus status;
 	private final String code;
 	private final String message;

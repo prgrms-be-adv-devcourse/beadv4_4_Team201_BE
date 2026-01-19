@@ -1,5 +1,6 @@
 package app.giftify.in.product;
 
+import static app.giftify.domain.product.exception.ProductErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
 
 import org.springframework.http.ResponseEntity;
@@ -15,15 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.app.product.ProductFacade;
 import app.giftify.domain.FundingMember;
+import app.giftify.domain.product.exception.ProductException;
 import app.giftify.shared.api.paging.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
-@Slf4j
 public class ProductController {
 	private final ProductFacade productFacade;
 
@@ -39,17 +39,42 @@ public class ProductController {
 		return ResponseEntity.status(CREATED).body(productDto);
 	}
 
-	// 상품 등록 승인 (관리자)
-	// todo 관리자 권한만 승인 가능하도록 인가 적용
-	@PatchMapping("/{id}/approve")
-	public ResponseEntity<String> approveProduct(@PathVariable Long id) {
-		productFacade.approveProduct(id);
-		return ResponseEntity.status(OK).body("상품 등록을 승인하였습니다. 상품 ID: " + id);
+	// 상품 등록 승인 및 거절 (관리자) // todo 관리자 인가
+	@PatchMapping("/{id}/{action}")
+	public ResponseEntity<String> changeApproval(
+		@PathVariable Long id,
+		@PathVariable String action
+	) {
+		switch (action) {
+			case "approve" -> {
+				productFacade.approveProduct(id);
+				return ResponseEntity.status(OK).body("상품 등록 승인, 상품 ID: " + id);
+			}
+			case "reject" -> {
+				productFacade.rejectProduct(id);
+				return ResponseEntity.status(OK).body("상품 등록 거절, 상품 ID: " + id);
+			}
+			default -> throw new ProductException(INVALID_APPROVAL_ACTION);
+		}
+	}
+
+	// 상품 수정
+	@PatchMapping("/my/{productId}")
+	public ResponseEntity<ProductUpdateResponseDto> updateProduct(
+		@PathVariable Long productId,
+		@RequestParam Long sellerId, // todo jwt로 memberId get
+		@RequestBody ProductUpdateRequestDto requestDto
+	) {
+		ProductUpdateResponseDto productDto = productFacade.updateProduct(productId, sellerId, requestDto);
+
+		return ResponseEntity.status(OK).body(productDto);
 	}
 
 	// 상품 단건 조회
 	@GetMapping("/{id}")
-	public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
+	public ResponseEntity<ProductDto> getProduct(
+		@PathVariable Long id
+	) {
 		ProductDto product = productFacade.getProduct(id);
 		return ResponseEntity.status(OK).body(product);
 	}
@@ -65,7 +90,7 @@ public class ProductController {
 	}
 
 	// (판매자) 나의 상품 조회
-	@GetMapping("/me")
+	@GetMapping("/my")
 	public ResponseEntity<PageResponse<ProductDto>> searchMyProducts(
 		@RequestParam Long sellerId, //todo auth memberId
 		@ModelAttribute MyProductSearchDto searchDto

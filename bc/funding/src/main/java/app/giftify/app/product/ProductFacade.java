@@ -9,6 +9,7 @@ import app.giftify.in.product.ProductCreateRequestDto;
 import app.giftify.in.product.ProductDto;
 import app.giftify.in.product.ProductSearchDto;
 import app.giftify.in.product.ProductUpdateRequestDto;
+import app.giftify.in.product.ProductUpdateResponseDto;
 import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ public class ProductFacade {
 	private final ProductGetUseCase productGetUseCase;
 	private final ProductSearchUseCase productSearchUseCase;
 	private final ProductApproveUseCase productApproveUseCase;
+	private final ProductRejectUseCase productRejectUseCase;
 	private final ProductUpdateUseCase productUpdateUseCase;
 
 	@Transactional //todo event
@@ -42,12 +44,17 @@ public class ProductFacade {
 	}
 
 	@Transactional
-	public void approveProduct(Long id) { //todo event
+	public void approveProduct(Long id) {
 		productApproveUseCase.approveProduct(id);
 	}
 
 	@Transactional
-	public ProductDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
+	public void rejectProduct(Long id) {
+		productRejectUseCase.rejectProduct(id);
+	}
+
+	@Transactional
+	public ProductUpdateResponseDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
 		return productUpdateUseCase.updateProduct(productId, sellerId, requestDto);
 	}
 }
