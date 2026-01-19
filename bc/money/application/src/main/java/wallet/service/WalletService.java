@@ -1,7 +1,8 @@
 package wallet.service;
 
-import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.vo.Money;
+import domain.exception.DuplicateTransactionException;
+import domain.exception.WalletNotFoundException;
 import domain.wallet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,6 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
 
     private final WalletRepository walletRepository;
     private final WalletHistoryRepository walletHistoryRepository;
-    private final EventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -30,14 +30,14 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
     @Transactional(readOnly = true)
     public Wallet getWallet(Long walletId) {
         return walletRepository.findById(walletId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 지갑입니다."));
+                .orElseThrow(() -> new WalletNotFoundException(walletId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Wallet getWalletByMemberId(Long memberId) {
         return walletRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다."));
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found. memberId=" + memberId));
     }
 
     @Override
@@ -49,11 +49,7 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
             String referenceType,
             Long referenceId
     ) {
-        boolean isDuplicated = walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType);
-        if (isDuplicated) {
-            logDuplicatedTransaction(referenceType, referenceId);
-            return;
-        }
+        checkAlreadyProcessed(referenceType, referenceId);
 
         Wallet wallet = getWalletByMemberId(memberId);
         wallet.charge(amount);
@@ -78,11 +74,7 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
             String referenceType,
             Long referenceId
     ) {
-        boolean isDuplicated = walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType);
-        if (isDuplicated) {
-            logDuplicatedTransaction(referenceType, referenceId);
-            return;
-        }
+        checkAlreadyProcessed(referenceType, referenceId);
 
         Wallet wallet = getWalletByMemberId(memberId);
         wallet.withdraw(amount);
@@ -98,7 +90,9 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
         );
     }
 
-    private static void logDuplicatedTransaction(String referenceType, Long referenceId) {
-        log.info("Skip duplicated transaction. refId={}, refType={}", referenceId, referenceType);
+    private void checkAlreadyProcessed(String referenceType, Long referenceId) {
+        if (walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType)) {
+            throw new DuplicateTransactionException(referenceType, referenceId);
+        }
     }
 }

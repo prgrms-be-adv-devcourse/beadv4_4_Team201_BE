@@ -1,14 +1,28 @@
 package domain.exception;
 
-import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.ErrorCode;
 
-public class WalletException extends DomainException {
+public class WalletException extends RuntimeException {
+
+    private final ErrorCode errorCode;
+
     public WalletException(ErrorCode errorCode) {
-        super(errorCode);
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 
-    public WalletException(ErrorCode errorCode, String message) {
-        super(errorCode, message);
+    public WalletException(String message) {
+        super(message);
+        this.errorCode = null;
+    }
+
+    public WalletException(String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = null;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
 }
+

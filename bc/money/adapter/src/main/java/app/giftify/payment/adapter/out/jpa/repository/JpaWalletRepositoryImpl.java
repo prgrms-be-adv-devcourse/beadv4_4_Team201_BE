@@ -1,6 +1,7 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
 import app.giftify.payment.adapter.out.jpa.entity.JpaWallet;
+import domain.exception.WalletNotFoundException;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +27,7 @@ public class JpaWalletRepositoryImpl implements WalletRepository {
         }
 
         JpaWallet entity = jpaWalletRepository.findById(wallet.getId())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new WalletNotFoundException(wallet.getId()));
 
         entity.updateFrom(wallet.snapshot());
 

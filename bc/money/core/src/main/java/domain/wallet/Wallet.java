@@ -48,33 +48,26 @@ public class Wallet extends BaseDomainModel {
 	}
 
 	public void charge(Money amount) {
-        validateCharge(amount);
+        validateNull(amount);
+        if (amount.isLessThan(Money.of(1000))) {
+            throw new WalletException(WalletErrorCode.WALLET_CHARGE_AMOUNT_BELOW_MINIMUM);
+        }
 
 		balance = balance.plus(amount);
 	}
 
     public void withdraw(Money amount) {
-        validateWithdraw(amount);
+        validateNull(amount);
+        if (balance.isLessThan(amount)) {
+            throw new WalletException(WalletErrorCode.INSUFFICIENT_BALANCE);
+        }
 
         balance = balance.minus(amount);
     }
 
-    private void validateCharge(Money amount) {
-        // todo: 커스텀 예외 적용
-        if (amount == null) {
-            throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
-        }
-        if (amount.equals(Money.zero())) {
-            throw new IllegalArgumentException("충전 금액은 최소 1000원이어야 합니다.");
-        }
-    }
-
-    private void validateWithdraw(Money amount) {
+    private static void validateNull(Money amount) {
         if (amount == null) {
             throw new WalletException(WalletErrorCode.INVALID_NULL_AMOUNT);
-        }
-        if (balance.isLessThan(amount)) {
-            throw new WalletException(WalletErrorCode.INSUFFICIENT_BALANCE);
         }
     }
 }
