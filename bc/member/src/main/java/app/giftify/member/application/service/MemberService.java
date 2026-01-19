@@ -15,11 +15,13 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -133,5 +135,10 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
     @Override
     public boolean existsByEmail(String email) {
         return memberRepositoryPort.findByEmail(email).isPresent();
+    }
+
+    @Override
+    public boolean isNicknameDuplicated(String nickname) {
+        return memberRepositoryPort.findByNickname(nickname).isPresent();
     }
 }
