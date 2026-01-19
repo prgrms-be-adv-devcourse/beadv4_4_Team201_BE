@@ -101,6 +101,8 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         Member member = memberRepositoryPort.findByAuthSub(command.authSub())
                 .orElseThrow(() -> new MemberNotFoundException(command.authSub()));
 
+        member.validActive();
+
         member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(), command.name());
 
         Member updatedMember = memberRepositoryPort.save(member);
@@ -122,6 +124,8 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         Member member = memberRepositoryPort.findByAuthSub(authSub)
                 .orElseThrow(() -> new MemberNotFoundException(authSub));
 
+        member.validActive();
+
         member.withdraw();
 
         memberRepositoryPort.save(member);
@@ -129,6 +133,10 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
 
     @Override
     public boolean existsByEmail(String email) {
-        return memberRepositoryPort.findByEmail(email).isPresent();
+        Member member = memberRepositoryPort.findByEmail(email).orElse(null);
+        if (member == null) {
+            throw new MemberNotFoundException(email);
+        }
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 package app.giftify.member.core.domain.member;
 
+import app.giftify.member.core.domain.exception.MemberStatusException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import lombok.Builder;
 import lombok.Getter;
@@ -93,5 +94,15 @@ public class Member extends BaseDomainModel {
         if (authSub == null || authSub.isBlank()) {
             throw new IllegalArgumentException("authSub는 필수입니다.");
         }
+    }
+
+    public void validActive() {
+        if (this.status != MemberStatus.ACTIVE) {
+            throw new MemberStatusException();
+        }
+    }
+
+    public boolean isActive() {
+        return this.status == MemberStatus.ACTIVE;
     }
 }
