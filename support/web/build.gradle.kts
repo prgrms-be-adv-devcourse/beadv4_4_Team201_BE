@@ -3,4 +3,5 @@
 dependencies {
     implementation(project(":support:common"))
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.springdoc.openapi.starter.webmvc.ui)
 }
