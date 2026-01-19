@@ -1,0 +1,26 @@
+# Auto Assign Configuration
+# https://github.com/kentaro-m/auto-assign-action
+
+# 리뷰어 자동 할당
+addReviewers: true
+reviewers:
+  # 리뷰어 목록 (GitHub username)
+  - chan99k
+  - theGreatWest
+  - juykoung
+  - seongeun308
+  - suyeon1717
+
+
+# 랜덤으로 선택할 리뷰어 수 (0 = 모두 할당)
+numberOfReviewers: 0
+
+# PR 작성자를 리뷰어에서 제외
+skipKeywords:
+  - wip
+  - WIP
+  - draft
+  - DRAFT
+
+# Assignee 자동 할당
+addAssignees: author
