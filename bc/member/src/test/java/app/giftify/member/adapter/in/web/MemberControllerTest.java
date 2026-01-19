@@ -183,7 +183,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("M002"))
+                .andExpect(jsonPath("$.code").value("M201"))
                 .andExpect(jsonPath("$.message", containsString("이미 가입된 이메일입니다")));
     }
 

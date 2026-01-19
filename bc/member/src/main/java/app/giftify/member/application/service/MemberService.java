@@ -42,7 +42,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
     }
 
     @Override
-    public Member joinedMember(RegisterCommand command) {
+    public Member registerMember(RegisterCommand command) {
         // [중복 가입 방지] 이미 가입된 회원인지 한 번 더 검증
         memberRepositoryPort.findByAuthSub(command.authSub())
                 .ifPresent(m -> {
@@ -89,7 +89,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                 authSub
         );
 
-        Member member = joinedMember(command);
+        Member member = registerMember(command);
 
         preSignupPort.deleteByAuthSub(authSub);
 
@@ -102,7 +102,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         Member member = memberRepositoryPort.findByAuthSub(command.authSub())
                 .orElseThrow(() -> new MemberNotFoundException(command.authSub()));
 
-        member.validActive();
+        member.validateActiveStatus();
 
         member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(), command.name());
 
@@ -125,7 +125,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
         Member member = memberRepositoryPort.findByAuthSub(authSub)
                 .orElseThrow(() -> new MemberNotFoundException(authSub));
 
-        member.validActive();
+        member.validateActiveStatus();
 
         member.withdraw();
 
