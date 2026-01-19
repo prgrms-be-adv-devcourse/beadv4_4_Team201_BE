@@ -11,5 +11,5 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     Funding save(Funding funding);
 
-    List<Funding> findByEndAtBeforeAndStatusIn(LocalDateTime now, List<FundingStatus> statuses);
+    List<Funding> findByDeadlineAfterAndStatusIn(LocalDateTime now, List<FundingStatus> statuses);
 }

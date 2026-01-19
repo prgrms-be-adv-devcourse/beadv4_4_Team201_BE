@@ -3,6 +3,9 @@ package app.giftify.domain.funding;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.*;
 
 class FundingTest {
@@ -88,7 +91,7 @@ class FundingTest {
         assertThat(funding.getCurrentAmount()).isEqualTo(10000); // 초기 금액
         assertThat(funding.getStatus()).isEqualTo(FundingStatus.IN_PROGRESS);
         assertThat(funding.getFundingWishlistItem()).isEqualTo(item);
-        assertThat(funding.getEndAt()).isNotNull();
+        assertThat(funding.getDeadline()).isNotNull();
     }
 
     @Test
@@ -107,7 +110,7 @@ class FundingTest {
         assertThat(funding.getStatus()).isEqualTo(FundingStatus.ACHIEVED); // 바로 달성!
         assertThat(funding.isAchieved()).isTrue();
         assertThat(funding.getFundingWishlistItem()).isEqualTo(item);
-        assertThat(funding.getEndAt()).isNotNull();
+        assertThat(funding.getDeadline()).isNotNull();
     }
 
     @Test
@@ -275,9 +278,9 @@ class FundingTest {
 
         // endAt을 과거로 설정하기 위해 리플렉션 사용
         try {
-            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
-            endAtField.setAccessible(true);
-            endAtField.set(funding, java.time.LocalDateTime.now().minusDays(1));
+            Field deadlineField = Funding.class.getDeclaredField("deadline");
+            deadlineField.setAccessible(true);
+            deadlineField.set(funding, LocalDateTime.now().minusDays(1));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

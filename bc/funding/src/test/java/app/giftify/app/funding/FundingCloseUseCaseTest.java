@@ -1,6 +1,5 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingCloseUseCase;
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
@@ -139,11 +138,11 @@ class FundingCloseUseCaseTest {
         FundingWishlistItem item = createTestWishlistItem();
         Funding funding = Funding.startFunding(item, 10000);
 
-        // endAt을 과거로 설정 (리플렉션)
+        // deadline을 과거로 설정 (리플렉션)
         try {
-            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
-            endAtField.setAccessible(true);
-            endAtField.set(funding, java.time.LocalDateTime.now().minusDays(1));
+            java.lang.reflect.Field deadline = Funding.class.getDeclaredField("deadline");
+            deadline.setAccessible(true);
+            deadline.set(funding, java.time.LocalDateTime.now().minusDays(1));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

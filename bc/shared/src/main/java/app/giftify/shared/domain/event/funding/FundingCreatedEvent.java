@@ -12,14 +12,14 @@ public class FundingCreatedEvent extends BaseDomainEvent {
     private final Long fundingId;
     private final Long wishlistItemId;
     private final Integer targetAmount;
-    private final LocalDateTime endAt;
+    private final LocalDateTime deadline;
 
-    public FundingCreatedEvent(Long fundingId, Long wishlistItemId, Integer targetAmount, LocalDateTime endAt) {
+    public FundingCreatedEvent(Long fundingId, Long wishlistItemId, Integer targetAmount, LocalDateTime deadline) {
         super();
         this.fundingId = fundingId;
         this.wishlistItemId = wishlistItemId;
         this.targetAmount = targetAmount;
-        this.endAt = endAt;
+        this.deadline = deadline;
     }
 
     public Long getFundingId() {
@@ -34,8 +34,8 @@ public class FundingCreatedEvent extends BaseDomainEvent {
         return targetAmount;
     }
 
-    public LocalDateTime getEndAt() {
-        return endAt;
+    public LocalDateTime getDeadline() {
+        return deadline;
     }
 
     @Override
@@ -44,10 +44,11 @@ public class FundingCreatedEvent extends BaseDomainEvent {
                 "fundingId=" + fundingId +
                 ", wishlistItemId=" + wishlistItemId +
                 ", targetAmount=" + targetAmount +
-                ", endAt=" + endAt +
+                ", deadline=" + deadline +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';
     }
 }
+
 

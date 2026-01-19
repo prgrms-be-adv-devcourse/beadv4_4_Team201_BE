@@ -36,7 +36,7 @@ public class FundingCreateUseCase {
             funding.getId(),
             wishlistItem.getWishlistId(),
             funding.getTargetAmount(),
-            funding.getEndAt()
+            funding.getDeadline()
         ));
 
         // 첫 결제로 바로 목표 달성한 경우 FundingAchievedEvent 발행

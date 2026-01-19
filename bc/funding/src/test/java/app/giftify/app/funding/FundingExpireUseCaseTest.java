@@ -1,11 +1,6 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingExpireUseCase;
-import app.giftify.domain.funding.Funding;
-import app.giftify.domain.funding.FundingErrorCode;
-import app.giftify.domain.funding.FundingException;
-import app.giftify.domain.funding.FundingStatus;
-import app.giftify.domain.funding.FundingWishlistItem;
+import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
@@ -16,11 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -49,11 +46,11 @@ class FundingExpireUseCaseTest {
         );
     }
 
-    private void setEndAtToPast(Funding funding) {
+    private void setDeadlineToPast(Funding funding) {
         try {
-            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
-            endAtField.setAccessible(true);
-            endAtField.set(funding, LocalDateTime.now().minusDays(1));
+            Field deadlineField = Funding.class.getDeclaredField("deadline");
+            deadlineField.setAccessible(true);
+            deadlineField.set(funding, LocalDateTime.now().minusDays(1));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -68,7 +65,7 @@ class FundingExpireUseCaseTest {
         Long fundingId = 1L;
         FundingWishlistItem item = createTestWishlistItem();
         Funding funding = Funding.startFunding(item, 10000);
-        setEndAtToPast(funding); // endAt을 과거로 설정
+        setDeadlineToPast(funding); // endAt을 과거로 설정
 
         when(fundingRepository.findById(fundingId)).thenReturn(Optional.of(funding));
 
@@ -158,14 +155,14 @@ class FundingExpireUseCaseTest {
         Funding funding3 = Funding.startFunding(item3, 10000); // ACHIEVED로 만들기 위해
         funding3.contribute(40000); // 추가로 40,000원 → 목표 달성
 
-        // 모두 endAt을 과거로 설정
-        setEndAtToPast(funding1);
-        setEndAtToPast(funding2);
-        setEndAtToPast(funding3);
+        // 모두 deadline을 과거로 설정
+        setDeadlineToPast(funding1);
+        setDeadlineToPast(funding2);
+        setDeadlineToPast(funding3);
 
         List<Funding> expiredFundings = List.of(funding1, funding2, funding3);
 
-        when(fundingRepository.findByEndAtBeforeAndStatusIn(
+        when(fundingRepository.findByDeadlineAfterAndStatusIn(
                 any(LocalDateTime.class),
                 eq(List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED))
         )).thenReturn(expiredFundings);
@@ -180,7 +177,7 @@ class FundingExpireUseCaseTest {
                 .containsOnly(FundingStatus.EXPIRED);
 
         verify(fundingRepository, times(1))
-                .findByEndAtBeforeAndStatusIn(any(LocalDateTime.class), any());
+                .findByDeadlineAfterAndStatusIn(any(LocalDateTime.class), any());
         verify(eventPublisher, times(3)).publish(any()); // 각 펀딩마다 이벤트 발행
     }
 
@@ -188,7 +185,7 @@ class FundingExpireUseCaseTest {
     @DisplayName("expireExpiredFundings - 만료된 펀딩이 없으면 빈 리스트 반환")
     void expireExpiredFundings_return_empty_when_no_expired_fundings() {
         // given
-        when(fundingRepository.findByEndAtBeforeAndStatusIn(
+        when(fundingRepository.findByDeadlineAfterAndStatusIn(
                 any(LocalDateTime.class),
                 any()
         )).thenReturn(List.of());
@@ -200,7 +197,7 @@ class FundingExpireUseCaseTest {
         assertThat(results).isEmpty();
 
         verify(fundingRepository, times(1))
-                .findByEndAtBeforeAndStatusIn(any(LocalDateTime.class), any());
+                .findByDeadlineAfterAndStatusIn(any(LocalDateTime.class), any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -208,7 +205,7 @@ class FundingExpireUseCaseTest {
     @DisplayName("expireExpiredFundings - IN_PROGRESS와 ACHIEVED 상태만 조회")
     void expireExpiredFundings_query_only_in_progress_and_achieved() {
         // given
-        when(fundingRepository.findByEndAtBeforeAndStatusIn(
+        when(fundingRepository.findByDeadlineAfterAndStatusIn(
                 any(LocalDateTime.class),
                 eq(List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED))
         )).thenReturn(List.of());
@@ -218,7 +215,7 @@ class FundingExpireUseCaseTest {
 
         // then
         verify(fundingRepository, times(1))
-                .findByEndAtBeforeAndStatusIn(
+                .findByDeadlineAfterAndStatusIn(
                         any(LocalDateTime.class),
                         eq(List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED))
                 );
@@ -234,12 +231,12 @@ class FundingExpireUseCaseTest {
         Funding funding1 = Funding.startFunding(item1, 10000);
         Funding funding2 = Funding.startFunding(item2, 20000);
 
-        setEndAtToPast(funding1);
-        setEndAtToPast(funding2);
+        setDeadlineToPast(funding1);
+        setDeadlineToPast(funding2);
 
         List<Funding> expiredFundings = List.of(funding1, funding2);
 
-        when(fundingRepository.findByEndAtBeforeAndStatusIn(
+        when(fundingRepository.findByDeadlineAfterAndStatusIn(
                 any(LocalDateTime.class),
                 any()
         )).thenReturn(expiredFundings);

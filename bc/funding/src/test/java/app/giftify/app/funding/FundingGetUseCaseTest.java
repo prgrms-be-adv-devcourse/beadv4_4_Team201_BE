@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -143,9 +144,9 @@ class FundingGetUseCaseTest {
 
         // endAt을 과거로 설정 (리플렉션)
         try {
-            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
-            endAtField.setAccessible(true);
-            endAtField.set(funding, java.time.LocalDateTime.now().minusDays(1));
+            Field deadlineField = Funding.class.getDeclaredField("deadline");
+            deadlineField.setAccessible(true);
+            deadlineField.set(funding, java.time.LocalDateTime.now().minusDays(1));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

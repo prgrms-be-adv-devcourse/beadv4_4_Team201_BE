@@ -1,6 +1,5 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingCreateUseCase;
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
@@ -72,7 +71,7 @@ class FundingCreateUseCaseTest {
         assertThat(result.getCurrentAmount()).isEqualTo(10000);
         assertThat(result.getTargetAmount()).isEqualTo(50000);
         assertThat(result.getStatus()).isEqualTo(FundingStatus.IN_PROGRESS);
-        assertThat(result.getEndAt()).isNotNull();
+        assertThat(result.getDeadline()).isNotNull();
 
         verify(fundingWishlistItemRepository, times(1)).findById(itemId);
         verify(fundingRepository, times(1)).save(any(Funding.class));
