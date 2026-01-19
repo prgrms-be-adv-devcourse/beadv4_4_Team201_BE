@@ -1,4 +1,4 @@
-package app.giftify.funding;
+package app.giftify.app.funding;
 
 import app.giftify.app.funding.FundingExpireUseCase;
 import app.giftify.domain.funding.Funding;
