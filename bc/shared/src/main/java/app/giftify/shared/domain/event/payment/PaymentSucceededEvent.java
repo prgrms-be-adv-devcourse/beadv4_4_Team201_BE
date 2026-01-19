@@ -1,5 +1,7 @@
 package app.giftify.shared.domain.event.payment;
 
+import java.time.LocalDateTime;
+
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
@@ -9,14 +11,23 @@ public class PaymentSucceededEvent extends BaseDomainEvent {
     private final Long userId;
     private final Money amount;
     private final PaymentType type;
+    private final LocalDateTime paidAt;
 
-    public PaymentSucceededEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type) {
+    public PaymentSucceededEvent(
+        Long paymentId,
+        String sourceType,
+        Long userId,
+        Money amount,
+        PaymentType type,
+        LocalDateTime paidAt
+    ) {
         super();
         this.paymentId = paymentId;
         this.sourceType = sourceType;
         this.userId = userId;
         this.amount = amount;
         this.type = type;
+        this.paidAt = paidAt;
     }
 
     public Long getPaymentId() {
@@ -39,6 +50,9 @@ public class PaymentSucceededEvent extends BaseDomainEvent {
         return type;
     }
 
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
 
     @Override
     public String toString() {
@@ -48,6 +62,7 @@ public class PaymentSucceededEvent extends BaseDomainEvent {
                 ", userId=" + userId +
                 ", amount=" + amount +
                 ", type=" + type +
+                ", paidAt=" + paidAt +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';
