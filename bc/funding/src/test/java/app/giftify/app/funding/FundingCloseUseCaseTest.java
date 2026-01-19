@@ -1,6 +1,5 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingCloseUseCase;
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
@@ -8,6 +7,7 @@ import app.giftify.domain.funding.FundingStatus;
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
+import app.giftify.shared.domain.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,6 +27,9 @@ class FundingCloseUseCaseTest {
     @Mock
     private FundingRepository fundingRepository;
 
+    @Mock
+    private EventPublisher eventPublisher;
+
     @InjectMocks
     private FundingCloseUseCase fundingCloseUseCase;
 
@@ -33,8 +37,9 @@ class FundingCloseUseCaseTest {
 
     private FundingWishlistItem createTestWishlistItem() {
         return new FundingWishlistItem(
-                1L,
-                100L,
+                1L,      // wishlistId
+                999L,    // receiverId
+                100L,    // productId
                 "테스트 상품",
                 50000,
                 FundingWishlistItem.WishListItemStatus.IN_PROGRESS
@@ -63,6 +68,7 @@ class FundingCloseUseCaseTest {
         assertThat(result.closeAt()).isNotNull();
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, times(1)).publish(any());
     }
 
     @Test
@@ -83,6 +89,7 @@ class FundingCloseUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.status()).isEqualTo(FundingStatus.CLOSED);
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, times(1)).publish(any());
     }
 
     @Test
@@ -99,6 +106,7 @@ class FundingCloseUseCaseTest {
                 .isEqualTo(FundingErrorCode.FUNDING_NOT_FOUND);
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -119,6 +127,7 @@ class FundingCloseUseCaseTest {
                 .isEqualTo(FundingErrorCode.ALREADY_TERMINATED);
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -129,11 +138,11 @@ class FundingCloseUseCaseTest {
         FundingWishlistItem item = createTestWishlistItem();
         Funding funding = Funding.startFunding(item, 10000);
 
-        // endAt을 과거로 설정 (리플렉션)
+        // deadline을 과거로 설정 (리플렉션)
         try {
-            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
-            endAtField.setAccessible(true);
-            endAtField.set(funding, java.time.LocalDateTime.now().minusDays(1));
+            java.lang.reflect.Field deadline = Funding.class.getDeclaredField("deadline");
+            deadline.setAccessible(true);
+            deadline.set(funding, java.time.LocalDateTime.now().minusDays(1));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -149,6 +158,7 @@ class FundingCloseUseCaseTest {
                 .isEqualTo(FundingErrorCode.ALREADY_TERMINATED);
 
         verify(fundingRepository, times(1)).findById(fundingId);
+        verify(eventPublisher, never()).publish(any());
     }
 }
 
