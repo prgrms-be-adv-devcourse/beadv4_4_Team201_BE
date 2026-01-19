@@ -17,4 +17,9 @@ public class ProductSupport {
 	public Product findById(Long id) {
 		return productRepository.findById(id).orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 	}
+
+	public Product findByIdAndSellerId(Long id, Long sellerId) {
+		return productRepository.findByIdAndSellerId(id, sellerId)
+			.orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+	}
 }

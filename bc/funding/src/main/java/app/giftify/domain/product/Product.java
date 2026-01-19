@@ -83,28 +83,31 @@ public class Product extends BaseJpaEntity {
 	 */
 	// 상품 등록 승인
 	public void approve() {
-		updateProductStatus(INACTIVE); // 판매 대기 상태로
+		validateTransition(INACTIVE); // 판매 대기 상태로
+		// todo 판매 상태 변경 이벤트
 	}
 
 	// 상품 등록 거절
 	public void reject() {
-		updateProductStatus(REJECTED);
+		validateTransition(REJECTED);
+		// todo 판매 상태 변경 이벤트
 	}
 
 	// 상품 판매 시작
 	public void active() {
-		updateProductStatus(ACTIVE);
+		validateTransition(ACTIVE);
+		// todo 판매 상태 변경 이벤트
 	}
 
 	// 상품 판매 중지
 	public void inActive() {
-		updateProductStatus(INACTIVE);
-		// todo 판매 중지 이벤트 (미완료된 펀딩 환불)
+		validateTransition(INACTIVE);
+		// todo 판매 상태 변경 이벤트 (미완료된 펀딩 환불)
 	}
 
-	// 상품 상태 변경
-	private void updateProductStatus(ProductStatus status) {
-		switch (status) {
+	// 상품 상태 변경 가능 여부 검증
+	private void validateTransition(ProductStatus toStatus) {
+		switch (toStatus) {
 			case DRAFT -> throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
 			case REJECTED -> {
 				if (this.status != DRAFT)

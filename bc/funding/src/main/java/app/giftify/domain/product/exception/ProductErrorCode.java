@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum ProductErrorCode implements ErrorCode {
 
+	// todo 에러 종류별로 코드 분리 리팩토링
+
 	PRODUCT_NOT_FOUND(NOT_FOUND, "P001", "상품을 찾을 수 없습니다."),
 	PRODUCT_OUT_OF_STOCK(BAD_REQUEST, "P002", "상품 재고가 부족합니다."),
 	PRODUCT_NOT_APPROVED_YET(BAD_REQUEST, "P003", "관리자의 판매 승인을 먼저 받아야 합니다."),
@@ -25,7 +27,12 @@ public enum ProductErrorCode implements ErrorCode {
 	INVALID_PRODUCT_NAME(BAD_REQUEST, "P011", "상품명이 올바르지 않습니다."),
 	INVALID_PRODUCT_DESCRIPTION(BAD_REQUEST, "P012", "상품 설명이 올바르지 않습니다."),
 	INVALID_PRODUCT_PRICE(BAD_REQUEST, "P013", "상품 가격이 올바르지 않습니다."),
-	INVALID_PRODUCT_SEARCH_PRICE_RANGE(BAD_REQUEST, "P014", "가격 범위가 올바르지 않습니다.");
+	INVALID_PRODUCT_SEARCH_PRICE_RANGE(BAD_REQUEST, "P014", "가격 범위가 올바르지 않습니다."),
+	INVALID_PRODUCT_STOCK(BAD_REQUEST, "P015", "재고량이 올바르지 않습니다."),
+
+	// 상품 수정 에러코드
+	PRODUCT_UPDATE_EMPTY_REQUEST(BAD_REQUEST, "P016", "수정 내용이 없습니다."),
+	INVALID_PRODUCT_STATUS(BAD_REQUEST, "P017", "허용되지 않은 상태값입니다.");
 
 	private final HttpStatus status;
 	private final String code;
