@@ -62,7 +62,7 @@ class MemberServiceTest {
         given(memberRepositoryPort.save(any(Member.class))).willReturn(savedMember);
 
         // when
-        Member result = memberService.registerPreSignupMember(command);
+        Member result = memberService.joinedMember(command);
 
         // then
         assertThat(result.getEmail()).isEqualTo(command.email());
@@ -88,7 +88,7 @@ class MemberServiceTest {
                 .willReturn(Optional.of(Member.builder().build()));
 
         // when & then
-        assertThatThrownBy(() -> memberService.registerPreSignupMember(command))
+        assertThatThrownBy(() -> memberService.joinedMember(command))
                 .isInstanceOf(DuplicateMemberException.class);
     }
 
