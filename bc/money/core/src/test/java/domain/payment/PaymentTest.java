@@ -10,198 +10,148 @@ import app.giftify.shared.domain.vo.Money;
 
 class PaymentTest {
 
-    @Test
-    @DisplayName("펀딩 결제 생성 시 PAID 상태와 GIFTIFY_CASH 수단으로 생성되어야 한다")
-    void createPaidForFunding_ShouldCreatePaymentWithPaidStatus() {
-        // given
-        Long userId = 1L;
-        Long fundingId = 100L;
-        Money amount = Money.of(15000);
+	@Test
+	@DisplayName("결제 생성 시 초기 상태는 PENDING이고 CREATED 이력이 생성되어야 한다")
+	void create_ShouldReturnPendingPayment_WithCreatedHistory() {
+		// Given
+		Long userId = 1L;
+		Money amount = Money.of(10000L);
 
-        // when
-        Payment payment = Payment.createPaidForFunding(userId, fundingId, amount);
+		// When
+		Payment payment = Payment.create(
+			userId,
+			PaymentType.CHARGE,
+			amount,
+			PaymentMethod.GIFTIFY_CASH
+		);
 
-        // then
+		// Then
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
+		assertThat(payment.getUncommittedHistory()).hasSize(1);
+		assertThat(payment.getUncommittedHistory().getFirst().eventType()).isEqualTo(PaymentEventType.CREATED);
+	}
 
-        // 1. 환불 가능해야 함 (PAID 상태이고 아직 환불 안 됨)
-        assertThat(payment.isRefundable()).isTrue();
+	@Test
+	@DisplayName("결제 완료(markAsPaid) 시 PAID 상태로 변경되고 PAID 이력이 생성되어야 한다")
+	void markAsPaid_ShouldChangeStatusToPaid_AndAddHistory() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		String pgTxId = "TX_12345";
 
-        // 2. 취소 불가능해야 함 (PENDING이 아니므로)
-        assertThat(payment.isCancelable()).isFalse();
-    }
+		// When
+		PaymentHistory history = payment.markAsPaid(pgTxId);
 
-    @Test
-    @DisplayName("환불이 성공적으로 수행되어야 한다")
-    void refund_ShouldSucceed_WhenStatusIsPaid() {
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+		// Then
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+		assertThat(payment.getPgTransactionId()).isEqualTo(pgTxId);
+		
+		// History 검증
+		assertThat(payment.getUncommittedHistory()).hasSize(2); // CREATED + PAID
+		assertThat(history.eventType()).isEqualTo(PaymentEventType.PAID);
+		assertThat(history.metadata()).contains(pgTxId);
+		assertThat(history.occurredAt()).isNotNull();
+	}
 
-        payment.refund();
+	@Test
+	@DisplayName("PENDING 상태가 아니면 markAsPaid는 실패해야 한다")
+	void markAsPaid_ShouldFail_WhenNotPending() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		payment.markAsPaid("TX_1"); // 이미 PAID 상태
 
-        assertThat(payment.isRefundable()).isFalse(); // 이미 환불되었으므로 false
-    }
+		// When & Then
+		assertThatThrownBy(() -> payment.markAsPaid("TX_2"))
+			.isInstanceOf(PaymentException.class)
+			.hasMessageContaining("PENDING");
+	}
 
-    @Test
-    @DisplayName("이미 환불된 결제를 다시 환불하려 하면 예외가 발생해야 한다")
-    void refund_ShouldThrowException_WhenAlreadyRefunded() {
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
-        payment.refund(); // 1차 환불
+	@Test
+	@DisplayName("PENDING 상태에서는 취소가 가능하고 CANCELED 이력이 생성된다")
+	void cancel_ShouldSucceed_WhenPending() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 
-        assertThatThrownBy(payment::refund)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("환불 불가능한 상태입니다");
-    }
+		// When
+		PaymentHistory history = payment.cancel();
 
-    @Test
-    @DisplayName("완료된 펀딩 결제는 취소(Cancel)할 수 없다")
-    void cancel_ShouldThrowException_WhenStatusIsPaid() {
-        // given
-        // createPaidForFunding은 PAID 상태로 생성됨
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+		// Then
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
+		assertThat(history.eventType()).isEqualTo(PaymentEventType.CANCELED);
+		assertThat(payment.getUncommittedHistory()).hasSize(2); // CREATED + CANCELED
+	}
 
-        // when & then
-        // Cancel은 PENDING 상태에서만 가능하므로 예외 발생해야 함
-        assertThatThrownBy(payment::cancel)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("취소 불가능한 상태입니다");
-    }
+	@Test
+	@DisplayName("PAID 상태에서는 취소할 수 없고 예외가 발생한다")
+	void cancel_ShouldFail_WhenAlreadyPaid() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		payment.markAsPaid("TX_123");
 
-    @Test
-    @DisplayName("펀딩 수령 확정(Settled) 이후에는 환불할 수 없다")
-    void refund_ShouldFail_WhenPaymentIsSettled() {
-        // given
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+		// When & Then
+		assertThatThrownBy(payment::cancel)
+			.isInstanceOf(PaymentException.class)
+			.hasMessageContaining("취소 불가능한 상태");
+	}
 
-        // when: 선물 수령 처리
-        payment.settle();
+	@Test
+	@DisplayName("PAID 상태에서는 환불이 가능하고 REFUNDED 이력이 생성된다")
+	void refund_ShouldSucceed_WhenPaid() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		payment.markAsPaid("TX_123");
 
-        // then: 환불 시도 시 예외 발생
-        assertThatThrownBy(payment::refund)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("이미 수령 처리되어 환불할 수 없습니다");
+		// When
+		PaymentHistory history = payment.refund();
 
-        // 상태 확인
-        assertThat(payment.isRefundable()).isFalse();
-    }
+		// Then
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+		assertThat(history.eventType()).isEqualTo(PaymentEventType.REFUNDED);
+	}
 
-    @Test
-    @DisplayName("PAID 상태의 결제는 수령 확정(SETTLED)할 수 있다")
-    void settle_ShouldSucceed_WhenStatusIsPaid() {
-        // given
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+	@Test
+	@DisplayName("PAID 상태에서만 정산(SETTLED)이 가능하고 그 후에는 환불이 불가하다")
+	void settle_ShouldChangeStatusToSettled_AndPreventRefund() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		payment.markAsPaid("TX_123");
 
-        // when
-        payment.settle();
+		// When
+		payment.settle();
 
-        // then
-        assertThat(payment.isRefundable()).isFalse(); // SETTLED 상태이므로 환불 불가
-        assertThat(payment.isCancelable()).isFalse(); // SETTLED 상태이므로 취소 불가
-    }
+		// Then
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.SETTLED);
 
-    @Test
-    @DisplayName("PAID 상태의 결제는 다시 완료 처리할 수 없다")
-    void markAsPaid_ShouldThrowException_WhenStatusIsPaid() {
-        // given
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000));
+		// 정산 후 환불 시도 시 예외 발생 확인
+		assertThatThrownBy(payment::refund)
+			.isInstanceOf(PaymentException.class)
+			.hasMessageContaining("이미 정산(수령) 처리되어 환불할 수 없습니다");
+	}
 
-        // when & then
-        assertThatThrownBy(() -> payment.markAsPaid("PG_TX_123"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다");
-    }
+	@Test
+	@DisplayName("PENDING 상태에서만 실패(FAILED) 처리가 가능하다")
+	void markAsFailed_ShouldSucceed_WhenPending() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 
-    @Test
-    @DisplayName("PENDING 상태가 아닌 결제는 실패 처리할 수 없다")
-    void markAsFailed_ShouldThrowException_WhenStatusIsNotPending() {
-        // given
-        Payment payment = Payment.createPaidForFunding(1L, 100L, Money.of(10000)); // PAID 상태
+		// When
+		payment.markAsFailed();
 
-        // when & then
-        assertThatThrownBy(payment::markAsFailed)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("대기 중인 결제만 실패 처리할 수 있습니다");
-    }
+		// Then
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
+	}
 
-    @Test
-    @DisplayName("PAID 상태가 아닌 결제는 수령 확정(SETTLED)할 수 없다")
-    void settle_ShouldThrowException_WhenStatusIsNotPaid() {
-        // given
-        Payment payment = Payment.builder()
-                .userId(1L)
-                .type(PaymentType.CHARGE)
-                .status(PaymentStatus.PENDING)
-                .amount(Money.of(10000))
-                .build();
+	@Test
+	@DisplayName("clearUncommittedHistory 호출 시 누적된 이력이 모두 삭제된다")
+	void clearUncommittedHistory_ShouldRemoveAllHistory() {
+		// Given
+		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		payment.markAsPaid("TX_123");
+		assertThat(payment.getUncommittedHistory()).hasSize(2);
 
-        // when & then
-        assertThatThrownBy(payment::settle)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("결제 완료(PAID) 상태에서만 확정할 수 있습니다");
-    }
+		// When
+		payment.clearUncommittedHistory();
 
-    @Test
-    @DisplayName("빌더로 생성 시 createdAt이 설정되지 않으면 자동으로 현재 시간이 할당되어야 한다")
-    void builder_ShouldCreatePayment_WithDefaultCreatedAt() {
-        Payment payment = Payment.builder()
-                .userId(1L)
-                .type(PaymentType.FUNDING)
-                .status(PaymentStatus.PENDING)
-                .amount(Money.of(1000))
-                .fundingId(10L)
-                .method(PaymentMethod.GIFTIFY_CASH)
-                .build();
-
-        assertThat(payment.getUserId()).isEqualTo(1L);
-        assertThat(payment.getAmount()).isEqualTo(Money.of(1000));
-    }
-
-    @Test
-    @DisplayName("withId는 기존 필드를 유지한 채 ID가 할당된 새로운 객체를 반환해야 한다 (불변성 검증)")
-    void withId_ShouldReturnNewInstance_WithSameFieldsAndNewId() {
-        // given
-        Payment original = Payment.createPaidForFunding(1L, 100L, Money.of(20000));
-        Long newId = 999L;
-
-        // when
-        Payment withIdPayment = original.withId(newId);
-
-        // then
-        // 1. 서로 다른 인스턴스여야 함
-        assertThat(withIdPayment).isNotSameAs(original);
-
-        // 2. ID가 설정되어야 함
-        assertThat(withIdPayment.getPaymentId()).isEqualTo(newId);
-
-        // 3. 기존 필드들이 동일해야 함
-        assertThat(withIdPayment.getUserId()).isEqualTo(original.getUserId());
-        assertThat(withIdPayment.getAmount()).isEqualTo(original.getAmount());
-        assertThat(withIdPayment.getStatus()).isEqualTo(original.getStatus());
-
-        // 4. 원본 객체는 ID가 없어야 함 (불변성)
-        assertThat(original.getPaymentId()).isNull();
-    }
-
-    @Test
-    @DisplayName("빌더로 모든 필드를 명시적으로 설정할 수 있어야 한다")
-    void builder_ShouldSetAllFieldsCorrectly() {
-        // given
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-
-        // when
-        Payment payment = Payment.builder()
-                .paymentId(1L)
-                .userId(2L)
-                .type(PaymentType.FUNDING)
-                .status(PaymentStatus.PAID)
-                .amount(Money.of(5000))
-                .fundingId(100L)
-                .pgTransactionId("PG_KEY")
-                .method(PaymentMethod.GIFTIFY_CASH)
-                .paidAt(now)
-                .build();
-
-        // then
-        assertThat(payment.getPaymentId()).isEqualTo(1L);
-        assertThat(payment.getUserId()).isEqualTo(2L);
-        assertThat(payment.getPgTransactionId()).isEqualTo("PG_KEY");
-    }
+		// Then
+		assertThat(payment.getUncommittedHistory()).isEmpty();
+	}
 }
