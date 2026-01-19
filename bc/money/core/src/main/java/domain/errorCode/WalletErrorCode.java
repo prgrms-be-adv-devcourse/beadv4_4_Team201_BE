@@ -4,7 +4,8 @@ import app.giftify.shared.api.exception.ErrorCode;
 
 public enum WalletErrorCode implements ErrorCode {
     INSUFFICIENT_BALANCE("WALLET-001", "잔액이 부족합니다."),
-    INVALID_NULL_AMOUNT("WALLET-002", "금액은 null일 수 없습니다.");
+    INVALID_NULL_AMOUNT("WALLET-002", "금액은 null일 수 없습니다."),
+    DUPLICATED_TRANSACTION("WALLET-003", "이미 처리된 거래입니다.");
 
     private final String code;
     private final String message;
