@@ -1,6 +1,6 @@
 package app.giftify.member.core.domain.member;
 
-import app.giftify.member.core.domain.exception.MemberStatusException;
+import app.giftify.member.core.domain.exception.member.MemberStatusException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

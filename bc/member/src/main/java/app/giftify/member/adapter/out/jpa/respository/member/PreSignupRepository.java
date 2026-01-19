@@ -1,6 +1,6 @@
-package app.giftify.member.adapter.out.jpa.respository;
+package app.giftify.member.adapter.out.jpa.respository.member;
 
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
+import app.giftify.member.adapter.out.jpa.entity.member.PreSignup;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

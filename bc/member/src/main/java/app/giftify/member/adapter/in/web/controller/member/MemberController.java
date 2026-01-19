@@ -1,13 +1,13 @@
-package app.giftify.member.adapter.in.web.controller;
+package app.giftify.member.adapter.in.web.controller.member;
 
-import app.giftify.member.adapter.in.web.requestDto.MemberUpdateRequest;
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
-import app.giftify.member.application.port.in.GetMemberUseCase;
-import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.application.port.in.WithdrawMemberUseCase;
-import app.giftify.member.core.domain.exception.InvalidNicknameException;
-import app.giftify.member.core.domain.exception.MemberNotFoundException;
+import app.giftify.member.adapter.in.web.requestDto.member.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.requestDto.member.SignupRequest;
+import app.giftify.member.application.port.in.member.GetMemberUseCase;
+import app.giftify.member.application.port.in.member.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.member.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.member.WithdrawMemberUseCase;
+import app.giftify.member.core.domain.exception.member.InvalidNicknameException;
+import app.giftify.member.core.domain.exception.member.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberStatus;
 import app.giftify.security.common.context.AuthenticatedMember;

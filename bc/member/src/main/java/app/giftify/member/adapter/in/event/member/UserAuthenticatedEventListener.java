@@ -1,8 +1,8 @@
-package app.giftify.member.adapter.in.event;
+package app.giftify.member.adapter.in.event.member;
 
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
-import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.out.PreSignupPort;
+import app.giftify.member.adapter.out.jpa.entity.member.PreSignup;
+import app.giftify.member.application.port.in.member.RegisterMemberUseCase;
+import app.giftify.member.application.port.out.member.PreSignupPort;
 import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

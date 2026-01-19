@@ -1,4 +1,4 @@
-package app.giftify.member.adapter.out.jpa.entity;
+package app.giftify.member.adapter.out.jpa.entity.member;
 
 import app.giftify.member.core.domain.member.MemberRole;
 import app.giftify.member.core.domain.member.MemberStatus;

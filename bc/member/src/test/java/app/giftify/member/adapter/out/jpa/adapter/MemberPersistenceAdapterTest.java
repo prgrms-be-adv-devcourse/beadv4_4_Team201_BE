@@ -1,7 +1,8 @@
 package app.giftify.member.adapter.out.jpa.adapter;
 
-import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
-import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
+import app.giftify.member.adapter.out.jpa.adapter.member.MemberPersistenceAdapter;
+import app.giftify.member.adapter.out.jpa.entity.member.MemberJpaEntity;
+import app.giftify.member.adapter.out.jpa.respository.member.MemberJpaRepository;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberRole;
 import app.giftify.member.core.domain.member.MemberStatus;

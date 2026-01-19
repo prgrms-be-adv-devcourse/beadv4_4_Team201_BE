@@ -1,7 +1,7 @@
-package app.giftify.member.adapter.out.jpa.dataInit;
+package app.giftify.member.adapter.out.jpa.dataInit.member;
 
-import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
-import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
+import app.giftify.member.adapter.out.jpa.entity.member.MemberJpaEntity;
+import app.giftify.member.adapter.out.jpa.respository.member.MemberJpaRepository;
 import app.giftify.member.core.domain.member.MemberRole;
 import app.giftify.member.core.domain.member.MemberStatus;
 import lombok.RequiredArgsConstructor;

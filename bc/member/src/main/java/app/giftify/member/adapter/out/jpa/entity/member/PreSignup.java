@@ -1,4 +1,4 @@
-package app.giftify.member.adapter.out.jpa.entity;
+package app.giftify.member.adapter.out.jpa.entity.member;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

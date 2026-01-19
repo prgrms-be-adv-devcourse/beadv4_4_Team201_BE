@@ -1,4 +1,4 @@
-package app.giftify.member.adapter.in.web.requestDto;
+package app.giftify.member.adapter.in.web.requestDto.member;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

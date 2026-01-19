@@ -1,15 +1,15 @@
 package app.giftify.member.application.service;
 
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
-import app.giftify.member.application.port.in.GetMemberUseCase;
-import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.application.port.in.WithdrawMemberUseCase;
-import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.application.port.out.PreSignupPort;
-import app.giftify.member.core.domain.exception.DuplicateMemberException;
-import app.giftify.member.core.domain.exception.MemberNotFoundException;
+import app.giftify.member.adapter.in.web.requestDto.member.SignupRequest;
+import app.giftify.member.adapter.out.jpa.entity.member.PreSignup;
+import app.giftify.member.application.port.in.member.GetMemberUseCase;
+import app.giftify.member.application.port.in.member.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.member.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.member.WithdrawMemberUseCase;
+import app.giftify.member.application.port.out.member.MemberRepositoryPort;
+import app.giftify.member.application.port.out.member.PreSignupPort;
+import app.giftify.member.core.domain.exception.member.DuplicateMemberException;
+import app.giftify.member.core.domain.exception.member.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;

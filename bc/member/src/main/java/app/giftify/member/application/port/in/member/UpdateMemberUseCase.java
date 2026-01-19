@@ -1,4 +1,4 @@
-package app.giftify.member.application.port.in;
+package app.giftify.member.application.port.in.member;
 
 import app.giftify.member.core.domain.member.Member;
 

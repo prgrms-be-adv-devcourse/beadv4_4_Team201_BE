@@ -1,6 +1,6 @@
-package app.giftify.member.application.port.out;
+package app.giftify.member.application.port.out.member;
 
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
+import app.giftify.member.adapter.out.jpa.entity.member.PreSignup;
 
 import java.util.Optional;
 

@@ -1,8 +1,8 @@
-package app.giftify.member.adapter.out.jpa.adapter;
+package app.giftify.member.adapter.out.jpa.adapter.member;
 
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
-import app.giftify.member.adapter.out.jpa.respository.PreSignupRepository;
-import app.giftify.member.application.port.out.PreSignupPort;
+import app.giftify.member.adapter.out.jpa.entity.member.PreSignup;
+import app.giftify.member.adapter.out.jpa.respository.member.PreSignupRepository;
+import app.giftify.member.application.port.out.member.PreSignupPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
