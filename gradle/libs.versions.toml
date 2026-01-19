@@ -29,6 +29,9 @@ restAssured = "5.4.0"
 # Monitoring
 micrometer = "1.12.2"
 
+# Documentation
+springdoc = "2.3.0"
+
 [libraries]
 # --- Spring Boot ---
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "springBoot" }
@@ -74,6 +77,9 @@ rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "restAss
 
 # --- Monitoring ---
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+
+# --- Documentation ---
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 [bundles]
 spring-boot-web = [
