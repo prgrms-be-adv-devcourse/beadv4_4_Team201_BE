@@ -11,6 +11,9 @@ import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.exception.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
 
     private final PreSignupPort preSignupPort;
     private final MemberRepositoryPort memberRepositoryPort;
+    private final EventPublisher eventPublisher;
 
     @Override
     public Optional<Member> getMemberByAuthSub(String authSub) {
@@ -54,7 +58,20 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                 .name(command.name())
                 .build();
 
-        return memberRepositoryPort.save(member);
+        Member savedMember = memberRepositoryPort.save(member);
+
+        eventPublisher.publish(
+                new MemberSignedEvent(
+                        savedMember.getId(),
+                        savedMember.getNickname(),
+                        savedMember.getName(),
+                        savedMember.getEmail(),
+                        savedMember.getPhoneNum(),
+                        savedMember.getAddress()
+                )
+        );
+
+        return savedMember;
     }
 
     @Override
@@ -88,7 +105,20 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
 
         member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(), command.name());
 
-        return memberRepositoryPort.save(member);
+        Member updatedMember = memberRepositoryPort.save(member);
+
+        eventPublisher.publish(
+                new MemberUpdatedEvent(
+                        updatedMember.getId(),
+                        updatedMember.getNickname(),
+                        updatedMember.getName(),
+                        updatedMember.getEmail(),
+                        updatedMember.getPhoneNum(),
+                        updatedMember.getAddress()
+                )
+        );
+
+        return updatedMember;
     }
 
     @Override
