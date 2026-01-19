@@ -3,12 +3,12 @@ package app.giftify.shared.domain.event.member;
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
 public class MemberUpdatedEvent extends BaseDomainEvent {
-    private Long memberId;
-    private String nickname;
-    private String name;
-    private String email;
-    private String phoneNum;
-    private String address;
+    private final Long memberId;
+    private final String nickname;
+    private final String name;
+    private final String email;
+    private final String phoneNum;
+    private final String address;
 
     public MemberUpdatedEvent(Long memberId, String nickname, String name, String email, String phoneNum, String address) {
         this.memberId = memberId;
