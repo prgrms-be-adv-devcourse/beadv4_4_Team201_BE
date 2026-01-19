@@ -68,6 +68,7 @@ class ProductSearchUseCaseTest {
 		assertThat(result.content()).hasSize(2);
 		assertThat(result.content()).extracting(ProductDto::name)
 			.containsExactly("활성 상품1", "활성 상품2");
+		assertThat(result.totalElements()).isEqualTo(2);
 		verify(productRepository).searchProducts(searchDto);
 	}
 
@@ -98,6 +99,7 @@ class ProductSearchUseCaseTest {
 			.containsExactly("삼성 노트북", "LG 노트북");
 		assertThat(result.pageNumber()).isEqualTo(0);
 		assertThat(result.pageSize()).isEqualTo(10);
+		assertThat(result.totalElements()).isEqualTo(2);
 		verify(productRepository).searchProducts(searchDto);
 	}
 
@@ -137,6 +139,7 @@ class ProductSearchUseCaseTest {
 		assertThat(result.content()).hasSize(4);
 		assertThat(result.content()).extracting(ProductDto::name)
 			.containsExactly("등록대기 상품", "비활성 상품", "활성 상품", "거절된 상품");
+		assertThat(result.totalElements()).isEqualTo(4);
 		verify(productRepository).searchMyProducts(sellerId, searchDto);
 	}
 

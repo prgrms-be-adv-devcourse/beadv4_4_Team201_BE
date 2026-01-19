@@ -16,16 +16,12 @@ import app.giftify.domain.product.Product;
 import app.giftify.in.product.ProductCreateRequestDto;
 import app.giftify.in.product.ProductDto;
 import app.giftify.out.product.ProductRepository;
-import app.giftify.shared.domain.event.EventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ProductCreateUseCaseTest {
 
 	@Mock
 	private ProductRepository productRepository;
-
-	@Mock
-	private EventPublisher eventPublisher;
 
 	@InjectMocks
 	private ProductCreateUseCase productCreateUseCase;

@@ -14,6 +14,7 @@ import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStatus;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.product.ProductVerifiedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class ProductApproveUseCaseTest {
@@ -43,5 +44,22 @@ class ProductApproveUseCaseTest {
 		// then
 		assertThat(product.getStatus()).isEqualTo(ProductStatus.INACTIVE);
 		verify(productSupport).findById(productId);
+	}
+
+	@Test
+	@DisplayName("상품을 승인하면 ProductVerifiedEvent가 발행된다")
+	void approveProduct_publishesProductVerifiedEvent() {
+		// given
+		Long productId = 1L;
+		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
+
+		when(productSupport.findById(productId)).thenReturn(product);
+
+		// when
+		productApproveUseCase.approveProduct(productId);
+
+		// then
+		verify(eventPublisher).publish(any(ProductVerifiedEvent.class));
 	}
 }
