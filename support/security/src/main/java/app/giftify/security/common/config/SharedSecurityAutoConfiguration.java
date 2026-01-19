@@ -11,10 +11,12 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
 @AutoConfiguration
+@Import(SharedSecurityConfig.class)
 public class SharedSecurityAutoConfiguration implements WebMvcConfigurer {
 
     @Value("${auth0.audience}")

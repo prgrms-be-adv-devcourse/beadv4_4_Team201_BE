@@ -6,13 +6,16 @@ import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.in.WithdrawMemberUseCase;
+import app.giftify.member.core.domain.exception.InvalidNicknameException;
 import app.giftify.member.core.domain.exception.MemberNotFoundException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberStatus;
 import app.giftify.security.common.context.AuthenticatedMember;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,6 +25,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
+@Validated
 public class MemberController {
 
     private final GetMemberUseCase getMemberUseCase;
@@ -113,5 +117,20 @@ public class MemberController {
         withdrawMemberUseCase.withdrawMember(authSub);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/check/nickname")
+    public ResponseEntity<?> checkNickname(
+            @RequestParam(name = "nickname") @NotBlank String nickname
+    ) {
+        if (nickname.isBlank()) {
+            throw new InvalidNicknameException();
+        }
+
+        boolean duplicated = getMemberUseCase.isNicknameDuplicated(nickname);
+
+        return ResponseEntity.ok(
+                Map.of("status", duplicated ? "DUPLICATED" : "AVAILABLE")
+        );
     }
 }
