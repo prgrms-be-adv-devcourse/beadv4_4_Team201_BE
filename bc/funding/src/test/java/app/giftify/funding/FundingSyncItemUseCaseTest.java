@@ -1,4 +1,4 @@
-package app.funding;
+package app.giftify.funding;
 
 import app.giftify.app.funding.FundingSyncItemUseCase;
 import app.giftify.domain.funding.FundingWishlistItem;

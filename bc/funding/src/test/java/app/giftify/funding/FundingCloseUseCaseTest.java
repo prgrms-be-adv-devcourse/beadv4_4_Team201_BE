@@ -1,12 +1,12 @@
-package app.funding;
+package app.giftify.funding;
 
-import app.giftify.app.funding.FundingGetUseCase;
+import app.giftify.app.funding.FundingCloseUseCase;
 import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
 import app.giftify.domain.funding.FundingStatus;
 import app.giftify.domain.funding.FundingWishlistItem;
-import app.giftify.in.funding.FundingResponseDto;
+import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,13 +21,13 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class FundingGetUseCaseTest {
+class FundingCloseUseCaseTest {
 
     @Mock
     private FundingRepository fundingRepository;
 
     @InjectMocks
-    private FundingGetUseCase fundingGetUseCase;
+    private FundingCloseUseCase fundingCloseUseCase;
 
     // ===== 테스트 헬퍼 메서드 =====
 
@@ -41,11 +41,11 @@ class FundingGetUseCaseTest {
         );
     }
 
-    // ===== getFunding 테스트 =====
+    // ===== closeFunding 테스트 =====
 
     @Test
-    @DisplayName("getFunding - 진행 중인 펀딩 조회 성공")
-    void getFunding_success_when_in_progress() {
+    @DisplayName("closeFunding - 진행 중인 펀딩 강제 종료 성공")
+    void closeFunding_success_when_in_progress() {
         // given
         Long fundingId = 1L;
         FundingWishlistItem item = createTestWishlistItem();
@@ -54,61 +54,46 @@ class FundingGetUseCaseTest {
         when(fundingRepository.findById(fundingId)).thenReturn(Optional.of(funding));
 
         // when
-        FundingResponseDto result = fundingGetUseCase.getFunding(fundingId);
+        FundingCompleteResponseDto result = fundingCloseUseCase.closeFunding(fundingId);
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.fundingId()).isEqualTo(funding.getId());
-        assertThat(result.targetAmount()).isEqualTo(50000);
-        assertThat(result.currentAmount()).isEqualTo(10000);
-        assertThat(result.status()).isEqualTo(FundingStatus.IN_PROGRESS);
-        assertThat(result.productId()).isEqualTo(100L);
-        assertThat(result.productName()).isEqualTo("테스트 상품");
-        assertThat(result.productPrice()).isEqualTo(50000);
+        assertThat(result.status()).isEqualTo(FundingStatus.CLOSED);
+        assertThat(result.closeAt()).isNotNull();
 
         verify(fundingRepository, times(1)).findById(fundingId);
     }
 
     @Test
-    @DisplayName("getFunding - 목표 달성 펀딩 조회 성공")
-    void getFunding_success_when_achieved() {
+    @DisplayName("closeFunding - 목표 달성 펀딩도 종료 가능")
+    void closeFunding_success_when_achieved() {
         // given
         Long fundingId = 1L;
         FundingWishlistItem item = createTestWishlistItem();
         Funding funding = Funding.startFunding(item, 10000); // 첫 결제 10,000원
-        
-        // contribute 전 상태 확인
-        assertThat(funding.getStatus()).isEqualTo(FundingStatus.IN_PROGRESS);
-        assertThat(funding.getCurrentAmount()).isEqualTo(10000);
-        
-        funding.contribute(40000); // 추가로 40,000원 결제 → 목표 달성
-        
-        // contribute 후 상태 확인 (디버깅용)
-        assertThat(funding.getStatus()).isEqualTo(FundingStatus.ACHIEVED);
-        assertThat(funding.getCurrentAmount()).isEqualTo(50000);
+        funding.contribute(40000); // 추가로 40,000원 → 목표 달성
 
         when(fundingRepository.findById(fundingId)).thenReturn(Optional.of(funding));
 
         // when
-        FundingResponseDto result = fundingGetUseCase.getFunding(fundingId);
+        FundingCompleteResponseDto result = fundingCloseUseCase.closeFunding(fundingId);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.status()).isEqualTo(FundingStatus.ACHIEVED);
-        assertThat(result.currentAmount()).isEqualTo(result.targetAmount());
-
+        assertThat(result.status()).isEqualTo(FundingStatus.CLOSED);
         verify(fundingRepository, times(1)).findById(fundingId);
     }
 
     @Test
-    @DisplayName("getFunding - 펀딩을 찾을 수 없는 경우 예외 발생")
-    void getFunding_fail_when_funding_not_found() {
+    @DisplayName("closeFunding - 펀딩을 찾을 수 없는 경우 예외 발생")
+    void closeFunding_fail_when_funding_not_found() {
         // given
         Long fundingId = 999L;
         when(fundingRepository.findById(fundingId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> fundingGetUseCase.getFunding(fundingId))
+        assertThatThrownBy(() -> fundingCloseUseCase.closeFunding(fundingId))
                 .isInstanceOf(FundingException.class)
                 .extracting(e -> ((FundingException) e).getErrorCode())
                 .isEqualTo(FundingErrorCode.FUNDING_NOT_FOUND);
@@ -117,28 +102,28 @@ class FundingGetUseCaseTest {
     }
 
     @Test
-    @DisplayName("getFunding - 종료된 펀딩은 조회 불가")
-    void getFunding_fail_when_funding_closed() {
+    @DisplayName("closeFunding - 이미 종료된 펀딩은 재종료 불가")
+    void closeFunding_fail_when_already_closed() {
         // given
         Long fundingId = 1L;
         FundingWishlistItem item = createTestWishlistItem();
         Funding funding = Funding.startFunding(item, 10000);
-        funding.close(); // 종료 처리
+        funding.close(); // 먼저 종료
 
         when(fundingRepository.findById(fundingId)).thenReturn(Optional.of(funding));
 
         // when & then
-        assertThatThrownBy(() -> fundingGetUseCase.getFunding(fundingId))
+        assertThatThrownBy(() -> fundingCloseUseCase.closeFunding(fundingId))
                 .isInstanceOf(FundingException.class)
                 .extracting(e -> ((FundingException) e).getErrorCode())
-                .isEqualTo(FundingErrorCode.NOT_IN_PROGRESS);
+                .isEqualTo(FundingErrorCode.ALREADY_TERMINATED);
 
         verify(fundingRepository, times(1)).findById(fundingId);
     }
 
     @Test
-    @DisplayName("getFunding - 만료된 펀딩은 조회 불가")
-    void getFunding_fail_when_funding_expired() {
+    @DisplayName("closeFunding - 이미 만료된 펀딩은 종료 불가")
+    void closeFunding_fail_when_already_expired() {
         // given
         Long fundingId = 1L;
         FundingWishlistItem item = createTestWishlistItem();
@@ -158,30 +143,10 @@ class FundingGetUseCaseTest {
         when(fundingRepository.findById(fundingId)).thenReturn(Optional.of(funding));
 
         // when & then
-        assertThatThrownBy(() -> fundingGetUseCase.getFunding(fundingId))
+        assertThatThrownBy(() -> fundingCloseUseCase.closeFunding(fundingId))
                 .isInstanceOf(FundingException.class)
                 .extracting(e -> ((FundingException) e).getErrorCode())
-                .isEqualTo(FundingErrorCode.NOT_IN_PROGRESS);
-
-        verify(fundingRepository, times(1)).findById(fundingId);
-    }
-
-    @Test
-    @DisplayName("getFunding - 중간 금액 펀딩 조회 검증")
-    void getFunding_verify_partial_amount() {
-        // given
-        Long fundingId = 1L;
-        FundingWishlistItem item = createTestWishlistItem();
-        Funding funding = Funding.startFunding(item, 25000); // 50% 달성
-
-        when(fundingRepository.findById(fundingId)).thenReturn(Optional.of(funding));
-
-        // when
-        FundingResponseDto result = fundingGetUseCase.getFunding(fundingId);
-
-        // then
-        assertThat(result.currentAmount()).isEqualTo(25000);
-        assertThat(result.targetAmount()).isEqualTo(50000);
+                .isEqualTo(FundingErrorCode.ALREADY_TERMINATED);
 
         verify(fundingRepository, times(1)).findById(fundingId);
     }

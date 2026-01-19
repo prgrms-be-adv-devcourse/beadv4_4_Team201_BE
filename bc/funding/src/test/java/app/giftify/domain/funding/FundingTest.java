@@ -1,9 +1,5 @@
-package domain.funding;
+package app.giftify.domain.funding;
 
-import app.giftify.domain.funding.Funding;
-import app.giftify.domain.funding.FundingException;
-import app.giftify.domain.funding.FundingStatus;
-import app.giftify.domain.funding.FundingWishlistItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
