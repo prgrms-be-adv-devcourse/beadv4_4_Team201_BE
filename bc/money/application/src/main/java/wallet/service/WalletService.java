@@ -2,8 +2,6 @@ package wallet.service;
 
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.vo.Money;
-import domain.errorCode.WalletErrorCode;
-import domain.exception.WalletException;
 import domain.wallet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +51,7 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
     ) {
         boolean isDuplicated = walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType);
         if (isDuplicated) {
-            log.info("Skip duplicated transaction. refId={}, refType={}", referenceId, referenceType);
+            logDuplicatedTransaction(referenceType, referenceId);
             return;
         }
 
@@ -80,6 +78,12 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
             String referenceType,
             Long referenceId
     ) {
+        boolean isDuplicated = walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType);
+        if (isDuplicated) {
+            logDuplicatedTransaction(referenceType, referenceId);
+            return;
+        }
+
         Wallet wallet = getWalletByMemberId(memberId);
         wallet.withdraw(amount);
 
@@ -92,5 +96,9 @@ public class WalletService implements WalletCreateUseCase, WalletQueryUseCase, W
                 referenceType,
                 referenceId
         );
+    }
+
+    private static void logDuplicatedTransaction(String referenceType, Long referenceId) {
+        log.info("Skip duplicated transaction. refId={}, refType={}", referenceId, referenceType);
     }
 }

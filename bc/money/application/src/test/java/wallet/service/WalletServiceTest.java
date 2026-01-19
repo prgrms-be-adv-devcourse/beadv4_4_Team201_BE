@@ -1,6 +1,5 @@
 package wallet.service;
 
-import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.errorCode.WalletErrorCode;
@@ -37,9 +36,6 @@ class WalletServiceTest {
 
     @Mock
     private WalletHistoryRepository walletHistoryRepository;
-
-    @Mock
-    private EventPublisher eventPublisher;
 
     @InjectMocks
     private WalletService walletService;
@@ -264,7 +260,7 @@ class WalletServiceTest {
     }
 
     @Test
-    @DisplayName("중복된 트랜잭션 요청 무시 - 이미 존재하는 이력")
+    @DisplayName("중복된 충전 트랜잭션 요청 무시 - 이미 존재하는 이력")
     void chargeIgnoreWhenDuplicateTransactionExists() {
         // given
         Long memberId = 1L;
@@ -369,6 +365,30 @@ class WalletServiceTest {
         );
 
         assertThat(wallet.getBalance()).isEqualTo(balanceBefore.minus(amount)); // 잔액이 10,000원이 남아야 함
+    }
+
+    @Test
+    @DisplayName("중복된 출금 트랜잭션 요청 무시 - 이미 존재하는 이력")
+    void withdrawIgnoreWhenDuplicateTransactionExists() {
+        // given
+        Long memberId = 1L;
+        Money amount = Money.of(5000L);
+        String transactionType = "WITHDRAW";
+        String referenceType = "PAYMENT";
+        Long referenceId = 101L;
+
+        // `walletHistoryRepository.existsByReferenceIdAndReferenceType` 가 true 반환
+        when(walletHistoryRepository.existsByReferenceIdAndReferenceType(referenceId, referenceType))
+                .thenReturn(true);
+
+        // when
+        walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId);
+
+        // then
+        // 중복된 트랜잭션으로 충전 연산이 수행되지 않는지 검증
+        verify(walletHistoryRepository, times(1)).existsByReferenceIdAndReferenceType(referenceId, referenceType);
+        verify(walletRepository, never()).save(any(Wallet.class));
+        verify(walletHistoryRepository, never()).record(any(), any(), any(), any(), any(), any());
     }
 
     @Test
