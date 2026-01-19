@@ -2,9 +2,7 @@ package walletHistory.port;
 
 import app.giftify.shared.domain.vo.Money;
 
-import java.time.LocalDateTime;
-
-public interface WalletHistoryPort {
+public interface WalletHistoryRepository {
 
     void record(
             Long walletId,
@@ -14,4 +12,6 @@ public interface WalletHistoryPort {
             String referenceType,
             Long referenceId
     );
+
+    boolean existsByReferenceIdAndReferenceType(Long referenceId, String referenceType);
 }
