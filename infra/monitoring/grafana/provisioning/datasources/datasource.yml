@@ -1,0 +1,15 @@
+# -------- Grafana 프로비저닝 방식의 장점 ---------------------------------------- #
+#  - 컨테이너 재시작 시에도 datasource 설정 자동 복원                                 #
+#  - access: proxy → Grafana 서버가 Prometheus에 대신 요청 (브라우저 CORS 문제 회피)  #
+#  - url: http://prometheus:9090 → 같은 Docker 네트워크 내 서비스명으로 연결         #
+# -------------------------------------------                                 #
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    uid: prometheus
