@@ -4,7 +4,8 @@ public record WishlistItemDto(
     Long wishlistItemId,
     Long productId,
     String productName,
-    Integer productPrice
+    Integer productPrice,
+    Long receiverId
 ) {
 }
 

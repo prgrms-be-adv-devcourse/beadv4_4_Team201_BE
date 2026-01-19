@@ -11,7 +11,7 @@ public record FundingResponseDto (
     Integer targetAmount,
     Integer currentAmount,
     FundingStatus status,
-    LocalDateTime endAt,
+    LocalDateTime deadline,
 
     // 위시리스트 아이템 정보
     Long wishlistItemId,
@@ -32,7 +32,7 @@ public record FundingResponseDto (
                 funding.getTargetAmount(),
                 funding.getCurrentAmount(),
                 funding.getStatus(),
-                funding.getEndAt(),
+                funding.getDeadline(),
                 funding.getFundingWishlistItem().getId(),
                 funding.getFundingWishlistItem().getProductId(),
                 funding.getFundingWishlistItem().getProductName(),

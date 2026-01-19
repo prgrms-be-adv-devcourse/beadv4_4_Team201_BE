@@ -19,19 +19,19 @@ public class FundingParticipantMember extends BaseJpaEntity {
     private Funding funding;
 
     @Column(nullable = false)
-    private Long memberId;
+    private Long fundingMemberId;
 
     @Column(nullable = false)
     private Integer amount;
 
 
-    public FundingParticipantMember(Funding funding, Long memberId, Integer amount) {
+    public FundingParticipantMember(Funding funding, Long fundingMemberId, Integer amount) {
         if (amount == null || amount < 1000) {
             throw new IllegalArgumentException("참여 금액은 1,000원 이상이어야 합니다.");
         }
 
         this.funding = funding;
-        this.memberId = memberId;
+        this.fundingMemberId = fundingMemberId;
         this.amount = amount;
     }
 
