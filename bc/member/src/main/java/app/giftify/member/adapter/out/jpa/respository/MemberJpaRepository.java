@@ -12,4 +12,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     // 이메일 통해 엔티티 찾기
     Optional<MemberJpaEntity> findByEmail(String email);
+
+    // 닉네임 통해 엔티티 찾기
+    Optional<MemberJpaEntity> findByNickname(String nickname);
 }
