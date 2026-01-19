@@ -1,5 +1,7 @@
 package app.giftify.shared.domain.event.payment;
 
+import java.time.LocalDateTime;
+
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
@@ -10,8 +12,10 @@ public class PaymentCanceledEvent extends BaseDomainEvent {
     private final Money amount;
     private final String reason;
     private final PaymentType type;
+    private final LocalDateTime canceledAt;
 
-    public PaymentCanceledEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, String reason) {
+    public PaymentCanceledEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, String reason,
+		LocalDateTime canceledAt) {
         super();
         this.paymentId = paymentId;
         this.sourceType = sourceType;
@@ -19,7 +23,8 @@ public class PaymentCanceledEvent extends BaseDomainEvent {
         this.amount = amount;
         this.type = type;
         this.reason = reason;
-    }
+		this.canceledAt = canceledAt;
+	}
 
     public Long getPaymentId() {
         return paymentId;
@@ -45,6 +50,10 @@ public class PaymentCanceledEvent extends BaseDomainEvent {
         return reason;
     }
 
+    public LocalDateTime getCanceledAt() {
+        return canceledAt;
+    }
+
     @Override
     public String toString() {
         return "PaymentCanceledEvent{" +
@@ -55,7 +64,7 @@ public class PaymentCanceledEvent extends BaseDomainEvent {
                 ", type=" + type + 
                 ", reason='" + reason + "'" + 
                 ", eventId='" + getEventId() + "'" + 
-                ", occurredAt=" + getOccurredAt() + 
+                ", canceledAt=" + getOccurredAt() +
                 '}';
     }
 }
