@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 public class Product extends BaseJpaEntity {
 	@ManyToOne
 	@JoinColumn(name = "member_id")
-	private FundingMember seller;
+	private FundingMember seller; // todo Long sellerId ?
 	private String name;
 	private String description;
 	private int price;
@@ -77,7 +77,7 @@ public class Product extends BaseJpaEntity {
 	 */
 	// 상품 등록 승인
 	public void approve() {
-		validateTransition(INACTIVE); // 판매 대기 상태로
+		transitionTo(INACTIVE); // 판매 대기 상태로
 		registerEvent(new ProductVerifiedEvent(
 			this.getId(),
 			this.getName(),
@@ -89,44 +89,49 @@ public class Product extends BaseJpaEntity {
 
 	// 상품 등록 거절
 	public void reject() {
-		validateTransition(REJECTED);
+		transitionTo(REJECTED);
 	}
 
 	// 상품 판매 시작
 	public void active() {
-		validateTransition(ACTIVE);
+		transitionTo(ACTIVE);
 		registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
 	}
 
 	// 상품 판매 중지
 	public void inActive() {
-		validateTransition(INACTIVE);
+		transitionTo(INACTIVE);
 		registerEvent(new ProductSaleDisabledEvent(
 			this.getId(),
 			STOPPED_BY_SELLER
 		)); // 판매 불가능 이벤트 발생
 	}
 
-	// 상품 상태 검증 및 변경
+	// 상품 상태 검증 todo Map<from,to> 상태 머신
 	private void validateTransition(ProductStatus toStatus) {
+		if (toStatus == ProductStatus.DRAFT) {
+			throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
+		}
 		switch (toStatus) {
-			case DRAFT -> throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
 			case REJECTED -> {
 				if (this.status != DRAFT)
 					throw new ProductException(PRODUCT_NOT_IN_DRAFT_STATUS);
-				this.status = REJECTED;
 			}
 			case ACTIVE -> {
 				if (this.status != INACTIVE)
 					throw new ProductException(PRODUCT_NOT_IN_INACTIVE_STATUS);
-				this.status = ACTIVE;
 			}
 			case INACTIVE -> {
 				if (this.status != DRAFT && this.status != ACTIVE)
 					throw new ProductException(PRODUCT_REJECTED_CANNOT_BE_ACTIVATED);
-				this.status = INACTIVE;
 			}
 		}
+	}
+
+	// 상태 변경
+	private void transitionTo(ProductStatus toStatus) {
+		validateTransition(toStatus);
+		this.status = toStatus;
 	}
 
 	/**
