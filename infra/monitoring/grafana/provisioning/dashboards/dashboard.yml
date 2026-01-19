@@ -1,0 +1,18 @@
+# -------- Grafana Dashboard Provider 설정 ---------------------------------------- #
+#  - 이 파일은 Grafana가 대시보드 JSON 파일들을 자동으로 로드하도록 설정합니다          #
+#  - options.path: 컨테이너 내부 경로 (docker-compose 볼륨 마운트와 일치해야 함)       #
+#  - updateIntervalSeconds: 파일 변경 감지 주기                                       #
+# -------------------------------------------------------------------------------- #
+apiVersion: 1
+
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: 'Spring Boot'
+    folderUid: 'spring-boot-folder'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
