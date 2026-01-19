@@ -7,6 +7,8 @@ build
 **/build
 .gradle
 **/.gradle
+# 짜르 파일은 예외
+!**/build/libs/*.jar
 
 # IDE
 .idea
