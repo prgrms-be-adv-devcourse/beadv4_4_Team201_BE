@@ -20,15 +20,22 @@ spring:
     #
     # 실수로 운영 환경에서 local/dev 설정이 적용되는 것을 방지하기 위함
 
-    include:
-      - auth
     group:
       local:
         - auth-local
+        - money-local
+        - member-local
+        - funding-local
       dev:
         - auth-dev
+        - money-dev
+        - member-dev
+        - funding-dev
       prod:
         - auth-prod
+        - money-prod
+        - member-prod
+        - funding-prod
 
 server:
   port: 8080
