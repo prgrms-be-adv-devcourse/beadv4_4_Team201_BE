@@ -2,24 +2,24 @@ package app.giftify.shared.domain.event.funding;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
-public class FundingCancelledEvent extends BaseDomainEvent {
+public class FundingCanceledEvent extends BaseDomainEvent {
     private final Long fundingId;
     private final Long wishlistItemId;
-    private final Integer cancelledAmount;
+    private final Integer canceledAmount;
     private final Long productId;
     private final Long fundingReceiverId;
 
-    public FundingCancelledEvent(
+    public FundingCanceledEvent(
             Long fundingId,
             Long wishlistItemId,
-            Integer cancelledAmount,
+            Integer canceledAmount,
             Long productId,
             Long fundingReceiverId
     ) {
         super();
         this.fundingId = fundingId;
         this.wishlistItemId = wishlistItemId;
-        this.cancelledAmount = cancelledAmount;
+        this.canceledAmount = canceledAmount;
         this.productId = productId;
         this.fundingReceiverId = fundingReceiverId;
     }
@@ -32,8 +32,8 @@ public class FundingCancelledEvent extends BaseDomainEvent {
         return wishlistItemId;
     }
 
-    public Integer getCancelledAmount() {
-        return cancelledAmount;
+    public Integer getCanceledAmount() {
+        return canceledAmount;
     }
 
     public Long getProductId() {
@@ -49,7 +49,7 @@ public class FundingCancelledEvent extends BaseDomainEvent {
         return "FundingCancelledEvent{" +
                 "fundingId=" + fundingId +
                 ", wishlistItemId=" + wishlistItemId +
-                ", cancelledAmount=" + cancelledAmount +
+                ", canceledAmount=" + canceledAmount +
                 ", productId=" + productId +
                 ", fundingReceiverId=" + fundingReceiverId +
                 ", eventId='" + getEventId() + "'" +
@@ -57,4 +57,5 @@ public class FundingCancelledEvent extends BaseDomainEvent {
                 '}';
     }
 }
+
 

@@ -7,7 +7,7 @@ import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingCancelledEvent;
+import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,7 @@ public class FundingCloseUseCase {
         funding.close();
 
         // 환불 처리를 위한 이벤트 발행
-        eventPublisher.publish(new FundingCancelledEvent(
+        eventPublisher.publish(new FundingCanceledEvent(
             funding.getId(),
             wishlistItem.getWishlistId(),
             currentAmount,
