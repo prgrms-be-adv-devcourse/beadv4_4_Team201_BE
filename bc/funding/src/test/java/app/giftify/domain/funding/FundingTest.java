@@ -12,6 +12,7 @@ class FundingTest {
     private FundingWishlistItem createTestWishlistItem(Long wishlistId, Long productId, String productName, int productPrice) {
         return new FundingWishlistItem(
                 wishlistId,
+                1L,  // fundingReceiverId (테스트용 기본값)
                 productId,
                 productName,
                 productPrice,

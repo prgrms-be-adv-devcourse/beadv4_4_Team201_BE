@@ -56,6 +56,13 @@ public class Funding extends BaseJpaEntity {
         return funding;
     }
 
+    /**
+     * 펀딩 수령자 ID 조회 (FundingWishlistItem에서 가져옴)
+     */
+    public Long getFundingReceiverId() {
+        return this.fundingWishlistItem.getFundingReceiverId();
+    }
+
     public static void validateLeastAmount(Integer amount) {
         if (amount == null || amount < 1000) {
             throw new FundingException(FundingErrorCode.INVALID_AMOUNT);

@@ -34,6 +34,7 @@ class FundingCloseUseCaseTest {
     private FundingWishlistItem createTestWishlistItem() {
         return new FundingWishlistItem(
                 1L,
+                1L,  // fundingReceiverId (테스트용 기본값)
                 100L,
                 "테스트 상품",
                 50000,
@@ -150,5 +151,6 @@ class FundingCloseUseCaseTest {
 
         verify(fundingRepository, times(1)).findById(fundingId);
     }
+
 }
 
