@@ -4,6 +4,7 @@ import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.in.funding.FundingResponseDto;
+import app.giftify.in.funding.MyFundingResponseDto;
 import app.giftify.in.funding.WishlistItemDto;
 import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,21 @@ public class FundingFacade {
         return fundingGetUseCase.getFunding(id);
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<FundingResponseDto> getFundings(int page, int size) {
+        return fundingGetUseCase.getFundings(page, size);
+    }
+
+    @Transactional(readOnly = true)
+    public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
+        return fundingGetUseCase.getParticipatedFunding(fundingId, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<MyFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
+        return fundingGetUseCase.getParticipatedFundings(page, size, memberId);
+    }
+
     @Transactional
     public FundingCompleteResponseDto closeFunding(Long id) {
         return fundingCloseUseCase.closeFunding(id);
@@ -57,10 +73,5 @@ public class FundingFacade {
     @Transactional
     public List<FundingCompleteResponseDto> expireExpiredFundings() {
         return fundingExpireUseCase.expireExpiredFundings();
-    }
-
-    @Transactional(readOnly = true)
-    public PageResponse<FundingResponseDto> getFundings(int page, int size) {
-        return fundingGetUseCase.getFundings(page, size);
     }
 }
