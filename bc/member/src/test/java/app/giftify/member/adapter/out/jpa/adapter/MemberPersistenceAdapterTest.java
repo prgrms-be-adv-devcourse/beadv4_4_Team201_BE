@@ -1,10 +1,11 @@
 package app.giftify.member.adapter.out.jpa.adapter;
 
-import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
-import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
-import app.giftify.member.core.domain.member.Member;
-import app.giftify.member.core.domain.member.MemberRole;
-import app.giftify.member.core.domain.member.MemberStatus;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +13,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
+import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
+import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.shared.domain.type.MemberRole;
 
 @ExtendWith(MockitoExtension.class)
 class MemberPersistenceAdapterTest {
