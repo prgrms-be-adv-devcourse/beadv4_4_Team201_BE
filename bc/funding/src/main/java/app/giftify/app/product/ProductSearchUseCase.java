@@ -23,7 +23,7 @@ public class ProductSearchUseCase {
 		Page<Product> result = productRepository.searchProducts(searchDto);
 
 		List<ProductDto> content = result.getContent().stream()
-			.map(Product::toDto)
+			.map(ProductDto::from)
 			.toList();
 
 		return PageResponse.of(
@@ -38,7 +38,7 @@ public class ProductSearchUseCase {
 		Page<Product> result = productRepository.searchMyProducts(sellerId, searchDto);
 
 		List<ProductDto> content = result.getContent().stream()
-			.map(Product::toDto)
+			.map(ProductDto::from)
 			.toList();
 
 		return PageResponse.of(
