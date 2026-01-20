@@ -4,7 +4,7 @@ import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
 import app.giftify.domain.funding.FundingWishlistItem;
-import app.giftify.out.FundingRepository;
+import app.giftify.out.funding.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import lombok.RequiredArgsConstructor;

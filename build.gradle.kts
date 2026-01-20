@@ -92,6 +92,8 @@ configure(subprojects.filter {
 configure(subprojects.filter {
     it.parent?.name == "support" && it.name != "support"
 }) {
+        apply(plugin = "java-library")
+
         dependencies {
             "implementation"("org.springframework.boot:spring-boot-starter")
         }
