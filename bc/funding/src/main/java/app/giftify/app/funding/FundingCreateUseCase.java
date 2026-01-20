@@ -7,7 +7,8 @@ import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.out.FundingRepository;
 import app.giftify.out.FundingWishlistItemRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.support.common.event.funding.FundingCreatedEvent;
+import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
+import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +34,21 @@ public class FundingCreateUseCase {
         // Member BC에서 수신하여 WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
         eventPublisher.publish(new FundingCreatedEvent(
             funding.getId(),
-            wishlistItem.getWishlistId()
+            wishlistItem.getWishlistId(),
+            funding.getTargetAmount(),
+            funding.getDeadline()
         ));
+
+        // 첫 결제로 바로 목표 달성한 경우 FundingAchievedEvent 발행
+        if (funding.isAchieved()) {
+            eventPublisher.publish(new FundingAchievedEvent(
+                funding.getId(),
+                wishlistItem.getWishlistId(),
+                funding.getTargetAmount(),
+                wishlistItem.getProductId(),
+                wishlistItem.getReceiverId()
+            ));
+        }
 
         return funding;
     }

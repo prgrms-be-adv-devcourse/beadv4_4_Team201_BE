@@ -9,6 +9,9 @@ import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.core.domain.exception.DuplicateMemberException;
 import app.giftify.member.core.domain.member.Member;
 import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,12 +37,15 @@ class MemberServiceTest {
     @Mock
     private PreSignupPort preSignupPort;
 
+    @Mock
+    private EventPublisher eventPublisher;
+
     @InjectMocks
     private MemberService memberService;
 
     @Test
-    @DisplayName("[회원 가입] 성공 - registerPreSignupMember")
-    void registerPreSignupMember_Success() {
+    @DisplayName("[회원 가입] 성공 - registerMember")
+    void registerMember_Success() {
         // given
         RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
                 "test@example.com",
@@ -62,17 +68,18 @@ class MemberServiceTest {
         given(memberRepositoryPort.save(any(Member.class))).willReturn(savedMember);
 
         // when
-        Member result = memberService.registerPreSignupMember(command);
+        Member result = memberService.registerMember(command);
 
         // then
         assertThat(result.getEmail()).isEqualTo(command.email());
         assertThat(result.getNickname()).isEqualTo(command.nickname());
         verify(memberRepositoryPort).save(any(Member.class));
+        verify(eventPublisher).publish(any(MemberSignedEvent.class));
     }
 
     @Test
     @DisplayName("[회원 가입] 이미 가입된 회원인 경우 예외 발생")
-    void registerPreSignupMember_DuplicateMember() {
+    void registerMember_DuplicateMember() {
         // given
         RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
                 "test@example.com",
@@ -88,7 +95,7 @@ class MemberServiceTest {
                 .willReturn(Optional.of(Member.builder().build()));
 
         // when & then
-        assertThatThrownBy(() -> memberService.registerPreSignupMember(command))
+        assertThatThrownBy(() -> memberService.registerMember(command))
                 .isInstanceOf(DuplicateMemberException.class);
     }
 
@@ -132,6 +139,48 @@ class MemberServiceTest {
 
         // then
         assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("[이메일 존재 확인] 이메일이 존재하지 않는 경우 false")
+    void existsByEmail_False() {
+        // given
+        String email = "notfound@example.com";
+        given(memberRepositoryPort.findByEmail(email)).willReturn(Optional.empty());
+
+        // when
+        boolean result = memberService.existsByEmail(email);
+
+        // then
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("[닉네임 중복 확인] 이미 존재하는 닉네임인 경우 true")
+    void isNicknameDuplicated_True() {
+        // given
+        String nickname = "duplicated";
+        given(memberRepositoryPort.findByNickname(nickname)).willReturn(Optional.of(Member.builder().build()));
+
+        // when
+        boolean result = memberService.isNicknameDuplicated(nickname);
+
+        // then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("[닉네임 중복 확인] 존재하지 않는 닉네임인 경우 false")
+    void isNicknameDuplicated_False() {
+        // given
+        String nickname = "unique";
+        given(memberRepositoryPort.findByNickname(nickname)).willReturn(Optional.empty());
+
+        // when
+        boolean result = memberService.isNicknameDuplicated(nickname);
+
+        // then
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -186,6 +235,7 @@ class MemberServiceTest {
         assertThat(result.getAddress()).isEqualTo("New Address");
         assertThat(result.getName()).isEqualTo("New Name");
         verify(memberRepositoryPort).save(any(Member.class));
+        verify(eventPublisher).publish(any(MemberUpdatedEvent.class));
     }
 
     @Test

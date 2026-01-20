@@ -18,4 +18,7 @@ public interface MemberRepositoryPort {
 
     // 회원 정보를 저장 또는 업데이트
     Member save(Member member);
+
+    // 중복하는 닉네임 확인용
+    Optional<Member> findByNickname(String nickname);
 }
