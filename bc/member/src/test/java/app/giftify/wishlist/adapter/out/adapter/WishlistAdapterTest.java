@@ -33,7 +33,6 @@ class WishlistAdapterTest {
     void findByMemberIdTest() {
         Long memberId = 10L;
         WishlistJpaEntity entity = WishlistJpaEntity.builder()
-                .id(1L)
                 .authSub("user123")
                 .memberId(memberId)
                 .visibility(Visibility.PUBLIC)
@@ -51,7 +50,6 @@ class WishlistAdapterTest {
     void findByAuthSubTest() {
         String authSub = "user123";
         WishlistJpaEntity entity = WishlistJpaEntity.builder()
-                .id(1L)
                 .authSub(authSub)
                 .memberId(10L)
                 .visibility(Visibility.PUBLIC)
@@ -74,7 +72,6 @@ class WishlistAdapterTest {
                 .visibility(Visibility.PUBLIC)
                 .build();
         WishlistJpaEntity entity = WishlistJpaEntity.builder()
-                .id(1L)
                 .authSub("user123")
                 .memberId(10L)
                 .visibility(Visibility.PUBLIC)

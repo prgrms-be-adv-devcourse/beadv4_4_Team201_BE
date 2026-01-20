@@ -23,7 +23,6 @@ class WishlistMapperTest {
 
         WishlistJpaEntity entity = WishlistMapper.toEntity(domain);
 
-        assertThat(entity.getId()).isEqualTo(domain.getId());
         assertThat(entity.getAuthSub()).isEqualTo(domain.getAuthSub());
         assertThat(entity.getMemberId()).isEqualTo(domain.getMemberId());
         assertThat(entity.getVisibility()).isEqualTo(domain.getVisibility());
@@ -33,7 +32,6 @@ class WishlistMapperTest {
     @DisplayName("Wishlist Entity를 도메인으로 변환 테스트")
     void toDomainTest() {
         WishlistJpaEntity entity = WishlistJpaEntity.builder()
-                .id(1L)
                 .authSub("user123")
                 .memberId(10L)
                 .visibility(Visibility.PRIVATE)

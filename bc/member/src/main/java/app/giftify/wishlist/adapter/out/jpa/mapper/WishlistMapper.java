@@ -7,7 +7,6 @@ public class WishlistMapper {
 
     public static WishlistJpaEntity toEntity(Wishlist domain) {
         return WishlistJpaEntity.builder()
-                .id(domain.getId())
                 .authSub(domain.getAuthSub())
                 .visibility(domain.getVisibility())
                 .memberId(domain.getMemberId())

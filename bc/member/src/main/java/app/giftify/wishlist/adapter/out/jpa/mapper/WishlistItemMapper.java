@@ -7,7 +7,6 @@ public class WishlistItemMapper {
 
     public static WishlistItemJpaEntity toEntity(WishlistItem domain) {
         return WishlistItemJpaEntity.builder()
-                .id(domain.getId())
                 .authSub(domain.getAuthSub())
                 .productId(domain.getProductId())
                 .itemStatus(domain.getItemStatus())

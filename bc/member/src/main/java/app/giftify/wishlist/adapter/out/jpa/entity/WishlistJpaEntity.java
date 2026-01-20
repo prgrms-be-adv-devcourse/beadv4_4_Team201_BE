@@ -4,7 +4,6 @@ import app.giftify.support.jpa.BaseJpaEntity;
 import app.giftify.wishlist.core.domain.Visibility;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -15,9 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class WishlistJpaEntity extends BaseJpaEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(nullable = false, unique = true)
     private String authSub;

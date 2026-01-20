@@ -27,7 +27,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     private final EventPublisher eventPublisher;
 
     @Override
-    public Long getWishlistItemCount(Long wishlistId) {
+    public Long getWishlistItemCount() {
         return wishlistItemRepositoryPort.count();
     }
 

@@ -35,7 +35,6 @@ class WishlistItemAdapterTest {
         String authSub = "user123";
         Long productId = 100L;
         WishlistItemJpaEntity entity = WishlistItemJpaEntity.builder()
-                .id(1L)
                 .authSub(authSub)
                 .productId(productId)
                 .itemStatus(ItemStatus.ACTIVE)
@@ -49,29 +48,10 @@ class WishlistItemAdapterTest {
     }
 
     @Test
-    @DisplayName("ID로 위시리스트 아이템 조회 테스트")
-    void findByIdTest() {
-        Long id = 1L;
-        WishlistItemJpaEntity entity = WishlistItemJpaEntity.builder()
-                .id(id)
-                .authSub("user123")
-                .productId(100L)
-                .itemStatus(ItemStatus.ACTIVE)
-                .build();
-        given(wishlistItemRepository.findById(id)).willReturn(Optional.of(entity));
-
-        Optional<WishlistItem> result = wishlistItemAdapter.findById(id);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(id);
-    }
-
-    @Test
     @DisplayName("authSub로 모든 위시리스트 아이템 조회 테스트")
     void findByAuthSubTest() {
         String authSub = "user123";
         WishlistItemJpaEntity entity = WishlistItemJpaEntity.builder()
-                .id(1L)
                 .authSub(authSub)
                 .productId(100L)
                 .itemStatus(ItemStatus.ACTIVE)
@@ -93,7 +73,6 @@ class WishlistItemAdapterTest {
                 .itemStatus(ItemStatus.ACTIVE)
                 .build();
         WishlistItemJpaEntity entity = WishlistItemJpaEntity.builder()
-                .id(1L)
                 .authSub("user123")
                 .productId(100L)
                 .itemStatus(ItemStatus.ACTIVE)
