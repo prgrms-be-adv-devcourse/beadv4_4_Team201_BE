@@ -26,4 +26,12 @@ public enum WalletErrorCode implements ErrorCode {
     public String getMessage() {
         return message;
     }
+
+    @Override
+    public String toString() {
+        return "WalletErrorCode{" +
+                "code='" + code + '\'' +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }
