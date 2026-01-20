@@ -2,7 +2,7 @@ package app.giftify.app.funding;
 
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.WishlistItemDto;
-import app.giftify.out.FundingWishlistItemRepository;
+import app.giftify.out.funding.FundingWishlistItemRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

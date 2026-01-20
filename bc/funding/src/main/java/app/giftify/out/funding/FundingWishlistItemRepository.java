@@ -1,4 +1,4 @@
-package app.giftify.out;
+package app.giftify.out.funding;
 
 import app.giftify.domain.funding.FundingWishlistItem;
 import org.springframework.data.jpa.repository.JpaRepository;
