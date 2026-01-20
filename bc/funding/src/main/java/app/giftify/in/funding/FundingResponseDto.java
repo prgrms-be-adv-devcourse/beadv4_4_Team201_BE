@@ -4,6 +4,7 @@ import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingStatus;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 public record FundingResponseDto (
     // 펀딩 정보
@@ -17,16 +18,25 @@ public record FundingResponseDto (
     Long wishlistItemId,
     Long productId,
     String productName,
-    Integer productPrice
+    Integer productPrice,
 
-    // TODO: 프론트를 위해 넣어주면 좋을 것 같음
-    /*
-    double achievementRate,  // 달성률
-    Long daysRemaining     // 남은 일수
-     */
+    // 추가 정보 -> 화면 출력용
+    double achievementRate,  // 달성률 (%)
+    long daysRemaining       // 남은 일수
 ) {
 
     public static FundingResponseDto fromEntity(Funding funding) {
+        double rate = 0.0;
+        if (funding.getTargetAmount() > 0) {
+            rate = (double) funding.getCurrentAmount() / funding.getTargetAmount() * 100.0;
+        }
+
+        long days = 0;
+        if (funding.getEndAt() != null) {
+            days = ChronoUnit.DAYS.between(LocalDateTime.now(), funding.getEndAt());
+            if (days < 0) days = 0;
+        }
+
         return new FundingResponseDto(
                 funding.getId(),
                 funding.getTargetAmount(),
@@ -36,7 +46,9 @@ public record FundingResponseDto (
                 funding.getFundingWishlistItem().getId(),
                 funding.getFundingWishlistItem().getProductId(),
                 funding.getFundingWishlistItem().getProductName(),
-                funding.getFundingWishlistItem().getProductPrice()
+                funding.getFundingWishlistItem().getProductPrice(),
+                Math.round(rate * 10.0) / 10.0, // 소수점 첫째자리까지 반올림
+                days
         );
     }
 }
