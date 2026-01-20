@@ -1,13 +1,10 @@
 package app.giftify.app.funding;
 
-import app.giftify.domain.funding.Funding;
-import app.giftify.domain.funding.FundingErrorCode;
-import app.giftify.domain.funding.FundingException;
-import app.giftify.domain.funding.FundingStatus;
+import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.out.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.support.common.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,9 +27,18 @@ public class FundingExpireUseCase {
         //     throw new FundingException(FundingErrorCode.FORBIDDEN, "관리자만 펀딩을 종료할 수 있습니다.");
         // }
 
+        FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
+        Integer currentAmount = funding.getCurrentAmount();
+
+
         funding.expire();
 
-         eventPublisher.publish(new FundingExpiredEvent(funding.getId()));
+        eventPublisher.publish(new FundingExpiredEvent(
+                funding.getId(),
+                wishlistItem.getWishlistId(),
+                currentAmount,
+                wishlistItem.getReceiverId()
+        ));
 
         return new FundingCompleteResponseDto(
                 funding.getId(),
@@ -47,14 +53,23 @@ public class FundingExpireUseCase {
         LocalDateTime now = LocalDateTime.now();
 
         //fixme: 데이터양이많아질경우
-        List<Funding> expiredFundings = fundingRepository.findByEndAtBeforeAndStatusIn(
+        List<Funding> expiredFundings = fundingRepository.findByDeadlineAfterAndStatusIn(
                 now,
                 List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED)
         );
 
         for (Funding funding : expiredFundings) {
+            FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
+            Integer currentAmount = funding.getCurrentAmount();
+
             funding.expire();
-            eventPublisher.publish(new FundingExpiredEvent(funding.getId()));
+
+            eventPublisher.publish(new FundingExpiredEvent(
+                    funding.getId(),
+                    wishlistItem.getWishlistId(),
+                    currentAmount,
+                    wishlistItem.getReceiverId()
+            ));
         }
 
         return expiredFundings.stream()

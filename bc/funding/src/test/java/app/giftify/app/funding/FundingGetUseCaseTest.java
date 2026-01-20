@@ -1,11 +1,6 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingGetUseCase;
-import app.giftify.domain.funding.Funding;
-import app.giftify.domain.funding.FundingErrorCode;
-import app.giftify.domain.funding.FundingException;
-import app.giftify.domain.funding.FundingStatus;
-import app.giftify.domain.funding.FundingWishlistItem;
+import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingResponseDto;
 import app.giftify.out.FundingRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -15,9 +10,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,9 +30,9 @@ class FundingGetUseCaseTest {
 
     private FundingWishlistItem createTestWishlistItem() {
         return new FundingWishlistItem(
-                1L,
-                1L,  // fundingReceiverId (테스트용 기본값)
-                100L,
+                1L,      // wishlistId
+                999L,    // receiverId
+                100L,    // productId
                 "테스트 상품",
                 50000,
                 FundingWishlistItem.WishListItemStatus.IN_PROGRESS
@@ -147,9 +144,9 @@ class FundingGetUseCaseTest {
 
         // endAt을 과거로 설정 (리플렉션)
         try {
-            java.lang.reflect.Field endAtField = Funding.class.getDeclaredField("endAt");
-            endAtField.setAccessible(true);
-            endAtField.set(funding, java.time.LocalDateTime.now().minusDays(1));
+            Field deadlineField = Funding.class.getDeclaredField("deadline");
+            deadlineField.setAccessible(true);
+            deadlineField.set(funding, java.time.LocalDateTime.now().minusDays(1));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

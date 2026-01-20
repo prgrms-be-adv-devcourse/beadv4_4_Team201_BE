@@ -12,7 +12,7 @@ public record FundingResponseDto (
     Integer targetAmount,
     Integer currentAmount,
     FundingStatus status,
-    LocalDateTime endAt,
+    LocalDateTime deadline,
 
     // 위시리스트 아이템 정보
     Long wishlistItemId,
@@ -32,8 +32,8 @@ public record FundingResponseDto (
         }
 
         long days = 0;
-        if (funding.getEndAt() != null) {
-            days = ChronoUnit.DAYS.between(LocalDateTime.now(), funding.getEndAt());
+        if (funding.getDeadline() != null) {
+            days = ChronoUnit.DAYS.between(LocalDateTime.now(), funding.getDeadline());
             if (days < 0) days = 0;
         }
 
@@ -42,7 +42,7 @@ public record FundingResponseDto (
                 funding.getTargetAmount(),
                 funding.getCurrentAmount(),
                 funding.getStatus(),
-                funding.getEndAt(),
+                funding.getDeadline(),
                 funding.getFundingWishlistItem().getId(),
                 funding.getFundingWishlistItem().getProductId(),
                 funding.getFundingWishlistItem().getProductName(),

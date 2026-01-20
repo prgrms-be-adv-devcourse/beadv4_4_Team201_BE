@@ -29,7 +29,7 @@ public class Funding extends BaseJpaEntity {
     private FundingStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime endAt;        // 펀딩 종료 예정 시점
+    private LocalDateTime deadline;        // 펀딩 종료 예정 시점
 
     @Column
     private LocalDateTime closedAt;     // 펀딩이 실제 종료된 시점
@@ -40,7 +40,7 @@ public class Funding extends BaseJpaEntity {
         this.targetAmount = item.getProductPrice();
         this.currentAmount = currentAmount;
         this.status = FundingStatus.IN_PROGRESS;
-        this.endAt = LocalDateTime.now().plusDays(15);
+        this.deadline = LocalDateTime.now().plusDays(15);
     }
 
     public static Funding startFunding(FundingWishlistItem item, Integer amount) {
@@ -54,13 +54,6 @@ public class Funding extends BaseJpaEntity {
         }
 
         return funding;
-    }
-
-    /**
-     * 펀딩 수령자 ID 조회 (FundingWishlistItem에서 가져옴)
-     */
-    public Long getFundingReceiverId() {
-        return this.fundingWishlistItem.getFundingReceiverId();
     }
 
     public static void validateLeastAmount(Integer amount) {
@@ -121,9 +114,9 @@ public class Funding extends BaseJpaEntity {
         this.closedAt = LocalDateTime.now();
     }
 
-    public boolean isExpired(LocalDateTime now) {return now.isAfter(this.endAt); }
+    public boolean isExpired(LocalDateTime now) {return now.isAfter(this.deadline); }
 
-    public boolean isExpired() {return LocalDateTime.now().isAfter(this.endAt); }
+    public boolean isExpired() {return LocalDateTime.now().isAfter(this.deadline); }
 
     public boolean isAchieved() {
         return this.currentAmount.equals(this.targetAmount);

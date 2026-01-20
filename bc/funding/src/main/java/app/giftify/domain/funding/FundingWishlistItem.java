@@ -24,7 +24,7 @@ public class FundingWishlistItem extends BaseJpaEntity {
     private Long wishlistId;
 
     @Column(nullable = false)
-    private Long fundingReceiverId;  // 위시리스트 소유자(펀딩 수령자) ID
+    private Long receiverId;
 
     // Product 정보를 값으로 직접 저장 (스냅샷)
     @Column(nullable = false)
@@ -41,9 +41,9 @@ public class FundingWishlistItem extends BaseJpaEntity {
     private WishListItemStatus status;
 
 
-    public FundingWishlistItem(Long wishlistId, Long fundingReceiverId, Long productId, String productName, int productPrice, WishListItemStatus status) {
+    public FundingWishlistItem(Long wishlistId, Long receiverId, Long productId, String productName, int productPrice, WishListItemStatus status) {
         this.wishlistId = wishlistId;
-        this.fundingReceiverId = fundingReceiverId;
+        this.receiverId = receiverId;
         this.productId = productId;
         this.productName = productName;
         this.productPrice = productPrice;

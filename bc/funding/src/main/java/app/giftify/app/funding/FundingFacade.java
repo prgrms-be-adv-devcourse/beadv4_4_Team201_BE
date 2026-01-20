@@ -21,19 +21,22 @@ public class FundingFacade {
     private final FundingGetUseCase fundingGetUseCase;
     private final FundingCloseUseCase fundingCloseUseCase;
     private final FundingExpireUseCase fundingExpireUseCase;
+    private final FundingContributeUseCase fundingContributeUseCase;
 
     @Transactional
-    public Funding startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
-        // 1. WishlistItem 복제 (recipientMemberId 포함)
+    public FundingResponseDto startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
+        // 1. WishlistItem 복제
         FundingWishlistItem syncedItem = fundingSyncItemUseCase.syncItem(wishlistItemDto);
 
-        // 2. Funding 생성 (첫 결제 금액으로, 수령자 정보는 WishlistItem에서 자동으로 가져옴)
-        return fundingCreateUseCase.createFunding(syncedItem.getId(), amount);
+        // 2. Funding 생성 (첫 결제 금액으로)
+        Funding funding = fundingCreateUseCase.createFunding(syncedItem.getId(), amount);
+
+        return FundingResponseDto.fromEntity(funding);
     }
 
     @Transactional
-    public FundingWishlistItem syncItem(WishlistItemDto dto) {
-        return fundingSyncItemUseCase.syncItem(dto);
+    public void contributeFunding(Long fundingId, Integer amount) {
+        fundingContributeUseCase.contribute(fundingId, amount);
     }
 
     @Transactional(readOnly = true)

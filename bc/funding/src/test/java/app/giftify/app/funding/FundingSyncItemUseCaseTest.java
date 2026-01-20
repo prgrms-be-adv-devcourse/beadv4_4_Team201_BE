@@ -1,6 +1,5 @@
 package app.giftify.app.funding;
 
-import app.giftify.app.funding.FundingSyncItemUseCase;
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.WishlistItemDto;
 import app.giftify.out.FundingWishlistItemRepository;
@@ -11,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -28,11 +27,11 @@ class FundingSyncItemUseCaseTest {
 
     private WishlistItemDto createTestWishlistItemDto() {
         return new WishlistItemDto(
-                1L,      // wishlistItemId
-                1L,      // fundingReceiverId
-                100L,    // productId
+                1L,
+                999L,
+                100L,
                 "테스트 상품",  // productName
-                50000    // productPrice
+                50000  // productPrice
         );
     }
 
@@ -53,7 +52,7 @@ class FundingSyncItemUseCaseTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getWishlistId()).isEqualTo(1L);
-        assertThat(result.getFundingReceiverId()).isEqualTo(1L);
+        assertThat(result.getReceiverId()).isEqualTo(999L);
         assertThat(result.getProductId()).isEqualTo(100L);
         assertThat(result.getProductName()).isEqualTo("테스트 상품");
         assertThat(result.getProductPrice()).isEqualTo(50000);
@@ -85,11 +84,11 @@ class FundingSyncItemUseCaseTest {
     void syncItem_copies_all_fields_from_dto() {
         // given
         WishlistItemDto dto = new WishlistItemDto(
-                999L,           // wishlistItemId
-                1L,             // fundingReceiverId
-                777L,           // productId
-                "특별한 상품명",   // productName
-                123456          // productPrice
+                1L,
+                999L,
+                100L,
+                "테스트 상품",
+                50000
         );
 
         when(fundingWishlistItemRepository.save(any(FundingWishlistItem.class)))
@@ -99,10 +98,11 @@ class FundingSyncItemUseCaseTest {
         FundingWishlistItem result = fundingSyncItemUseCase.syncItem(dto);
 
         // then
-        assertThat(result.getWishlistId()).isEqualTo(999L);
-        assertThat(result.getProductId()).isEqualTo(777L);
-        assertThat(result.getProductName()).isEqualTo("특별한 상품명");
-        assertThat(result.getProductPrice()).isEqualTo(123456);
+        assertThat(result.getWishlistId()).isEqualTo(1L);
+        assertThat(result.getReceiverId()).isEqualTo(999L);
+        assertThat(result.getProductId()).isEqualTo(100L);
+        assertThat(result.getProductName()).isEqualTo("테스트 상품");
+        assertThat(result.getProductPrice()).isEqualTo(50000);
 
         verify(fundingWishlistItemRepository, times(1)).save(any(FundingWishlistItem.class));
     }
@@ -122,7 +122,7 @@ class FundingSyncItemUseCaseTest {
         // then
         verify(fundingWishlistItemRepository, times(1)).save(argThat(item ->
                 item.getWishlistId().equals(1L) &&
-                item.getFundingReceiverId().equals(1L) &&
+                item.getReceiverId().equals(999L) &&
                 item.getProductId().equals(100L) &&
                 item.getProductName().equals("테스트 상품") &&
                 item.getProductPrice() == 50000 &&
@@ -137,7 +137,7 @@ class FundingSyncItemUseCaseTest {
         WishlistItemDto dto = createTestWishlistItemDto();
         FundingWishlistItem savedItem = new FundingWishlistItem(
                 dto.wishlistItemId(),
-                dto.fundingReceiverId(),
+                dto.receiverId(),
                 dto.productId(),
                 dto.productName(),
                 dto.productPrice(),
@@ -161,10 +161,10 @@ class FundingSyncItemUseCaseTest {
         // given
         WishlistItemDto dto = new WishlistItemDto(
                 1L,
-                1L,      // fundingReceiverId
+                999L,
                 100L,
-                "무료 상품",
-                0  // 0원
+                "테스트 상품",
+                0
         );
 
         when(fundingWishlistItemRepository.save(any(FundingWishlistItem.class)))
@@ -185,7 +185,7 @@ class FundingSyncItemUseCaseTest {
         String longProductName = "A".repeat(100); // 100자
         WishlistItemDto dto = new WishlistItemDto(
                 1L,
-                1L,      // fundingReceiverId
+                999L,
                 100L,
                 longProductName,
                 50000
