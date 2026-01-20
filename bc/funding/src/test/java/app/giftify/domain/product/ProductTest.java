@@ -18,7 +18,7 @@ class ProductTest {
 
 	@BeforeEach
 	void setUp() {
-		seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		seller = new FundingMember(1L, "auth0|123", "홍길동");
 	}
 
 	@Test

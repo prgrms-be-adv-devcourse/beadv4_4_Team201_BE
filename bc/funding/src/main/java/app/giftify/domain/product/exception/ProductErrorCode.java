@@ -12,6 +12,7 @@ public enum ProductErrorCode implements ErrorCode {
 
 	// P1xx: 조회/리소스 관련
 	PRODUCT_NOT_FOUND(NOT_FOUND, "P101", "상품을 찾을 수 없습니다."),
+	FUNDING_MEMBER_NOT_FOUND(NOT_ACCEPTABLE, "P102", "사용자를 찾을 수 없습니다."),
 
 	// P2xx: 상태/비즈니스 규칙/전이 관련
 	PRODUCT_OUT_OF_STOCK(BAD_REQUEST, "P201", "상품 재고가 부족합니다."),

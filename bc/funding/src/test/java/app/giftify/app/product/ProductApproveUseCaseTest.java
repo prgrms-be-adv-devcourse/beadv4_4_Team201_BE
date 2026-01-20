@@ -33,7 +33,7 @@ class ProductApproveUseCaseTest {
 	void approveProduct_changesStatusToInactive() {
 		// given
 		Long productId = 1L;
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 
 		when(productSupport.findById(productId)).thenReturn(product);
@@ -51,7 +51,7 @@ class ProductApproveUseCaseTest {
 	void approveProduct_publishesProductVerifiedEvent() {
 		// given
 		Long productId = 1L;
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 
 		when(productSupport.findById(productId)).thenReturn(product);

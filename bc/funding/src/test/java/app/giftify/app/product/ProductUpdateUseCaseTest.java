@@ -44,7 +44,7 @@ class ProductUpdateUseCaseTest {
 	void setUp() {
 		productId = 1L;
 		sellerId = 1L;
-		seller = new FundingMember(sellerId, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		seller = new FundingMember(1L, "auth0|123", "홍길동");
 	}
 
 	@Nested

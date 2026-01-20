@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.app.product.ProductFacade;
-import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.exception.ProductException;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.paging.PageResponse;
@@ -32,12 +31,11 @@ public class ProductController {
 	@PostMapping
 	@PreAuthorize("hasRole('SELLER')")
 	public ResponseEntity<ProductDto> createProduct(
-		@CurrentMemberId Long memberId,
 		@Valid @RequestBody ProductCreateRequestDto requestDto
 	) {
-		FundingMember seller = new FundingMember(memberId);
+		Long sellerId = 1L; // todo 토큰에서 get
 
-		ProductDto productDto = productFacade.createProduct(seller, requestDto);
+		ProductDto productDto = productFacade.createProduct(sellerId, requestDto);
 		return ResponseEntity.status(CREATED).body(productDto);
 	}
 

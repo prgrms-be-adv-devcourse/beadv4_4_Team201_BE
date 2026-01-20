@@ -3,7 +3,6 @@ package app.giftify.app.product;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.giftify.domain.FundingMember;
 import app.giftify.in.product.MyProductSearchDto;
 import app.giftify.in.product.ProductCreateRequestDto;
 import app.giftify.in.product.ProductDto;
@@ -27,8 +26,8 @@ public class ProductFacade {
 	private final ProductStockHistoryUseCase productStockHistoryUseCase;
 
 	@Transactional //todo event
-	public ProductDto createProduct(FundingMember seller, ProductCreateRequestDto requestDto) {
-		return productCreateUseCase.createProduct(seller, requestDto);
+	public ProductDto createProduct(Long sellerId, ProductCreateRequestDto requestDto) {
+		return productCreateUseCase.createProduct(sellerId, requestDto);
 	}
 
 	@Transactional(readOnly = true)
