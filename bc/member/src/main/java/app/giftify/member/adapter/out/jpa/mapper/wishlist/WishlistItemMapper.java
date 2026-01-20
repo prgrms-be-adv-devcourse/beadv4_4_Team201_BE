@@ -8,7 +8,7 @@ public class WishlistItemMapper {
     public static WishlistItemJpaEntity toEntity(WishlistItem domain) {
         return WishlistItemJpaEntity.builder()
                 .id(domain.getId())
-                .wishlistId(domain.getWishlistId())
+                .authSub(domain.getAuthSub())
                 .productId(domain.getProductId())
                 .itemStatus(domain.getItemStatus())
                 .build();
@@ -17,7 +17,7 @@ public class WishlistItemMapper {
     public static WishlistItem toDomain(WishlistItemJpaEntity entity) {
         return WishlistItem.builder()
                 .id(entity.getId())
-                .wishlistId(entity.getWishlistId())
+                .authSub(entity.getAuthSub())
                 .productId(entity.getProductId())
                 .itemStatus(entity.getItemStatus())
                 .build();

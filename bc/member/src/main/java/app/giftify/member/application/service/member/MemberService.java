@@ -1,4 +1,4 @@
-package app.giftify.member.application.service;
+package app.giftify.member.application.service.member;
 
 import app.giftify.member.adapter.in.web.requestDto.member.SignupRequest;
 import app.giftify.member.adapter.out.jpa.entity.member.PreSignup;

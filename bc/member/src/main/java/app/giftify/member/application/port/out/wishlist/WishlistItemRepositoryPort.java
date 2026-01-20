@@ -19,7 +19,7 @@ public interface WishlistItemRepositoryPort {
     WishlistItem save(WishlistItem wishlistItem);
 
     // 위시리스트에서 특정 상품 삭제
-    void deleteByAuthSubAndProductId(Long wishlistId, Long productId);
+    void deleteByAuthSubAndProductId(String authSub, Long productId);
 
     // 위시리스트에서 특정 아이템 삭제
     void delete(WishlistItem wishlistItem);

@@ -22,7 +22,7 @@ public class WishlistItemJpaEntity extends BaseJpaEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Long wishlistId;
+    private String authSub;
 
     @Column(nullable = false)
     private Long productId;

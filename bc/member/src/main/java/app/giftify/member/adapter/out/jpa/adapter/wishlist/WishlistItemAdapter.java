@@ -44,8 +44,8 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
     }
 
     @Override
-    public void deleteByAuthSubAndProductId(Long wishlistId, Long productId) {
-        wishlistItemRepository.deleteByWishlistIdAndProductId(wishlistId, productId);
+    public void deleteByAuthSubAndProductId(String authSub, Long productId) {
+        wishlistItemRepository.deleteByAuthSubAndProductId(authSub, productId);
     }
 
     @Override

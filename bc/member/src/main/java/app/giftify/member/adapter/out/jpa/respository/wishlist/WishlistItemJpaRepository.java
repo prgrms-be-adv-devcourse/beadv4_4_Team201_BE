@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface WishlistItemJpaRepository extends JpaRepository<WishlistItemJpaEntity, Long> {
 
     // 위시리스트에서 특정 상품 삭제
-    void deleteByWishlistIdAndProductId(Long wishlistId, Long productId);
+    void deleteByAuthSubAndProductId(String authSub, Long productId);
 
     Optional<WishlistItemJpaEntity> findByAuthSubAndProductId(String authSub, Long productId);
 
