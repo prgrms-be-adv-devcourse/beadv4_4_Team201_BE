@@ -19,4 +19,11 @@ public interface FundingParticipantMemberRepository extends JpaRepository<Fundin
 
     @Query("SELECT DISTINCT fpm.funding FROM FundingParticipantMember fpm WHERE fpm.fundingMemberId = :memberId")
     Page<Funding> findAllFundingsByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+
+    // N+1 문제 해결을 위한 DTO 프로젝션 쿼리
+    @Query("SELECT new app.giftify.out.funding.MyFundingInfo(fpm.funding, SUM(fpm.amount)) " +
+           "FROM FundingParticipantMember fpm " +
+           "WHERE fpm.fundingMemberId = :memberId " +
+           "GROUP BY fpm.funding")
+    Page<MyFundingInfo> findAllMyFundingInfos(@Param("memberId") Long memberId, Pageable pageable);
 }

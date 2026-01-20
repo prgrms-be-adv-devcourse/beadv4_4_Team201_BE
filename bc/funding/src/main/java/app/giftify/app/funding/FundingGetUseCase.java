@@ -8,6 +8,7 @@ import app.giftify.in.funding.FundingResponseDto;
 import app.giftify.in.funding.MyFundingResponseDto;
 import app.giftify.out.funding.FundingParticipantMemberRepository;
 import app.giftify.out.funding.FundingRepository;
+import app.giftify.out.funding.MyFundingInfo;
 import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -87,17 +88,15 @@ public class FundingGetUseCase {
     public PageResponse<MyFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        // 내가 참여한 목록 조회
-        Page<Funding> fundingPages = participantMemberRepository.findAllFundingsByMemberId(memberId, pageable);
+        Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, pageable);
 
-        List<MyFundingResponseDto> contents = fundingPages.getContent().stream()
-                .map(funding -> {
-                    Integer myContribution = participantMemberRepository.findTotalAmountByFundingIdAndMemberId(funding.getId(), memberId)
-                            .orElse(0);
-                    return MyFundingResponseDto.fromEntity(funding, myContribution);
-                })
+        List<MyFundingResponseDto> contents = myFundingInfoPage.getContent().stream()
+                .map(info -> MyFundingResponseDto.fromEntity(
+                        info.funding(),          // ✅ getFunding() → funding()
+                        info.myContribution()    // ✅ getMyContribution() → myContribution()
+                ))
                 .collect(Collectors.toList());
 
-        return PageResponse.of(contents, page, size, fundingPages.getTotalElements());
+        return PageResponse.of(contents, page, size, myFundingInfoPage.getTotalElements());
     }
 }
