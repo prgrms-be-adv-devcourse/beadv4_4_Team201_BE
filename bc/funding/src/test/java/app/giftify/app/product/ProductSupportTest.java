@@ -58,4 +58,39 @@ class ProductSupportTest {
 
 		verify(productRepository).findById(productId);
 	}
+
+	@Test
+	@DisplayName("상품 ID와 판매자 ID로 상품을 조회한다")
+	void findByIdAndSellerId_returnsProduct() {
+		// given
+		Long productId = 1L;
+		Long sellerId = 1L;
+		FundingMember seller = new FundingMember(sellerId, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
+
+		when(productRepository.findByIdAndSellerId(productId, sellerId)).thenReturn(Optional.of(product));
+
+		// when
+		Product result = productSupport.findByIdAndSellerId(productId, sellerId);
+
+		// then
+		assertThat(result.getName()).isEqualTo("테스트 상품");
+		verify(productRepository).findByIdAndSellerId(productId, sellerId);
+	}
+
+	@Test
+	@DisplayName("상품 ID와 판매자 ID로 조회 시 상품이 없으면 예외를 던진다")
+	void findByIdAndSellerId_notFound_throwsException() {
+		// given
+		Long productId = 1L;
+		Long sellerId = 999L;
+
+		when(productRepository.findByIdAndSellerId(productId, sellerId)).thenReturn(Optional.empty());
+
+		// when & then
+		assertThatThrownBy(() -> productSupport.findByIdAndSellerId(productId, sellerId))
+			.isInstanceOf(ProductException.class);
+
+		verify(productRepository).findByIdAndSellerId(productId, sellerId);
+	}
 }
