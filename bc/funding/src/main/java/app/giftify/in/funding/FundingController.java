@@ -100,7 +100,13 @@ public class FundingController {
         return ResponseEntity.ok(fundings);
     }
 
-    // 펀딩 거절 -> 펀딩이 achieve 상태로 변경되면 수령자에게 알람 옴
+    @Operation(summary = "펀딩 거절",description = "수령자가 펀딩을 거절 처리합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "펀딩 거절 처리 성공"),
+            @ApiResponse(responseCode = "400",description = "진행 중이 아닌 펀딩 (F003)"),
+            @ApiResponse(responseCode = "403",description = "수령자 권한 없음 (F008)"),
+            @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
+    })
     @PostMapping("/{id}/refuse")
     public ResponseEntity<FundingCompleteResponseDto> refuseFunding(@PathVariable Long id,
                                                                     @Parameter(hidden = true) Long memberId) {
@@ -109,7 +115,13 @@ public class FundingController {
         return ResponseEntity.ok(funding);
     }
 
-    // 펀딩 수락 -> 펀딩이 achieve 상태로 변경되면 수령자에게 알람 옴
+    @Operation(summary = "펀딩 수락",description = "수령자가 펀딩을 수락 처리합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "펀딩 수락 처리 성공"),
+            @ApiResponse(responseCode = "400",description = "진행 중이 아닌 펀딩 (F003)"),
+            @ApiResponse(responseCode = "403",description = "수령자 권한 없음 (F008)"),
+            @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
+    })
     @PostMapping("/{id}/accept")
     public ResponseEntity<FundingCompleteResponseDto> acceptFunding(
             @PathVariable Long id,
