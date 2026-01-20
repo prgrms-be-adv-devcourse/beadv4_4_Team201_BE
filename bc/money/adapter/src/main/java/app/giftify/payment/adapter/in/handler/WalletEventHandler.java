@@ -33,7 +33,7 @@ public class WalletEventHandler {
                     event.getSourceType(), 
                     event.getPaymentId()
             );
-            // case PaymentType.WITHDRAW -> ...
+            // todo: case PaymentType.WITHDRAW -> ...
             default -> throw new EventIgnoreException(
                     new IllegalArgumentException("Unsupported payment type: " + event.getType())
             );
