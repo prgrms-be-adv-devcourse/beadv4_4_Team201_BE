@@ -2,6 +2,7 @@ plugins {
     // 플러그인은 루트에서 버전만 선언하고 apply false
     // 실제 적용은 각 모듈에서 선택적으로
     java
+    jacoco
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.spring) apply false
     alias(libs.plugins.kotlin.jpa) apply false
@@ -31,6 +32,7 @@ subprojects {
     // 부모 모듈이 아닌 경우에만 java 플러그인 적용
     if (name !in parentModules) {
         apply(plugin = "java")
+        apply(plugin = "jacoco")
         apply(plugin = "io.spring.dependency-management")
 
         // Java 21 설정
@@ -52,6 +54,15 @@ subprojects {
         // 테스트 설정
         tasks.withType<Test> {
             useJUnitPlatform()
+            finalizedBy(tasks.named("jacocoTestReport"))
+        }
+
+        // JaCoCo 리포트 설정
+        tasks.withType<JacocoReport> {
+            reports {
+                xml.required.set(true)
+                html.required.set(true)
+            }
         }
 
         // 공통 테스트 의존성
@@ -111,6 +122,7 @@ configure(subprojects.filter {
             "implementation"(project(":bc:shared"))
             "implementation"(project(":bc:member"))
             "implementation"(project(":bc:auth"))
+            "implementation"(project(":bc:funding"))
 
             //"implementation"(project(":bc:money:adapter"))
 
@@ -127,8 +139,8 @@ configure(subprojects.filter {
             "implementation"("org.springframework.boot:spring-boot-starter-actuator")
 
             // Database Drivers
-            "runtimeOnly"("com.mysql:mysql-connector-j")
             "runtimeOnly"("com.h2database:h2")
+            "runtimeOnly"("org.postgresql:postgresql")
 
             // Monitoring
             "runtimeOnly"("io.micrometer:micrometer-registry-prometheus")
@@ -136,4 +148,48 @@ configure(subprojects.filter {
             // Testing
             "testImplementation"("io.rest-assured:rest-assured")
         }
+}
+
+// =============================================================================
+// JaCoCo Aggregated Report (CI 커버리지 리포팅용)
+// =============================================================================
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.register<JacocoReport>("jacocoAggregatedReport") {
+    group = "verification"
+    description = "Generates aggregated JaCoCo report for all subprojects"
+
+    val jacocoSubprojects = subprojects.filter {
+        it.name !in parentModules && it.plugins.hasPlugin("jacoco")
+    }
+
+    dependsOn(jacocoSubprojects.map { it.tasks.named("test") })
+
+    additionalSourceDirs.setFrom(
+        jacocoSubprojects.flatMap { it.the<SourceSetContainer>()["main"].allSource.srcDirs }
+    )
+    sourceDirectories.setFrom(
+        jacocoSubprojects.flatMap { it.the<SourceSetContainer>()["main"].allSource.srcDirs }
+    )
+    classDirectories.setFrom(
+        jacocoSubprojects.flatMap { it.the<SourceSetContainer>()["main"].output }
+    )
+
+    jacocoSubprojects.forEach { subproject ->
+        executionData.from(
+            fileTree(subproject.layout.buildDirectory) {
+                include("jacoco/test.exec")
+            }
+        )
+    }
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/aggregated/jacocoTestReport.xml"))
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/aggregated/html"))
+    }
 }

@@ -68,12 +68,12 @@ $RECYCLE.BIN/
 *.lnk
 
 # Application
-application.yml
-application.properties
-application-*.yml
-application-*.properties
-!application-example.yml
-!application-example.properties
+application-local.yml
+application-*-local.yml
+application-local.properties
+application-*-local.properties
+**/application-local.yml
+**/application-*-local.yml
 
 # Logs
 logs/
@@ -94,10 +94,18 @@ bin/
 
 ### Custom
 .env
+.env.properties
+**/.env
+**/.env.properties
 docs/workthroughs/
-scripts/
 .gw/
 .worktrees/
+.cursorignore
+bc/funding/src/main/generated/
+support/jpa/src/main/generated/
+
+### Docker Compose override - 로컬 개인 개발 환경용
+docker-compose.override.yml
 
 # Ignore Gradle project-specific cache directory
 .gradle

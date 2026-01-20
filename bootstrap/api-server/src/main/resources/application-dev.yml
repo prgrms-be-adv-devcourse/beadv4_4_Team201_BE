@@ -1,0 +1,27 @@
+# 개발 환경 (docker-compose, 개발 서버)
+# PostgreSQL 사용, 환경변수로 접속 정보 주입
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  h2:
+    console:
+      enabled: false
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name:giftify}
+      env: dev

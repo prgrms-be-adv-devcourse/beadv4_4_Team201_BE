@@ -1,0 +1,93 @@
+services:
+  #### Application Service ####
+  api-server:
+    build:
+      context: .
+      dockerfile: bootstrap/api-server/Dockerfile
+    platform: linux/amd64
+    container_name: giftify-api-server
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      # Database 환경 변수
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Auth0 환경 변수
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
+      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - giftify-network
+    restart: unless-stopped
+
+  #### Backing Service ####
+  postgres:
+    image: postgres:16-alpine
+    container_name: giftify-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - giftify-network
+
+  prometheus: # 별도 depends_on 없이 → Prometheus가 api-server 없어도 시작 가능하게 (scrape 실패만 발생)
+    image: prom/prometheus:v2.48.0
+    container_name: giftify-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro  # :ro (read-only) → 설정 파일은 컨테이너가 수정할 필요 없음
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'  # retention.time=7d → 데이터 ttl, 디스크 절약을 위해 7일 이하로
+    networks:
+      - giftify-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: giftify-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - giftify-network
+    restart: unless-stopped
+
+#### Docker Volumes ####
+volumes:
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+#### Docker Networks ####
+networks:
+  giftify-network:
+    driver: bridge
