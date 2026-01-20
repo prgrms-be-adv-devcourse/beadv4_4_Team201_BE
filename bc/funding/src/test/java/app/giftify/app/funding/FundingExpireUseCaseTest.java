@@ -2,7 +2,7 @@ package app.giftify.app.funding;
 
 import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingCompleteResponseDto;
-import app.giftify.out.FundingRepository;
+import app.giftify.out.funding.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -5,18 +5,31 @@ import app.giftify.domain.funding.FundingErrorCode;
 import app.giftify.domain.funding.FundingException;
 import app.giftify.domain.funding.FundingStatus;
 import app.giftify.in.funding.FundingResponseDto;
-import app.giftify.out.FundingRepository;
+import app.giftify.in.funding.MyFundingResponseDto;
+import app.giftify.out.funding.FundingParticipantMemberRepository;
+import app.giftify.out.funding.FundingRepository;
+import app.giftify.out.funding.MyFundingInfo;
+import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FundingGetUseCase {
 
     private final FundingRepository fundingRepository;
+    private final FundingParticipantMemberRepository participantMemberRepository;
 
-    @Transactional(readOnly = true)
+    /**
+     * 전체 공개 단일 펀딩 조회
+     */
     public FundingResponseDto getFunding(Long id) {
         Funding funding = fundingRepository.findById(id).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + id)
@@ -30,5 +43,60 @@ public class FundingGetUseCase {
         }
 
         return FundingResponseDto.fromEntity(funding);
+    }
+
+    /**
+     * 전체 공개 펀딩 리스트 조회
+     */
+    public PageResponse<FundingResponseDto> getFundings(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        List<FundingStatus> statuses = List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED);
+        Page<Funding> fundingPage = fundingRepository.findAllByStatusIn(statuses, pageable);
+
+        List<FundingResponseDto> content = fundingPage.getContent().stream()
+            .map(FundingResponseDto::fromEntity)
+            .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, fundingPage.getTotalElements());
+    }
+
+    /**
+     * 내가 참여한 펀딩 단건 조회
+     */
+    public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
+        Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + fundingId)
+        );
+
+        // 참여 여부 확인
+        boolean isParticipated = participantMemberRepository.existsByFundingIdAndFundingMemberId(fundingId, memberId);
+        if (!isParticipated) {
+            throw new FundingException(FundingErrorCode.FORBIDDEN, "해당 펀딩에 참여한 기록이 없습니다.");
+        }
+
+        // 참여 금액 조회
+        Integer myContribution = participantMemberRepository.findTotalAmountByFundingIdAndMemberId(fundingId, memberId)
+                .orElse(0);
+
+        return MyFundingResponseDto.fromEntity(funding, myContribution);
+    }
+
+    /**
+     * 내가 참여한 펀딩 목록 조회
+     */
+    public PageResponse<MyFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, pageable);
+
+        List<MyFundingResponseDto> contents = myFundingInfoPage.getContent().stream()
+                .map(info -> MyFundingResponseDto.fromEntity(
+                        info.funding(),          // ✅ getFunding() → funding()
+                        info.myContribution()    // ✅ getMyContribution() → myContribution()
+                ))
+                .collect(Collectors.toList());
+
+        return PageResponse.of(contents, page, size, myFundingInfoPage.getTotalElements());
     }
 }

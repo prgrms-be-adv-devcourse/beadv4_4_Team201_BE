@@ -4,7 +4,9 @@ import app.giftify.domain.funding.Funding;
 import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.in.funding.FundingResponseDto;
+import app.giftify.in.funding.MyFundingResponseDto;
 import app.giftify.in.funding.WishlistItemDto;
+import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +34,7 @@ public class FundingFacade {
 
         return FundingResponseDto.fromEntity(funding);
     }
-    
+
     @Transactional
     public void contributeFunding(Long fundingId, Integer amount) {
         fundingContributeUseCase.contribute(fundingId, amount);
@@ -41,6 +43,21 @@ public class FundingFacade {
     @Transactional(readOnly = true)
     public FundingResponseDto getFunding(Long id) {
         return fundingGetUseCase.getFunding(id);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<FundingResponseDto> getFundings(int page, int size) {
+        return fundingGetUseCase.getFundings(page, size);
+    }
+
+    @Transactional(readOnly = true)
+    public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
+        return fundingGetUseCase.getParticipatedFunding(fundingId, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<MyFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
+        return fundingGetUseCase.getParticipatedFundings(page, size, memberId);
     }
 
     @Transactional

@@ -22,7 +22,7 @@ public class FundingWishlistItem extends BaseJpaEntity {
 
     @Column(nullable = false)
     private Long wishlistId;
-    
+
     @Column(nullable = false)
     private Long receiverId;
 

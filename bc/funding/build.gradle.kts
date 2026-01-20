@@ -4,6 +4,7 @@ dependencies {
     // (bc:shared는 부모(bc)에서 자동 추가됨)
     implementation(project(":support:common"))
     implementation(project(":support:jpa"))
+    implementation(project(":support:web"))
 
     // 2. External Libraries (Spring Boot Starters)
     implementation(libs.spring.boot.starter.web)

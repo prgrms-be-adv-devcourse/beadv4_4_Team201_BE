@@ -2,7 +2,7 @@ package app.giftify.app.funding;
 
 import app.giftify.domain.funding.*;
 import app.giftify.in.funding.FundingCompleteResponseDto;
-import app.giftify.out.FundingRepository;
+import app.giftify.out.funding.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +22,15 @@ public class FundingExpireUseCase {
         Funding funding = fundingRepository.findById(id)
                 .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
+        // 관리자 권한 체크 (Member BC에서 role 정보 가져와서 확인)
+        // if (!isAdmin(requestMemberId)) {
+        //     throw new FundingException(FundingErrorCode.FORBIDDEN, "관리자만 펀딩을 종료할 수 있습니다.");
+        // }
+
         FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
         Integer currentAmount = funding.getCurrentAmount();
-        
+
+
         funding.expire();
 
         eventPublisher.publish(new FundingExpiredEvent(
@@ -55,7 +61,7 @@ public class FundingExpireUseCase {
         for (Funding funding : expiredFundings) {
             FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
             Integer currentAmount = funding.getCurrentAmount();
-            
+
             funding.expire();
 
             eventPublisher.publish(new FundingExpiredEvent(
