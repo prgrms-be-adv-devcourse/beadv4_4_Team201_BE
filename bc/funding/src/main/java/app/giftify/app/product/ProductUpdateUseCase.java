@@ -10,7 +10,7 @@ import app.giftify.domain.product.Product;
 import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductModifiedEvent;
+import app.giftify.shared.domain.event.product.ProductSnapshotUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -52,7 +52,7 @@ public class ProductUpdateUseCase {
 		/** 어플리케이션 이벤트 발행
 		 * todo 멤버모듈상품 sync Event
 		 */
-		eventPublisher.publish(new ProductModifiedEvent(
+		eventPublisher.publish(new ProductSnapshotUpdatedEvent(
 			product.getId(),
 			product.getName(),
 			product.getDescription(),

@@ -14,7 +14,7 @@ import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStatus;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductVerifiedEvent;
+import app.giftify.shared.domain.event.product.ProductSnapshotCreationRequestedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class ProductApproveUseCaseTest {
@@ -60,6 +60,6 @@ class ProductApproveUseCaseTest {
 		productApproveUseCase.approveProduct(productId);
 
 		// then
-		verify(eventPublisher).publish(any(ProductVerifiedEvent.class));
+		verify(eventPublisher).publish(any(ProductSnapshotCreationRequestedEvent.class));
 	}
 }

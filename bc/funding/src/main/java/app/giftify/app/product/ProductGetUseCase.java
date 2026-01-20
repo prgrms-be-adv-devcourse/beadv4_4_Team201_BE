@@ -11,6 +11,6 @@ public class ProductGetUseCase {
 	private final ProductSupport productSupport;
 
 	public ProductDto getProduct(Long id) {
-		return productSupport.findById(id).toDto();
+		return ProductDto.from(productSupport.findById(id));
 	}
 }

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import app.giftify.domain.product.Product;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductVerifiedEvent;
+import app.giftify.shared.domain.event.product.ProductSnapshotCreationRequestedEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,7 +19,7 @@ public class ProductApproveUseCase {
 
 		// 상품 승인되어 ProductVerifiedEvent 발행 (sync)
 		eventPublisher.publish(
-			new ProductVerifiedEvent(
+			new ProductSnapshotCreationRequestedEvent(
 				product.getId(),
 				product.getName(),
 				product.getDescription(),

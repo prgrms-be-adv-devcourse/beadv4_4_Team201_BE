@@ -6,10 +6,9 @@ import static app.giftify.shared.domain.event.product.ProductSaleDisableReason.*
 
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.exception.ProductException;
-import app.giftify.in.product.ProductDto;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
-import app.giftify.shared.domain.event.product.ProductVerifiedEvent;
+import app.giftify.shared.domain.event.product.ProductSnapshotCreationRequestedEvent;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -61,24 +60,13 @@ public class Product extends BaseJpaEntity {
 	}
 
 	/**
-	 * DTO 변환
-	 */
-	// 일반 response 응답용
-	public ProductDto toDto() {
-		return new ProductDto(
-			getId(), getSeller().getNickname(), getName(),
-			getDescription(), getPrice(), getCreatedAt()
-		);
-	}
-
-	/**
 	 * 상품 상태 변경
 	 * todo 상품 상태 변경 이력 컬렉션
 	 */
 	// 상품 등록 승인
 	public void approve() {
 		transitionTo(INACTIVE); // 판매 대기 상태로
-		registerEvent(new ProductVerifiedEvent(
+		registerEvent(new ProductSnapshotCreationRequestedEvent(
 			this.getId(),
 			this.getName(),
 			this.getDescription(),

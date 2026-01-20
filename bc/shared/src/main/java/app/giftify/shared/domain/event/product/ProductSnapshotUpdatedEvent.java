@@ -2,14 +2,14 @@ package app.giftify.shared.domain.event.product;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
-public class ProductVerifiedEvent extends BaseDomainEvent {
+public class ProductSnapshotUpdatedEvent extends BaseDomainEvent {
 	private final Long id;
 	private final String name;
 	private final String description;
 	private final int price;
 	private final String sellerNickName;
 
-	public ProductVerifiedEvent(Long id, String name, String description, int price, String sellerNickName) {
+	public ProductSnapshotUpdatedEvent(Long id, String name, String description, int price, String sellerNickName) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
