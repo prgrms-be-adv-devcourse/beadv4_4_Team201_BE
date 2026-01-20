@@ -3,7 +3,9 @@ package wallet.service;
 import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.errorCode.WalletErrorCode;
+import domain.exception.DuplicateTransactionException;
 import domain.exception.WalletException;
+import domain.exception.WalletNotFoundException;
 import domain.payment.Payment;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
@@ -182,8 +184,7 @@ class WalletServiceTest {
 
         // when & then
         assertThatThrownBy(() -> walletService.getWallet(999L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("존재하지 않은 지갑입니다.");
+                .isInstanceOf(WalletNotFoundException.class);
     }
 
     @Test
@@ -208,8 +209,7 @@ class WalletServiceTest {
 
         // when & then
         assertThatThrownBy(() -> walletService.getWallet(-1L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("존재하지 않은 지갑입니다.");
+                .isInstanceOf(WalletNotFoundException.class);
     }
 
     @Test
@@ -274,7 +274,8 @@ class WalletServiceTest {
                 .thenReturn(true);
 
         // when
-        walletService.charge(memberId, amount, transactionType, referenceType, referenceId);
+        assertThatThrownBy(() -> walletService.charge(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(DuplicateTransactionException.class);
 
         // then
         // 중복된 트랜잭션으로 충전 연산이 수행되지 않는지 검증
@@ -299,8 +300,7 @@ class WalletServiceTest {
                         null,
                         null
                 ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다.");
+                .isInstanceOf(WalletNotFoundException.class);
 
         verify(walletRepository).findByMemberId(wallet.getMemberId());
         verify(walletRepository, never()).save(any(Wallet.class));
@@ -382,7 +382,8 @@ class WalletServiceTest {
                 .thenReturn(true);
 
         // when
-        walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId);
+        assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
+                .isInstanceOf(DuplicateTransactionException.class);
 
         // then
         // 중복된 트랜잭션으로 충전 연산이 수행되지 않는지 검증
@@ -405,8 +406,7 @@ class WalletServiceTest {
 
         // when & then
         assertThatThrownBy(() -> walletService.withdraw(memberId, amount, transactionType, referenceType, referenceId))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("사용자가 존재하지 않거나 사용자의 지갑이 존재하지 않습니다.");
+                .isInstanceOf(WalletNotFoundException.class);
 
         // save 호출되지 않았는지 검증
         verify(walletRepository, never()).save(any(Wallet.class));
