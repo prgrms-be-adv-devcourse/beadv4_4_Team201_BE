@@ -22,7 +22,7 @@ public class InternalMemberController {
 	private final GetMemberUseCase getMemberUseCase;
 
 	@GetMapping("/by-auth-sub/{authSub}")
-	public ResponseEntity<MemberInfo> getByAuthSub(@PathVariable String authSub) {
+	public ResponseEntity<MemberInfo> getByAuthSub(@PathVariable("authSub") String authSub) {
 		return getMemberUseCase.getMemberByAuthSub(authSub)
 			.map(member -> MemberInfo.of(
 				member.getId(),
