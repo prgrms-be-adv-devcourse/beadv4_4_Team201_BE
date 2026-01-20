@@ -1,0 +1,42 @@
+# Version Control
+.git
+.gitignore
+
+# Build outputs (각 모듈의 build)
+build
+**/build
+.gradle
+**/.gradle
+# 짜르 파일은 예외
+!**/build/libs/*.jar
+
+# IDE
+.idea
+*.iml
+*.ipr
+*.iws
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.sample
+
+# Documentation
+docs/workthroughs
+README.md
+
+# Scripts
+scripts
+
+# Other
+.gw
+.worktrees
+logs
+*.log
+*.swp
+*~

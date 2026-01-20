@@ -1,12 +1,20 @@
-  // money Adapter - 인프라 구현 (Web, DB)
+// money Adapter - 인프라 구현 (Web, DB)
 
-  dependencies {
-      // 같은 부모 모듈의 core, application 의존
-      implementation(project(":bc:money:core"))
-      implementation(project(":bc:money:application"))
+dependencies {
+    implementation(project(":support:jpa"))
+    // 같은 부모 모듈의 core, application 의존
+    implementation(project(":bc:money:core"))
+    implementation(project(":bc:money:application"))
 
-      // 모든 인프라 기술 허용
-      implementation("org.springframework.boot:spring-boot-starter-web")
-      implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-      implementation("org.springframework.boot:spring-boot-starter-validation")
-  }
+    // 인프라 기술 허용
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.validation)
+
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // 테스트 시에도 Lombok 어노테이션 처리
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
+}

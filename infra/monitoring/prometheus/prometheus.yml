@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s        # scrape_interval: 15s → 15초마다 메트릭 수집 (너무 짧으면 부하, 너무 길면 정밀도↓)
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'giftify-api'
+    metrics_path: '/actuator/prometheus'  # metrics_path → Spring Actuator 기본 경로는 /actuator/prometheus
+    static_configs:
+      - targets: ['api-server:8080']  # targets: ['api-server:8080'] → Docker 내부 DNS 사용 (localhost가 아님)
