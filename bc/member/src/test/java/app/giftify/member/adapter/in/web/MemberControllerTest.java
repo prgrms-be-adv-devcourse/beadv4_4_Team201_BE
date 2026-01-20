@@ -1,19 +1,15 @@
 package app.giftify.member.adapter.in.web;
 
-import app.giftify.member.adapter.in.web.controller.MemberController;
-import app.giftify.member.adapter.in.web.exceptionHandler.MemberExceptionHandler;
-import app.giftify.member.adapter.in.web.requestDto.MemberUpdateRequest;
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
-import app.giftify.member.application.port.in.GetMemberUseCase;
-import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.application.port.in.WithdrawMemberUseCase;
-import app.giftify.member.core.domain.exception.DuplicateMemberException;
-import app.giftify.member.core.domain.member.Member;
-import app.giftify.member.core.domain.member.MemberRole;
-import app.giftify.member.core.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,16 +25,21 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.time.LocalDate;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import app.giftify.member.adapter.in.web.controller.MemberController;
+import app.giftify.member.adapter.in.web.exceptionHandler.MemberExceptionHandler;
+import app.giftify.member.adapter.in.web.requestDto.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
+import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.WithdrawMemberUseCase;
+import app.giftify.member.core.domain.exception.DuplicateMemberException;
+import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.shared.domain.type.MemberRole;
 
 @WebMvcTest(MemberController.class)
 class MemberControllerTest {
