@@ -6,9 +6,16 @@ import app.giftify.domain.funding.FundingException;
 import app.giftify.domain.funding.FundingStatus;
 import app.giftify.in.funding.FundingResponseDto;
 import app.giftify.out.FundingRepository;
+import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +23,9 @@ public class FundingGetUseCase {
 
     private final FundingRepository fundingRepository;
 
-    @Transactional(readOnly = true)
+    /**
+     * 전체 공개 단일 펀딩 조회
+     */
     public FundingResponseDto getFunding(Long id) {
         Funding funding = fundingRepository.findById(id).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + id)
@@ -30,5 +39,21 @@ public class FundingGetUseCase {
         }
 
         return FundingResponseDto.fromEntity(funding);
+    }
+
+    /**
+     * 전체 공개 펀딩 리스트 조회
+     */
+    public PageResponse<FundingResponseDto> getFundings(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        List<FundingStatus> statuses = List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED);
+        Page<Funding> fundingPage = fundingRepository.findAllByStatusIn(statuses, pageable);
+
+        List<FundingResponseDto> content = fundingPage.getContent().stream()
+            .map(FundingResponseDto::fromEntity)
+            .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, fundingPage.getTotalElements());
     }
 }

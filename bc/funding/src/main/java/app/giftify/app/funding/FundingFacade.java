@@ -5,6 +5,7 @@ import app.giftify.domain.funding.FundingWishlistItem;
 import app.giftify.in.funding.FundingCompleteResponseDto;
 import app.giftify.in.funding.FundingResponseDto;
 import app.giftify.in.funding.WishlistItemDto;
+import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +24,10 @@ public class FundingFacade {
 
     @Transactional
     public Funding startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
-        // 1. WishlistItem 복제
+        // 1. WishlistItem 복제 (recipientMemberId 포함)
         FundingWishlistItem syncedItem = fundingSyncItemUseCase.syncItem(wishlistItemDto);
 
-        // 2. Funding 생성 (첫 결제 금액으로)
+        // 2. Funding 생성 (첫 결제 금액으로, 수령자 정보는 WishlistItem에서 자동으로 가져옴)
         return fundingCreateUseCase.createFunding(syncedItem.getId(), amount);
     }
 
@@ -53,5 +54,10 @@ public class FundingFacade {
     @Transactional
     public List<FundingCompleteResponseDto> expireExpiredFundings() {
         return fundingExpireUseCase.expireExpiredFundings();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<FundingResponseDto> getFundings(int page, int size) {
+        return fundingGetUseCase.getFundings(page, size);
     }
 }
