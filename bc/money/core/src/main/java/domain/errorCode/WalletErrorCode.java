@@ -2,6 +2,7 @@ package domain.errorCode;
 
 import app.giftify.shared.api.exception.ErrorCode;
 
+// todo: code 그룹화 후 넘버링
 public enum WalletErrorCode implements ErrorCode {
     INSUFFICIENT_BALANCE("WALLET-001", "잔액이 부족합니다."),
     INVALID_NULL_AMOUNT("WALLET-002", "금액은 null일 수 없습니다."),
