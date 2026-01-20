@@ -40,6 +40,7 @@ class ProductGetUseCaseTest {
 		assertThat(result.name()).isEqualTo("테스트 상품");
 		assertThat(result.description()).isEqualTo("테스트 설명");
 		assertThat(result.price()).isEqualTo(10000);
+		assertThat(result.sellerNickName()).isEqualTo("판매자");
 		verify(productSupport).findById(productId);
 	}
 }

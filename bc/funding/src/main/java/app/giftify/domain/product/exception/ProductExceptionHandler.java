@@ -16,7 +16,7 @@ public class ProductExceptionHandler {
 	/**
 	 * // 응답 예시
 	 *   {
-	 *     "status": 400,
+	 *     "status": 404,
 	 *     "code": "P001",
 	 *     "message": "상품을 찾을 수 없습니다."
 	 *   }

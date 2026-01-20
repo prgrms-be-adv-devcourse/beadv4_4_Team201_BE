@@ -17,4 +17,8 @@ public record ProductCreateRequestDto(
 	@PositiveOrZero(message = "재고는 0이상이어야 합니다.")
 	Integer stock
 ) {
+	public ProductCreateRequestDto {
+		name = name == null ? null : name.trim();
+		description = description == null ? null : description.trim();
+	}
 }

@@ -20,6 +20,6 @@ public class ProductCreateUseCase {
 		);
 		productRepository.save(product);
 
-		return product.toDto();
+		return ProductDto.from(product);
 	}
 }
