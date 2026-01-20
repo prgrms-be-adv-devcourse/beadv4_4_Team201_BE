@@ -7,7 +7,7 @@ public interface AddWishlistItemUseCase {
     WishlistItem addWishlistItem(WishlistItemAddCommand command);
 
     record WishlistItemAddCommand(
-            Long wishlistId,
+            String authSub,
             Long productId,
             ItemStatus itemStatus
     ) {

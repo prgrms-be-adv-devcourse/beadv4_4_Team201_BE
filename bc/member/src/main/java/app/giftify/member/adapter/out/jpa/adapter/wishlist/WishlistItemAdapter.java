@@ -17,8 +17,8 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
     private final WishlistItemJpaRepository wishlistItemRepository;
 
     @Override
-    public Optional<WishlistItem> findByWishlistIdAndProductId(Long wishlistId, Long productId) {
-        return wishlistItemRepository.findByWishlistIdAndProductId(wishlistId, productId)
+    public Optional<WishlistItem> findByAuthSubAndProductId(String authSub, Long productId) {
+        return wishlistItemRepository.findByAuthSubAndProductId(authSub, productId)
                 .map(WishlistItemMapper::toDomain);
     }
 
@@ -29,8 +29,8 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
     }
 
     @Override
-    public List<WishlistItem> findByWishlistId(Long wishlistId) {
-        return wishlistItemRepository.findByWishlistId(wishlistId)
+    public List<WishlistItem> findByAuthSub(String authSub) {
+        return wishlistItemRepository.findByAuthSub(authSub)
                 .stream()
                 .map(WishlistItemMapper::toDomain)
                 .toList();
@@ -44,7 +44,7 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
     }
 
     @Override
-    public void deleteByWishlistIdAndProductId(Long wishlistId, Long productId) {
+    public void deleteByAuthSubAndProductId(Long wishlistId, Long productId) {
         wishlistItemRepository.deleteByWishlistIdAndProductId(wishlistId, productId);
     }
 

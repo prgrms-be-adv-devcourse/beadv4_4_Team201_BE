@@ -9,7 +9,7 @@ public interface GetWishlistItemUseCase {
     Long getWishlistItemCount(Long wishlistId);
 
     // 위시리스트에 이미 존재하는 아이템인지 확인
-    boolean isItemExists(Long wishlistId, Long productId);
+    boolean isItemExists(String authSub, Long productId);
 
-    List<WishlistItem> getWishlistItems(Long memberId);
+    List<WishlistItem> getWishlistItems(String authSub);
 }

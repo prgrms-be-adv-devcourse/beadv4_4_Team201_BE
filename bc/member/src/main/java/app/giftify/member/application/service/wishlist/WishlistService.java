@@ -23,15 +23,15 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     private final EventPublisher eventPublisher;
 
     @Override
-    public Optional<Wishlist> getWishlistByMemberId(Long memberId) {
-        return wishlistRepositoryPort.findByMemberId(memberId);
+    public Optional<Wishlist> getWishlistByAuthSub(String authSub) {
+        return wishlistRepositoryPort.findByAuthSub(authSub);
     }
 
     @Override
     @Transactional
     public Wishlist updateSettings(UpdateSettingsCommand command) {
-        Wishlist wishlist = wishlistRepositoryPort.findByMemberId(command.memberId())
-                .orElseThrow(() -> new WishlistNotFoundException(command.memberId()));
+        Wishlist wishlist = wishlistRepositoryPort.findByAuthSub(command.authSub())
+                .orElseThrow(() -> new WishlistNotFoundException(command.authSub()));
 
         wishlist.changeVisibility(command.visibility());
 

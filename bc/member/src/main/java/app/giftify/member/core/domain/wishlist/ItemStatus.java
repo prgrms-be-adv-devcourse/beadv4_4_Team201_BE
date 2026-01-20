@@ -1,5 +1,7 @@
 package app.giftify.member.core.domain.wishlist;
 
+import app.giftify.member.core.domain.exception.wishlist.InvalidWishlistItemStatusException;
+
 public enum ItemStatus {
     DRAFT("상품 등록 대기 상태입니다."),
     INACTIVE("관리자 상품 등록 승인 또는 상품 판매 중지 상태입니다."),
@@ -14,5 +16,13 @@ public enum ItemStatus {
 
     public String getDescription() {
         return description;
+    }
+
+    public static ItemStatus from(String value) {
+        try {
+            return ItemStatus.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new InvalidWishlistItemStatusException(value);
+        }
     }
 }

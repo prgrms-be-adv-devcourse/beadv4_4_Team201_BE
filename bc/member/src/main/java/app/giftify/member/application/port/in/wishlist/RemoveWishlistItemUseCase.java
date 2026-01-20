@@ -4,7 +4,7 @@ public interface RemoveWishlistItemUseCase {
     void removeWishlistItem(WishlistItemRemoveCommand command);
 
     record WishlistItemRemoveCommand(
-            Long wishlistId,
+            String authSub,
             Long productId
     ) {
     }

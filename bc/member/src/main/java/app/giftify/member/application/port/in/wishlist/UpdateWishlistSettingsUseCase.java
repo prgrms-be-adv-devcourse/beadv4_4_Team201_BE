@@ -7,7 +7,7 @@ public interface UpdateWishlistSettingsUseCase {
     Wishlist updateSettings(UpdateSettingsCommand command);
 
     record UpdateSettingsCommand(
-            Long memberId,
+            String authSub,
             Visibility visibility
     ) {
     }

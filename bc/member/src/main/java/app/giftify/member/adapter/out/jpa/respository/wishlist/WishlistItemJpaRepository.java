@@ -11,7 +11,7 @@ public interface WishlistItemJpaRepository extends JpaRepository<WishlistItemJpa
     // 위시리스트에서 특정 상품 삭제
     void deleteByWishlistIdAndProductId(Long wishlistId, Long productId);
 
-    Optional<WishlistItemJpaEntity> findByWishlistIdAndProductId(Long wishlistId, Long productId);
+    Optional<WishlistItemJpaEntity> findByAuthSubAndProductId(String authSub, Long productId);
 
-    List<WishlistItemJpaEntity> findByWishlistId(Long wishlistId);
+    List<WishlistItemJpaEntity> findByAuthSub(String authSub);
 }

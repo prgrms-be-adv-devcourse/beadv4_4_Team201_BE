@@ -5,24 +5,24 @@ import app.giftify.shared.domain.base.BaseDomainModel;
 import java.time.LocalDate;
 
 public class WishlistItem extends BaseDomainModel {
-    private final Long wishlistId;
+    private final String authSub;
     private final Long productId;
     private ItemStatus itemStatus;
     private final LocalDate addedAt;
 
-    private WishlistItem(Long id, Long wishlistId, Long productId, ItemStatus itemStatus) {
+    private WishlistItem(Long id, String authSub, Long productId, ItemStatus itemStatus) {
         super(id);
-        validate(wishlistId, productId);
-        this.wishlistId = wishlistId;
+        validate(authSub, productId);
+        this.authSub = authSub;
         this.productId = productId;
         this.itemStatus = itemStatus;
         this.addedAt = LocalDate.now();
     }
 
-    private WishlistItem(Long id, Long wishlistId, Long productId, ItemStatus itemStatus, LocalDate addedAt) {
+    private WishlistItem(Long id, String authSub, Long productId, ItemStatus itemStatus, LocalDate addedAt) {
         super(id);
-        validate(wishlistId, productId);
-        this.wishlistId = wishlistId;
+        validate(authSub, productId);
+        this.authSub = authSub;
         this.productId = productId;
         this.itemStatus = itemStatus;
         this.addedAt = addedAt;
@@ -30,8 +30,8 @@ public class WishlistItem extends BaseDomainModel {
 
     // TODO: 도메인 검증 로직 추가
 
-    public Long getWishlistId() {
-        return wishlistId;
+    public String getAuthSub() {
+        return authSub;
     }
 
     public Long getProductId() {
@@ -49,7 +49,7 @@ public class WishlistItem extends BaseDomainModel {
     @Override
     public String toString() {
         return "WishlistItem{" +
-                "wishlistId=" + wishlistId +
+                "authSub=" + authSub +
                 ", productId=" + productId +
                 ", itemStatus=" + itemStatus +
                 ", addedAt=" + addedAt +
@@ -62,7 +62,7 @@ public class WishlistItem extends BaseDomainModel {
 
     public static class Builder {
         private Long id;
-        private Long wishlistId;
+        private String authSub;
         private Long productId;
         private ItemStatus itemStatus;
         private LocalDate addedAt;
@@ -72,8 +72,8 @@ public class WishlistItem extends BaseDomainModel {
             return this;
         }
 
-        public Builder wishlistId(Long wishlistId) {
-            this.wishlistId = wishlistId;
+        public Builder authSub(String authSub) {
+            this.authSub = authSub;
             return this;
         }
 
@@ -94,15 +94,15 @@ public class WishlistItem extends BaseDomainModel {
 
         public WishlistItem build() {
             if (addedAt == null) {
-                return new WishlistItem(id, wishlistId, productId, itemStatus);
+                return new WishlistItem(id, authSub, productId, itemStatus);
             }
-            return new WishlistItem(id, wishlistId, productId, itemStatus, addedAt);
+            return new WishlistItem(id, authSub, productId, itemStatus, addedAt);
         }
     }
 
-    private void validate(Long wishlistId, Long productId) {
-        if (wishlistId == null || wishlistId <= 0) {
-            throw new IllegalArgumentException("유효하지 않은 위시리스트 ID입니다.");
+    private void validate(String authSub, Long productId) {
+        if (authSub == null || authSub.isBlank()) {
+            throw new IllegalArgumentException("유효하지 않은 authSub 입니다.");
         }
         if (productId == null || productId <= 0) {
             throw new IllegalArgumentException("유효하지 않은 상품 ID입니다.");

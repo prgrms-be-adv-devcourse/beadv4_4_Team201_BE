@@ -5,5 +5,5 @@ import app.giftify.member.core.domain.wishlist.Wishlist;
 import java.util.Optional;
 
 public interface GetWishlistUseCase {
-    Optional<Wishlist> getWishlistByMemberId(Long memberId);
+    Optional<Wishlist> getWishlistByAuthSub(String authSub);
 }
