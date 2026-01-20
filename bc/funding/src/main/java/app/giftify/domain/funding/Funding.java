@@ -124,4 +124,19 @@ public class Funding extends BaseJpaEntity {
         return this.currentAmount.equals(this.targetAmount);
     }
 
+    public void refuse() {
+        if (this.getStatus() != FundingStatus.ACHIEVED) {
+            throw new FundingException(FundingErrorCode.NOT_ACHIEVED);
+        }
+        this.status = FundingStatus.REFUSED;
+        this.closedAt = LocalDateTime.now();
+    }
+
+    public void accept() {
+        if (this.getStatus() != FundingStatus.ACHIEVED) {
+            throw new FundingException(FundingErrorCode.NOT_ACHIEVED);
+        }
+        this.status = FundingStatus.ACCEPTED;
+        this.closedAt = LocalDateTime.now();
+    }
 }
