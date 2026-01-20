@@ -4,7 +4,6 @@ import app.giftify.member.application.port.in.wishlist.AddWishlistItemUseCase;
 import app.giftify.member.application.port.in.wishlist.GetWishlistItemUseCase;
 import app.giftify.member.application.port.in.wishlist.RemoveWishlistItemUseCase;
 import app.giftify.security.common.context.AuthenticatedMember;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -31,7 +30,7 @@ public class WishlistItemController {
     @GetMapping("/me/check")
     public ResponseEntity<?> isExistProduct(
             @AuthenticatedMember String authSub,
-            @RequestParam @Valid Long productId
+            @RequestParam(name = "productId") Long productId
     ) {
         boolean exists = getWishlistItemUseCase.isItemExists(authSub, productId);
 
@@ -60,7 +59,7 @@ public class WishlistItemController {
     @DeleteMapping("/remove")
     public ResponseEntity<Void> removeProduct(
             @AuthenticatedMember String authSub,
-            @RequestParam @Valid Long productId
+            @RequestParam(name = "productId") Long productId
     ) {
         RemoveWishlistItemUseCase.WishlistItemRemoveCommand command = new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(
                 authSub,
