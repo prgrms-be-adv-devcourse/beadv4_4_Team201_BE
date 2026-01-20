@@ -8,6 +8,6 @@ package domain.exception;
 public class DuplicateTransactionException extends WalletException {
 
     public DuplicateTransactionException(String referenceType, Long referenceId) {
-        super(String.format("Duplicate transaction. referenceType=&d, referenceId=%d", referenceType, referenceId));
+        super(String.format("Duplicate transaction. referenceType=%s, referenceId=%d", referenceType, referenceId));
     }
 }

@@ -15,9 +15,10 @@ public class WalletEventExceptionHandler {
             logIgnore(event, e.getCause());
         } else {
             log.error(
-                    "Event handling failed. eventId={}, memberId={}",
+                    "Event handling failed. eventId={}, memberId={}, reason={}",
                     event.getEventId(),
                     event.getUserId(),
+                    e.getMessage(),
                     e
             );
         }
@@ -26,17 +27,19 @@ public class WalletEventExceptionHandler {
     private void logIgnore(PaymentSucceededEvent event, Throwable cause) {
         if (cause instanceof DuplicateTransactionException) {
             log.info(
-                    "Ignore event (duplicate). eventId={}, txType={}, memberId={}",
+                    "Ignore event (duplicate). eventId={}, txType={}, memberId={}, reason={}",
                     event.getEventId(),
                     event.getType(),
-                    event.getUserId()
+                    event.getUserId(),
+                    cause.getMessage()
             );
         } else {
             log.warn(
-                    "Ignore event (business). cause={}, eventId={}, memberId={}",
+                    "Ignore event (business). cause={}, eventId={}, memberId={}, reason={}",
                     cause.getClass().getSimpleName(),
                     event.getEventId(),
                     event.getUserId(),
+                    cause.getMessage(),
                     cause
             );
         }
