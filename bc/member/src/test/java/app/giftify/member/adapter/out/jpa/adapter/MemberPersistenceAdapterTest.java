@@ -1,11 +1,10 @@
 package app.giftify.member.adapter.out.jpa.adapter;
 
-import app.giftify.member.adapter.out.jpa.adapter.member.MemberPersistenceAdapter;
-import app.giftify.member.adapter.out.jpa.entity.member.MemberJpaEntity;
-import app.giftify.member.adapter.out.jpa.respository.member.MemberJpaRepository;
-import app.giftify.member.core.domain.member.Member;
-import app.giftify.member.core.domain.member.MemberRole;
-import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
+import app.giftify.member.adapter.out.jpa.repository.MemberJpaRepository;
+import app.giftify.member.core.domain.Member;
+import app.giftify.member.core.domain.MemberRole;
+import app.giftify.member.core.domain.MemberStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
