@@ -1,15 +1,16 @@
 package app.giftify.member.adapter.out.jpa.dataInit;
 
-import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
-import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
-import app.giftify.member.core.domain.member.MemberRole;
-import app.giftify.member.core.domain.member.MemberStatus;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
+import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
+import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.shared.domain.type.MemberRole;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

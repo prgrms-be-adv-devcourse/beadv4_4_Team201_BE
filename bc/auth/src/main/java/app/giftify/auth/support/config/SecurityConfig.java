@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -14,21 +15,25 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import app.giftify.auth.core.service.AuthService;
+import app.giftify.auth.support.filter.MemberPrincipalFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
 	private final ClientRegistrationRepository clientRegistrationRepository;
+	private final MemberPrincipalFilter memberPrincipalFilter;
 	private final AuthService authService;
 	private final Environment env;
 
@@ -90,7 +95,8 @@ public class SecurityConfig {
 
 			// JWT 리소스 서버 설정
 			.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-
+			// MemberPrincipal 보강 필터 (JWT 검증 후 실행)
+			.addFilterAfter(memberPrincipalFilter, BearerTokenAuthenticationFilter.class)
 			// 로그아웃 설정
 			.logout(logout -> logout
 				.logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
