@@ -2,6 +2,7 @@
 
 dependencies {
     implementation(project(":support:jpa"))
+    implementation(project(":support:security"))
     // 같은 부모 모듈의 core, application 의존
     implementation(project(":bc:money:core"))
     implementation(project(":bc:money:application"))

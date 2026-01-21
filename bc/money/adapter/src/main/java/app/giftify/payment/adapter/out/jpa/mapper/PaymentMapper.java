@@ -1,9 +1,12 @@
 package app.giftify.payment.adapter.out.jpa.mapper;
 
+import org.springframework.stereotype.Component;
+
 import app.giftify.payment.adapter.out.jpa.entity.payment.JpaPayment;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 
+@Component
 public class PaymentMapper {
 	public JpaPayment toEntity(Payment domain) {
 		return JpaPayment.builder()

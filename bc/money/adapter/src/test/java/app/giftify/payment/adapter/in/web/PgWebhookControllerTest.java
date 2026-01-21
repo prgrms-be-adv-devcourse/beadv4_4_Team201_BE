@@ -59,6 +59,7 @@ class PgWebhookControllerTest {
 
 		Payment payment = Payment.builder()
 			.paymentId(100L)
+			.orderId("GFTFY_CHARGE_test123")
 			.pgTransactionId(pgTxId)
 			.status(PaymentStatus.PAID)
 			.build();
