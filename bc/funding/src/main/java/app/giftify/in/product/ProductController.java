@@ -104,4 +104,15 @@ public class ProductController {
 		return ResponseEntity.status(OK).body(myProducts);
 	}
 
+	// (판매자) 재고 이력 조회
+	@GetMapping("/my/stock-histories")
+	public ResponseEntity<PageResponse<StockHistoryDto>> searchStockHistories(
+		@ModelAttribute StockHistorySearchDto searchDto
+		// todo 토큰
+	) {
+		Long sellerId = 1L; // todo 토큰에서 get
+		PageResponse<StockHistoryDto> stockHistories = productFacade.searchStockHistories(sellerId, searchDto);
+
+		return ResponseEntity.status(OK).body(stockHistories);
+	}
 }

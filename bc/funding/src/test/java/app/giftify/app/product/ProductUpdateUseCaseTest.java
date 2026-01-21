@@ -17,6 +17,7 @@ import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStatus;
 import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
+import app.giftify.out.product.ProductStockHistoryRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductSnapshotUpdatedEvent;
 
@@ -28,6 +29,9 @@ class ProductUpdateUseCaseTest {
 
 	@Mock
 	private EventPublisher eventPublisher;
+
+	@Mock
+	private ProductStockHistoryRepository productStockHistoryRepository;
 
 	@InjectMocks
 	private ProductUpdateUseCase productUpdateUseCase;

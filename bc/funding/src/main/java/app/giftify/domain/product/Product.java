@@ -2,7 +2,8 @@ package app.giftify.domain.product;
 
 import static app.giftify.domain.product.ProductStatus.*;
 import static app.giftify.domain.product.exception.ProductErrorCode.*;
-import static app.giftify.shared.domain.event.product.ProductSaleDisableReason.*;
+
+import java.time.LocalDateTime;
 
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.exception.ProductException;
@@ -67,9 +68,9 @@ public class Product extends BaseJpaEntity {
 	public void approve() {
 		transitionTo(INACTIVE); // 판매 대기 상태로
 		registerEvent(new ProductSnapshotCreationRequestedEvent(
+			LocalDateTime.now(),
 			this.getId(),
 			this.getName(),
-			this.getDescription(),
 			this.getPrice(),
 			this.getSeller().getNickname()
 		));
@@ -83,15 +84,14 @@ public class Product extends BaseJpaEntity {
 	// 상품 판매 시작
 	public void active() {
 		transitionTo(ACTIVE);
-		registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
+		registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId())); // 판매 가능 이벤트 발생
 	}
 
 	// 상품 판매 중지
 	public void inActive() {
 		transitionTo(INACTIVE);
 		registerEvent(new ProductSaleDisabledEvent(
-			this.getId(),
-			STOPPED_BY_SELLER
+			LocalDateTime.now(), this.getId()
 		)); // 판매 불가능 이벤트 발생
 	}
 
@@ -137,36 +137,46 @@ public class Product extends BaseJpaEntity {
 		this.price = newPrice;
 	}
 
-	public void updateStock(int newStock) {
-		// todo 재고이력 컬렉션
+	// 상품 재고 수정 (판매자 수동)
+	public StockChangeResult updateStock(int newStock) {
 		int beforeStock = this.stock;
 		this.stock = newStock;
 
 		if (beforeStock > 0 && newStock == 0 && this.status == ACTIVE) {
-			registerEvent(new ProductSaleDisabledEvent(this.getId(), SOLD_OUT)); // 품절 이벤트 발생
+			registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId())); // 품절 이벤트 발생
 		}
 		if (beforeStock == 0 && newStock > 0 && this.status == ACTIVE) {
-			registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
+			registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId())); // 판매 가능 이벤트 발생
 		}
+
+		return new StockChangeResult(beforeStock, this.stock, newStock - beforeStock);
 	}
 
-	// 상품 재고 감소 todo 재고이력 컬렉션
-	public void decreaseStock(int quantity) {
+	// 상품 재고 감소
+	public StockChangeResult decreaseStock(int quantity) {
 		if (this.stock < quantity)
 			throw new ProductException(PRODUCT_OUT_OF_STOCK);
 
+		int beforeStock = this.stock;
 		this.stock -= quantity;
 
 		if (this.stock == 0 && this.status == ACTIVE)
-			registerEvent(new ProductSaleDisabledEvent(this.getId(), SOLD_OUT)); // 품절 이벤트 발생
+			registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId())); // 품절 이벤트 발생
+
+		return new StockChangeResult(beforeStock, this.stock, -quantity);
 	}
 
-	// 상품 재고 추가 todo 재고이력 컬렉션
-	public void increaseStock(int quantity) {
+	// 상품 재고 추가
+	public StockChangeResult increaseStock(int quantity) {
 		int beforeStock = this.stock;
 		this.stock += quantity;
 
 		if (beforeStock == 0 && this.status == ACTIVE)
-			registerEvent(new ProductSaleEnabledEvent(this.getId())); // 판매 가능 이벤트 발생
+			registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId())); // 판매 가능 이벤트 발생
+
+		return new StockChangeResult(beforeStock, this.stock, quantity);
+	}
+
+	public record StockChangeResult(int beforeStock, int afterStock, int delta) {
 	}
 }
