@@ -29,8 +29,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import app.giftify.payment.adapter.in.web.exception.MoneyGlobalExceptionHandler;
 import app.giftify.payment.adapter.in.web.payment.PaymentController;
+import app.giftify.payment.adapter.in.web.payment.dto.FundingPaymentRequest;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentConfirmRequest;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.payment.adapter.out.pg.TossConfirmResult;
 import app.giftify.payment.adapter.out.pg.TossPaymentsClient;
 import app.giftify.security.common.CurrentMemberId;
@@ -38,8 +40,10 @@ import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 import domain.payment.PaymentRepository;
 import domain.payment.PaymentStatus;
+import payment.usecase.FundingPaymentUseCase;
 import payment.usecase.PaymentChargeUseCase;
 import payment.usecase.PaymentCompleteUseCase;
+import payment.usecase.result.FundingContributeResult;
 import payment.usecase.result.PaymentResult;
 
 /**
@@ -59,6 +63,9 @@ class PaymentControllerTest {
 
 	@Mock
 	private PaymentCompleteUseCase paymentCompleteUseCase;
+
+	@Mock
+	private FundingPaymentUseCase fundingPaymentUseCase;
 
 	@Mock
 	private PaymentRepository paymentRepository;
@@ -277,6 +284,164 @@ class PaymentControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("POST /api/payments/funding")
+	class FundingTest {
+
+		@Test
+		@DisplayName("예치금으로 완납 시 completed=true를 반환한다")
+		void funding_ShouldReturnCompleted_WhenWalletSufficient() throws Exception {
+			// Given
+			Long memberId = 100L;
+			mockMvc = createMockMvc(memberId);
+
+			BigDecimal amount = new BigDecimal("5000");
+			FundingPaymentRequest request = new FundingPaymentRequest(amount);
+
+			FundingContributeResult result = FundingContributeResult.completedWithWallet(Money.of(amount));
+			given(fundingPaymentUseCase.contribute(any())).willReturn(result);
+
+			// When & Then
+			mockMvc.perform(post("/api/payments/funding")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.result").value("SUCCESS"))
+				.andExpect(jsonPath("$.data.completed").value(true))
+				.andExpect(jsonPath("$.data.walletUsed").value(5000))
+				.andExpect(jsonPath("$.data.pgPaymentRequired").value(0))
+				.andExpect(jsonPath("$.data.paymentId").isEmpty())
+				.andExpect(jsonPath("$.data.orderId").isEmpty());
+		}
+
+		@Test
+		@DisplayName("복합 결제 시 completed=false와 orderId를 반환한다")
+		void funding_ShouldReturnOrderId_WhenPgPaymentRequired() throws Exception {
+			// Given
+			Long memberId = 100L;
+			mockMvc = createMockMvc(memberId);
+
+			BigDecimal amount = new BigDecimal("50000");
+			FundingPaymentRequest request = new FundingPaymentRequest(amount);
+
+			FundingContributeResult result = FundingContributeResult.requiresPgPayment(
+				Money.of(30000), Money.of(20000), 1L, "GFTFY_FUNDING_test123"
+			);
+			given(fundingPaymentUseCase.contribute(any())).willReturn(result);
+
+			// When & Then
+			mockMvc.perform(post("/api/payments/funding")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.result").value("SUCCESS"))
+				.andExpect(jsonPath("$.data.completed").value(false))
+				.andExpect(jsonPath("$.data.walletUsed").value(30000))
+				.andExpect(jsonPath("$.data.pgPaymentRequired").value(20000))
+				.andExpect(jsonPath("$.data.paymentId").value(1))
+				.andExpect(jsonPath("$.data.orderId").value("GFTFY_FUNDING_test123"))
+				.andExpect(jsonPath("$.data.orderName").value("Giftify 펀딩 참여"));
+		}
+
+		@Test
+		@DisplayName("최소 금액 미만 요청 시 400 Bad Request를 반환한다")
+		void funding_ShouldReturnBadRequest_WhenAmountBelowMinimum() throws Exception {
+			// Given
+			mockMvc = createMockMvc(100L);
+			FundingPaymentRequest request = new FundingPaymentRequest(new BigDecimal("500"));
+
+			// When & Then
+			mockMvc.perform(post("/api/payments/funding")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("POST /api/payments/confirm - FUNDING 롤백")
+	class ConfirmFundingRollbackTest {
+
+		@Test
+		@DisplayName("FUNDING PG 결제 실패 시 예치금이 롤백된다")
+		void confirm_ShouldRollbackWallet_WhenFundingPgFails() throws Exception {
+			// Given
+			Long memberId = 100L;
+			mockMvc = createMockMvc(memberId);
+
+			Long paymentId = 1L;
+			String orderId = "GFTFY_FUNDING_test123";
+			String paymentKey = "toss_key";
+			BigDecimal pgAmount = new BigDecimal("20000");
+			Money walletUsed = Money.of(30000);
+
+			PaymentConfirmRequest request = new PaymentConfirmRequest(paymentKey, paymentId, pgAmount);
+
+			// FUNDING 타입 + walletUsedAmount 있는 Payment
+			Payment payment = Payment.builder()
+				.paymentId(paymentId)
+				.orderId(orderId)
+				.userId(memberId)
+				.type(PaymentType.FUNDING)
+				.status(PaymentStatus.PENDING)
+				.amount(Money.of(pgAmount))
+				.walletUsedAmount(walletUsed)
+				.build();
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderId), eq(pgAmount)))
+				.willReturn(TossConfirmResult.failure("CARD_ERROR", "카드 오류"));
+
+			// When & Then
+			mockMvc.perform(post("/api/payments/confirm")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+
+			// 롤백 검증
+			verify(fundingPaymentUseCase).rollbackWallet(memberId, walletUsed, paymentId);
+			verify(paymentCompleteUseCase).complete(paymentId, paymentKey, false);
+		}
+
+		@Test
+		@DisplayName("CHARGE 타입 PG 결제 실패 시 롤백하지 않는다")
+		void confirm_ShouldNotRollback_WhenChargeTypeFails() throws Exception {
+			// Given
+			Long memberId = 100L;
+			mockMvc = createMockMvc(memberId);
+
+			Long paymentId = 1L;
+			String orderId = "GFTFY_CHARGE_test";
+			String paymentKey = "toss_key";
+			BigDecimal amount = new BigDecimal("10000");
+
+			PaymentConfirmRequest request = new PaymentConfirmRequest(paymentKey, paymentId, amount);
+
+			// CHARGE 타입 Payment
+			Payment payment = Payment.builder()
+				.paymentId(paymentId)
+				.orderId(orderId)
+				.userId(memberId)
+				.type(PaymentType.CHARGE)
+				.status(PaymentStatus.PENDING)
+				.amount(Money.of(amount))
+				.build();
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderId), eq(amount)))
+				.willReturn(TossConfirmResult.failure("CARD_ERROR", "카드 오류"));
+
+			// When & Then
+			mockMvc.perform(post("/api/payments/confirm")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+
+			// 롤백 호출 없음
+			verify(fundingPaymentUseCase, never()).rollbackWallet(anyLong(), any(), anyLong());
+		}
+	}
+
 	private MockMvc createMockMvc(Long memberId) {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 		converter.setObjectMapper(objectMapper);
@@ -284,6 +449,7 @@ class PaymentControllerTest {
 		PaymentController controller = new PaymentController(
 			paymentChargeUseCase,
 			paymentCompleteUseCase,
+			fundingPaymentUseCase,
 			paymentRepository,
 			tossPaymentsClient
 		);
