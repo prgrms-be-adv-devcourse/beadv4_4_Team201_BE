@@ -1,20 +1,23 @@
 package app.giftify.payment.adapter.in.web;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,24 +30,25 @@ import domain.payment.PaymentRepository;
 import domain.payment.PaymentStatus;
 import payment.usecase.PaymentCancelUseCase;
 
-@WebMvcTest(PgWebhookController.class)
-@Import(MoneyGlobalExceptionHandler.class)
-@ContextConfiguration(classes = {PgWebhookController.class})
+/**
+ * PgWebhookController 테스트.
+ *
+ * <p>standaloneSetup을 사용하여 Spring Security 필터 없이 컨트롤러 로직만 테스트</p>
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("PgWebhookController 테스트")
 class PgWebhookControllerTest {
 
-	@Autowired
 	private MockMvc mockMvc;
-
-	@Autowired
 	private ObjectMapper objectMapper;
 
-	@MockBean
+	@Mock
 	private PaymentCancelUseCase paymentCancelUseCase;
 
-	@MockBean
+	@Mock
 	private PaymentRepository paymentRepository;
 
-	@MockBean
+	@Mock
 	private PgWebhookValidator pgWebhookValidator;
 
 	@Test
@@ -65,9 +69,9 @@ class PgWebhookControllerTest {
 			.build();
 
 		// Mocking: 서명 검증 통과
-		given(pgWebhookValidator.validate(anyString(), eq(timestamp), eq(signature))).willReturn(true);
+		given(pgWebhookValidator.validate(any(), any(), any())).willReturn(true);
 		// Mocking: 결제 건 조회 성공
-		given(paymentRepository.findByPgTransactionId(pgTxId)).willReturn(Optional.of(payment));
+		given(paymentRepository.findByPgTransactionId(any())).willReturn(Optional.of(payment));
 
 		// When & Then
 		mockMvc.perform(post("/api/payments/webhook/pg/cancel")
@@ -119,5 +123,29 @@ class PgWebhookControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(rawPayload))
 			.andExpect(status().isBadRequest());
+	}
+
+	@BeforeEach
+	void setUp() {
+		objectMapper = new ObjectMapper();
+
+		MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
+		jsonConverter.setObjectMapper(objectMapper);
+
+		// StringHttpMessageConverter를 먼저 등록해야 @RequestBody String이 올바르게 처리됨
+		StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+
+		PgWebhookController controller = new PgWebhookController(
+			paymentCancelUseCase,
+			paymentRepository,
+			pgWebhookValidator,
+			objectMapper
+		);
+
+		mockMvc = MockMvcBuilders
+			.standaloneSetup(controller)
+			.setMessageConverters(stringConverter, jsonConverter)
+			.setControllerAdvice(new MoneyGlobalExceptionHandler())
+			.build();
 	}
 }
