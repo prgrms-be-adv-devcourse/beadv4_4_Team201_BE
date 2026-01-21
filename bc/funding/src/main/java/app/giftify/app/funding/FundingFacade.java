@@ -86,4 +86,9 @@ public class FundingFacade {
     public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
         return fundingAcceptUseCase.acceptFunding(id, memberId);
     }
+
+//    @Transactional
+//    public List<FundingCompleteResponseDto> closeAchievedFundings() {
+//        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
+//    }
 }

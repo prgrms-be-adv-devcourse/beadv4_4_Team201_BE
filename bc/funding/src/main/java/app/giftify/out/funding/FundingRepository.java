@@ -16,4 +16,6 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
     Page<Funding> findAllByStatusIn(List<FundingStatus> statuses, Pageable pageable);
 
     List<Funding> findByDeadlineAfterAndStatusIn(LocalDateTime now, List<FundingStatus> statuses);
+
+//    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }

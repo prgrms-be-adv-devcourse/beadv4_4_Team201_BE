@@ -44,4 +44,14 @@ public class FundingCloseUseCase {
 
         return FundingCompleteResponseDto.fromEntity(funding);
     }
+//
+//    /**
+//     * 목표 달성 펀딩 2주내 미수락 시 종료 (스케줄러용)
+//     */
+//    public List<FundingCompleteResponseDto> closeUnacceptedAchievedFundings() {
+//        LocalDateTime now = LocalDateTime.now();
+////        펀딩 상태가 "목표 달성" 상태인지 확인
+////        이미 수락/종료되었는지 확인
+//        List<Funding> achievedFundings = fundingRepository.findUnacceptedAchievedFundingsBefore(deadline);
+//    }
 }
