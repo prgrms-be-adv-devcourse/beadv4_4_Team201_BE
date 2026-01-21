@@ -29,9 +29,12 @@ public class AuthExceptionHandler {
     }
 
     // [기타 보안 관련 예외 처리]
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGeneralException(Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Internal Server Error", "message", "인증/인가 모듈에서 알 수 없는 오류가 발생했습니다."));
-    }
+    // todo
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<?> handleGeneralException(Exception e) {
+//        System.out.println("e = " + e);
+//        System.out.println("e.getMessage() = " + e.getMessage());
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                .body(Map.of("error", "Internal Server Error", "message", "인증/인가 모듈에서 알 수 없는 오류가 발생했습니다."));
+//    }
 }

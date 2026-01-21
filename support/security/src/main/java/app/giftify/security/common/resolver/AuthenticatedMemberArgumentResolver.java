@@ -1,5 +1,7 @@
 package app.giftify.security.common.resolver;
 
+import app.giftify.security.common.MemberPrincipal;
+import app.giftify.security.common.context.AuthenticatedMember;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,9 +10,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import app.giftify.security.common.MemberPrincipal;
-import app.giftify.security.common.context.AuthenticatedMember;
 
 /**
  * @AuthenticatedMember 어노테이션이 붙은 파라미터에 인증 정보를 주입.

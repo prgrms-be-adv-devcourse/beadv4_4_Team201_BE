@@ -28,11 +28,15 @@ public class SharedSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain sharedSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher(join(SWAGGER_WHITELIST, ACTUATOR_WHITELIST))
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(authorize -> authorize
-                .anyRequest().permitAll()
-            );
+                // 1. 담당 구역에 /api/internal/** 를 반드시 추가해야 합니다.
+                .securityMatcher(join(SWAGGER_WHITELIST, ACTUATOR_WHITELIST, new String[]{"/api/internal/**"}))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/internal/**").permitAll() // 내부 api는 필터 적용x
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        .requestMatchers(ACTUATOR_WHITELIST).permitAll()
+                        .anyRequest().authenticated()
+                );
 
         return http.build();
     }
