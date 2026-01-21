@@ -12,7 +12,11 @@ public class FundingMemberSyncUseCase {
 	private final FundingMemberRepository fundingMemberRepository;
 
 	public void syncMember(Long memberId, String authSub, String nickname) {
-		FundingMember seller = new FundingMember(memberId, authSub, nickname);
-		fundingMemberRepository.save(seller);
+		// 기존 회원 존재 시 업데이트, 없으면 생성
+		fundingMemberRepository.findById(memberId)
+			.ifPresentOrElse(
+				existing -> existing.update(authSub, nickname),
+				() -> fundingMemberRepository.save(new FundingMember(memberId, authSub, nickname))
+			);
 	}
 }

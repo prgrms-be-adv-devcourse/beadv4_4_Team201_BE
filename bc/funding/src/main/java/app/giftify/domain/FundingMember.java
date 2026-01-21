@@ -21,4 +21,9 @@ public class FundingMember {
 		this.authSub = authSub;
 		this.nickname = nickname;
 	}
+
+	public void update(String authSub, String nickname) {
+		this.authSub = authSub;
+		this.nickname = nickname;
+	}
 }

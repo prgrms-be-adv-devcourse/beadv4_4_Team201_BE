@@ -11,6 +11,7 @@ import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStockHistory;
 import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
+import app.giftify.out.product.ProductRepository;
 import app.giftify.out.product.ProductStockHistoryRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
@@ -22,6 +23,7 @@ public class ProductUpdateUseCase {
 	private final ProductSupport productSupport;
 	private final EventPublisher eventPublisher;
 	private final ProductStockHistoryRepository productStockHistoryRepository;
+	private final ProductRepository productRepository;
 
 	// todo @Lock
 	public ProductUpdateResponseDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
@@ -36,6 +38,8 @@ public class ProductUpdateUseCase {
 		Integer newStock = requestDto.stock();
 		if (newStock != null && product.getStock() != newStock) {
 			Product.StockChangeResult result = product.updateStock(newStock); // 재고 수정
+
+			productRepository.save(product); // "변경"과 "이력"을 같은 트랜잭션에서 같이 저장하여 캡슐화
 
 			ProductStockHistory history = ProductStockHistory.manualAdjust(
 				product.getSeller().getId(),
