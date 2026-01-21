@@ -21,10 +21,6 @@ public class SettlementItem extends BaseDomainModel {
     private SettlementStatus status;        // READY, WAIT, COMPLETE
     private LocalDateTime settlementDate;   // 정산 예정일
 
-    private SettlementItem(Long id) {
-        super(id);
-    }
-
     private SettlementItem(Builder builder) {
         super(builder.id);
         this.orderId = builder.orderId;
