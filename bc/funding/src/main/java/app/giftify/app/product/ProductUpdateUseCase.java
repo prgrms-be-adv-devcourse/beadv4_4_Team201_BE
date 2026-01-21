@@ -13,7 +13,7 @@ import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
 import app.giftify.out.product.ProductStockHistoryRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductSnapshotUpdatedEvent;
+import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -70,7 +70,7 @@ public class ProductUpdateUseCase {
 
 		/** 어플리케이션 이벤트 발행
 		 */
-		eventPublisher.publish(new ProductSnapshotUpdatedEvent(
+		eventPublisher.publish(new ProductReplicaUpdatedEvent(
 			LocalDateTime.now(),
 			product.getId(),
 			product.getName(),

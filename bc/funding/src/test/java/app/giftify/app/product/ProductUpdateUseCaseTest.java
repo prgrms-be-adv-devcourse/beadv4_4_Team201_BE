@@ -19,7 +19,7 @@ import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
 import app.giftify.out.product.ProductStockHistoryRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductSnapshotUpdatedEvent;
+import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class ProductUpdateUseCaseTest {
@@ -180,7 +180,7 @@ class ProductUpdateUseCaseTest {
 			productUpdateUseCase.updateProduct(productId, sellerId, requestDto);
 
 			// then
-			verify(eventPublisher).publish(any(ProductSnapshotUpdatedEvent.class));
+			verify(eventPublisher).publish(any(ProductReplicaUpdatedEvent.class));
 		}
 	}
 }

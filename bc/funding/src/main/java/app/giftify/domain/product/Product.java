@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.exception.ProductException;
+import app.giftify.shared.domain.event.product.ProductReplicaCreationRequestedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
-import app.giftify.shared.domain.event.product.ProductSnapshotCreationRequestedEvent;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -67,7 +67,7 @@ public class Product extends BaseJpaEntity {
 	// 상품 등록 승인
 	public void approve() {
 		transitionTo(INACTIVE); // 판매 대기 상태로
-		registerEvent(new ProductSnapshotCreationRequestedEvent(
+		registerEvent(new ProductReplicaCreationRequestedEvent(
 			LocalDateTime.now(),
 			this.getId(),
 			this.getName(),
