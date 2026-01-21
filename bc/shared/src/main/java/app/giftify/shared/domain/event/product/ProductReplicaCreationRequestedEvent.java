@@ -8,20 +8,20 @@ public class ProductReplicaCreationRequestedEvent extends BaseDomainEvent {
 	private final Long id;
 	private final String name;
 	private final int price;
-	private String sellerNickname;
+	private String sellerNickName;
 
 	public ProductReplicaCreationRequestedEvent(
 		LocalDateTime occurredAt,
 		Long id,
 		String name,
 		int price,
-		String sellerNickname
+		String sellerNickName
 	) {
 		super(occurredAt);
 		this.id = id;
 		this.name = name;
 		this.price = price;
-		this.sellerNickname = sellerNickname;
+		this.sellerNickName = sellerNickName;
 	}
 
 	public Long getId() {
@@ -36,7 +36,7 @@ public class ProductReplicaCreationRequestedEvent extends BaseDomainEvent {
 		return price;
 	}
 
-	public String getSellerNickname() {
-		return sellerNickname;
+	public String getSellerNickName() {
+		return sellerNickName;
 	}
 }

@@ -8,7 +8,7 @@ public class ProductReplicaUpdatedEvent extends BaseDomainEvent {
 	private final Long id;
 	private final String name;
 	private final int price;
-	private final String sellerNickname;
+	private final String sellerNickName;
 	// private final boolean 상품구매가능/불가능
 
 	public ProductReplicaUpdatedEvent(
@@ -16,13 +16,13 @@ public class ProductReplicaUpdatedEvent extends BaseDomainEvent {
 		Long id,
 		String name,
 		int price,
-		String sellerNickname
+		String sellerNickName
 	) {
 		super(occurredAt);
 		this.id = id;
 		this.name = name;
 		this.price = price;
-		this.sellerNickname = sellerNickname;
+		this.sellerNickName = sellerNickName;
 	}
 
 	public Long getId() {
@@ -37,7 +37,7 @@ public class ProductReplicaUpdatedEvent extends BaseDomainEvent {
 		return price;
 	}
 
-	public String getSellerNickname() {
-		return sellerNickname;
+	public String getSellerNickName() {
+		return sellerNickName;
 	}
 }
