@@ -1,14 +1,15 @@
 package app.giftify.payment.adapter.out.jpa.repository.settlement;
 
+import org.springframework.stereotype.Repository;
+
 import app.giftify.payment.adapter.out.jpa.entity.settlement.JpaSettlementItem;
 import domain.settlement.SettlementItem;
 import domain.settlement.SettlementItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class JpaSettlementItemRepositoryImpl implements SettlementItemRepository {
+public class SettlementItemRepositoryAdapter implements SettlementItemRepository {
 
     private final JpaSettlementItemRepository jpaSettlementItemRepository;
 

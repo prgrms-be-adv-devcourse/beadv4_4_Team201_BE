@@ -1,14 +1,15 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
+import org.springframework.stereotype.Repository;
+
 import app.giftify.payment.adapter.out.jpa.entity.JpaWalletHistory;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 import walletHistory.port.WalletHistoryRepository;
 
 @Repository
 @RequiredArgsConstructor
-public class JpaWalletHistoryRepositoryImpl implements WalletHistoryRepository {
+public class WalletHistoryRepositoryAdapter implements WalletHistoryRepository {
 
     private final JpaWalletHistoryRepository walletHistoryRepository;
 
