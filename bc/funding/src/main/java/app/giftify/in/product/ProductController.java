@@ -69,6 +69,7 @@ public class ProductController {
 		@CurrentMemberId Long sellerId,
 		@RequestBody ProductUpdateRequestDto requestDto
 	) {
+		System.out.println("**********productId = " + productId);
 		ProductUpdateResponseDto productDto = productFacade.updateProduct(productId, sellerId, requestDto);
 
 		return ResponseEntity.status(OK).body(productDto);
@@ -77,7 +78,7 @@ public class ProductController {
 	// 상품 단건 조회
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDto> getProduct(
-		@PathVariable Long id
+            @PathVariable("id") Long id
 	) {
 		ProductDto product = productFacade.getProduct(id);
 		return ResponseEntity.status(OK).body(product);
