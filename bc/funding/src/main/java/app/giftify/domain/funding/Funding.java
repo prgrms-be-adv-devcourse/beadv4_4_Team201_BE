@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.BatchSize;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,7 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funding extends BaseJpaEntity {
 
-    @BatchSize(size = 100)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funding_wishlist_item_id", nullable = false)
     private FundingWishlistItem fundingWishlistItem;

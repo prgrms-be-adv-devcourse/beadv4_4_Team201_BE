@@ -1,8 +1,13 @@
 package app.giftify.domain.funding;
 
+import org.hibernate.annotations.BatchSize;
 
 import app.giftify.support.jpa.BaseJpaEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "FUNDING_WISHLIST_ITEM")
 @Getter
+@BatchSize(size = 100)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FundingWishlistItem extends BaseJpaEntity {
 
