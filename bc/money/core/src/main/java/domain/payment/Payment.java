@@ -21,12 +21,14 @@ public class Payment extends BaseDomainModel {
 	private final Money amount;
 	private String pgTransactionId;
 	private final PaymentMethod method;
+	private final Money walletUsedAmount;  // 펀딩 복합결제 시 사용된 예치금 금액
 
 	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>();
 
 	private Payment(
 		Long id, Long userId, PaymentType type, PaymentStatus status,
-		Money amount, String pgTransactionId, PaymentMethod method, String orderId
+		Money amount, String pgTransactionId, PaymentMethod method, String orderId,
+		Money walletUsedAmount
 	) {
 		super(id);
 		this.userId = userId;
@@ -36,6 +38,7 @@ public class Payment extends BaseDomainModel {
 		this.pgTransactionId = pgTransactionId;
 		this.method = method;
 		this.orderId = orderId;
+		this.walletUsedAmount = walletUsedAmount;
 	}
 
 	private static String generateOrderId(PaymentType type) {
@@ -78,6 +81,38 @@ public class Payment extends BaseDomainModel {
 			PaymentEventType.CREATED,
 			now,
 			null            // metadata
+		));
+
+		return payment;
+	}
+
+	/**
+	 * 펀딩 복합결제용 결제를 생성합니다.
+	 * 예치금 사용액(walletUsedAmount)을 함께 저장하여 PG 결제 실패 시 롤백에 활용합니다.
+	 */
+	public static Payment createForFunding(
+		Long userId,
+		Money pgAmount,
+		Money walletUsedAmount
+	) {
+		LocalDateTime now = LocalDateTime.now();
+		String orderId = generateOrderId(PaymentType.FUNDING);
+
+		Payment payment = Payment.builder()
+			.userId(userId)
+			.type(PaymentType.FUNDING)
+			.status(PaymentStatus.PENDING)
+			.amount(pgAmount)
+			.walletUsedAmount(walletUsedAmount)
+			.orderId(orderId)
+			.build();
+
+		payment.uncommittedHistory.add(new PaymentHistory(
+			null,
+			null,
+			PaymentEventType.CREATED,
+			now,
+			null
 		));
 
 		return payment;
@@ -260,6 +295,10 @@ public class Payment extends BaseDomainModel {
 		return orderId;
 	}
 
+	public Money getWalletUsedAmount() {
+		return walletUsedAmount;
+	}
+
 	public Payment withId(Long id) {
 		Payment newPayment = Payment.builder()
 			.paymentId(id)
@@ -270,6 +309,7 @@ public class Payment extends BaseDomainModel {
 			.pgTransactionId(this.pgTransactionId)
 			.method(this.method)
 			.orderId(this.orderId)
+			.walletUsedAmount(this.walletUsedAmount)
 			.build();
 
 		newPayment.uncommittedHistory.addAll(this.uncommittedHistory);
@@ -300,6 +340,7 @@ public class Payment extends BaseDomainModel {
 		private Money amount;
 		private PaymentMethod method;
 		private String orderId;
+		private Money walletUsedAmount;
 
 		public Builder paymentId(Long paymentId) {
 			this.paymentId = paymentId;
@@ -341,6 +382,11 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
+		public Builder walletUsedAmount(Money walletUsedAmount) {
+			this.walletUsedAmount = walletUsedAmount;
+			return this;
+		}
+
 		public Payment build() {
 			return new Payment(
 				paymentId,
@@ -350,7 +396,8 @@ public class Payment extends BaseDomainModel {
 				amount,
 				pgTransactionId,
 				method,
-				orderId
+				orderId,
+				walletUsedAmount
 			);
 		}
 	}
