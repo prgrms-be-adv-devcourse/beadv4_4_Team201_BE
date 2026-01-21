@@ -17,6 +17,8 @@ public class PaymentMapper {
 			.amount(domain.getAmount().amount()) // Money -> BigDecimal
 			.pgTransactionId(domain.getPgTransactionId())
 			.method(domain.getMethod())
+			.walletUsedAmount(domain.getWalletUsedAmount() != null
+				? domain.getWalletUsedAmount().amount() : null)
 			.build();
 	}
 
@@ -30,6 +32,8 @@ public class PaymentMapper {
 			.amount(Money.of(entity.getAmount()))
 			.pgTransactionId(entity.getPgTransactionId())
 			.method(entity.getMethod())
+			.walletUsedAmount(entity.getWalletUsedAmount() != null
+				? Money.of(entity.getWalletUsedAmount()) : null)
 			.build();
 	}
 
