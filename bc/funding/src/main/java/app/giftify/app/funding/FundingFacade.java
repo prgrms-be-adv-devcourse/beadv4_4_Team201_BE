@@ -23,6 +23,8 @@ public class FundingFacade {
     private final FundingCloseUseCase fundingCloseUseCase;
     private final FundingExpireUseCase fundingExpireUseCase;
     private final FundingContributeUseCase fundingContributeUseCase;
+    private final FundingRefuseUseCase fundingRefuseUseCase;
+    private final FundingAcceptUseCase fundingAcceptUseCase;
 
     @Transactional
     public FundingResponseDto startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
@@ -74,4 +76,19 @@ public class FundingFacade {
     public List<FundingCompleteResponseDto> expireExpiredFundings() {
         return fundingExpireUseCase.expireExpiredFundings();
     }
+
+    @Transactional
+    public FundingCompleteResponseDto refuseFunding(Long id, Long memberId) {
+        return fundingRefuseUseCase.refuseFunding(id, memberId);
+    }
+
+    @Transactional
+    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
+        return fundingAcceptUseCase.acceptFunding(id, memberId);
+    }
+
+//    @Transactional
+//    public List<FundingCompleteResponseDto> closeAchievedFundings() {
+//        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
+//    }
 }
