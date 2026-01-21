@@ -1,0 +1,15 @@
+package app.giftify.wishlist.application.port.in;
+
+import app.giftify.wishlist.core.domain.WishlistItem;
+
+import java.util.List;
+
+public interface GetWishlistItemUseCase {
+    // 위시리스트에 존재하는 아이템이 존재하는지 확인
+    Long getWishlistItemCount();
+
+    // 위시리스트에 이미 존재하는 아이템인지 확인
+    boolean isItemExists(String authSub, Long productId);
+
+    List<WishlistItem> getWishlistItems(String authSub);
+}
