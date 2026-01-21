@@ -151,4 +151,28 @@ public class SettlementItem extends BaseDomainModel {
     public LocalDateTime getSettlementDate() {
         return settlementDate;
     }
+
+    public void changeStatusToPaid() {
+        if (this.status != SettlementStatus.EXPECTED) {
+            throw new IllegalStateException("EXPECTED 상태인 정산 건만 PAID로 변경할 수 있습니다.");   // todo: 예외 처리
+        }
+        this.status = SettlementStatus.PAID;
+    }
+
+    public void changeStatusToCancel() {
+        if (this.status == SettlementStatus.PAID) {
+            throw new IllegalStateException("이미 지급 완료된 정산 건은 상태를 취소할 수 없습니다. (마이너스 정산 필요)");    // todo: 예외 처리
+        }
+        this.status = SettlementStatus.CANCELLED;
+    }
+
+    public void changeStatusToExpected() {
+        if (this.status != SettlementStatus.READY) {
+            throw new IllegalStateException("READY 상태인 정산 건만 EXPECTED 변경할 수 있습니다.");   // todo: 예외 처리
+        }
+        this.status = SettlementStatus.EXPECTED;
+    }
+
+
+
 }
