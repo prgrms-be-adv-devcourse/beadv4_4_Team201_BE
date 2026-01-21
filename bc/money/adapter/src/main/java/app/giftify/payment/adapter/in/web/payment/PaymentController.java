@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import app.giftify.payment.adapter.in.web.payment.dto.FundingPaymentRequest;
+import app.giftify.payment.adapter.in.web.payment.dto.FundingPaymentResponse;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentChargeResponse;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentConfirmRequest;
@@ -16,15 +18,19 @@ import app.giftify.payment.adapter.out.pg.TossConfirmResult;
 import app.giftify.payment.adapter.out.pg.TossPaymentsClient;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 import domain.payment.PaymentErrorCode;
 import domain.payment.PaymentException;
 import domain.payment.PaymentRepository;
 import jakarta.validation.Valid;
+import payment.usecase.FundingPaymentUseCase;
 import payment.usecase.PaymentChargeUseCase;
 import payment.usecase.PaymentCompleteUseCase;
+import payment.usecase.command.FundingContributeCommand;
 import payment.usecase.command.PaymentChargeCommand;
+import payment.usecase.result.FundingContributeResult;
 import payment.usecase.result.PaymentResult;
 
 @RestController
@@ -35,17 +41,20 @@ public class PaymentController {
 
 	private final PaymentChargeUseCase paymentChargeUseCase;
 	private final PaymentCompleteUseCase paymentCompleteUseCase;
+	private final FundingPaymentUseCase fundingPaymentUseCase;
 	private final PaymentRepository paymentRepository;
 	private final TossPaymentsClient tossPaymentsClient;
 
 	public PaymentController(
 		PaymentChargeUseCase paymentChargeUseCase,
 		PaymentCompleteUseCase paymentCompleteUseCase,
+		FundingPaymentUseCase fundingPaymentUseCase,
 		PaymentRepository paymentRepository,
 		TossPaymentsClient tossPaymentsClient
 	) {
 		this.paymentChargeUseCase = paymentChargeUseCase;
 		this.paymentCompleteUseCase = paymentCompleteUseCase;
+		this.fundingPaymentUseCase = fundingPaymentUseCase;
 		this.paymentRepository = paymentRepository;
 		this.tossPaymentsClient = tossPaymentsClient;
 	}
@@ -135,9 +144,45 @@ public class PaymentController {
 				false
 			);
 
+			// FUNDING 타입 PG 결제 실패 시 예치금 롤백
+			if (payment.getType() == PaymentType.FUNDING && payment.getWalletUsedAmount() != null) {
+				log.info("[Payment] FUNDING PG 결제 실패 - 예치금 롤백. paymentId={}, walletUsed={}",
+					payment.getPaymentId(), payment.getWalletUsedAmount());
+				fundingPaymentUseCase.rollbackWallet(
+					payment.getUserId(),
+					payment.getWalletUsedAmount(),
+					payment.getPaymentId()
+				);
+			}
+
 			throw new PaymentException(PaymentErrorCode.PG_APPROVAL_FAILED,
 				String.format("결제 승인 실패 [%s]: %s",
 					confirmResult.errorCode(), confirmResult.errorMessage()));
 		}
+	}
+
+	/**
+	 * 펀딩 참여 결제를 처리합니다.
+	 * 1. 예치금 우선 차감
+	 * 2. 부족분이 있으면 PG 결제 정보 반환
+	 *
+	 * 응답의 completed가 true이면 예치금으로 완납된 것이고,
+	 * false이면 클라이언트는 orderId로 Toss SDK 결제를 진행해야 합니다.
+	 */
+	@PostMapping("/funding")
+	public ResponseEntity<CommonResponse<FundingPaymentResponse>> fundingPayment(
+		@CurrentMemberId Long memberId,
+		@Valid @RequestBody FundingPaymentRequest request
+	) {
+		FundingContributeCommand command = new FundingContributeCommand(
+			memberId,
+			Money.of(request.amount())
+		);
+
+		FundingContributeResult result = fundingPaymentUseCase.contribute(command);
+
+		return ResponseEntity.ok(
+			CommonResponse.success(FundingPaymentResponse.from(result))
+		);
 	}
 }
