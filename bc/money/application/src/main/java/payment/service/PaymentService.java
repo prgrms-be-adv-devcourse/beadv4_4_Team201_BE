@@ -69,10 +69,9 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 
 		var savedPayment = paymentRepository.save(payment);
 
-		// FIXME 충전 완료 이벤트 발행 필요 -> Wallet 등으로
-
 		return new PaymentResult(
 			savedPayment.getPaymentId(),
+			savedPayment.getOrderId(),
 			savedPayment.getStatus(),
 			savedPayment.getAmount()
 		);

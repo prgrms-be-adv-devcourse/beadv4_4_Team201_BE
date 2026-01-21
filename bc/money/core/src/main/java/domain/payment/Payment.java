@@ -4,14 +4,19 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
+	private static final String ORDER_ID_PREFIX_CHARGE = "GFTFY_CHARGE_";
+	private static final String ORDER_ID_PREFIX_FUNDING = "GFTFY_FUNDING_";
+
 	private final Long userId;
 	private final PaymentType type;
+	private final String orderId;
 	private PaymentStatus status;
 	private final Money amount;
 	private String pgTransactionId;
@@ -21,7 +26,7 @@ public class Payment extends BaseDomainModel {
 
 	private Payment(
 		Long id, Long userId, PaymentType type, PaymentStatus status,
-		Money amount, String pgTransactionId, PaymentMethod method
+		Money amount, String pgTransactionId, PaymentMethod method, String orderId
 	) {
 		super(id);
 		this.userId = userId;
@@ -30,6 +35,13 @@ public class Payment extends BaseDomainModel {
 		this.amount = amount;
 		this.pgTransactionId = pgTransactionId;
 		this.method = method;
+		this.orderId = orderId;
+	}
+
+	private static String generateOrderId(PaymentType type) {
+		String prefix = (type == PaymentType.CHARGE) ? ORDER_ID_PREFIX_CHARGE : ORDER_ID_PREFIX_FUNDING;
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		return prefix + uuid;
 	}
 
 	public static Builder builder() {
@@ -40,6 +52,7 @@ public class Payment extends BaseDomainModel {
 
 	/**
 	 * 결제를 생성합니다. 초기 상태는 항상 PENDING 입니다.
+	 * orderId는 자동으로 생성합니다
 	 */
 	public static Payment create(
 		Long userId,
@@ -48,6 +61,7 @@ public class Payment extends BaseDomainModel {
 		PaymentMethod method
 	) {
 		LocalDateTime now = LocalDateTime.now();
+		String orderId = generateOrderId(type);
 
 		Payment payment = Payment.builder()
 			.userId(userId)
@@ -55,6 +69,7 @@ public class Payment extends BaseDomainModel {
 			.status(PaymentStatus.PENDING) // 항상 대기 상태로 시작
 			.amount(amount)
 			.method(method)
+			.orderId(orderId)
 			.build();
 
 		payment.uncommittedHistory.add(new PaymentHistory(
@@ -241,6 +256,10 @@ public class Payment extends BaseDomainModel {
 		return method;
 	}
 
+	public String getOrderId() {
+		return orderId;
+	}
+
 	public Payment withId(Long id) {
 		Payment newPayment = Payment.builder()
 			.paymentId(id)
@@ -250,6 +269,7 @@ public class Payment extends BaseDomainModel {
 			.amount(this.amount)
 			.pgTransactionId(this.pgTransactionId)
 			.method(this.method)
+			.orderId(this.orderId)
 			.build();
 
 		newPayment.uncommittedHistory.addAll(this.uncommittedHistory);
@@ -261,6 +281,7 @@ public class Payment extends BaseDomainModel {
 	public String toString() {
 		return "Payment{" +
 			"id=" + getId() +
+			", orderId='" + orderId + '\'' +
 			", userId=" + userId +
 			", type=" + type +
 			", status=" + status +
@@ -277,8 +298,8 @@ public class Payment extends BaseDomainModel {
 		private PaymentType type;
 		private PaymentStatus status;
 		private Money amount;
-
 		private PaymentMethod method;
+		private String orderId;
 
 		public Builder paymentId(Long paymentId) {
 			this.paymentId = paymentId;
@@ -315,6 +336,11 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
+		public Builder orderId(String orderId) {
+			this.orderId = orderId;
+			return this;
+		}
+
 		public Payment build() {
 			return new Payment(
 				paymentId,
@@ -323,7 +349,8 @@ public class Payment extends BaseDomainModel {
 				status,
 				amount,
 				pgTransactionId,
-				method
+				method,
+				orderId
 			);
 		}
 	}
