@@ -20,10 +20,12 @@ import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.paging.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
+@Slf4j
 public class ProductController {
 	private final ProductFacade productFacade;
 
@@ -31,10 +33,9 @@ public class ProductController {
 	@PostMapping
 	@PreAuthorize("hasRole('SELLER')")
 	public ResponseEntity<ProductDto> createProduct(
+		@CurrentMemberId Long sellerId,
 		@Valid @RequestBody ProductCreateRequestDto requestDto
 	) {
-		Long sellerId = 1L; // todo 토큰에서 get
-
 		ProductDto productDto = productFacade.createProduct(sellerId, requestDto);
 		return ResponseEntity.status(CREATED).body(productDto);
 	}
@@ -43,8 +44,8 @@ public class ProductController {
 	@PatchMapping("/{id}/{action}")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<String> changeApproval(
-		@PathVariable Long id,
-		@PathVariable String action
+		@PathVariable("id") Long id,
+		@PathVariable("action") String action
 	) {
 		switch (action) {
 			case "approve" -> {
@@ -63,7 +64,7 @@ public class ProductController {
 	@PreAuthorize("hasRole('SELLER')")
 	@PatchMapping("/my/{productId}")
 	public ResponseEntity<ProductUpdateResponseDto> updateProduct(
-		@PathVariable Long productId,
+		@PathVariable("productId") Long productId,
 		@CurrentMemberId Long sellerId,
 		@RequestBody ProductUpdateRequestDto requestDto
 	) {
@@ -75,7 +76,7 @@ public class ProductController {
 	// 상품 단건 조회
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDto> getProduct(
-		@PathVariable Long id
+		@PathVariable("id") Long id
 	) {
 		ProductDto product = productFacade.getProduct(id);
 		return ResponseEntity.status(OK).body(product);
@@ -104,11 +105,11 @@ public class ProductController {
 
 	// (판매자) 재고 이력 조회
 	@GetMapping("/my/stock-histories")
+	@PreAuthorize("hasRole('SELLER')")
 	public ResponseEntity<PageResponse<StockHistoryDto>> searchStockHistories(
+		@CurrentMemberId Long sellerId,
 		@ModelAttribute StockHistorySearchDto searchDto
-		// todo 토큰
 	) {
-		Long sellerId = 1L; // todo 토큰에서 get
 		PageResponse<StockHistoryDto> stockHistories = productFacade.searchStockHistories(sellerId, searchDto);
 
 		return ResponseEntity.status(OK).body(stockHistories);
