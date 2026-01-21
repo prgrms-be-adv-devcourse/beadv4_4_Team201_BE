@@ -5,7 +5,7 @@ import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
-import app.giftify.wishlist.core.domain.exceptioin.WishlistNotFoundException;
+import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

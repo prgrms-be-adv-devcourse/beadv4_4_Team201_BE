@@ -1,8 +1,8 @@
 package app.giftify.wishlist.adapter.in.web;
 
-import app.giftify.member.adapter.in.web.exceptionHandler.MemberExceptionHandler;
 import app.giftify.security.common.context.AuthenticatedMember;
 import app.giftify.wishlist.adapter.in.web.controller.WishlistController;
+import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
@@ -53,7 +53,7 @@ class WishlistControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase))
-                .setControllerAdvice(new MemberExceptionHandler())
+                .setControllerAdvice(new WishlistExceptionHandler())
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
                     @Override
                     public boolean supportsParameter(MethodParameter parameter) {
@@ -73,7 +73,6 @@ class WishlistControllerTest {
     void getMyInfo_Success() throws Exception {
         // given
         Wishlist wishlist = Wishlist.builder()
-                .id(1L)
                 .authSub(AUTH_SUB)
                 .memberId(10L)
                 .visibility(Visibility.PUBLIC)
@@ -93,13 +92,11 @@ class WishlistControllerTest {
         // given
         UpdateWishlistSettingsRequest request = new UpdateWishlistSettingsRequest("PRIVATE");
         Wishlist existingWishlist = Wishlist.builder()
-                .id(1L)
                 .authSub(AUTH_SUB)
                 .memberId(10L)
                 .visibility(Visibility.PUBLIC)
                 .build();
         Wishlist updatedWishlist = Wishlist.builder()
-                .id(1L)
                 .authSub(AUTH_SUB)
                 .memberId(10L)
                 .visibility(Visibility.PRIVATE)

@@ -1,4 +1,4 @@
-package app.giftify.wishlist.core.domain.exceptioin;
+package app.giftify.wishlist.core.domain.exception;
 
 public class WishlistNotFoundException extends WishlistDomainException {
     public WishlistNotFoundException() {

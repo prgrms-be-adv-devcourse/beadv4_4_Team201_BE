@@ -1,6 +1,6 @@
 package app.giftify.wishlist.core.domain;
 
-import app.giftify.wishlist.core.domain.exceptioin.InvalidWishlistVisibilityException;
+import app.giftify.wishlist.core.domain.exception.InvalidWishlistVisibilityException;
 
 public enum Visibility {
     PUBLIC("모두에게 공개"),

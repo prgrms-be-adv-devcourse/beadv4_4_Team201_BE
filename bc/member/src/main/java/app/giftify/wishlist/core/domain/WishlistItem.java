@@ -87,8 +87,8 @@ public class WishlistItem extends BaseDomainModel {
             return this;
         }
 
-        public Builder addedAt() {
-            this.addedAt = LocalDate.now();
+        public Builder addedAt(LocalDate addedAt) {
+            this.addedAt = addedAt;
             return this;
         }
 

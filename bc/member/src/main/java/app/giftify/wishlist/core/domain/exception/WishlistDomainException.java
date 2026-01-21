@@ -1,4 +1,4 @@
-package app.giftify.wishlist.core.domain.exceptioin;
+package app.giftify.wishlist.core.domain.exception;
 
 import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.ErrorCode;

@@ -1,6 +1,6 @@
 package app.giftify.wishlist.adapter.out.dataInit;
 
-import app.giftify.wishlist.adapter.out.jpa.dataInit.wishlistItemDataInitializer;
+import app.giftify.wishlist.adapter.out.jpa.dataInit.WishlistItemDataInitializer;
 import app.giftify.wishlist.adapter.out.jpa.repository.WishlistItemJpaRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class WishlistItemDataInitializerTest {
     private WishlistItemJpaRepository wishlistItemJpaRepository;
 
     @InjectMocks
-    private wishlistItemDataInitializer wishlistItemDataInitializer;
+    private WishlistItemDataInitializer wishlistItemDataInitializer;
 
     @Test
     @DisplayName("데이터가 없을 때 초기 아이템 저장 테스트")

@@ -1,9 +1,5 @@
 package app.giftify.wishlist.core.domain.exception;
 
-import app.giftify.wishlist.core.domain.exceptioin.InvalidWishlistItemStatusException;
-import app.giftify.wishlist.core.domain.exceptioin.InvalidWishlistVisibilityException;
-import app.giftify.wishlist.core.domain.exceptioin.WishlistErrorCode;
-import app.giftify.wishlist.core.domain.exceptioin.WishlistNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

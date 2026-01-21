@@ -10,6 +10,7 @@ public class WishlistItemMapper {
                 .authSub(domain.getAuthSub())
                 .productId(domain.getProductId())
                 .itemStatus(domain.getItemStatus())
+                .addedAt(domain.getAddedAt())
                 .build();
     }
 
@@ -19,6 +20,7 @@ public class WishlistItemMapper {
                 .authSub(entity.getAuthSub())
                 .productId(entity.getProductId())
                 .itemStatus(entity.getItemStatus())
+                .addedAt(entity.getAddedAt())
                 .build();
     }
 }

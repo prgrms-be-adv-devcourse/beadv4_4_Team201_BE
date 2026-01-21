@@ -54,3 +54,7 @@ logging:
   level:
     root: INFO
     app.giftify: DEBUG
+
+custom:
+  global:
+    internalBackUrl: http://localhost:${server.port:8080}

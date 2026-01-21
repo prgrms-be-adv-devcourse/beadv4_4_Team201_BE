@@ -1,6 +1,6 @@
 package app.giftify.wishlist.core.domain;
 
-import app.giftify.wishlist.core.domain.exceptioin.InvalidWishlistItemStatusException;
+import app.giftify.wishlist.core.domain.exception.InvalidWishlistItemStatusException;
 
 public enum ItemStatus {
     DRAFT("상품 등록 대기 상태입니다."),

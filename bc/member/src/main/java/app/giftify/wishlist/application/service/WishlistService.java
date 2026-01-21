@@ -5,7 +5,7 @@ import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Wishlist;
-import app.giftify.wishlist.core.domain.exceptioin.WishlistNotFoundException;
+import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

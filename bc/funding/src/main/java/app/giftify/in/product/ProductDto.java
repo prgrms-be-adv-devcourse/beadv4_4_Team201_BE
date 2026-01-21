@@ -1,8 +1,9 @@
 package app.giftify.in.product;
 
-import java.time.LocalDateTime;
-
 import app.giftify.domain.product.Product;
+import app.giftify.domain.product.ProductStatus;
+
+import java.time.LocalDateTime;
 
 public record ProductDto(
 	Long id,
@@ -10,6 +11,7 @@ public record ProductDto(
 	String name,
 	String description,
 	int price,
+	ProductStatus status,
 	LocalDateTime createdAt
 ) {
 	public static ProductDto from(Product product) {
@@ -22,6 +24,7 @@ public record ProductDto(
 			product.getName(),
 			product.getDescription(),
 			product.getPrice(),
+				product.getStatus(),
 			product.getCreatedAt()
 		);
 	}
