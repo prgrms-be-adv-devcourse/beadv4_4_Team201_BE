@@ -18,7 +18,6 @@ import org.hibernate.annotations.BatchSize;
 @Getter
 @BatchSize(size = 100)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@BatchSize(size = 100)
 public class FundingWishlistItem extends BaseJpaEntity {
 
     public enum WishListItemStatus {
