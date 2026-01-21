@@ -19,4 +19,10 @@ public class FundingScheduler {
         List<FundingCompleteResponseDto> expired = fundingFacade.expireExpiredFundings();
         log.info("만료 처리된 펀딩 건수: {}", expired.size());
     }
+
+//    @Scheduled(cron = "0 0 0 * * *")
+//    public void closeAchievedFundings() {
+//       List<FundingCompleteResponseDto> achieved = fundingFacade.closeAchievedFundings();
+//       log.info("목표 달성 펀딩 종료 건수: {}", achieved.size());
+//    }
 }

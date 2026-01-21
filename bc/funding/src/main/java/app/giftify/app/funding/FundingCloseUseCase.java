@@ -25,7 +25,6 @@ public class FundingCloseUseCase {
             .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
         FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
-        Integer currentAmount = funding.getCurrentAmount();
 
         // 관리자 권한 체크 (Member BC에서 role 정보 가져와서 확인)
         // if (!isAdmin(requestMemberId)) {
@@ -38,16 +37,21 @@ public class FundingCloseUseCase {
         eventPublisher.publish(new FundingCanceledEvent(
             funding.getId(),
             wishlistItem.getWishlistId(),
-            currentAmount,
+            funding.getCurrentAmount(),
             wishlistItem.getProductId(),
             wishlistItem.getReceiverId()
         ));
 
-        return new FundingCompleteResponseDto(
-            funding.getId(),
-            funding.getFundingWishlistItem().getId(),
-            funding.getStatus(),
-            funding.getClosedAt()
-        );
+        return FundingCompleteResponseDto.fromEntity(funding);
     }
+//
+//    /**
+//     * 목표 달성 펀딩 2주내 미수락 시 종료 (스케줄러용)
+//     */
+//    public List<FundingCompleteResponseDto> closeUnacceptedAchievedFundings() {
+//        LocalDateTime now = LocalDateTime.now();
+////        펀딩 상태가 "목표 달성" 상태인지 확인
+////        이미 수락/종료되었는지 확인
+//        List<Funding> achievedFundings = fundingRepository.findUnacceptedAchievedFundingsBefore(deadline);
+//    }
 }
