@@ -20,11 +20,15 @@ public class WishlistProductReplicaJpaEntity extends BaseJpaEntity {
     @Column(nullable = false, unique = true)
     private Long productId;
 
-    @Column(nullable = false)
     private boolean wishlistAllowed;
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Override
+    public LocalDateTime getUpdatedAt() {
+        return this.updatedAt;
+    }
 
     private String name;
     private int price;
