@@ -121,13 +121,31 @@ class WalletEventHandlerTest {
         assertThat(logEvent.getFormattedMessage()).contains("Business domain exception occurred.");
     }
 
-//    todo: 테스터 수정
-//    @Test
-//    @DisplayName("지원하지 않는 결제 타입 시 EventIgnoreException 발생")
-//    void shouldThrowEventIgnoreOnUnsupportedType() {
-//        EventIgnoreException ex = assertThrows(EventIgnoreException.class, () -> handler.handle(event));
-//        assertTrue(ex.getCause() instanceof IllegalArgumentException);
-//    }
+    @Test
+    @DisplayName("FUNDING 이벤트 처리 시 WalletService.charge 호출하지 않음 (예치금 이미 차감됨)")
+    void shouldNotChargeWallet_WhenFundingPaymentSucceeded() {
+        // Given
+        PaymentSucceededEvent fundingEvent = new PaymentSucceededEvent(
+                1L,
+                "PAYMENT",
+                2L,
+                Money.of(20000L),
+                PaymentType.FUNDING,
+                LocalDateTime.now()
+        );
+
+        // When
+        assertDoesNotThrow(() -> handler.handle(fundingEvent));
+
+        // Then - 지갑 충전 호출 안 됨
+        verify(walletService, never()).charge(
+                anyLong(),
+                any(Money.class),
+                anyString(),
+                anyString(),
+                anyLong()
+        );
+    }
 
     private void setUpAppender() {
         // Logger를 가져와서 Mock Appender를 부착합니다.
