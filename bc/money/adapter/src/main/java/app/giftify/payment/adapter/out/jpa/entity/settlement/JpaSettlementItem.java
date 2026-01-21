@@ -23,7 +23,7 @@ public class JpaSettlementItem {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private Long orderId;                   // 결제/주문 식별자(현재는 결제)
+    private String orderId;                   // 결제/주문 식별자(현재는 결제)
 
     @Column(nullable = false, unique = true)
     private String paymentKey;              // PG 결제 식별자

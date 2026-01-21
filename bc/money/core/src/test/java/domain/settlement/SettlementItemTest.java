@@ -14,7 +14,7 @@ class SettlementItemTest {
     @DisplayName("PAYMENT 타입의 정산 아이템을 정상적으로 생성한다")
     void createSettlementItem_payment() {
         // given
-        Long orderId = 1L;
+        String orderId = "Qwe_123";
         String paymentKey = "payment-key-123";
         Long sellerId = 10L;
 
@@ -62,7 +62,7 @@ class SettlementItemTest {
 
         // when
         SettlementItem item = SettlementItem.builder()
-                .orderId(2L)
+                .orderId("Qwe_123")
                 .paymentKey("cancel-key")
                 .sellerId(20L)
                 .type(SettlementType.CANCEL)
@@ -84,7 +84,7 @@ class SettlementItemTest {
     void createSettlementItem_withoutId() {
         // when
         SettlementItem item = SettlementItem.builder()
-                .orderId(3L)
+                .orderId("Qwe_123")
                 .paymentKey("no-id-key")
                 .sellerId(30L)
                 .type(SettlementType.PAYMENT)

@@ -6,7 +6,7 @@ import app.giftify.shared.domain.vo.Money;
 import java.time.LocalDateTime;
 
 public class SettlementItem extends BaseDomainModel {
-    private Long orderId;                   // 결제/주문 식별자(현재는 결제)
+    private String orderId;                   // 결제/주문 식별자(현재는 결제)
     private String paymentKey;              // PG 결제 식별자
 //    private String transactionKey;          // PG 트랜잭션 식별자(멱등키) (todo: 토스 대조 미정)
 
@@ -41,7 +41,7 @@ public class SettlementItem extends BaseDomainModel {
 
     public static class Builder {
         private Long id;
-        private Long orderId;
+        private String orderId;
         private String paymentKey;
         private Long sellerId;
         private SettlementType type;
@@ -57,7 +57,7 @@ public class SettlementItem extends BaseDomainModel {
             return this;
         }
 
-        public Builder orderId(Long orderId) {
+        public Builder orderId(String orderId) {
             this.orderId = orderId;
             return this;
         }
@@ -112,7 +112,7 @@ public class SettlementItem extends BaseDomainModel {
         }
     }
 
-    public Long getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
