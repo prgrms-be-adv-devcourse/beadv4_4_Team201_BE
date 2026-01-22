@@ -294,12 +294,13 @@ class PaymentControllerTest {
 			// Given
 			Long memberId = 100L;
 			Long orderId = 100L;
+			Long paymentId = 999L;
 			mockMvc = createMockMvc(memberId);
 
 			BigDecimal amount = new BigDecimal("5000");
 			PaymentInitiateRequest request = new PaymentInitiateRequest(orderId, amount);
 
-			PaymentInitiateResult result = PaymentInitiateResult.completedWithWallet(orderId, Money.of(amount));
+			PaymentInitiateResult result = PaymentInitiateResult.completedWithWallet(orderId, Money.of(amount), paymentId);
 			given(paymentInitiateUseCase.initiate(any())).willReturn(result);
 
 			// When & Then
@@ -312,7 +313,7 @@ class PaymentControllerTest {
 				.andExpect(jsonPath("$.data.orderId").value(100))
 				.andExpect(jsonPath("$.data.walletUsed").value(5000))
 				.andExpect(jsonPath("$.data.pgPaymentRequired").value(0))
-				.andExpect(jsonPath("$.data.paymentId").isEmpty())
+				.andExpect(jsonPath("$.data.paymentId").value(999))
 				.andExpect(jsonPath("$.data.pgOrderId").isEmpty());
 		}
 

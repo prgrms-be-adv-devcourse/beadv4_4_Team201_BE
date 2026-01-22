@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
+import domain.payment.Payment;
 import domain.payment.PaymentErrorCode;
 import domain.payment.PaymentException;
 import domain.payment.PaymentPolicy;
@@ -66,9 +67,16 @@ class PaymentInitiateServiceTest {
 			Long orderId = 100L;
 			Money requestAmount = Money.of(5000);
 			Money walletBalance = Money.of(10000); // 예치금 > 요청금액
+			Long savedPaymentId = 999L;
 
 			Wallet wallet = Wallet.create(userId, walletBalance);
 			given(walletService.getWalletByMemberId(userId)).willReturn(wallet);
+
+			// Payment 저장 시 ID 할당 mock
+			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> {
+				Payment payment = invocation.getArgument(0);
+				return payment.withId(savedPaymentId);
+			});
 
 			PaymentInitiateCommand command = new PaymentInitiateCommand(
 				userId, orderId, requestAmount, PaymentType.FUNDING
@@ -82,13 +90,13 @@ class PaymentInitiateServiceTest {
 			assertThat(result.orderId()).isEqualTo(orderId);
 			assertThat(result.walletUsed()).isEqualTo(requestAmount);
 			assertThat(result.pgPaymentRequired()).isEqualTo(Money.zero());
-			assertThat(result.paymentId()).isNull();
+			assertThat(result.paymentId()).isEqualTo(savedPaymentId);
 			assertThat(result.pgOrderId()).isNull();
 
-			// 예치금 차감 검증
-			verify(walletService).withdraw(eq(userId), eq(requestAmount), anyString(), anyString(), eq(orderId));
-			// Payment 생성 안 됨
-			verify(paymentRepository, never()).save(any());
+			// Payment 저장 검증
+			verify(paymentRepository).save(any(Payment.class));
+			// 예치금 차감 검증 (referenceId로 paymentId 사용)
+			verify(walletService).withdraw(eq(userId), eq(requestAmount), eq("FUNDING_PAYMENT"), eq("PAYMENT"), eq(savedPaymentId));
 		}
 
 		@Test
@@ -158,9 +166,16 @@ class PaymentInitiateServiceTest {
 			Long userId = 1L;
 			Long orderId = 100L;
 			Money amount = Money.of(10000);
+			Long savedPaymentId = 888L;
 
 			Wallet wallet = Wallet.create(userId, amount);
 			given(walletService.getWalletByMemberId(userId)).willReturn(wallet);
+
+			// Payment 저장 시 ID 할당 mock
+			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> {
+				Payment payment = invocation.getArgument(0);
+				return payment.withId(savedPaymentId);
+			});
 
 			PaymentInitiateCommand command = new PaymentInitiateCommand(
 				userId, orderId, amount, PaymentType.FUNDING
@@ -174,6 +189,7 @@ class PaymentInitiateServiceTest {
 			assertThat(result.orderId()).isEqualTo(orderId);
 			assertThat(result.walletUsed()).isEqualTo(amount);
 			assertThat(result.pgPaymentRequired()).isEqualTo(Money.zero());
+			assertThat(result.paymentId()).isEqualTo(savedPaymentId);
 		}
 	}
 
@@ -197,7 +213,7 @@ class PaymentInitiateServiceTest {
 				eq(userId),
 				eq(amount),
 				eq("PAYMENT_ROLLBACK"),
-				eq("PAYMENT_ROLLBACK"),
+				eq("PAYMENT"),  // referenceType은 PAYMENT 레코드를 참조
 				eq(paymentId)
 			);
 		}

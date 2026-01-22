@@ -18,8 +18,8 @@ public record PaymentInitiateResult(
 	/**
 	 * 예치금으로 완납된 경우
 	 */
-	public static PaymentInitiateResult completedWithWallet(Long orderId, Money walletUsed) {
-		return new PaymentInitiateResult(orderId, walletUsed, Money.zero(), null, null, true);
+	public static PaymentInitiateResult completedWithWallet(Long orderId, Money walletUsed, Long paymentId) {
+		return new PaymentInitiateResult(orderId, walletUsed, Money.zero(), paymentId, null, true);
 	}
 
 	/**

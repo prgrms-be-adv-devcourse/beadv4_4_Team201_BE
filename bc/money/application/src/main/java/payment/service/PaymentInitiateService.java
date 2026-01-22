@@ -32,9 +32,7 @@ import wallet.service.WalletService;
 public class PaymentInitiateService implements PaymentInitiateUseCase {
 
 	private static final Logger log = LoggerFactory.getLogger(PaymentInitiateService.class);
-	private static final String TRANSACTION_TYPE_PAYMENT = "PAYMENT_INITIATE";
 	private static final String REFERENCE_TYPE_PAYMENT = "PAYMENT";
-	private static final String REFERENCE_TYPE_ROLLBACK = "PAYMENT_ROLLBACK";
 
 	private final WalletService walletService;
 	private final PaymentRepository paymentRepository;
@@ -75,7 +73,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 
 		// 3. 예치금으로 완납 가능한 경우
 		if (walletBalance.isGreaterThanOrEqual(requestAmount)) {
-			return payWithWalletOnly(command.userId(), command.orderId(), requestAmount);
+			return payWithWalletOnly(command.userId(), command.orderId(), requestAmount, command.paymentType());
 		}
 
 		// 4. 예치금 부족 - 현재는 예치금 전용 결제만 지원
@@ -88,18 +86,24 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 	/**
 	 * 예치금 전용 결제 처리
 	 */
-	private PaymentInitiateResult payWithWalletOnly(Long userId, Long orderId, Money amount) {
+	private PaymentInitiateResult payWithWalletOnly(Long userId, Long orderId, Money amount, PaymentType paymentType) {
+		// 1. Payment 생성 및 저장 (예치금 완납이므로 바로 PAID 상태)
+		Payment payment = Payment.createWalletOnlyPayment(userId, amount, paymentType);
+		Payment savedPayment = paymentRepository.save(payment);
+
+		// 2. 예치금 차감 (referenceId로 paymentId 사용)
 		walletService.withdraw(
 			userId,
 			amount,
-			TRANSACTION_TYPE_PAYMENT,
+			getTransactionType(paymentType),
 			REFERENCE_TYPE_PAYMENT,
-			orderId != null ? orderId : generateReferenceId()
+			savedPayment.getPaymentId()
 		);
 
-		log.info("[PaymentInitiate] 예치금으로 완납. userId={}, orderId={}, walletUsed={}",
-			userId, orderId, amount);
-		return PaymentInitiateResult.completedWithWallet(orderId, amount);
+		log.info("[PaymentInitiate] 예치금으로 완납. userId={}, orderId={}, walletUsed={}, paymentId={}",
+			userId, orderId, amount, savedPayment.getPaymentId());
+
+		return PaymentInitiateResult.completedWithWallet(orderId, amount, savedPayment.getPaymentId());
 	}
 
 	/**
@@ -129,7 +133,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 			walletService.withdraw(
 				userId,
 				walletUsed,
-				TRANSACTION_TYPE_PAYMENT,
+				getTransactionType(PaymentType.FUNDING),
 				REFERENCE_TYPE_PAYMENT,
 				orderId != null ? orderId : generateReferenceId()
 			);
@@ -167,7 +171,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 			userId,
 			amount,
 			"PAYMENT_ROLLBACK",
-			REFERENCE_TYPE_ROLLBACK,
+			REFERENCE_TYPE_PAYMENT,
 			paymentId
 		);
 
@@ -195,5 +199,27 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 
 	private Long generateReferenceId() {
 		return referenceIdGenerator.incrementAndGet();
+	}
+
+	/**
+	 * PaymentType에 따른 WalletHistory transactionType 반환
+	 */
+	private String getTransactionType(PaymentType paymentType) {
+		return switch (paymentType) {
+			case FUNDING -> "FUNDING_PAYMENT";
+			case CHARGE -> "CHARGE_PAYMENT";
+			default -> paymentType.name() + "_PAYMENT";
+		};
+	}
+
+	/**
+	 * PaymentType에 따른 롤백용 transactionType 반환
+	 */
+	private String getRollbackTransactionType(PaymentType paymentType) {
+		return switch (paymentType) {
+			case FUNDING -> "FUNDING_ROLLBACK";
+			case CHARGE -> "CHARGE_ROLLBACK";
+			default -> paymentType.name() + "_ROLLBACK";
+		};
 	}
 }

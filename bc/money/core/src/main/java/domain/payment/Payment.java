@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
@@ -81,6 +82,47 @@ public class Payment extends BaseDomainModel {
 			PaymentEventType.CREATED,
 			now,
 			null            // metadata
+		));
+
+		return payment;
+	}
+
+	/**
+	 * 예치금 전용 결제를 생성합니다.
+	 * PG 결제 없이 예치금으로만 완납하는 경우 사용합니다.
+	 * 생성 즉시 PAID 상태가 됩니다.
+	 */
+	public static Payment createWalletOnlyPayment(
+		Long userId,
+		Money walletAmount,
+		PaymentType type
+	) {
+		LocalDateTime now = LocalDateTime.now();
+		String orderId = generateOrderId(type);
+
+		Payment payment = Payment.builder()
+			.userId(userId)
+			.type(type)
+			.status(PaymentStatus.PAID)  // 예치금 완납이므로 바로 PAID
+			.amount(Money.zero())        // PG 결제액 없음
+			.walletUsedAmount(walletAmount)
+			.orderId(orderId)
+			.build();
+
+		payment.uncommittedHistory.add(new PaymentHistory(
+			null,
+			null,
+			PaymentEventType.CREATED,
+			now,
+			null
+		));
+
+		payment.uncommittedHistory.add(new PaymentHistory(
+			null,
+			null,  // 예치금 결제이므로 paymentKey 없음
+			PaymentEventType.PAID,
+			now,
+			"{\"walletOnly\":true}"
 		));
 
 		return payment;
@@ -327,6 +369,35 @@ public class Payment extends BaseDomainModel {
 			", status=" + status +
 			", amount=" + amount +
 			'}';
+	}
+
+	@Override
+	public final boolean equals(Object object) {
+		if (!(object instanceof Payment payment))
+			return false;
+		if (!super.equals(object))
+			return false;
+
+		return Objects.equals(userId, payment.userId) && type == payment.type && Objects.equals(orderId,
+			payment.orderId) && status == payment.status && Objects.equals(amount, payment.amount)
+			&& Objects.equals(paymentKey, payment.paymentKey) && method == payment.method
+			&& Objects.equals(walletUsedAmount, payment.walletUsedAmount) && uncommittedHistory.equals(
+			payment.uncommittedHistory);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(userId);
+		result = 31 * result + Objects.hashCode(type);
+		result = 31 * result + Objects.hashCode(orderId);
+		result = 31 * result + Objects.hashCode(status);
+		result = 31 * result + Objects.hashCode(amount);
+		result = 31 * result + Objects.hashCode(paymentKey);
+		result = 31 * result + Objects.hashCode(method);
+		result = 31 * result + Objects.hashCode(walletUsedAmount);
+		result = 31 * result + uncommittedHistory.hashCode();
+		return result;
 	}
 
 	// ========== Builder ==========
