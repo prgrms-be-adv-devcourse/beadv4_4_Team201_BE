@@ -19,13 +19,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JpaWalletRepositoryImplTest {
+class WalletRepositoryAdapterTest {
 
     @Mock
     JpaWalletRepository jpaWalletRepository;
 
     @InjectMocks
-    JpaWalletRepositoryImpl walletRepository;
+    WalletRepositoryAdapter walletRepository;
 
     private final Long memberId = 1L;
 

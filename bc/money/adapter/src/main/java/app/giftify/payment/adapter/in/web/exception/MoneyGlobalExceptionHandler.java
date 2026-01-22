@@ -1,10 +1,14 @@
 package app.giftify.payment.adapter.in.web.exception;
 
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import app.giftify.shared.api.response.ErrorResponse;
+import domain.payment.PaymentErrorCode;
 import domain.payment.PaymentException;
 
 @RestControllerAdvice(basePackages = "app.giftify.payment.adapter.in.web")
@@ -20,6 +24,17 @@ public class MoneyGlobalExceptionHandler {
 		return ResponseEntity
 			.badRequest()
 			.body(new ErrorResponse(errorCode.getCode(), e.getMessage()));
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+		String errorMessage = e.getBindingResult().getFieldErrors().stream()
+			.map(error -> error.getField() + ": " + error.getDefaultMessage())
+			.collect(Collectors.joining(", "));
+
+		return ResponseEntity
+			.badRequest()
+			.body(new ErrorResponse(PaymentErrorCode.INVALID_INPUT_VALUE.getCode(), errorMessage));
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

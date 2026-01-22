@@ -15,18 +15,18 @@ import domain.payment.PaymentRepository;
 import domain.payment.PaymentStatus;
 
 @Repository
-public class JpaPaymentRepositoryImpl implements PaymentRepository {
+public class PaymentRepositoryAdapter implements PaymentRepository {
 	private final JpaPaymentRepository jpaPaymentRepository;
-	private final JpaPaymentHistoryRepository jpaPaymentHistoryRepository;  // 추가
+	private final JpaPaymentHistoryRepository jpaPaymentHistoryRepository;
 	private final PaymentMapper mapper;
 
-	public JpaPaymentRepositoryImpl(
+	public PaymentRepositoryAdapter(
 		JpaPaymentRepository jpaPaymentRepository,
-		JpaPaymentHistoryRepository jpaPaymentHistoryRepository,  // 추가
+		JpaPaymentHistoryRepository jpaPaymentHistoryRepository,
 		PaymentMapper mapper
 	) {
 		this.jpaPaymentRepository = jpaPaymentRepository;
-		this.jpaPaymentHistoryRepository = jpaPaymentHistoryRepository;  // 추가
+		this.jpaPaymentHistoryRepository = jpaPaymentHistoryRepository;
 		this.mapper = mapper;
 	}
 

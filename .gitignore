@@ -112,3 +112,4 @@ docker-compose.override.yml
 
 # Ignore Gradle build output directory
 build
+/test-payment.html
