@@ -1,0 +1,5 @@
+# Member module dev configuration
+
+logging:
+  level:
+    app.giftify.member: DEBUG
