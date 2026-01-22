@@ -88,6 +88,7 @@ jobs:
           # 5. 신규 컨테이너 실행
           docker run -d \
             --name api-server-$NEW \
+            --network giftify-network \
             -p $PORT:8080 \
             --restart always \
             -e SPRING_PROFILES_ACTIVE=prod \
