@@ -5,9 +5,11 @@ import app.giftify.order.application.port.out.OrderRepositoryPort;
 import app.giftify.order.domain.domain.Order;
 import app.giftify.order.domain.domain.OrderItem;
 import app.giftify.order.domain.domain.OrderStatus;
+import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderPaidEvent;
+import app.giftify.shared.domain.event.order.OrderRefundedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
@@ -121,18 +123,30 @@ public class OrderService implements OrderUseCase {
     // 주문 취소 처리
     // 1. 비관적 락을 사용하여 주문 조회 (결제 완료와의 경합 방지)
     // 2. 주문 상태를 CANCELED로 변경 (하위 아이템 포함)
+    // 3. OrderCanceledEvent 또는 OrderRefundedEvent 발행
     @Override
     public void cancelOrder(CancelOrderCommand command) {
         Order order = orderRepositoryPort.findByIdWithLock(command.orderId())
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if (order.getStatus() == OrderStatus.ORDERED) {
-            // 결제 후 취소인 경우 환불 로직 연동 가능
-            log.info("결제 완료된 주문 취소 시도: {}", order.getOrderNumber());
+        if (order.getStatus() == OrderStatus.CANCELED) {
+            log.info("이미 취소된 주문입니다: orderId={}", command.orderId());
+            return;
         }
 
+        OrderStatus previousStatus = order.getStatus();
+        
         order.toCancelled();
         orderRepositoryPort.save(order);
+
+        // 결제 완료 상태에서 취소된 경우 환불 이벤트 발행, 그 외에는 일반 취소 이벤트 발행
+        if (previousStatus == OrderStatus.ORDERED) {
+            log.info("결제 완료된 주문 취소 및 환불 이벤트 발행: {}", order.getOrderNumber());
+            eventPublisher.publish(new OrderRefundedEvent(order.getId(), order.getOrderNumber()));
+        } else {
+            log.info("주문 취소 이벤트 발행: {}", order.getOrderNumber());
+            eventPublisher.publish(new OrderCanceledEvent(order.getId(), order.getOrderNumber()));
+        }
     }
 
     // 주문 아이템 확정 처리
