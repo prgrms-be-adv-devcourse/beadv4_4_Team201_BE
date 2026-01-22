@@ -1,6 +1,8 @@
 package app.giftify.auth.support.filter;
 
 import app.giftify.auth.client.MemberApiClient;
+import app.giftify.security.common.MemberAuthenticationToken;
+import app.giftify.security.common.MemberPrincipal;
 import app.giftify.shared.domain.vo.MemberInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,10 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -19,8 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -71,30 +68,7 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 	}
 
 	private Authentication createAuthentication(MemberInfo member) {
-		// 🚨 중요: DB에 저장된 role이 "SELLER"라면 "ROLE_SELLER"로 변환해야 hasRole('SELLER')가 작동함
-		// 만약 member.getRole()이 Enum이라면 .name()을 사용하세요.
-		String roleName = "ROLE_" + member.role();
-		List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleName));
-
-		// 컨트롤러의 @CurrentMemberId가 참조할 객체
-		// member.getId(), member.getEmail() 등 실제 Member 객체의 메서드 호출
-		MemberPrincipal principal = new MemberPrincipal(
-				member.memberId(),
-				member.email(),
-				authorities
-		);
-
-		return new UsernamePasswordAuthenticationToken(
-				principal,
-				null,
-				authorities
-		);
+		MemberPrincipal principal = MemberPrincipal.from(member);
+		return new MemberAuthenticationToken(principal);
 	}
-
-	// DTO 역할의 내부 Record
-	public record MemberPrincipal(
-			Long memberId,
-			String email,
-			Collection<? extends GrantedAuthority> authorities
-	) {}
 }
