@@ -93,8 +93,8 @@ class PaymentInitiateServiceTest {
 			assertThat(result.paymentId()).isEqualTo(savedPaymentId);
 			assertThat(result.pgOrderId()).isNull();
 
-			// Payment 저장 검증
-			verify(paymentRepository).save(any(Payment.class));
+			// Payment 저장 검증 (PENDING 저장 + PAID 저장 = 2회)
+			verify(paymentRepository, times(2)).save(any(Payment.class));
 			// 예치금 차감 검증 (referenceId로 paymentId 사용)
 			verify(walletService).withdraw(eq(userId), eq(requestAmount), eq("FUNDING_PAYMENT"), eq("PAYMENT"), eq(savedPaymentId));
 		}

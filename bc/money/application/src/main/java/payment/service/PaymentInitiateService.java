@@ -84,26 +84,39 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 	}
 
 	/**
-	 * 예치금 전용 결제 처리
+	 * 예치금 전용 결제 처리.
+	 *
+	 * <p>흐름: PENDING 저장 → 예치금 차감 → PAID 저장</p>
+	 * <p>예치금 차감 실패 시 PENDING 상태의 Payment만 남음 (롤백 또는 재시도 가능)</p>
 	 */
 	private PaymentInitiateResult payWithWalletOnly(Long userId, Long orderId, Money amount, PaymentType paymentType) {
-		// 1. Payment 생성 및 저장 (예치금 완납이므로 바로 PAID 상태)
+		// 1. Payment를 PENDING 상태로 먼저 저장 → paymentId 획득
 		Payment payment = Payment.createWalletOnlyPayment(userId, amount, paymentType);
 		Payment savedPayment = paymentRepository.save(payment);
+		Long paymentId = savedPayment.getPaymentId();
+
+		log.debug("[PaymentInitiate] Payment PENDING 저장 완료. paymentId={}", paymentId);
 
 		// 2. 예치금 차감 (referenceId로 paymentId 사용)
+		//    실패 시 PENDING Payment만 남고 트랜잭션 롤백
 		walletService.withdraw(
 			userId,
 			amount,
 			getTransactionType(paymentType),
 			REFERENCE_TYPE_PAYMENT,
-			savedPayment.getPaymentId()
+			paymentId
 		);
 
-		log.info("[PaymentInitiate] 예치금으로 완납. userId={}, orderId={}, walletUsed={}, paymentId={}",
-			userId, orderId, amount, savedPayment.getPaymentId());
+		log.debug("[PaymentInitiate] 예치금 차감 완료. paymentId={}, amount={}", paymentId, amount);
 
-		return PaymentInitiateResult.completedWithWallet(orderId, amount, savedPayment.getPaymentId());
+		// 3. Payment 상태를 PAID로 변경 후 저장
+		savedPayment.markAsPaidByWallet();
+		paymentRepository.save(savedPayment);
+
+		log.info("[PaymentInitiate] 예치금으로 완납. userId={}, orderId={}, walletUsed={}, paymentId={}",
+			userId, orderId, amount, paymentId);
+
+		return PaymentInitiateResult.completedWithWallet(orderId, amount, paymentId);
 	}
 
 	/**

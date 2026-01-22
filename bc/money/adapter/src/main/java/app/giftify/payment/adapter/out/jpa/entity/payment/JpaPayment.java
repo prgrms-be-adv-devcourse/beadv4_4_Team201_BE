@@ -83,7 +83,7 @@ public class JpaPayment extends BaseJpaEntity {
 		return orderId;
 	}
 
-	public String getPgTransactionId() {
+	public String getPaymentKey() {
 		return pgTransactionId;
 	}
 
@@ -142,7 +142,7 @@ public class JpaPayment extends BaseJpaEntity {
 			return this;
 		}
 
-		public JpaPayment.Builder pgTransactionId(String pgTransactionId) {
+		public JpaPayment.Builder paymentKey(String pgTransactionId) {
 			this.pgTransactionId = pgTransactionId;
 			return this;
 		}
