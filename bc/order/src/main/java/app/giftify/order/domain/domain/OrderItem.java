@@ -19,7 +19,7 @@ public class OrderItem extends BaseDomainModel {
 
     private OrderStatus status;
     private LocalDateTime confirmedAt;
-    private LocalDateTime canceledAt;
+    private LocalDateTime cancelledAt;
     private final LocalDateTime createdAt;
 
     protected OrderItem(
@@ -47,32 +47,80 @@ public class OrderItem extends BaseDomainModel {
         this.status = status;
         this.createdAt = createdAt;
         this.confirmedAt = confirmedAt;
-        this.canceledAt = canceledAt;
+        this.cancelledAt = canceledAt;
     }
 
-    public static OrderItem create(
-            Long orderId,
-            Long fundingId,
-            Long productId,
-            Long sellerId,
-            Long receiverId,
-            Money price,
-            Quantity quantity
-    ) {
-        return new OrderItem(
-                null,
-                orderId,
-                fundingId,
-                productId,
-                sellerId,
-                receiverId,
-                price,
-                quantity,
-                OrderStatus.PAYMENT_PENDING,
-                LocalDateTime.now(),
-                null,
-                null
-        );
+    // 결제 완료 처리
+    // PAYMENT_PENDING 상태에서만 ORDERED로 변경 가능
+    public void toOrdered() {
+        if (this.status != OrderStatus.PAYMENT_PENDING) {
+            throw new IllegalStateException("주문 대기 상태에서만 결제 완료로 변경 가능합니다.");
+        }
+        this.status = OrderStatus.ORDERED;
+    }
+
+    // 구매 확정 처리
+    // ORDERED 상태에서만 CONFIRMED로 변경 가능
+    public void toConfirmed() {
+        if (this.status != OrderStatus.ORDERED) {
+            throw new IllegalStateException("주문 결제 완료 상태에서만 확정이 가능합니다.");
+        }
+        this.status = OrderStatus.CONFIRMED;
+        this.confirmedAt = LocalDateTime.now();
+    }
+
+    // 주문 아이템 취소 처리
+    // CONFIRMED 상태 이후에는 취소 불가
+    public void toCancelled() {
+        if (this.status == OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("이미 확정된 주문 아이템은 취소할 수 없습니다.");
+        }
+        this.status = OrderStatus.CANCELED;
+        this.cancelledAt = LocalDateTime.now();
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public Long getFundingId() {
+        return fundingId;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public Long getReceiverId() {
+        return receiverId;
+    }
+
+    public Money getPrice() {
+        return price;
+    }
+
+    public Quantity getQuantity() {
+        return quantity;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public static Builder builder() {

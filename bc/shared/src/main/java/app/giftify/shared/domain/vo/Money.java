@@ -14,10 +14,13 @@ public record Money(BigDecimal amount) {
 		}
 
 		if (amount.signum() < 0) {
-			if (amount.compareTo(BigDecimal.valueOf(1000)) < 0) {
-				throw new IllegalArgumentException("펀딩 참여 최소 금액은 1000원 입니다.");
-			}
 			throw new IllegalArgumentException("금액은 음수가 될 수 없습니다.");
+		}
+	}
+
+	public void validateMinimumAmount() {
+		if (this.amount.compareTo(BigDecimal.valueOf(1000)) < 0) {
+			throw new IllegalArgumentException("펀딩 참여 최소 금액은 1000원 입니다.");
 		}
 	}
 
@@ -64,4 +67,7 @@ public record Money(BigDecimal amount) {
 		return new Money(this.amount.subtract(money.amount));
 	}
 
+	public Object times(int value) {
+		return new Money(this.amount.multiply(BigDecimal.valueOf(value)));
+	}
 }
