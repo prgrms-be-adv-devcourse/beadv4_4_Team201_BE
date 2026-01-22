@@ -68,12 +68,12 @@ $RECYCLE.BIN/
 *.lnk
 
 # Application
-application-local.yml
-application-*-local.yml
-application-local.properties
-application-*-local.properties
-**/application-local.yml
-**/application-*-local.yml
+#application-local.yml
+#application-*-local.yml
+#application-local.properties
+#application-*-local.properties
+#**/application-local.yml
+#**/application-*-local.yml
 
 # Logs
 logs/

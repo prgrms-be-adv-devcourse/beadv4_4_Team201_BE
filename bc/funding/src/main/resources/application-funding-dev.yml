@@ -1,0 +1,5 @@
+# Funding module dev configuration
+
+logging:
+  level:
+    app.giftify.funding: DEBUG

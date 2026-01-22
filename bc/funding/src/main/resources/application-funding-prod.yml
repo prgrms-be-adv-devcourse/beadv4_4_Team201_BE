@@ -1,0 +1,5 @@
+# Funding module prod configuration
+
+logging:
+  level:
+    app.giftify.funding: INFO
