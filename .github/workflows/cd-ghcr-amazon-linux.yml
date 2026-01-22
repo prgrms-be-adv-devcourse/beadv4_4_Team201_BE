@@ -55,8 +55,9 @@ jobs:
           push: true
           target: runtime-ci
           tags: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # GitHub 서버 대신 내 서버 로컬 경로를 캐시로 사용
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       # 3. EC2 배포 (이제 SSH 접속 없이 서버 내부에서 직접 실행)
       - name: Deploy to EC2
