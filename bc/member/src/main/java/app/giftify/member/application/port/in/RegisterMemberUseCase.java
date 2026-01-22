@@ -1,7 +1,7 @@
 package app.giftify.member.application.port.in;
 
 import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
-import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.domain.member.Member;
 import jakarta.validation.Valid;
 
 import java.time.LocalDate;

@@ -1,26 +1,13 @@
 package app.giftify.member.adapter.out.jpa.entity;
 
-import java.time.LocalDate;
-
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import app.giftify.member.core.domain.member.MemberStatus;
+import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.shared.domain.type.MemberRole;
 import app.giftify.support.jpa.BaseJpaEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "members")

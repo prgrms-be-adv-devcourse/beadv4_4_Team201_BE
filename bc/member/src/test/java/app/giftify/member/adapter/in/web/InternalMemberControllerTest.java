@@ -1,11 +1,10 @@
 package app.giftify.member.adapter.in.web;
 
-import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Optional;
-
+import app.giftify.member.adapter.in.web.controller.InternalMemberController;
+import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.domain.member.Member;
+import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.shared.domain.type.MemberRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,11 +13,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import app.giftify.member.adapter.in.web.controller.InternalMemberController;
-import app.giftify.member.application.port.in.GetMemberUseCase;
-import app.giftify.member.core.domain.member.Member;
-import app.giftify.member.core.domain.member.MemberStatus;
-import app.giftify.shared.domain.type.MemberRole;
+import java.util.Optional;
+
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(InternalMemberController.class)
 class InternalMemberControllerTest {
