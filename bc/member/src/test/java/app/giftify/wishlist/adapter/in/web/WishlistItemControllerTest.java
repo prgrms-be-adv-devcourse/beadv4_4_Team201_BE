@@ -5,8 +5,6 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentMemberId;
 import app.giftify.wishlist.adapter.in.web.controller.WishlistItemController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
@@ -43,7 +41,7 @@ class WishlistItemControllerTest {
 	@MockBean
 	private RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
-	private static final String AUTH_SUB = "auth0|12345";
+	private static final Long MEMBER_ID = 10L;
 
 	@BeforeEach
 	void setUp() {
@@ -54,36 +52,36 @@ class WishlistItemControllerTest {
 			.setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
 				@Override
 				public boolean supportsParameter(MethodParameter parameter) {
-					return parameter.hasParameterAnnotation(AuthenticatedMember.class) && parameter.getParameterType()
-						.equals(String.class);
+					return parameter.hasParameterAnnotation(CurrentMemberId.class);
 				}
 
 				@Override
 				public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 					NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-					return AUTH_SUB;
+					return MEMBER_ID;
 				}
 			})
 			.build();
 	}
 
-	@Test
-	@DisplayName("내 위시리스트 아이템 전체 조회")
-	void getAllProducts_Success() throws Exception {
-		// given
-		WishlistItem item = WishlistItem.builder()
-			.id(1L)
-			.authSub(AUTH_SUB)
-			.productId(100L)
-			.WishlistItemStatus(WishlistItemStatus.PENDING)
-			.build();
-		given(getWishlistItemUseCase.getWishlistItems(AUTH_SUB)).willReturn(List.of(item));
-
-		// when & then
-		mockMvc.perform(get("/api/wishlist/items/me"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$[0].productId").value(100));
-	}
+	// 컨트롤러에서 /me 엔드포인트가 주석 처리되어 있어 테스트 제외
+	// @Test
+	// @DisplayName("내 위시리스트 아이템 전체 조회")
+	// void getAllProducts_Success() throws Exception {
+	// 	// given
+	// 	WishlistItem item = WishlistItem.builder()
+	// 		.id(1L)
+	// 		.wishlistId(1L)
+	// 		.productId(100L)
+	// 		.wishlistItemStatus(WishlistItemStatus.PENDING)
+	// 		.build();
+	// 	given(getWishlistItemUseCase.getWishlistItems(1L)).willReturn(List.of(item));
+	//
+	// 	// when & then
+	// 	mockMvc.perform(get("/api/wishlist/items/me"))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(jsonPath("$[0].productId").value(100));
+	// }
 
 	@Test
 	@DisplayName("특정 상품의 위시리스트 포함 여부 확인")
@@ -120,11 +118,11 @@ class WishlistItemControllerTest {
 
 		WishlistItem item = WishlistItem.builder()
 			.id(1L)
-			.authSub(AUTH_SUB)
+			.wishlistId(10L)
 			.productId(productId)
-			.WishlistItemStatus(WishlistItemStatus.PENDING)
+			.wishlistItemStatus(WishlistItemStatus.PENDING)
 			.build();
-		given(addWishlistItemUseCase.addWishlistItem(any())).willReturn(item);
+		given(addWishlistItemUseCase.addWishlistItem(anyLong(), any())).willReturn(item);
 
 		// when & then
 		mockMvc.perform(post("/api/wishlist/items/add")
@@ -134,7 +132,7 @@ class WishlistItemControllerTest {
 			.andExpect(jsonPath("$.productId").value(100))
 			.andExpect(jsonPath("$.status").value("PENDING"));
 
-		verify(addWishlistItemUseCase).addWishlistItem(any());
+		verify(addWishlistItemUseCase).addWishlistItem(anyLong(), any());
 	}
 
 	@Test
@@ -142,7 +140,7 @@ class WishlistItemControllerTest {
 	void addProduct_Fail_ProductNotOnSale() throws Exception {
 		// given
 		Long productId = 100L;
-		given(addWishlistItemUseCase.addWishlistItem(any()))
+		given(addWishlistItemUseCase.addWishlistItem(anyLong(), any()))
 			.willThrow(new app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException(productId));
 
 		// when & then

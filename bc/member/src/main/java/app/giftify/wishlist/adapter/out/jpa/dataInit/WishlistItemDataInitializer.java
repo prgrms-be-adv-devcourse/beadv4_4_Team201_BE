@@ -21,21 +21,24 @@ public class WishlistItemDataInitializer implements ApplicationRunner {
 		}
 
 		WishlistItemJpaEntity wishlistItem1 = WishlistItemJpaEntity.builder()
-			.authSub("google-oauth2|104844495450678108304")
+			// .authSub("google-oauth2|104844495450678108304")
+			.wishlistId(1L)
 			.productId(1L)
 			.wishlistItemStatus(WishlistItemStatus.PENDING)
 			.build();
 		wishlistItemJpaRepository.save(wishlistItem1);
 
 		WishlistItemJpaEntity wishlistItem2 = WishlistItemJpaEntity.builder()
-			.authSub("google-oauth2|104844495450678108304")
+			// .authSub("google-oauth2|104844495450678108304")
+			.wishlistId(1L)
 			.productId(2L)
 			.wishlistItemStatus(WishlistItemStatus.IN_PROGRESS)
 			.build();
 		wishlistItemJpaRepository.save(wishlistItem2);
 
 		WishlistItemJpaEntity wishlistItem3 = WishlistItemJpaEntity.builder()
-			.authSub("google-oauth2|104844495450678108304")
+			// .authSub("google-oauth2|104844495450678108304")
+			.wishlistId(1L)
 			.productId(3L)
 			.wishlistItemStatus(WishlistItemStatus.PENDING)
 			.build();

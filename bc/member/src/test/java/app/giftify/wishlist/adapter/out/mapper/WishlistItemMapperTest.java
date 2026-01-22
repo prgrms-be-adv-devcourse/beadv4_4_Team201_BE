@@ -17,14 +17,14 @@ class WishlistItemMapperTest {
 	void toEntityTest() {
 		WishlistItem domain = WishlistItem.builder()
 			.id(1L)
-			.authSub("user123")
+			.wishlistId(1L)
 			.productId(100L)
-			.WishlistItemStatus(WishlistItemStatus.PENDING)
+			.wishlistItemStatus(WishlistItemStatus.PENDING)
 			.build();
 
 		WishlistItemJpaEntity entity = WishlistItemMapper.toEntity(domain);
 
-		assertThat(entity.getAuthSub()).isEqualTo(domain.getAuthSub());
+		assertThat(entity.getWishlistId()).isEqualTo(domain.getWishlistId());
 		assertThat(entity.getProductId()).isEqualTo(domain.getProductId());
 		assertThat(entity.getWishlistItemStatus()).isEqualTo(domain.getWishlistItemStatus());
 	}
@@ -33,7 +33,7 @@ class WishlistItemMapperTest {
 	@DisplayName("WishlistItem Entity를 도메인으로 변환 테스트")
 	void toDomainTest() {
 		WishlistItemJpaEntity entity = WishlistItemJpaEntity.builder()
-			.authSub("user123")
+			.wishlistId(1L)
 			.productId(100L)
 			.wishlistItemStatus(WishlistItemStatus.PENDING)
 			.build();
@@ -41,7 +41,7 @@ class WishlistItemMapperTest {
 		WishlistItem domain = WishlistItemMapper.toDomain(entity);
 
 		assertThat(domain.getId()).isEqualTo(entity.getId());
-		assertThat(domain.getAuthSub()).isEqualTo(entity.getAuthSub());
+		assertThat(domain.getWishlistId()).isEqualTo(entity.getWishlistId());
 		assertThat(domain.getProductId()).isEqualTo(entity.getProductId());
 		assertThat(domain.getWishlistItemStatus()).isEqualTo(entity.getWishlistItemStatus());
 	}

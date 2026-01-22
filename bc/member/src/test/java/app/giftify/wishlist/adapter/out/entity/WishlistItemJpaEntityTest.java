@@ -14,12 +14,12 @@ class WishlistItemJpaEntityTest {
 	@DisplayName("WishlistItemJpaEntity Builder 및 Getter 테스트")
 	void entityTest() {
 		WishlistItemJpaEntity entity = WishlistItemJpaEntity.builder()
-			.authSub("user123")
+			.wishlistId(1L)
 			.productId(100L)
 			.wishlistItemStatus(WishlistItemStatus.PENDING)
 			.build();
 
-		assertThat(entity.getAuthSub()).isEqualTo("user123");
+		assertThat(entity.getWishlistId()).isEqualTo(1L);
 		assertThat(entity.getProductId()).isEqualTo(100L);
 		assertThat(entity.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.PENDING);
 	}

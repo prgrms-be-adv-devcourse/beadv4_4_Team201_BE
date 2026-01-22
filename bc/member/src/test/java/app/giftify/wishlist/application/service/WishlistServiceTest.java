@@ -1,11 +1,11 @@
 package app.giftify.wishlist.application.service;
 
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
-import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
-import app.giftify.wishlist.core.domain.Visibility;
-import app.giftify.wishlist.core.domain.Wishlist;
-import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,75 +13,80 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
+import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
+import app.giftify.wishlist.core.domain.Visibility;
+import app.giftify.wishlist.core.domain.Wishlist;
+import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class WishlistServiceTest {
 
-    @Mock
-    private WishlistRepositoryPort wishlistRepositoryPort;
+	@Mock
+	private WishlistRepositoryPort wishlistRepositoryPort;
 
-    @Mock
-    private EventPublisher eventPublisher;
+	@Mock
+	private EventPublisher eventPublisher;
 
-    @InjectMocks
-    private WishlistService wishlistService;
+	@InjectMocks
+	private WishlistService wishlistService;
 
-    @Test
-    @DisplayName("authSub로 위시리스트를 조회한다")
-    void getWishlistByAuthSub() {
-        // given
-        String authSub = "auth0|123";
-        Wishlist wishlist = Wishlist.builder().memberId(1L).authSub(authSub).build();
-        given(wishlistRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(wishlist));
+	private static final Long MEMBER_ID = 1L;
 
-        // when
-        Optional<Wishlist> result = wishlistService.getWishlistByAuthSub(authSub);
+	@Test
+	@DisplayName("memberId로 위시리스트를 조회한다")
+	void getWishlistByMemberId() {
+		// given
+		Wishlist wishlist = Wishlist.builder()
+			.memberId(MEMBER_ID)
+			.visibility(Visibility.PUBLIC)
+			.build();
+		given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
 
-        // then
-        assertThat(result).isPresent();
-        assertThat(result.get().getAuthSub()).isEqualTo(authSub);
-    }
+		// when
+		Optional<Wishlist> result = wishlistService.getWishlistByMemberId(MEMBER_ID);
 
-    @Test
-    @DisplayName("위시리스트 설정을 변경한다")
-    void updateSettings() {
-        // given
-        String authSub = "auth0|123";
-        Visibility newVisibility = Visibility.PUBLIC;
-        UpdateWishlistSettingsUseCase.UpdateSettingsCommand command =
-                new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(authSub, newVisibility);
+		// then
+		assertThat(result).isPresent();
+		assertThat(result.get().getMemberId()).isEqualTo(MEMBER_ID);
+	}
 
-        Wishlist wishlist = Wishlist.builder().memberId(1L).authSub(authSub).visibility(Visibility.PRIVATE).build();
-        given(wishlistRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(wishlist));
-        given(wishlistRepositoryPort.save(any(Wishlist.class))).willAnswer(invocation -> invocation.getArgument(0));
+	@Test
+	@DisplayName("위시리스트 설정을 변경한다")
+	void updateSettings() {
+		// given
+		Visibility newVisibility = Visibility.PUBLIC;
+		UpdateWishlistSettingsUseCase.UpdateSettingsCommand command =
+			new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(MEMBER_ID, newVisibility);
 
-        // when
-        Wishlist result = wishlistService.updateSettings(command);
+		Wishlist wishlist = Wishlist.builder()
+			.memberId(MEMBER_ID)
+			.visibility(Visibility.PRIVATE)
+			.build();
+		given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+		given(wishlistRepositoryPort.save(any(Wishlist.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        // then
-        assertThat(result.getVisibility()).isEqualTo(newVisibility);
-        verify(wishlistRepositoryPort).save(wishlist);
-    }
+		// when
+		Wishlist result = wishlistService.updateSettings(command);
 
-    @Test
-    @DisplayName("존재하지 않는 위시리스트의 설정을 변경하려 하면 예외가 발생한다")
-    void updateSettingsFail() {
-        // given
-        String authSub = "auth0|not_found";
-        UpdateWishlistSettingsUseCase.UpdateSettingsCommand command =
-                new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(authSub, Visibility.PUBLIC);
+		// then
+		assertThat(result.getVisibility()).isEqualTo(newVisibility);
+		verify(wishlistRepositoryPort).save(wishlist);
+	}
 
-        given(wishlistRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.empty());
+	@Test
+	@DisplayName("존재하지 않는 위시리스트의 설정을 변경하려 하면 예외가 발생한다")
+	void updateSettingsFail() {
+		// given
+		Long notFoundMemberId = 999L;
+		UpdateWishlistSettingsUseCase.UpdateSettingsCommand command =
+			new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(notFoundMemberId, Visibility.PUBLIC);
 
-        // when & then
-        assertThatThrownBy(() -> wishlistService.updateSettings(command))
-                .isInstanceOf(WishlistNotFoundException.class);
-    }
+		given(wishlistRepositoryPort.findByMemberId(notFoundMemberId)).willReturn(Optional.empty());
+
+		// when & then
+		assertThatThrownBy(() -> wishlistService.updateSettings(command))
+			.isInstanceOf(WishlistNotFoundException.class);
+	}
 }

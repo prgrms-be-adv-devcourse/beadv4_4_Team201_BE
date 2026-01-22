@@ -27,8 +27,11 @@ import lombok.NoArgsConstructor;
 @EntityListeners(AuditingEntityListener.class)
 public class WishlistItemJpaEntity extends BaseJpaEntity {
 
-	@Column(nullable = false)
-	private String authSub;
+	// @Column(nullable = false)
+	// private String authSub;
+
+	@Column(name = "wishlist_id", nullable = false)
+	private Long wishlistId;
 
 	@Column(nullable = false)
 	private Long productId;
