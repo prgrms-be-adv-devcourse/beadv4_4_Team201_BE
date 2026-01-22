@@ -15,8 +15,10 @@ public class PaymentMapper {
 			.type(domain.getType())
 			.status(domain.getStatus())
 			.amount(domain.getAmount().amount()) // Money -> BigDecimal
-			.pgTransactionId(domain.getPgTransactionId())
+			.paymentKey(domain.getPaymentKey())
 			.method(domain.getMethod())
+			.walletUsedAmount(domain.getWalletUsedAmount() != null
+				? domain.getWalletUsedAmount().amount() : null)
 			.build();
 	}
 
@@ -28,8 +30,10 @@ public class PaymentMapper {
 			.type(entity.getType())
 			.status(entity.getStatus())
 			.amount(Money.of(entity.getAmount()))
-			.pgTransactionId(entity.getPgTransactionId())
+			.paymentKey(entity.getPaymentKey())
 			.method(entity.getMethod())
+			.walletUsedAmount(entity.getWalletUsedAmount() != null
+				? Money.of(entity.getWalletUsedAmount()) : null)
 			.build();
 	}
 

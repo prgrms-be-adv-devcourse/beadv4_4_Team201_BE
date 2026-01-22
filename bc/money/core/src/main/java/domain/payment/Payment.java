@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
@@ -12,30 +13,33 @@ import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
 	private static final String ORDER_ID_PREFIX_CHARGE = "GFTFY_CHARGE_";
-	private static final String ORDER_ID_PREFIX_FUNDING = "GFTFY_FUNDING_";
+	private static final String ORDER_ID_PREFIX_FUNDING = "GFTFY_FUNDING_"; // FIXME : Order 도메인에게 받아서 사용하도록 변경 필요
 
 	private final Long userId;
 	private final PaymentType type;
 	private final String orderId;
 	private PaymentStatus status;
 	private final Money amount;
-	private String pgTransactionId;
+	private String paymentKey;
 	private final PaymentMethod method;
+	private final Money walletUsedAmount;  // 펀딩 복합결제 시 사용된 예치금 금액
 
 	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>();
 
 	private Payment(
 		Long id, Long userId, PaymentType type, PaymentStatus status,
-		Money amount, String pgTransactionId, PaymentMethod method, String orderId
+		Money amount, String paymentKey, PaymentMethod method, String orderId,
+		Money walletUsedAmount
 	) {
 		super(id);
 		this.userId = userId;
 		this.type = type;
 		this.status = status;
 		this.amount = amount;
-		this.pgTransactionId = pgTransactionId;
+		this.paymentKey = paymentKey;
 		this.method = method;
 		this.orderId = orderId;
+		this.walletUsedAmount = walletUsedAmount;
 	}
 
 	private static String generateOrderId(PaymentType type) {
@@ -83,6 +87,73 @@ public class Payment extends BaseDomainModel {
 		return payment;
 	}
 
+	/**
+	 * 예치금 전용 결제를 생성합니다.
+	 * PG 결제 없이 예치금으로만 완납하는 경우 사용합니다.
+	 * 초기 상태는 PENDING이며, 예치금 차감 후 markAsPaidByWallet()을 호출해야 합니다.
+	 *
+	 * <p>흐름: createWalletOnlyPayment → save → withdraw → markAsPaidByWallet → save</p>
+	 */
+	public static Payment createWalletOnlyPayment(
+		Long userId,
+		Money walletAmount,
+		PaymentType type
+	) {
+		LocalDateTime now = LocalDateTime.now();
+		String orderId = generateOrderId(type);
+
+		Payment payment = Payment.builder()
+			.userId(userId)
+			.type(type)
+			.status(PaymentStatus.PENDING)  // PENDING으로 시작, 예치금 차감 후 PAID로 전환
+			.amount(Money.zero())           // PG 결제액 없음
+			.walletUsedAmount(walletAmount)
+			.orderId(orderId)
+			.build();
+
+		payment.uncommittedHistory.add(new PaymentHistory(
+			null,
+			null,
+			PaymentEventType.CREATED,
+			now,
+			"{\"walletOnly\":true}"
+		));
+
+		return payment;
+	}
+
+	/**
+	 * 펀딩 복합결제용 결제를 생성합니다.
+	 * 예치금 사용액(walletUsedAmount)을 함께 저장하여 PG 결제 실패 시 롤백에 활용합니다.
+	 */
+	public static Payment createForFunding(
+		Long userId,
+		Money pgAmount,
+		Money walletUsedAmount
+	) {
+		LocalDateTime now = LocalDateTime.now();
+		String orderId = generateOrderId(PaymentType.FUNDING);
+
+		Payment payment = Payment.builder()
+			.userId(userId)
+			.type(PaymentType.FUNDING)
+			.status(PaymentStatus.PENDING)
+			.amount(pgAmount)
+			.walletUsedAmount(walletUsedAmount)
+			.orderId(orderId)
+			.build();
+
+		payment.uncommittedHistory.add(new PaymentHistory(
+			null,
+			null,
+			PaymentEventType.CREATED,
+			now,
+			null
+		));
+
+		return payment;
+	}
+
 	// ========== 상태 변경 메서드 ========== //
 
 	public PaymentHistory markAsPaid(String pgTransactionId) {
@@ -93,7 +164,7 @@ public class Payment extends BaseDomainModel {
 
 		LocalDateTime now = LocalDateTime.now();
 		this.status = PaymentStatus.PAID;
-		this.pgTransactionId = pgTransactionId;
+		this.paymentKey = pgTransactionId;
 
 		PaymentHistory history = new PaymentHistory(
 			getId(),
@@ -101,6 +172,34 @@ public class Payment extends BaseDomainModel {
 			PaymentEventType.PAID,
 			now,
 			"{\"pgTransactionId\":\"" + (pgTransactionId != null ? pgTransactionId : "") + "\"}"
+		);
+
+		this.uncommittedHistory.add(history);
+
+		return history;
+	}
+
+	/**
+	 * 예치금 전용 결제를 완료 처리
+	 * PG 결제 없이 예치금으로만 완납된 경우 사용합니다.
+	 *
+	 * @throws PaymentException 상태가 PENDING이 아닌 경우
+	 */
+	public PaymentHistory markAsPaidByWallet() {
+		if (this.status != PaymentStatus.PENDING) {
+			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
+				"[Payment] 결제 대기(PENDING) 상태에서만 완료 처리할 수 있습니다. 현재 상태: " + this.status);
+		}
+
+		LocalDateTime now = LocalDateTime.now();
+		this.status = PaymentStatus.PAID;
+		// paymentKey는 null (PG 거래 없음)
+		PaymentHistory history = new PaymentHistory(
+			getId(),
+			null,  // 예치금 결제이므로 paymentKey 없음
+			PaymentEventType.PAID,
+			now,
+			"{\"walletOnly\":true}"
 		);
 
 		this.uncommittedHistory.add(history);
@@ -248,8 +347,8 @@ public class Payment extends BaseDomainModel {
 		return amount;
 	}
 
-	public String getPgTransactionId() {
-		return pgTransactionId;
+	public String getPaymentKey() {
+		return paymentKey;
 	}
 
 	public PaymentMethod getMethod() {
@@ -260,6 +359,10 @@ public class Payment extends BaseDomainModel {
 		return orderId;
 	}
 
+	public Money getWalletUsedAmount() {
+		return walletUsedAmount;
+	}
+
 	public Payment withId(Long id) {
 		Payment newPayment = Payment.builder()
 			.paymentId(id)
@@ -267,9 +370,10 @@ public class Payment extends BaseDomainModel {
 			.type(this.type)
 			.status(this.status)
 			.amount(this.amount)
-			.pgTransactionId(this.pgTransactionId)
+			.paymentKey(this.paymentKey)
 			.method(this.method)
 			.orderId(this.orderId)
+			.walletUsedAmount(this.walletUsedAmount)
 			.build();
 
 		newPayment.uncommittedHistory.addAll(this.uncommittedHistory);
@@ -289,6 +393,35 @@ public class Payment extends BaseDomainModel {
 			'}';
 	}
 
+	@Override
+	public final boolean equals(Object object) {
+		if (!(object instanceof Payment payment))
+			return false;
+		if (!super.equals(object))
+			return false;
+
+		return Objects.equals(userId, payment.userId) && type == payment.type && Objects.equals(orderId,
+			payment.orderId) && status == payment.status && Objects.equals(amount, payment.amount)
+			&& Objects.equals(paymentKey, payment.paymentKey) && method == payment.method
+			&& Objects.equals(walletUsedAmount, payment.walletUsedAmount) && uncommittedHistory.equals(
+			payment.uncommittedHistory);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(userId);
+		result = 31 * result + Objects.hashCode(type);
+		result = 31 * result + Objects.hashCode(orderId);
+		result = 31 * result + Objects.hashCode(status);
+		result = 31 * result + Objects.hashCode(amount);
+		result = 31 * result + Objects.hashCode(paymentKey);
+		result = 31 * result + Objects.hashCode(method);
+		result = 31 * result + Objects.hashCode(walletUsedAmount);
+		result = 31 * result + uncommittedHistory.hashCode();
+		return result;
+	}
+
 	// ========== Builder ==========
 
 	public static class Builder {
@@ -300,6 +433,7 @@ public class Payment extends BaseDomainModel {
 		private Money amount;
 		private PaymentMethod method;
 		private String orderId;
+		private Money walletUsedAmount;
 
 		public Builder paymentId(Long paymentId) {
 			this.paymentId = paymentId;
@@ -326,7 +460,7 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
-		public Builder pgTransactionId(String pgTransactionId) {
+		public Builder paymentKey(String pgTransactionId) {
 			this.pgTransactionId = pgTransactionId;
 			return this;
 		}
@@ -341,6 +475,11 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
+		public Builder walletUsedAmount(Money walletUsedAmount) {
+			this.walletUsedAmount = walletUsedAmount;
+			return this;
+		}
+
 		public Payment build() {
 			return new Payment(
 				paymentId,
@@ -350,7 +489,8 @@ public class Payment extends BaseDomainModel {
 				amount,
 				pgTransactionId,
 				method,
-				orderId
+				orderId,
+				walletUsedAmount
 			);
 		}
 	}

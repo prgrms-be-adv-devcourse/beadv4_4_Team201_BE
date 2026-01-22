@@ -137,7 +137,7 @@ class PaymentServiceTest {
 
 		// Then
 		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
-		assertThat(payment.getPgTransactionId()).isEqualTo(pgTxId);
+		assertThat(payment.getPaymentKey()).isEqualTo(pgTxId);
 
 		verify(paymentRepository).save(payment);
 		verify(eventPublisher).publish(any(PaymentSucceededEvent.class));

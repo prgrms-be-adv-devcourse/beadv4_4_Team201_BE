@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaAuditing
 @ComponentScan(basePackages = {
     "app.giftify",
+    "giftify.support.web",
     "domain",
     "payment",
     "wallet",

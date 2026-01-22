@@ -1,6 +1,6 @@
-# PR Pipeline
+# Pull Request Assistant
 # PR 생성/업데이트 시 코드 품질 검증 및 리뷰 지원
-name: PR Pipeline
+name: Pull Request Assistant
 
 on:
   pull_request:
