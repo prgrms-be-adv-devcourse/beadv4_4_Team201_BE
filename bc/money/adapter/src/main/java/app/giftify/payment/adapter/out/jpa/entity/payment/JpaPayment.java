@@ -38,6 +38,8 @@ public class JpaPayment extends BaseJpaEntity {
 	@Enumerated(EnumType.STRING)
 	private PaymentMethod method;
 
+	private BigDecimal walletUsedAmount;  // 펀딩 복합결제 시 사용된 예치금 금액
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -48,7 +50,8 @@ public class JpaPayment extends BaseJpaEntity {
 	private JpaPayment(Long userId, String orderId, String pgTransactionId,
 		PaymentType type, PaymentStatus status,
 		BigDecimal amount,
-		PaymentMethod method
+		PaymentMethod method,
+		BigDecimal walletUsedAmount
 	) {
 		this.userId = userId;
 		this.orderId = orderId;
@@ -57,6 +60,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.amount = amount;
 		this.pgTransactionId = pgTransactionId;
 		this.method = method;
+		this.walletUsedAmount = walletUsedAmount;
 	}
 
 	public void update(domain.payment.Payment domain) {
@@ -65,8 +69,10 @@ public class JpaPayment extends BaseJpaEntity {
 		this.type = domain.getType();
 		this.status = domain.getStatus();
 		this.amount = domain.getAmount().amount();
-		this.pgTransactionId = domain.getPgTransactionId();
+		this.pgTransactionId = domain.getPaymentKey();
 		this.method = domain.getMethod();
+		this.walletUsedAmount = domain.getWalletUsedAmount() != null
+			? domain.getWalletUsedAmount().amount() : null;
 	}
 
 	public Long getUserId() {
@@ -77,7 +83,7 @@ public class JpaPayment extends BaseJpaEntity {
 		return orderId;
 	}
 
-	public String getPgTransactionId() {
+	public String getPaymentKey() {
 		return pgTransactionId;
 	}
 
@@ -97,6 +103,10 @@ public class JpaPayment extends BaseJpaEntity {
 		return method;
 	}
 
+	public BigDecimal getWalletUsedAmount() {
+		return walletUsedAmount;
+	}
+
 	public static class Builder {
 		private Long userId;
 		private String orderId;
@@ -105,6 +115,7 @@ public class JpaPayment extends BaseJpaEntity {
 		private PaymentStatus status;
 		private BigDecimal amount;
 		private PaymentMethod method;
+		private BigDecimal walletUsedAmount;
 
 		public JpaPayment.Builder userId(Long userId) {
 			this.userId = userId;
@@ -131,13 +142,18 @@ public class JpaPayment extends BaseJpaEntity {
 			return this;
 		}
 
-		public JpaPayment.Builder pgTransactionId(String pgTransactionId) {
+		public JpaPayment.Builder paymentKey(String pgTransactionId) {
 			this.pgTransactionId = pgTransactionId;
 			return this;
 		}
 
 		public JpaPayment.Builder method(PaymentMethod method) {
 			this.method = method;
+			return this;
+		}
+
+		public JpaPayment.Builder walletUsedAmount(BigDecimal walletUsedAmount) {
+			this.walletUsedAmount = walletUsedAmount;
 			return this;
 		}
 
@@ -149,7 +165,8 @@ public class JpaPayment extends BaseJpaEntity {
 				type,
 				status,
 				amount,
-				method
+				method,
+				walletUsedAmount
 			);
 		}
 	}

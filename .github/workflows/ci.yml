@@ -6,6 +6,8 @@ on:
   push:
     branches: [ develop, main ]
     tags-ignore: [ '**' ]
+  merge_group:
+    types: [ checks_requested ]
 
 env:
   REGISTRY: ghcr.io
@@ -18,7 +20,9 @@ jobs:
     uses: ./.github/workflows/_build.yml
     with:
       java-version: '21'
-      run-tests: true
+      # [최적화] push 이벤트이고, 브랜치가 main이면 테스트 생략 (머지 큐에서 이미 했으므로)
+      # 그 외(merge_group, develop 브랜치 push 등)는 테스트 수행
+      run-tests: ${{ github.event_name != 'push' || github.ref_name != 'main' }}
       # 머지 단계에서는 커버리지 리포트 생략 (PR에서 이미 검증됨)
       generate-coverage: false
       # Docker 빌드에서 JAR 사용

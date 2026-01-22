@@ -16,15 +16,21 @@ import app.giftify.payment.adapter.out.pg.TossConfirmResult;
 import app.giftify.payment.adapter.out.pg.TossPaymentsClient;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 import domain.payment.PaymentErrorCode;
 import domain.payment.PaymentException;
 import domain.payment.PaymentRepository;
+import app.giftify.payment.adapter.in.web.payment.dto.PaymentInitiateRequest;
+import app.giftify.payment.adapter.in.web.payment.dto.PaymentInitiateResponse;
 import jakarta.validation.Valid;
 import payment.usecase.PaymentChargeUseCase;
 import payment.usecase.PaymentCompleteUseCase;
+import payment.usecase.PaymentInitiateUseCase;
 import payment.usecase.command.PaymentChargeCommand;
+import payment.usecase.command.PaymentInitiateCommand;
+import payment.usecase.result.PaymentInitiateResult;
 import payment.usecase.result.PaymentResult;
 
 @RestController
@@ -35,17 +41,20 @@ public class PaymentController {
 
 	private final PaymentChargeUseCase paymentChargeUseCase;
 	private final PaymentCompleteUseCase paymentCompleteUseCase;
+	private final PaymentInitiateUseCase paymentInitiateUseCase;
 	private final PaymentRepository paymentRepository;
 	private final TossPaymentsClient tossPaymentsClient;
 
 	public PaymentController(
 		PaymentChargeUseCase paymentChargeUseCase,
 		PaymentCompleteUseCase paymentCompleteUseCase,
+		PaymentInitiateUseCase paymentInitiateUseCase,
 		PaymentRepository paymentRepository,
 		TossPaymentsClient tossPaymentsClient
 	) {
 		this.paymentChargeUseCase = paymentChargeUseCase;
 		this.paymentCompleteUseCase = paymentCompleteUseCase;
+		this.paymentInitiateUseCase = paymentInitiateUseCase;
 		this.paymentRepository = paymentRepository;
 		this.tossPaymentsClient = tossPaymentsClient;
 	}
@@ -135,9 +144,47 @@ public class PaymentController {
 				false
 			);
 
+			// FUNDING 타입 PG 결제 실패 시 예치금 롤백
+			if (payment.getType() == PaymentType.FUNDING && payment.getWalletUsedAmount() != null) {
+				log.info("[Payment] FUNDING PG 결제 실패 - 예치금 롤백. paymentId={}, walletUsed={}",
+					payment.getPaymentId(), payment.getWalletUsedAmount());
+				paymentInitiateUseCase.rollbackWallet(
+					payment.getUserId(),
+					payment.getWalletUsedAmount(),
+					payment.getPaymentId()
+				);
+			}
+
 			throw new PaymentException(PaymentErrorCode.PG_APPROVAL_FAILED,
 				String.format("결제 승인 실패 [%s]: %s",
 					confirmResult.errorCode(), confirmResult.errorMessage()));
 		}
+	}
+
+	/**
+	 * 결제를 시작합니다.
+	 * 1. 예치금 우선 차감
+	 * 2. 부족분이 있으면 예외 발생 (현재: 예치금 전용 결제)
+	 *
+	 * 응답의 completed가 true이면 예치금으로 완납된 것입니다.
+	 * 향후 복합 결제 활성화 시, false인 경우 pgOrderId로 Toss SDK 결제를 진행합니다.
+	 */
+	@PostMapping("/initiate")
+	public ResponseEntity<CommonResponse<PaymentInitiateResponse>> initiatePayment(
+		@CurrentMemberId Long memberId,
+		@Valid @RequestBody PaymentInitiateRequest request
+	) {
+		PaymentInitiateCommand command = new PaymentInitiateCommand(
+			memberId,
+			request.orderId(),
+			Money.of(request.amount()),
+			PaymentType.FUNDING // 현재는 FUNDING 고정, 향후 Order BC가 결정
+		);
+
+		PaymentInitiateResult result = paymentInitiateUseCase.initiate(command);
+
+		return ResponseEntity.ok(
+			CommonResponse.success(PaymentInitiateResponse.from(result))
+		);
 	}
 }
