@@ -58,81 +58,73 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 3. EC2 배포 (Nginx Upstream 스위칭)
+      # 3. EC2 배포 (이제 SSH 접속 없이 서버 내부에서 직접 실행)
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e
-
-            # 소문자 이미지명 처리
-            LOWER_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-            IMAGE=ghcr.io/$LOWER_REPO:${{ github.sha }}
-            UPSTREAM_CONF=/etc/nginx/conf.d/upstream.inc
-
-            # GHCR 로그인
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # 현재 활성 포트 확인 및 신규 포트 결정
-            if [ ! -f $UPSTREAM_CONF ] || grep -q "8081" $UPSTREAM_CONF; then
-              ACTIVE=blue; NEW=green; PORT=8082
-            else
-              ACTIVE=green; NEW=blue; PORT=8081
+        run: |
+          set -e
+          
+          # 1. 환경 변수 설정 (기존 스크립트 그대로 활용)
+          LOWER_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE=ghcr.io/$LOWER_REPO:${{ github.sha }}
+          UPSTREAM_CONF=/etc/nginx/conf.d/upstream.inc
+          
+          # 2. GHCR 로그인
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # 3. 현재 활성 포트 확인 및 신규 포트 결정
+          if [ ! -f $UPSTREAM_CONF ] || grep -q "8081" $UPSTREAM_CONF; then
+            ACTIVE=blue; NEW=green; PORT=8082
+          else
+            ACTIVE=green; NEW=blue; PORT=8081
+          fi
+          
+          echo ">>> [Deploy] Active: $ACTIVE, Target: $NEW (Port: $PORT)"
+          
+          # 4. 이미지 Pull 및 컨테이너 교체
+          docker pull $IMAGE
+          docker rm -f api-server-$NEW || true
+          
+          # 5. 신규 컨테이너 실행
+          docker run -d \
+            --name api-server-$NEW \
+            -p $PORT:8080 \
+            --restart always \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            $IMAGE
+          
+          # 6. 헬스 체크
+          echo ">>> Health checking for $NEW..."
+          SUCCESS=0
+          for i in {1..12}; do
+            if curl -sf http://localhost:$PORT/health > /dev/null; then
+              echo "✅ Health check passed!"
+              SUCCESS=1
+              break
             fi
-
-            echo ">>> [Deploy] Active: $ACTIVE, Target: $NEW (Port: $PORT)"
-
-            # 이미지 Pull 및 컨테이너 교체
-            docker pull $IMAGE
-            docker rm -f api-server-$NEW || true
-
-            # 신규 컨테이너 실행
-            docker run -d \
-              --name api-server-$NEW \
-              -p $PORT:8080 \
-              --restart always \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              $IMAGE
-
-            # 헬스 체크 (최대 60초)
-            echo ">>> Health checking for $NEW..."
-            SUCCESS=0
-            for i in {1..12}; do
-              if curl -sf http://localhost:$PORT/health > /dev/null; then
-                echo "✅ Health check passed!"
-                SUCCESS=1
-                break
-              fi
-              echo "Waiting... ($i/12)"
-              sleep 5
-            done
-
-            if [ $SUCCESS -eq 0 ]; then
-              echo "❌ Deployment failed: $NEW did not start."
-              docker logs api-server-$NEW
-              exit 1
-            fi
-
-            # Nginx 업스트림 변경
-            echo "server 127.0.0.1:$PORT;" | sudo tee $UPSTREAM_CONF
-            
-            # Nginx 리로드
-            if sudo nginx -t; then
-              sudo nginx -s reload
-              echo "🚀 Nginx Switched to $NEW ($PORT)."
-            else
-              echo "❌ Nginx Config Error!"
-              exit 1
-            fi
-
-            # 이전 컨테이너 정리
-            echo ">>> Stopping old container ($ACTIVE)..."
-            sleep 10
-            docker stop api-server-$ACTIVE || true
-            
-            # 정리
-            docker image prune -f
-            echo ">>> DONE!"
+            echo "Waiting... ($i/12)"
+            sleep 5
+          done
+          
+          if [ $SUCCESS -eq 0 ]; then
+            echo "❌ Deployment failed: $NEW did not start."
+            docker logs api-server-$NEW
+            exit 1
+          fi
+          
+          # 7. Nginx 업스트림 변경 및 리로드
+          echo "server 127.0.0.1:$PORT;" | sudo tee $UPSTREAM_CONF
+          
+          if sudo nginx -t; then
+            sudo nginx -s reload
+            echo "🚀 Nginx Switched to $NEW ($PORT)."
+          else
+            echo "❌ Nginx Config Error!"
+            exit 1
+          fi
+          
+          # 8. 이전 컨테이너 정리
+          echo ">>> Stopping old container ($ACTIVE)..."
+          sleep 10
+          docker stop api-server-$ACTIVE || true
+          docker image prune -f
+          echo ">>> DONE!"
