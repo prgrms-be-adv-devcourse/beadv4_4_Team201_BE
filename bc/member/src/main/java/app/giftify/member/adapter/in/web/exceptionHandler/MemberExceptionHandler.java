@@ -1,7 +1,7 @@
 package app.giftify.member.adapter.in.web.exceptionHandler;
 
 import app.giftify.member.adapter.in.web.controller.MemberController;
-import app.giftify.member.core.domain.exception.MemberDomainException;
+import app.giftify.member.domain.exception.MemberDomainException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

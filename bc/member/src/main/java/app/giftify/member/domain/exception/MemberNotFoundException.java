@@ -1,4 +1,4 @@
-package app.giftify.member.core.domain.exception;
+package app.giftify.member.domain.exception;
 
 // 존재하지 않는 회원을 조회하려고 할 때 발생하는 예외
 public class MemberNotFoundException extends MemberDomainException {

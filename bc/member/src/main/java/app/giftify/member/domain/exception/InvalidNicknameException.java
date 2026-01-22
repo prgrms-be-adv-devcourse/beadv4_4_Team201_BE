@@ -1,4 +1,4 @@
-package app.giftify.member.core.domain.exception;
+package app.giftify.member.domain.exception;
 
 public class InvalidNicknameException extends MemberDomainException {
     public InvalidNicknameException() {
