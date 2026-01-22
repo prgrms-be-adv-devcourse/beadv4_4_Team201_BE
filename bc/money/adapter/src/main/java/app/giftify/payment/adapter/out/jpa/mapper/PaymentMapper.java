@@ -15,7 +15,7 @@ public class PaymentMapper {
 			.type(domain.getType())
 			.status(domain.getStatus())
 			.amount(domain.getAmount().amount()) // Money -> BigDecimal
-			.pgTransactionId(domain.getPgTransactionId())
+			.pgTransactionId(domain.getPaymentKey())
 			.method(domain.getMethod())
 			.walletUsedAmount(domain.getWalletUsedAmount() != null
 				? domain.getWalletUsedAmount().amount() : null)

@@ -12,14 +12,14 @@ import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
 	private static final String ORDER_ID_PREFIX_CHARGE = "GFTFY_CHARGE_";
-	private static final String ORDER_ID_PREFIX_FUNDING = "GFTFY_FUNDING_";
+	private static final String ORDER_ID_PREFIX_FUNDING = "GFTFY_FUNDING_"; // FIXME : Order 도메인에게 받아서 사용하도록 변경 필요
 
 	private final Long userId;
 	private final PaymentType type;
 	private final String orderId;
 	private PaymentStatus status;
 	private final Money amount;
-	private String pgTransactionId;
+	private String paymentKey;
 	private final PaymentMethod method;
 	private final Money walletUsedAmount;  // 펀딩 복합결제 시 사용된 예치금 금액
 
@@ -27,7 +27,7 @@ public class Payment extends BaseDomainModel {
 
 	private Payment(
 		Long id, Long userId, PaymentType type, PaymentStatus status,
-		Money amount, String pgTransactionId, PaymentMethod method, String orderId,
+		Money amount, String paymentKey, PaymentMethod method, String orderId,
 		Money walletUsedAmount
 	) {
 		super(id);
@@ -35,7 +35,7 @@ public class Payment extends BaseDomainModel {
 		this.type = type;
 		this.status = status;
 		this.amount = amount;
-		this.pgTransactionId = pgTransactionId;
+		this.paymentKey = paymentKey;
 		this.method = method;
 		this.orderId = orderId;
 		this.walletUsedAmount = walletUsedAmount;
@@ -128,7 +128,7 @@ public class Payment extends BaseDomainModel {
 
 		LocalDateTime now = LocalDateTime.now();
 		this.status = PaymentStatus.PAID;
-		this.pgTransactionId = pgTransactionId;
+		this.paymentKey = pgTransactionId;
 
 		PaymentHistory history = new PaymentHistory(
 			getId(),
@@ -283,8 +283,8 @@ public class Payment extends BaseDomainModel {
 		return amount;
 	}
 
-	public String getPgTransactionId() {
-		return pgTransactionId;
+	public String getPaymentKey() {
+		return paymentKey;
 	}
 
 	public PaymentMethod getMethod() {
@@ -306,7 +306,7 @@ public class Payment extends BaseDomainModel {
 			.type(this.type)
 			.status(this.status)
 			.amount(this.amount)
-			.pgTransactionId(this.pgTransactionId)
+			.pgTransactionId(this.paymentKey)
 			.method(this.method)
 			.orderId(this.orderId)
 			.walletUsedAmount(this.walletUsedAmount)

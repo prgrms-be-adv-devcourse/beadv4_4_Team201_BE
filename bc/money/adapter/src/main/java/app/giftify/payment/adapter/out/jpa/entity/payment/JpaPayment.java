@@ -69,7 +69,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.type = domain.getType();
 		this.status = domain.getStatus();
 		this.amount = domain.getAmount().amount();
-		this.pgTransactionId = domain.getPgTransactionId();
+		this.pgTransactionId = domain.getPaymentKey();
 		this.method = domain.getMethod();
 		this.walletUsedAmount = domain.getWalletUsedAmount() != null
 			? domain.getWalletUsedAmount().amount() : null;

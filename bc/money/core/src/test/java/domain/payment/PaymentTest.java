@@ -43,7 +43,7 @@ class PaymentTest {
 
 		// Then
 		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
-		assertThat(payment.getPgTransactionId()).isEqualTo(pgTxId);
+		assertThat(payment.getPaymentKey()).isEqualTo(pgTxId);
 		
 		// History 검증
 		assertThat(payment.getUncommittedHistory()).hasSize(2); // CREATED + PAID
