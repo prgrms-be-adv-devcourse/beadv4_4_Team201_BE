@@ -1,6 +1,6 @@
 package app.giftify.member.application.port.in;
 
-import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.domain.member.Member;
 
 import java.util.Optional;
 
