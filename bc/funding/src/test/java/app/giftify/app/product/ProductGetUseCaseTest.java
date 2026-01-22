@@ -28,7 +28,7 @@ class ProductGetUseCaseTest {
 	void getProduct_returnsProductDto() {
 		// given
 		Long productId = 1L;
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 
 		when(productSupport.findById(productId)).thenReturn(product);
@@ -40,7 +40,7 @@ class ProductGetUseCaseTest {
 		assertThat(result.name()).isEqualTo("테스트 상품");
 		assertThat(result.description()).isEqualTo("테스트 설명");
 		assertThat(result.price()).isEqualTo(10000);
-		assertThat(result.sellerNickName()).isEqualTo("판매자");
+		assertThat(result.sellerNickName()).isEqualTo("홍길동");
 		verify(productSupport).findById(productId);
 	}
 }

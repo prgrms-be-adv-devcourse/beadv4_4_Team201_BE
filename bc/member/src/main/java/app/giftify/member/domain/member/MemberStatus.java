@@ -1,4 +1,4 @@
-package app.giftify.member.core.domain.member;
+package app.giftify.member.domain.member;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
