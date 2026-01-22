@@ -1,20 +1,20 @@
 package app.giftify.payment.adapter.out.jpa.repository;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
 import app.giftify.payment.adapter.out.jpa.entity.JpaWallet;
 import domain.exception.WalletNotFoundException;
 import domain.wallet.Wallet;
 import domain.wallet.WalletRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
-public class JpaWalletRepositoryImpl implements WalletRepository {
+public class WalletRepositoryAdapter implements WalletRepository {
 
     private final JpaWalletRepository jpaWalletRepository;
 
-    public JpaWalletRepositoryImpl(JpaWalletRepository jpaWalletRepository) {
+    public WalletRepositoryAdapter(JpaWalletRepository jpaWalletRepository) {
         this.jpaWalletRepository = jpaWalletRepository;
     }
 
@@ -42,7 +42,7 @@ public class JpaWalletRepositoryImpl implements WalletRepository {
 
     @Override
     public Optional<Wallet> findByMemberId(Long memberId) {
-        return jpaWalletRepository.findById(memberId)
+        return jpaWalletRepository.findByMemberId(memberId)
                 .map(entity -> Wallet.restore(entity.toSnapshot()));
     }
 }

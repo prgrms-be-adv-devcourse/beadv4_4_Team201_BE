@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":bc:member"))
     implementation(project(":bc:auth"))
     implementation(project(":bc:funding"))
-    // implementation(project(":bc:money:adapter"))  // 주석 처리 (향후 활성화)
+    implementation(project(":bc:money:adapter"))
 
     // Support 모듈들
     implementation(project(":support:common"))
