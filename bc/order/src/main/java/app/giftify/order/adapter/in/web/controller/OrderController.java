@@ -47,9 +47,9 @@ public class OrderController {
     // 주문 아이템 구매 확정
     @PostMapping("/{orderId}/items/{orderItemId}/confirm")
     public ResponseEntity<Void> confirmOrderItem(
-            @PathVariable Long orderId,
-            @PathVariable Long orderItemId,
-            @RequestParam Long receiverId
+            @PathVariable("orderId") Long orderId,
+            @PathVariable("orderItemId") Long orderItemId,
+            @RequestParam("receiverId") Long receiverId
     ) {
         orderUseCase.confirmOrderItem(new OrderUseCase.ConfirmOrderItemCommand(
                 orderId,
@@ -62,7 +62,7 @@ public class OrderController {
     // 주문 취소 (수동)
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<Void> cancelOrder(
-            @PathVariable Long orderId
+            @PathVariable("orderId") Long orderId
     ) {
         orderUseCase.cancelOrder(new OrderUseCase.CancelOrderCommand(orderId));
         return ResponseEntity.ok().build();

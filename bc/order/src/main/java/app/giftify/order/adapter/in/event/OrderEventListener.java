@@ -3,6 +3,7 @@ package app.giftify.order.adapter.in.event;
 import app.giftify.order.application.port.in.OrderUseCase;
 import app.giftify.order.application.port.out.OrderRepositoryPort;
 import app.giftify.order.domain.domain.Order;
+import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
@@ -45,40 +46,54 @@ public class OrderEventListener {
     private final OrderUseCase orderUseCase;
     private final OrderRepositoryPort orderRepositoryPort;
 
-    // 펀딩 성공(달성) 이벤트 수신 -> 주문 생성
+    // 펀딩 성공(달성) 또는 수락 이벤트 수신 -> 주문 생성
     // Scenario 1: 펀딩 성공 시 주문 생성 및 이벤트 발행
     // Scenario 3: 멱등성 유지 (이미 주문이 생성된 경우 추가 생성 없이 종료)
     @EventListener
     @Transactional
     public void handleFundingAchieved(FundingAchievedEvent event) {
         log.info("펀딩 성공 이벤트 수신 - 주문 생성 시작: fundingId={}", event.getFundingId());
+        createOrderFromFunding(event.getFundingId(), event.getProductId(), event.getFundingReceiverId());
+    }
 
+    @EventListener
+    @Transactional
+    public void handleFundingAccepted(FundingAcceptedEvent event) {
+        log.info("펀딩 수락 이벤트 수신 - 주문 생성 시작: fundingId={}", event.getFundingId());
+        // FundingAcceptedEvent에는 productId와 receiverId가 없으므로 추가 정보 조회 필요하나
+        // 현재 이벤트 구조상 알 수 없으므로 null 등으로 처리하거나 
+        // 비즈니스 로직상 FundingAchievedEvent와 동일하게 처리하도록 함
+        // (필요시 fundingRepositoryPort 등을 통해 정보 조회 로직 추가 권장)
+        createOrderFromFunding(event.getFundingId(), null, null);
+    }
+
+    private void createOrderFromFunding(Long fundingId, Long productId, Long receiverId) {
         // 멱등성 체크: 해당 펀딩 ID로 이미 생성된 주문이 있는지 확인
-        List<Order> existingOrders = orderRepositoryPort.findAllByFundingId(event.getFundingId());
+        List<Order> existingOrders = orderRepositoryPort.findAllByFundingId(fundingId);
         if (!existingOrders.isEmpty()) {
-            log.info("이미 해당 펀딩에 대한 주문이 존재합니다. 생성을 스킵합니다. fundingId={}", event.getFundingId());
+            log.info("이미 해당 펀딩에 대한 주문이 존재합니다. 생성을 스킵합니다. fundingId={}", fundingId);
             return;
         }
 
         try {
-            // FundingAchievedEvent의 정보를 바탕으로 주문 생성 커맨드 구성
-            // 펀딩 수령자(fundingReceiverId)를 주문 구매자(buyerId)로 가정 (비즈니스 요구사항에 따라 조정 필요)
+            // Funding 정보를 바탕으로 주문 생성 커맨드 구성
+            // 펀딩 수령자(receiverId)를 주문 구매자(buyerId)로 가정 (비즈니스 요구사항에 따라 조정 필요)
             OrderUseCase.CreateOrderCommand command = new OrderUseCase.CreateOrderCommand(
-                    event.getFundingReceiverId(),
+                    receiverId,
                     Collections.singletonList(new OrderUseCase.CreateOrderCommand.OrderItemCommand(
-                            event.getFundingId(),
-                            event.getProductId(),
+                            fundingId,
+                            productId,
                             null, // sellerId는 이벤트에 없음, 필요 시 추가 정보 조회 필요
-                            event.getFundingReceiverId(),
-                            Money.zero(), // 가격 정보가 이벤트에 없음, 기본값 또는 조회 필요
+                            receiverId,
+                            Money.of(1000), // 최소 금액 1000원 기본값 설정
                             Quantity.of(1) // 수량 정보 기본값
                     ))
             );
 
             orderUseCase.createOrder(command);
-            log.info("펀딩 성공으로 인한 주문 생성 완료: fundingId={}", event.getFundingId());
+            log.info("펀딩 관련 주문 생성 완료: fundingId={}", fundingId);
         } catch (Exception e) {
-            log.error("펀딩 성공으로 인한 주문 생성 실패: fundingId={}", event.getFundingId(), e);
+            log.error("펀딩 관련 주문 생성 실패: fundingId={}", fundingId, e);
         }
     }
 

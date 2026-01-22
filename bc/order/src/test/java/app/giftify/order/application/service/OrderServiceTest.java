@@ -7,6 +7,7 @@ import app.giftify.order.domain.domain.OrderStatus;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
+import app.giftify.shared.domain.event.order.OrderItemConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderPaidEvent;
 import app.giftify.shared.domain.event.order.OrderRefundedEvent;
 import app.giftify.shared.domain.vo.Money;
@@ -136,5 +137,87 @@ class OrderServiceTest {
         // then
         assertEquals(OrderStatus.CANCELED, pendingOrder.getStatus());
         verify(eventPublisher).publish(any(OrderCanceledEvent.class));
+    }
+
+    @Test
+    @DisplayName("이미 취소된 주문은 결제할 수 없다")
+    void payOrder_Fail_WhenCanceled() {
+        // given
+        Long orderId = 1L;
+        Order canceledOrder = Order.builder()
+                .id(orderId)
+                .status(OrderStatus.CANCELED)
+                .orderNumber("ORD-123456")
+                .build();
+
+        when(orderRepositoryPort.findByIdWithLock(orderId)).thenReturn(Optional.of(canceledOrder));
+
+        // when & then
+        assertThrows(IllegalStateException.class, () ->
+                orderService.payOrder(new OrderUseCase.PayOrderCommand(orderId, "pk"))
+        );
+    }
+
+    @Test
+    @DisplayName("수령자 본인만 주문 아이템을 확정할 수 있다")
+    void confirmOrderItem_Success() {
+        // given
+        Long orderId = 1L;
+        Long orderItemId = 10L;
+        Long receiverId = 5L;
+
+        app.giftify.order.domain.domain.OrderItem item = app.giftify.order.domain.domain.OrderItem.builder()
+                .id(orderItemId)
+                .receiverId(receiverId)
+                .status(OrderStatus.ORDERED)
+                .sellerId(100L)
+                .price(Money.of(1000))
+                .quantity(Quantity.of(1))
+                .build();
+
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123456")
+                .status(OrderStatus.ORDERED)
+                .orderItems(java.util.List.of(item))
+                .build();
+
+        when(orderRepositoryPort.findById(orderId)).thenReturn(Optional.of(order));
+
+        // when
+        orderService.confirmOrderItem(new OrderUseCase.ConfirmOrderItemCommand(orderId, orderItemId, receiverId));
+
+        // then
+        assertEquals(OrderStatus.CONFIRMED, item.getStatus());
+        verify(eventPublisher).publish(any(OrderItemConfirmedEvent.class));
+    }
+
+    @Test
+    @DisplayName("수령자가 아닌 사람이 확정을 시도하면 예외가 발생한다")
+    void confirmOrderItem_Fail_WrongReceiver() {
+        // given
+        Long orderId = 1L;
+        Long orderItemId = 10L;
+        Long receiverId = 5L;
+        Long wrongReceiverId = 999L;
+
+        app.giftify.order.domain.domain.OrderItem item = app.giftify.order.domain.domain.OrderItem.builder()
+                .id(orderItemId)
+                .receiverId(receiverId)
+                .status(OrderStatus.ORDERED)
+                .build();
+
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123456")
+                .orderItems(java.util.List.of(item))
+                .build();
+
+        when(orderRepositoryPort.findById(orderId)).thenReturn(Optional.of(order));
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () ->
+                orderService.confirmOrderItem(new OrderUseCase.ConfirmOrderItemCommand(orderId, orderItemId, wrongReceiverId))
+        );
     }
 }
