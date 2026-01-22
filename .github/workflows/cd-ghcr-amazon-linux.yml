@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 jobs:
-  # 1. 빌드 (재사용 워크플로우)
+  # 1. 빌드 (재사용 워크플로우 호출)
   build:
     uses: ./.github/workflows/_build.yml
     with:
@@ -40,6 +40,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # ✅ 1. GHCR 로그인 (이후 모든 단계에서 인증 유지, 경고 발생 없음)
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -47,6 +48,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # ✅ 2. Docker Build & Push (로컬 캐시 사용)
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
@@ -55,24 +57,27 @@ jobs:
           push: true
           target: runtime-ci
           tags: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          # GitHub 서버 대신 내 서버 로컬 경로를 캐시로 사용
+          # self-hosted EC2 내부의 /tmp 경로에 캐시를 저장하고 읽음
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
-      # 3. EC2 배포 (이제 SSH 접속 없이 서버 내부에서 직접 실행)
+      # ✅ 3. 캐시 업데이트 (경로 경고 방지 및 최신화)
+      - name: Update Docker Cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      # ✅ 4. EC2 실시간 배포 (로그인 중복 제거)
       - name: Deploy to EC2
         run: |
           set -e
           
-          # 1. 환경 변수 설정 (기존 스크립트 그대로 활용)
-          LOWER_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE=ghcr.io/$LOWER_REPO:${{ github.sha }}
+          IMAGE=ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           UPSTREAM_CONF=/etc/nginx/conf.d/upstream.inc
           
-          # 2. GHCR 로그인
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # 💡 [중요] docker login 줄을 삭제했습니다. 위 Step에서 이미 로그인되었습니다.
           
-          # 3. 현재 활성 포트 확인 및 신규 포트 결정
+          # 현재 활성 포트 확인 및 신규 포트 결정
           if [ ! -f $UPSTREAM_CONF ] || grep -q "8081" $UPSTREAM_CONF; then
             ACTIVE=blue; NEW=green; PORT=8082
           else
@@ -81,11 +86,11 @@ jobs:
           
           echo ">>> [Deploy] Active: $ACTIVE, Target: $NEW (Port: $PORT)"
           
-          # 4. 이미지 Pull 및 컨테이너 교체
+          # 이미지 Pull 및 컨테이너 교체 (인증 경고 없이 실행됨)
           docker pull $IMAGE
           docker rm -f api-server-$NEW || true
           
-          # 5. 신규 컨테이너 실행
+          # 신규 컨테이너 실행
           docker run -d \
             --name api-server-$NEW \
             --network giftify-network \
@@ -95,7 +100,7 @@ jobs:
             --env-file /home/ec2-user/.env \
             $IMAGE
           
-          # 6. 헬스 체크
+          # 헬스 체크
           echo ">>> Health checking for $NEW..."
           SUCCESS=0
           for i in {1..12}; do
@@ -114,7 +119,7 @@ jobs:
             exit 1
           fi
           
-          # 7. Nginx 업스트림 변경 및 리로드
+          # Nginx 업스트림 변경 및 리로드
           echo "server 127.0.0.1:$PORT;" | sudo tee $UPSTREAM_CONF
           
           if sudo nginx -t; then
@@ -125,9 +130,9 @@ jobs:
             exit 1
           fi
           
-          # 8. 이전 컨테이너 정리
+          # 이전 컨테이너 및 이미지 정리
           echo ">>> Stopping old container ($ACTIVE)..."
           sleep 10
           docker stop api-server-$ACTIVE || true
-          docker image prune -f
+          docker image prune -af 
           echo ">>> DONE!"
