@@ -17,7 +17,6 @@ public record WishlistItemResponse(
 	public static WishlistItemResponse from(WishlistItem item) {
 		return WishlistItemResponse.builder()
 			.id(item.getId())
-			// .authSub(item.getAuthSub())
 			.wishlistId(item.getWishlistId())
 			.productId(item.getProductId())
 			.status(item.getWishlistItemStatus())

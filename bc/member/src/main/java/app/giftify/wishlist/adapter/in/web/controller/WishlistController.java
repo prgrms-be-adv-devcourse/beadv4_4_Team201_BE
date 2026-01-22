@@ -34,12 +34,8 @@ public class WishlistController {
 	// 현재 로그인한 사용자의 위시리스트 기본 정보 조회
 	@GetMapping("/me")
 	public ResponseEntity<WishlistResponse> getMyInfo(
-		// @AuthenticatedMember String authSub
 		@CurrentMemberId Long memberId
 	) {
-		// return getWishlistUseCase.getWishlistByAuthSub(authSub)
-		//         .map(wishlist -> ResponseEntity.ok(WishlistResponse.from(wishlist)))
-		//         .orElseThrow(() -> new WishlistNotFoundException(authSub));
 		return getWishlistUseCase.getWishlistByMemberId(memberId)
 			.map(wishlist -> ResponseEntity.ok(WishlistResponse.from(wishlist)))
 			.orElseThrow(() -> new WishlistNotFoundException(memberId));
@@ -49,7 +45,6 @@ public class WishlistController {
 	// PUBLIC / PRIVATE / FRIENDS_ONLY
 	@PatchMapping("/me/settings")
 	public ResponseEntity<WishlistResponse> updateSettings(
-		// @AuthenticatedMember String authSub,
 		@CurrentMemberId Long memberId,
 		@RequestBody @Valid UpdateWishlistSettingsRequest request
 	) {

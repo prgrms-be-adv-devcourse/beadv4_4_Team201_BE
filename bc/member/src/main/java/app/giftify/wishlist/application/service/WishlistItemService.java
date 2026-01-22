@@ -32,7 +32,6 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 	private final WishlistProductReplicaPort wishlistProductReplicaPort;
 	private final WishlistProductQueryPort wishlistProductQueryPort;
 	private final WishlistRepositoryPort wishlistRepositoryPort;
-	// private final EventPublisher eventPublisher; // todo
 
 	private static final java.time.Duration REPLICA_TTL = Duration.ofHours(1);
 
@@ -90,14 +89,11 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
 		// 3. 위시리스트 item에 등록
 		WishlistItem wishlistItem = WishlistItem.builder()
-			// .authSub(command.authSub())
 			.wishlistId(wishlist.getId())
 			.productId(command.productId())
 			.wishlistItemStatus(command.wishListItemStatus())
 			.build();
 
-		// WishlistItem addedWishlistItem = wishlistItemRepositoryPort.save(wishlistItem);
-		//
 		// // 4. 이벤트 발행 (현재 구현 생략)
 
 		// 5. 새롭게 생성된 WishlistItem 반환

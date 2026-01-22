@@ -26,23 +26,8 @@ public class WishlistItemController {
 	private final GetWishlistItemUseCase getWishlistItemUseCase;
 	private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
-	// // 위시리스트에 담긴 모든 상품 조회
-	// @GetMapping("/me")
-	// public ResponseEntity<List<WishlistItemResponse>> getAllProducts(
-	// 	// @AuthenticatedMember String authSub
-	// 	@CurrentMemberId Long memberId
-	// ) {
-	// 	List<WishlistItemResponse> items = getWishlistItemUseCase.getWishlistItems(authSub)
-	// 		.stream()
-	// 		.map(WishlistItemResponse::from)
-	// 		.collect(Collectors.toList());
-	// 	return ResponseEntity.ok(items);
-	// }
-
-	// 특정 상품이 위시리스트에 포함되어 있는지 확인
 	@GetMapping("/me/check")
 	public ResponseEntity<?> isExistProduct(
-		// @AuthenticatedMember String authSub,
 		@CurrentMemberId Long memberId,
 		@RequestParam(name = "productId") Long productId
 	) {
@@ -54,14 +39,11 @@ public class WishlistItemController {
 	// 위시리스트아이템 추가
 	@PostMapping("/add")
 	public ResponseEntity<WishlistItemResponse> addProduct(
-		// @AuthenticatedMember String authSub,
 		@CurrentMemberId Long memberId,
 		@RequestParam(name = "productId") Long productId
 	) {
 		// command 생성
 		AddWishlistItemUseCase.WishlistItemAddCommand command = new AddWishlistItemUseCase.WishlistItemAddCommand(
-			// authSub,
-			// memberId,
 			productId,
 			WishlistItemStatus.PENDING
 		);
@@ -76,12 +58,10 @@ public class WishlistItemController {
 	// 위시리스트에서 특정 상품 삭제
 	@DeleteMapping("/remove")
 	public ResponseEntity<Void> removeProduct(
-		// @AuthenticatedMember String authSub,
 		@CurrentMemberId Long memberId,
 		@RequestParam(name = "productId") Long productId
 	) {
 		RemoveWishlistItemUseCase.WishlistItemRemoveCommand command = new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(
-			// authSub
 			memberId,
 			productId
 		);

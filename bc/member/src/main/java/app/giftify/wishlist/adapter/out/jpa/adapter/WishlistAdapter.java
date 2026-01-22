@@ -23,12 +23,6 @@ public class WishlistAdapter implements WishlistRepositoryPort {
 			.map(WishlistMapper::toDomain);
 	}
 
-	// @Override
-	// public Optional<Wishlist> findByAuthSub(String authSub) {
-	//     return wishlistRepository.findByAuthSub(authSub)
-	//             .map(WishlistMapper::toDomain);
-	// }
-
 	@Override
 	public Wishlist save(Wishlist wishlist) {
 		WishlistJpaEntity entity = WishlistMapper.toEntity(wishlist);

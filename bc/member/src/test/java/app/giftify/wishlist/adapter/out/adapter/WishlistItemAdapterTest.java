@@ -16,7 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.domain.member.Member;
 import app.giftify.wishlist.adapter.out.jpa.adapter.WishlistItemAdapter;
 import app.giftify.wishlist.adapter.out.jpa.entity.WishlistItemJpaEntity;
 import app.giftify.wishlist.adapter.out.jpa.repository.WishlistItemJpaRepository;

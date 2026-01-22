@@ -22,7 +22,6 @@ public class WishlistDataInitializer implements ApplicationRunner {
 		}
 
 		WishlistJpaEntity wishlist = WishlistJpaEntity.builder()
-			// .authSub("google-oauth2|104844495450678108304")
 			.memberId(1L)
 			.visibility(Visibility.PRIVATE)
 			.build();

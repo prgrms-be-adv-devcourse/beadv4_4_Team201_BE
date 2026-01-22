@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.member.core.domain.member.Member;
+import app.giftify.member.domain.member.Member;
 
 class WishlistItemTest {
 

@@ -11,6 +11,5 @@ public interface GetWishlistItemUseCase {
 	// 위시리스트에 이미 존재하는 아이템인지 확인
 	boolean isItemExists(Long memberId, Long productId);
 
-	// List<WishlistItem> getWishlistItems(String authSub);
 	List<WishlistItem> getWishlistItems(Long wishlistId);
 }

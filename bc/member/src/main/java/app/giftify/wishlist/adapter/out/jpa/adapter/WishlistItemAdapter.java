@@ -17,12 +17,6 @@ import lombok.RequiredArgsConstructor;
 public class WishlistItemAdapter implements WishlistItemRepositoryPort {
 	private final WishlistItemJpaRepository wishlistItemRepository;
 
-	// @Override
-	// public Optional<WishlistItem> findByAuthSubAndProductId(String authSub, Long productId) {
-	//     return wishlistItemRepository.findByAuthSubAndProductId(authSub, productId)
-	//             .map(WishlistItemMapper::toDomain);
-	// }
-
 	@Override
 	public Optional<WishlistItem> findByWishlistIdAndProductId(Long wishlistId, Long productId) {
 		return wishlistItemRepository.findByWishlistIdAndProductId(wishlistId, productId)
@@ -54,11 +48,6 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
 	public void deleteByWishlistIdAndProductId(Long wishlistId, Long productId) {
 		wishlistItemRepository.deleteByWishlistIdAndProductId(wishlistId, productId);
 	}
-
-	// @Override
-	// public void deleteByAuthSubAndProductId(String authSub, Long productId) {
-	// 	wishlistItemRepository.deleteByAuthSubAndProductId(authSub, productId);
-	// }
 
 	@Override
 	public void delete(WishlistItem wishlistItem) {

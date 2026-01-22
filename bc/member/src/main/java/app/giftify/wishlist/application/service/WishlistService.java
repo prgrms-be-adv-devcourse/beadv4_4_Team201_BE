@@ -23,11 +23,6 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
 	private final WishlistRepositoryPort wishlistRepositoryPort;
 	private final EventPublisher eventPublisher;
 
-	// @Override
-	// public Optional<Wishlist> getWishlistByAuthSub(String authSub) {
-	//     return wishlistRepositoryPort.findByAuthSub(authSub);
-	// }
-
 	@Override
 	public Optional<Wishlist> getWishlistByMemberId(Long memberId) {
 		return wishlistRepositoryPort.findByMemberId(memberId);
@@ -43,7 +38,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
 
 		Wishlist updatedWishlist = wishlistRepositoryPort.save(wishlist);
 
-		// 위시리스트 상태 변경 이벤트 발행
+		// 위시리스트 상태 변경 이벤트 발행 todo
 
 		return updatedWishlist;
 	}

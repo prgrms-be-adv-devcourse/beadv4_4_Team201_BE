@@ -22,14 +22,4 @@ public class WishlistExceptionHandler {
 				"message", e.getMessage()
 			));
 	}
-
-	// @ExceptionHandler(Exception.class)
-	// public ResponseEntity<?> handleException(Exception e) {
-	// 	log.error("[Wishlist Unexpected Error]", e);
-	// 	return ResponseEntity.internalServerError()
-	// 		.body(Map.of(
-	// 			"code", "COMMON_ERROR",
-	// 			"message", "위시리스트 처리 중 예기치 않은 오류가 발생했습니다."
-	// 		));
-	// }
 }

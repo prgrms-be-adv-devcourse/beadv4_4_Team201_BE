@@ -5,6 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import app.giftify.wishlist.adapter.out.jpa.entity.WishlistJpaEntity;
 
 public interface WishlistJpaRepository extends JpaRepository<WishlistJpaEntity, Long> {
-
-	// Optional<WishlistJpaEntity> findByAuthSub(String authSub);
 }
