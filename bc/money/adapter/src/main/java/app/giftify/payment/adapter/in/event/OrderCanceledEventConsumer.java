@@ -13,7 +13,7 @@ import payment.handler.PaymentRefundHandler;
  * <p>TODO: Order BC 연동 시 아래 작업 필요:
  * <ol>
  *   <li>OrderCanceledEvent 클래스 정의 (shared 모듈)</li>
- *   <li>consume() 메서드에 @TransactionalEventListener 또는 Kafka @KafkaListener 추가</li>
+ *   <li>consume() 메서드에 @TransactionalEventListener 추가</li>
  *   <li>이벤트에서 orderUuid 추출하여 handler.handleOrderCanceled() 호출</li>
  * </ol>
  */
@@ -35,14 +35,6 @@ public class OrderCanceledEventConsumer {
 	 * <pre>
 	 * {@code @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)}
 	 * {@code @Transactional(propagation = Propagation.REQUIRES_NEW)}
-	 * public void consume(OrderCanceledEvent event) {
-	 *     handler.handleOrderCanceled(event.getOrderUuid(), event.getReason());
-	 * }
-	 * </pre>
-	 *
-	 * 예시 (Kafka):
-	 * <pre>
-	 * {@code @KafkaListener(topics = "order-canceled")}
 	 * public void consume(OrderCanceledEvent event) {
 	 *     handler.handleOrderCanceled(event.getOrderUuid(), event.getReason());
 	 * }
