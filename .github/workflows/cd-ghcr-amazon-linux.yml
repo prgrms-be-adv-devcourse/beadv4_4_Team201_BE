@@ -1,4 +1,4 @@
-name: cd-ghcr-amazon-linux.yml
+name: cd-ghcr-amazon-linux
 
 on:
   push:
@@ -14,9 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # GHCR 로그인
+      # 1. GHCR 로그인
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -24,7 +25,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 이미지 빌드 & 푸시
+      # 2. 이미지 빌드 & 푸시
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
@@ -32,8 +33,8 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
-      # EC2 배포
-      - name: Deploy (Blue-Green)
+      # 3. EC2 배포 (Blue-Green + Nginx Upstream Switching)
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -43,9 +44,13 @@ jobs:
             set -e
 
             IMAGE=ghcr.io/${{ github.repository }}:${{ github.sha }}
+            UPSTREAM_CONF=/etc/nginx/conf.d/upstream.inc
 
-            # 현재 활성 포트 확인
-            if grep -q "8081" /etc/nginx/conf.d/api.conf; then
+            # GHCR 로그인 (EC2 내부에서 이미지 pull을 위함)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 현재 활성 포트 확인 및 신규 배포 포트 결정
+            if [ ! -f $UPSTREAM_CONF ] || grep -q "8081" $UPSTREAM_CONF; then
               ACTIVE=blue
               NEW=green
               PORT=8082
@@ -55,34 +60,58 @@ jobs:
               PORT=8081
             fi
 
-            echo "Active=$ACTIVE, Deploy=$NEW"
+            echo ">>> [Deploy Start] Active: $ACTIVE, Deploying to: $NEW (Port: $PORT)"
 
-            # 최신 이미지 pull
+            # 최신 이미지 pull 및 기존 컨테이너 교체 준비
             docker pull $IMAGE
+            docker rm -f api-server-$NEW || true
 
             # 신규 컨테이너 실행
-            docker rm -f api-server-$NEW || true
+            # --network 옵션은 필요에 따라 추가하세요 (예: --network bridge)
             docker run -d \
               --name api-server-$NEW \
               -p $PORT:8080 \
               --restart always \
+              -e SPRING_PROFILES_ACTIVE=prod \
               $IMAGE
 
-            # 헬스 체크 (Spring 기준)
-            for i in {1..10}; do
+            # 헬스 체크 (최대 60초 대기)
+            echo ">>> Health checking for $NEW..."
+            SUCCESS=0
+            for i in {1..12}; do
+              # Spring Boot Actuator가 있다면 /actuator/health, 없다면 / 등 적절한 경로 사용
               if curl -sf http://localhost:$PORT/health > /dev/null; then
-                echo "Health check passed"
+                echo "✅ Health check passed!"
+                SUCCESS=1
                 break
               fi
-              sleep 3
+              echo "Waiting for $NEW... ($i/12)"
+              sleep 5
             done
 
-            # nginx upstream 스위칭
-            sudo sed -i "s/808[12]/$PORT/" /etc/nginx/conf.d/api.conf
-            sudo nginx -t
-            sudo nginx -s reload
+            if [ $SUCCESS -eq 0 ]; then
+              echo "❌ Deployment failed: $NEW did not start."
+              docker logs api-server-$NEW
+              exit 1
+            fi
 
-            echo "Switched traffic to $NEW"
+            # Nginx 업스트림 스위칭
+            echo "server 127.0.0.1:$PORT;" | sudo tee $UPSTREAM_CONF
 
-            # 이전 컨테이너 정리 (원하면 주석 처리)
-            docker rm -f api-server-$ACTIVE || true
+            # Nginx 설정 검사 및 리로드
+            if sudo nginx -t; then
+              sudo nginx -s reload
+              echo "🚀 Nginx reloaded. Traffic switched to $NEW ($PORT)."
+            else
+              echo "❌ Nginx configuration error!"
+              exit 1
+            fi
+
+            # 기존 컨테이너 정리 (10초 대기 후 중지)
+            echo ">>> Cleaning up old container ($ACTIVE)..."
+            sleep 10
+            docker stop api-server-$ACTIVE || true
+            
+            # 미사용 이미지 정리
+            docker image prune -f
+            echo ">>> Deployment Complete!"
