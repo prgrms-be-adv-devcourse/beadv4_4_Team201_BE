@@ -17,8 +17,10 @@ import app.giftify.domain.product.Product;
 import app.giftify.domain.product.ProductStatus;
 import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
+import app.giftify.out.product.ProductRepository;
+import app.giftify.out.product.ProductStockHistoryRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductSnapshotUpdatedEvent;
+import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class ProductUpdateUseCaseTest {
@@ -28,6 +30,12 @@ class ProductUpdateUseCaseTest {
 
 	@Mock
 	private EventPublisher eventPublisher;
+
+	@Mock
+	private ProductRepository productRepository;
+
+	@Mock
+	private ProductStockHistoryRepository productStockHistoryRepository;
 
 	@InjectMocks
 	private ProductUpdateUseCase productUpdateUseCase;
@@ -40,7 +48,7 @@ class ProductUpdateUseCaseTest {
 	void setUp() {
 		productId = 1L;
 		sellerId = 1L;
-		seller = new FundingMember(sellerId, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		seller = new FundingMember(1L, "auth0|123", "홍길동");
 	}
 
 	@Nested
@@ -176,7 +184,7 @@ class ProductUpdateUseCaseTest {
 			productUpdateUseCase.updateProduct(productId, sellerId, requestDto);
 
 			// then
-			verify(eventPublisher).publish(any(ProductSnapshotUpdatedEvent.class));
+			verify(eventPublisher).publish(any(ProductReplicaUpdatedEvent.class));
 		}
 	}
 }

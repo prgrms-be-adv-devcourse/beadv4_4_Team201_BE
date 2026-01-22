@@ -29,7 +29,7 @@ class ProductRejectUseCaseTest {
 	void rejectProduct_changesStatusToRejected() {
 		// given
 		Long productId = 1L;
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 
 		when(productSupport.findById(productId)).thenReturn(product);
@@ -47,7 +47,7 @@ class ProductRejectUseCaseTest {
 	void rejectProduct_notDraftStatus_throwsException() {
 		// given
 		Long productId = 1L;
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 		product.approve(); // INACTIVE 상태로 변경
 

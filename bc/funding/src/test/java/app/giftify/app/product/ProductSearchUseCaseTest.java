@@ -40,7 +40,7 @@ class ProductSearchUseCaseTest {
 		searchDto.setPage(0);
 		searchDto.setSize(10);
 
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 
 		// 여러 상태의 상품 생성
 		Product draftProduct = new Product(seller, "등록대기 상품", "설명", 10000, 50);
@@ -83,7 +83,7 @@ class ProductSearchUseCaseTest {
 		searchDto.setPage(0);
 		searchDto.setSize(10);
 
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product1 = createActiveProduct(seller, "삼성 노트북", 1000000, 10);
 		Product product2 = createActiveProduct(seller, "LG 노트북", 1200000, 5);
 
@@ -112,7 +112,7 @@ class ProductSearchUseCaseTest {
 		searchDto.setPage(0);
 		searchDto.setSize(10);
 
-		FundingMember seller = new FundingMember(sellerId, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 
 		// 모든 상태의 상품 생성
 		Product draftProduct = new Product(seller, "등록대기 상품", "설명", 10000, 100);
@@ -153,7 +153,7 @@ class ProductSearchUseCaseTest {
 		searchDto.setSize(10);
 		searchDto.setStatus(ProductStatus.DRAFT);
 
-		FundingMember seller = new FundingMember(sellerId, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product draftProduct = new Product(seller, "등록대기 상품", "설명", 10000, 100);
 		assertThat(draftProduct.getStatus()).isEqualTo(ProductStatus.DRAFT);
 

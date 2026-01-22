@@ -1,18 +1,26 @@
 package app.giftify.shared.domain.event.product;
 
+import java.time.LocalDateTime;
+
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
-public class ProductSnapshotUpdatedEvent extends BaseDomainEvent {
+public class ProductReplicaUpdatedEvent extends BaseDomainEvent {
 	private final Long id;
 	private final String name;
-	private final String description;
 	private final int price;
 	private final String sellerNickName;
+	// private final boolean 상품구매가능/불가능
 
-	public ProductSnapshotUpdatedEvent(Long id, String name, String description, int price, String sellerNickName) {
+	public ProductReplicaUpdatedEvent(
+		LocalDateTime occurredAt,
+		Long id,
+		String name,
+		int price,
+		String sellerNickName
+	) {
+		super(occurredAt);
 		this.id = id;
 		this.name = name;
-		this.description = description;
 		this.price = price;
 		this.sellerNickName = sellerNickName;
 	}
@@ -23,10 +31,6 @@ public class ProductSnapshotUpdatedEvent extends BaseDomainEvent {
 
 	public String getName() {
 		return name;
-	}
-
-	public String getDescription() {
-		return description;
 	}
 
 	public int getPrice() {

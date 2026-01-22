@@ -2,15 +2,19 @@ package app.giftify.app.product;
 
 import static app.giftify.domain.product.ProductStatus.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import app.giftify.domain.product.Product;
+import app.giftify.domain.product.ProductStockHistory;
 import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
+import app.giftify.out.product.ProductRepository;
+import app.giftify.out.product.ProductStockHistoryRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductSnapshotUpdatedEvent;
+import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 public class ProductUpdateUseCase {
 	private final ProductSupport productSupport;
 	private final EventPublisher eventPublisher;
+	private final ProductStockHistoryRepository productStockHistoryRepository;
+	private final ProductRepository productRepository;
 
 	// todo @Lock
 	public ProductUpdateResponseDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
@@ -27,7 +33,24 @@ public class ProductUpdateUseCase {
 		Optional.ofNullable(requestDto.name()).ifPresent(product::updateName); // 이름 수정
 		Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription); // 설명 수정
 		Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice); // 설명 수정
-		Optional.ofNullable(requestDto.stock()).ifPresent(product::updateStock); // 재고 수정
+
+		// 재고 수정, 재고 이력 저장
+		Integer newStock = requestDto.stock();
+		if (newStock != null && product.getStock() != newStock) {
+			Product.StockChangeResult result = product.updateStock(newStock); // 재고 수정
+
+			productRepository.save(product); // "변경"과 "이력"을 같은 트랜잭션에서 같이 저장하여 캡슐화
+
+			ProductStockHistory history = ProductStockHistory.manualAdjust(
+				product.getSeller().getId(),
+				product.getId(),
+				result.delta(),
+				result.beforeStock(),
+				result.afterStock()
+			);
+
+			productStockHistoryRepository.save(history); // 재고이력 저장
+		}
 
 		var status = requestDto.status();
 		if (status != null) {
@@ -50,12 +73,11 @@ public class ProductUpdateUseCase {
 		product.pullEvents().forEach(eventPublisher::publish);
 
 		/** 어플리케이션 이벤트 발행
-		 * todo 멤버모듈상품 sync Event
 		 */
-		eventPublisher.publish(new ProductSnapshotUpdatedEvent(
+		eventPublisher.publish(new ProductReplicaUpdatedEvent(
+			LocalDateTime.now(),
 			product.getId(),
 			product.getName(),
-			product.getDescription(),
 			product.getPrice(),
 			product.getSeller().getNickname()
 		));
