@@ -91,6 +91,7 @@ jobs:
             -p $PORT:8080 \
             --restart always \
             -e SPRING_PROFILES_ACTIVE=prod \
+            --env-file /home/ec2-user/.env \
             $IMAGE
           
           # 6. 헬스 체크
