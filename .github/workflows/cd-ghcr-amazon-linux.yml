@@ -3,6 +3,7 @@ name: cd-ghcr-amazon-linux.yml
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:   # 수동 실행 가능
 
 permissions:
   contents: read
