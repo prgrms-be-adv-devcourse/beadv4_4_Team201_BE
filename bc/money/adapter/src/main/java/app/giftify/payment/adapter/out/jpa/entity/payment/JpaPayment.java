@@ -19,6 +19,9 @@ public class JpaPayment extends BaseJpaEntity {
 	@Column(nullable = false)
 	private Long userId;
 
+	@Column(nullable = false, unique = true, length = 64)
+	private String orderId;
+
 	private String pgTransactionId;
 
 	@Enumerated(EnumType.STRING)
@@ -42,12 +45,13 @@ public class JpaPayment extends BaseJpaEntity {
 	protected JpaPayment() {
 	}
 
-	private JpaPayment(Long userId, String pgTransactionId,
+	private JpaPayment(Long userId, String orderId, String pgTransactionId,
 		PaymentType type, PaymentStatus status,
 		BigDecimal amount,
 		PaymentMethod method
 	) {
 		this.userId = userId;
+		this.orderId = orderId;
 		this.type = type;
 		this.status = status;
 		this.amount = amount;
@@ -57,6 +61,7 @@ public class JpaPayment extends BaseJpaEntity {
 
 	public void update(domain.payment.Payment domain) {
 		this.userId = domain.getUserId();
+		this.orderId = domain.getOrderId();
 		this.type = domain.getType();
 		this.status = domain.getStatus();
 		this.amount = domain.getAmount().amount();
@@ -66,6 +71,10 @@ public class JpaPayment extends BaseJpaEntity {
 
 	public Long getUserId() {
 		return userId;
+	}
+
+	public String getOrderId() {
+		return orderId;
 	}
 
 	public String getPgTransactionId() {
@@ -90,6 +99,7 @@ public class JpaPayment extends BaseJpaEntity {
 
 	public static class Builder {
 		private Long userId;
+		private String orderId;
 		private String pgTransactionId;
 		private PaymentType type;
 		private PaymentStatus status;
@@ -98,6 +108,11 @@ public class JpaPayment extends BaseJpaEntity {
 
 		public JpaPayment.Builder userId(Long userId) {
 			this.userId = userId;
+			return this;
+		}
+
+		public JpaPayment.Builder orderId(String orderId) {
+			this.orderId = orderId;
 			return this;
 		}
 
@@ -129,6 +144,7 @@ public class JpaPayment extends BaseJpaEntity {
 		public JpaPayment build() {
 			return new JpaPayment(
 				userId,
+				orderId,
 				pgTransactionId,
 				type,
 				status,
