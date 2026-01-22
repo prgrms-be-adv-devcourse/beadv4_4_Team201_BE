@@ -75,7 +75,7 @@ public class WishlistEventListener {
 					replica.updateInfo(
 						event.getName(),
 						event.getPrice(),
-						event.getSellerNickName()
+						event.getSellerNickname()
 					);
 					wishlistProductReplicaPort.upsert(replica);
 				},
@@ -85,7 +85,7 @@ public class WishlistEventListener {
 						.productId(event.getId())
 						.name(event.getName())
 						.price(event.getPrice())
-						.sellerNickName(event.getSellerNickName())
+						.sellerNickname(event.getSellerNickname())
 						.wishlistAllowed(false)
 						.build();
 					wishlistProductReplicaPort.upsert(newReplica);
@@ -100,7 +100,7 @@ public class WishlistEventListener {
 		wishlistProductReplicaPort.findByProductId(event.getId())
 			.ifPresentOrElse(
 				replica -> {
-					replica.updateInfo(event.getName(), event.getPrice(), event.getSellerNickName());
+					replica.updateInfo(event.getName(), event.getPrice(), event.getSellerNickname());
 					wishlistProductReplicaPort.upsert(replica);
 				},
 				() -> {
@@ -108,7 +108,7 @@ public class WishlistEventListener {
 						.productId(event.getId())
 						.name(event.getName())
 						.price(event.getPrice())
-						.sellerNickName(event.getSellerNickName()) // TODO: 이벤트 형식에 맞게 수정
+						.sellerNickname(event.getSellerNickname())
 						.wishlistAllowed(false)
 						.build();
 					wishlistProductReplicaPort.upsert(newReplica);
