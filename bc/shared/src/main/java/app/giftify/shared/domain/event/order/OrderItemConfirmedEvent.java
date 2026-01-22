@@ -1,11 +1,9 @@
-package app.giftify.order.domain.event;
+package app.giftify.shared.domain.event.order;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
-import lombok.Getter;
 
 // 주문 아이템 확정 이벤트 (정산 트리거)
-@Getter
 public class OrderItemConfirmedEvent extends BaseDomainEvent {
     private final Long orderId;
     private final Long orderItemId;
@@ -23,4 +21,11 @@ public class OrderItemConfirmedEvent extends BaseDomainEvent {
         this.price = price;
         this.quantity = quantity;
     }
+
+    public Long getOrderId() {return orderId;}
+    public Long getOrderItemId() {return orderItemId;}
+    public Long getSellerId() {return sellerId;}
+    public Long getReceiverId() {return receiverId;}
+    public Money getPrice() {return price;}
+    public Integer getQuantity() {return quantity;}
 }

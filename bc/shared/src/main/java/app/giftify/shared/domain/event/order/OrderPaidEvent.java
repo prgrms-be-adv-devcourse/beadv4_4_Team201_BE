@@ -1,10 +1,8 @@
-package app.giftify.order.domain.event;
+package app.giftify.shared.domain.event.order;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
-import lombok.Getter;
 
 // 주문 결제 완료 이벤트
-@Getter
 public class OrderPaidEvent extends BaseDomainEvent {
     private final Long orderId;
     private final String orderNumber;
@@ -16,4 +14,8 @@ public class OrderPaidEvent extends BaseDomainEvent {
         this.orderNumber = orderNumber;
         this.paymentKey = paymentKey;
     }
+
+    public Long getOrderId() {return orderId;}
+    public String getOrderNumber() {return orderNumber;}
+    public String getPaymentKey() {return paymentKey;}
 }

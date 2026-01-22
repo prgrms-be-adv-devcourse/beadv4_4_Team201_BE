@@ -19,4 +19,7 @@ public interface OrderRepositoryPort {
     // PAYMENT_PENDING 상태 중 특정 시간 이전 주문 조회
     // 자동 취소 스케줄러/배치에서 사용
     List<Order> findPaymentPendingOrdersOlderThan(long minutes);
+
+    // 특정 펀딩 ID를 포함하는 주문 목록 조회
+    List<Order> findAllByFundingId(Long fundingId);
 }

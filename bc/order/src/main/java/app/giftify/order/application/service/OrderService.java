@@ -5,9 +5,9 @@ import app.giftify.order.application.port.out.OrderRepositoryPort;
 import app.giftify.order.domain.domain.Order;
 import app.giftify.order.domain.domain.OrderItem;
 import app.giftify.order.domain.domain.OrderStatus;
-import app.giftify.order.domain.event.OrderCreatedEvent;
-import app.giftify.order.domain.event.OrderItemConfirmedEvent;
-import app.giftify.order.domain.event.OrderPaidEvent;
+import app.giftify.shared.domain.event.order.OrderCreatedEvent;
+import app.giftify.shared.domain.event.order.OrderItemConfirmedEvent;
+import app.giftify.shared.domain.event.order.OrderPaidEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
@@ -168,35 +168,5 @@ public class OrderService implements OrderUseCase {
                 targetItem.getPrice(),
                 targetItem.getQuantity().getValue()
         ));
-    }
-
-    // 결제가 안 된 주문 자동 취소 스케줄러 (또는 Redis KeyExpiration 이벤트 리스너에서 호출)
-    // 1분마다 실행되어 유효 시간이 경과한 주문들을 취소 처리
-    @Scheduled(fixedDelay = 60000)
-    public void autoCancelPendingOrders() {
-        log.info("결제 대기 중인 주문 자동 취소 스케줄러 실행");
-        List<Order> expiredOrders = orderRepositoryPort.findPaymentPendingOrdersOlderThan(AUTO_CANCEL_MINUTES);
-
-        for (Order order : expiredOrders) {
-            try {
-                // 개별 건별로 트랜잭션 분리나 락 고려 가능 (이미 find에서 걸러졌으나 안전을 위해 서비스 메서드 호출 권장)
-                cancelOrder(new CancelOrderCommand(order.getId()));
-                log.info("주문 자동 취소 완료: {}", order.getOrderNumber());
-            } catch (Exception e) {
-                log.error("주문 자동 취소 실패: {}", order.getOrderNumber(), e);
-            }
-        }
-    }
-
-    // Redis TTL 만료 이벤트를 감지하여 호출되는 메서드 (예시)
-    // 1. 비관적 락을 사용하여 결제와 동시에 일어나는 것을 방지 (정합성 보장)
-    public void onOrderTimeout(Long orderId) {
-        log.info("Redis 만료 이벤트 감지 - 주문 취소 시도: {}", orderId);
-        try {
-            cancelOrder(new CancelOrderCommand(orderId));
-        } catch (IllegalStateException e) {
-            // 결제가 이미 완료된 경우 등
-            log.warn("Redis 만료 시점에 주문 취소 불가: {}", e.getMessage());
-        }
     }
 }

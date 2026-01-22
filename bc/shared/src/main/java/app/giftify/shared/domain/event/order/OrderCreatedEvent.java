@@ -1,12 +1,10 @@
-package app.giftify.order.domain.event;
+package app.giftify.shared.domain.event.order;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
-import lombok.Getter;
 
 import java.util.List;
 
 // 주문 생성 완료 이벤트
-@Getter
 public class OrderCreatedEvent extends BaseDomainEvent {
     private final Long orderId;
     private final String orderNumber;
@@ -27,4 +25,9 @@ public class OrderCreatedEvent extends BaseDomainEvent {
             Long productId,
             Long receiverId
     ) {}
+
+    public Long getOrderId() {return orderId;}
+    public String getOrderNumber() {return orderNumber;}
+    public Long getBuyerId() {return buyerId;}
+    public List<OrderItemInfo> getItems() {return items;}
 }
