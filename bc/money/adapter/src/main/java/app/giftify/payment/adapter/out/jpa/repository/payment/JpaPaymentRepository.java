@@ -21,4 +21,12 @@ public interface JpaPaymentRepository extends JpaRepository<JpaPayment, Long> {
 	 * @param pgTransactionId pgTransactionID 로 결제를 조회한다
 	 */
 	Optional<JpaPayment> findByPgTransactionId(String pgTransactionId);
+
+	/**
+	 * orderUuid로 결제 목록을 조회합니다.
+	 *
+	 * @param orderUuid 주문 대체키 (Order BC에서 발급)
+	 * @return 해당 orderUuid와 연결된 결제 목록
+	 */
+	List<JpaPayment> findByOrderUuid(String orderUuid);
 }

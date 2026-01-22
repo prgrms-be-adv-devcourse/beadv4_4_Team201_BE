@@ -71,6 +71,14 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 			.map(mapper::toDomain);
 	}
 
+	@Override
+	public List<Payment> findByOrderUuid(String orderUuid) {
+		return jpaPaymentRepository.findByOrderUuid(orderUuid)
+			.stream()
+			.map(mapper::toDomain)
+			.toList();
+	}
+
 	/**
 	 * uncommittedHistory를 DB에 저장하고 클리어
 	 */
