@@ -1,4 +1,4 @@
-package app.giftify.member.core.domain.exception;
+package app.giftify.member.domain.exception;
 
 import app.giftify.shared.api.exception.ErrorCode;
 import lombok.Getter;
