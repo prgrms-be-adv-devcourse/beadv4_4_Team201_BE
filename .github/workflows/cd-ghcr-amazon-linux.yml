@@ -1,0 +1,87 @@
+name: cd-ghcr-amazon-linux.yml
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # GHCR 로그인
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 이미지 빌드 & 푸시
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      # EC2 배포
+      - name: Deploy (Blue-Green)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            IMAGE=ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+            # 현재 활성 포트 확인
+            if grep -q "8081" /etc/nginx/conf.d/api.conf; then
+              ACTIVE=blue
+              NEW=green
+              PORT=8082
+            else
+              ACTIVE=green
+              NEW=blue
+              PORT=8081
+            fi
+
+            echo "Active=$ACTIVE, Deploy=$NEW"
+
+            # 최신 이미지 pull
+            docker pull $IMAGE
+
+            # 신규 컨테이너 실행
+            docker rm -f api-server-$NEW || true
+            docker run -d \
+              --name api-server-$NEW \
+              -p $PORT:8080 \
+              --restart always \
+              $IMAGE
+
+            # 헬스 체크 (Spring 기준)
+            for i in {1..10}; do
+              if curl -sf http://localhost:$PORT/health > /dev/null; then
+                echo "Health check passed"
+                break
+              fi
+              sleep 3
+            done
+
+            # nginx upstream 스위칭
+            sudo sed -i "s/808[12]/$PORT/" /etc/nginx/conf.d/api.conf
+            sudo nginx -t
+            sudo nginx -s reload
+
+            echo "Switched traffic to $NEW"
+
+            # 이전 컨테이너 정리 (원하면 주석 처리)
+            docker rm -f api-server-$ACTIVE || true
