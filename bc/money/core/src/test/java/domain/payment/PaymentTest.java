@@ -43,7 +43,7 @@ class PaymentTest {
 
 		// Then
 		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
-		assertThat(payment.getPgTransactionId()).isEqualTo(pgTxId);
+		assertThat(payment.getPaymentKey()).isEqualTo(pgTxId);
 		
 		// History 검증
 		assertThat(payment.getUncommittedHistory()).hasSize(2); // CREATED + PAID
@@ -153,5 +153,41 @@ class PaymentTest {
 
 		// Then
 		assertThat(payment.getUncommittedHistory()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("펀딩 결제 생성 시 walletUsedAmount가 저장되고 FUNDING 타입이어야 한다")
+	void createForFunding_ShouldStoreWalletUsedAmount_AndBeTypeFunding() {
+		// Given
+		Long userId = 1L;
+		Money pgAmount = Money.of(20000L);
+		Money walletUsedAmount = Money.of(30000L);
+
+		// When
+		Payment payment = Payment.createForFunding(userId, pgAmount, walletUsedAmount);
+
+		// Then
+		assertThat(payment.getType()).isEqualTo(PaymentType.FUNDING);
+		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
+		assertThat(payment.getAmount()).isEqualTo(pgAmount);
+		assertThat(payment.getWalletUsedAmount()).isEqualTo(walletUsedAmount);
+		assertThat(payment.getOrderId()).startsWith("GFTFY_FUNDING_");
+		assertThat(payment.getUncommittedHistory()).hasSize(1);
+		assertThat(payment.getUncommittedHistory().getFirst().eventType()).isEqualTo(PaymentEventType.CREATED);
+	}
+
+	@Test
+	@DisplayName("펀딩 결제는 walletUsedAmount가 0원이어도 저장된다")
+	void createForFunding_ShouldStoreZeroWalletUsedAmount() {
+		// Given
+		Long userId = 1L;
+		Money pgAmount = Money.of(50000L);
+		Money walletUsedAmount = Money.zero();
+
+		// When
+		Payment payment = Payment.createForFunding(userId, pgAmount, walletUsedAmount);
+
+		// Then
+		assertThat(payment.getWalletUsedAmount()).isEqualTo(Money.zero());
 	}
 }
