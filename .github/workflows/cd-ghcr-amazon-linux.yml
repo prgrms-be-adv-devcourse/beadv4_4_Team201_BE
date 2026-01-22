@@ -36,6 +36,7 @@ jobs:
         with:
           context: .
           push: true
+          file: ./bootstrap/Dockerfile
           tags: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       # 4. EC2 배포 (Nginx Upstream Switching)
