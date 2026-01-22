@@ -31,7 +31,7 @@ class ProductSupportTest {
 	void findById_returnsProduct() {
 		// given
 		Long productId = 1L;
-		FundingMember seller = new FundingMember(1L, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 
 		when(productRepository.findById(productId)).thenReturn(Optional.of(product));
@@ -65,7 +65,7 @@ class ProductSupportTest {
 		// given
 		Long productId = 1L;
 		Long sellerId = 1L;
-		FundingMember seller = new FundingMember(sellerId, "test@test.com", "판매자", null, null, null, "홍길동", null, null);
+		FundingMember seller = new FundingMember(1L, "auth0|123", "홍길동");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 10000, 100);
 
 		when(productRepository.findByIdAndSellerId(productId, sellerId)).thenReturn(Optional.of(product));

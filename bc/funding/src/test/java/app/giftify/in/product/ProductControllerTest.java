@@ -80,11 +80,11 @@ class ProductControllerTest {
 	class CreateProduct {
 
 		@Test
-		@DisplayName("@CurrentMemberId로 memberId가 FundingMember에 올바르게 전달된다")
-		void memberIdIsInjectedToFundingMember() throws Exception {
+		@DisplayName("@CurrentMemberId로 sellerId가 정확히 전달된다")
+		void sellerIdIsPassedToCreateProduct() throws Exception {
 			// given
-			Long expectedMemberId = 123L;
-			mockMvc = createMockMvc(expectedMemberId);
+			Long sellerId = 123L;
+			mockMvc = createMockMvc(sellerId);
 
 			ProductCreateRequestDto request = new ProductCreateRequestDto(
 				"테스트 상품", "상품 설명입니다", 10000, 100
@@ -94,7 +94,7 @@ class ProductControllerTest {
 				1L, "판매자", "테스트 상품", "상품 설명입니다", 10000, LocalDateTime.now()
 			);
 
-			given(productFacade.createProduct(any(), any())).willReturn(response);
+			given(productFacade.createProduct(eq(sellerId), any())).willReturn(response);
 
 			// when
 			mockMvc.perform(post("/api/products")
@@ -102,19 +102,16 @@ class ProductControllerTest {
 					.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isCreated());
 
-			// then - verify memberId was correctly passed to FundingMember
-			then(productFacade).should().createProduct(
-				argThat(seller -> seller.getId().equals(expectedMemberId)),
-				any()
-			);
+			// then - verify sellerId was correctly passed
+			then(productFacade).should().createProduct(eq(sellerId), any());
 		}
 
 		@Test
-		@DisplayName("다른 memberId 값도 정확히 전달된다")
-		void differentMemberIdIsAlsoInjected() throws Exception {
+		@DisplayName("다른 sellerId 값도 정확히 전달된다")
+		void differentSellerIdIsAlsoInjected() throws Exception {
 			// given
-			Long expectedMemberId = 456L;
-			mockMvc = createMockMvc(expectedMemberId);
+			Long sellerId = 456L;
+			mockMvc = createMockMvc(sellerId);
 
 			ProductCreateRequestDto request = new ProductCreateRequestDto(
 				"테스트 상품", "상품 설명입니다", 10000, 100
@@ -124,7 +121,7 @@ class ProductControllerTest {
 				1L, "판매자", "테스트 상품", "상품 설명입니다", 10000, LocalDateTime.now()
 			);
 
-			given(productFacade.createProduct(any(), any())).willReturn(response);
+			given(productFacade.createProduct(eq(sellerId), any())).willReturn(response);
 
 			// when
 			mockMvc.perform(post("/api/products")
@@ -133,13 +130,9 @@ class ProductControllerTest {
 				.andExpect(status().isCreated());
 
 			// then
-			then(productFacade).should().createProduct(
-				argThat(seller -> seller.getId().equals(expectedMemberId)),
-				any()
-			);
+			then(productFacade).should().createProduct(eq(sellerId), any());
 		}
 	}
-
 
 	@Nested
 	@DisplayName("내 상품 조회 - @CurrentMemberId 주입")
@@ -161,6 +154,47 @@ class ProductControllerTest {
 
 			// then - verify sellerId was correctly passed
 			then(productFacade).should().searchMyProducts(eq(sellerId), any());
+		}
+	}
+
+	@Nested
+	@DisplayName("재고 이력 조회 - @CurrentMemberId 주입")
+	class SearchStockHistories {
+
+		@Test
+		@DisplayName("@CurrentMemberId로 sellerId가 정확히 전달된다")
+		void sellerIdIsPassedToSearchStockHistories() throws Exception {
+			// given
+			Long sellerId = 789L;
+			mockMvc = createMockMvc(sellerId);
+
+			PageResponse<StockHistoryDto> emptyResponse = PageResponse.of(List.of(), 0, 20, 0);
+			given(productFacade.searchStockHistories(eq(sellerId), any())).willReturn(emptyResponse);
+
+			// when
+			mockMvc.perform(get("/api/products/my/stock-histories"))
+				.andExpect(status().isOk());
+
+			// then - verify sellerId was correctly passed
+			then(productFacade).should().searchStockHistories(eq(sellerId), any());
+		}
+
+		@Test
+		@DisplayName("다른 sellerId 값도 정확히 전달된다")
+		void differentSellerIdIsAlsoInjected() throws Exception {
+			// given
+			Long sellerId = 321L;
+			mockMvc = createMockMvc(sellerId);
+
+			PageResponse<StockHistoryDto> emptyResponse = PageResponse.of(List.of(), 0, 20, 0);
+			given(productFacade.searchStockHistories(eq(sellerId), any())).willReturn(emptyResponse);
+
+			// when
+			mockMvc.perform(get("/api/products/my/stock-histories"))
+				.andExpect(status().isOk());
+
+			// then
+			then(productFacade).should().searchStockHistories(eq(sellerId), any());
 		}
 	}
 }
