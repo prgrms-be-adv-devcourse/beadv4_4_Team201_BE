@@ -20,6 +20,7 @@ public enum PaymentErrorCode implements ErrorCode {
 	// [300 ~ 399] 정책 및 타입 검증
 	UNSUPPORTED_PAYMENT_TYPE("PAY_301", "지원하지 않는 결제 타입입니다."),
 	AMOUNT_MISMATCH("PAY_302", "결제 금액이 일치하지 않습니다."),
+	INSUFFICIENT_WALLET_BALANCE("PAY_303", "예치금 잔액이 부족합니다."),
 
 	// [400 ~ 499] PG 연동 관련
 	PG_APPROVAL_FAILED("PAY_401", "PG사 승인이 실패했습니다."),

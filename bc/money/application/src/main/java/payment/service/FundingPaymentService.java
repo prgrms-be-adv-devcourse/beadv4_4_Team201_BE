@@ -23,7 +23,9 @@ import payment.usecase.result.FundingContributeResult;
 import wallet.service.WalletService;
 
 /**
- * 예치금 우선 차감 + 부족분 PG 결제 방식을 구현합니다.
+ * 펀딩 참여 결제 서비스.
+ * 현재는 예치금 전용 결제만 지원합니다.
+ * 복합 결제(예치금 + PG)는 향후 활성화 예정입니다.
  */
 @Service
 @Transactional
@@ -51,6 +53,10 @@ public class FundingPaymentService implements FundingPaymentUseCase {
 		this.policies = policies;
 	}
 
+	/**
+	 * 펀딩 참여 결제 (현재: 예치금 전용)
+	 * 예치금 잔액이 충분하면 예치금에서 차감하고, 부족하면 예외를 발생시킵니다.
+	 */
 	@Override
 	public FundingContributeResult contribute(FundingContributeCommand command) {
 		log.info("[FundingPayment] 펀딩 참여 시작. userId={}, amount={}",
@@ -69,49 +75,69 @@ public class FundingPaymentService implements FundingPaymentUseCase {
 
 		// 3. 예치금으로 완납 가능한 경우
 		if (walletBalance.isGreaterThanOrEqual(requestAmount)) {
-			walletService.withdraw(
-				command.userId(),
-				requestAmount,
-				TRANSACTION_TYPE_FUNDING,
-				REFERENCE_TYPE_FUNDING,
-				generateReferenceId()
-			);
-
-			log.info("[FundingPayment] 예치금으로 완납. userId={}, walletUsed={}",
-				command.userId(), requestAmount);
-
-			return FundingContributeResult.completedWithWallet(requestAmount);
+			return payWithWalletOnly(command.userId(), requestAmount);
 		}
 
-		// 4. 복합 결제 필요 (예치금 + PG)
+		// 4. 예치금 부족 - 현재는 예치금 전용 결제만 지원
+		log.warn("[FundingPayment] 예치금 부족. userId={}, balance={}, requestAmount={}",
+			command.userId(), walletBalance, requestAmount);
+		throw new PaymentException(PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE,
+			String.format("예치금 잔액이 부족합니다. 잔액: %s, 요청 금액: %s", walletBalance, requestAmount));
+	}
+
+	/**
+	 * 예치금 전용 결제 처리
+	 */
+	private FundingContributeResult payWithWalletOnly(Long userId, Money amount) {
+		walletService.withdraw(
+			userId,
+			amount,
+			TRANSACTION_TYPE_FUNDING,
+			REFERENCE_TYPE_FUNDING,
+			generateReferenceId()
+		);
+
+		log.info("[FundingPayment] 예치금으로 완납. userId={}, walletUsed={}", userId, amount);
+		return FundingContributeResult.completedWithWallet(amount);
+	}
+
+	/**
+	 * 복합 결제 처리 (예치금 + PG)
+	 * 현재 미사용. 향후 복합 결제 활성화 시 contribute()에서 호출.
+	 *
+	 * @param userId 사용자 ID
+	 * @param walletBalance 예치금 잔액 (전액 차감됨)
+	 * @param requestAmount 요청 금액
+	 * @return 복합 결제 결과 (PG 결제 정보 포함)
+	 */
+	@SuppressWarnings("unused")
+	private FundingContributeResult payWithWalletAndPg(
+		Long userId,
+		Money walletBalance,
+		Money requestAmount
+	) {
 		Money walletUsed = walletBalance;
 		Money pgRequired = requestAmount.minus(walletBalance);
 
-		// 4-1. 예치금 전액 차감 (잔액이 0보다 큰 경우)
+		// 예치금 전액 차감 (잔액이 0보다 큰 경우)
 		if (walletUsed.isGreaterThan(Money.zero())) {
 			walletService.withdraw(
-				command.userId(),
+				userId,
 				walletUsed,
 				TRANSACTION_TYPE_FUNDING,
 				REFERENCE_TYPE_FUNDING,
 				generateReferenceId()
 			);
 
-			log.info("[FundingPayment] 예치금 차감 완료. userId={}, walletUsed={}",
-				command.userId(), walletUsed);
+			log.info("[FundingPayment] 예치금 차감 완료. userId={}, walletUsed={}", userId, walletUsed);
 		}
 
-		// 4-2. PG 결제용 Payment 생성 (walletUsedAmount 포함)
-		Payment payment = Payment.createForFunding(
-			command.userId(),
-			pgRequired,
-			walletUsed
-		);
-
+		// PG 결제용 Payment 생성 (walletUsedAmount 포함)
+		Payment payment = Payment.createForFunding(userId, pgRequired, walletUsed);
 		var savedPayment = paymentRepository.save(payment);
 
 		log.info("[FundingPayment] PG 결제 필요. userId={}, walletUsed={}, pgRequired={}, paymentId={}",
-			command.userId(), walletUsed, pgRequired, savedPayment.getPaymentId());
+			userId, walletUsed, pgRequired, savedPayment.getPaymentId());
 
 		return FundingContributeResult.requiresPgPayment(
 			walletUsed,

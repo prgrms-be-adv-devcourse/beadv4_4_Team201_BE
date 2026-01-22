@@ -15,10 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
-import domain.payment.Payment;
+import domain.payment.PaymentErrorCode;
+import domain.payment.PaymentException;
 import domain.payment.PaymentPolicy;
 import domain.payment.PaymentRepository;
-import domain.payment.PaymentStatus;
 import domain.wallet.Wallet;
 import payment.usecase.command.FundingContributeCommand;
 import payment.usecase.result.FundingContributeResult;
@@ -88,48 +88,35 @@ class FundingPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("예치금이 부족하면 복합 결제로 처리하고 completed=false 반환")
-		void contribute_ShouldRequirePgPayment_WhenBalanceInsufficient() {
+		@DisplayName("예치금이 부족하면 INSUFFICIENT_WALLET_BALANCE 예외 발생")
+		void contribute_ShouldThrowException_WhenBalanceInsufficient() {
 			// Given
 			Long userId = 1L;
 			Money requestAmount = Money.of(50000);
 			Money walletBalance = Money.of(30000); // 예치금 < 요청금액
-			Money expectedPgAmount = Money.of(20000);
 
 			Wallet wallet = Wallet.create(userId, walletBalance);
 			given(walletService.getWalletByMemberId(userId)).willReturn(wallet);
 
-			// Payment 저장 시 ID 할당
-			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> {
-				Payment p = invocation.getArgument(0);
-				return p.withId(100L);
-			});
-
 			FundingContributeCommand command = new FundingContributeCommand(userId, requestAmount);
 
-			// When
-			FundingContributeResult result = fundingPaymentService.contribute(command);
+			// When & Then
+			assertThatThrownBy(() -> fundingPaymentService.contribute(command))
+				.isInstanceOf(PaymentException.class)
+				.satisfies(ex -> {
+					PaymentException paymentEx = (PaymentException) ex;
+					assertThat(paymentEx.getErrorCode()).isEqualTo(PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE);
+				});
 
-			// Then
-			assertThat(result.completed()).isFalse();
-			assertThat(result.walletUsed()).isEqualTo(walletBalance);
-			assertThat(result.pgPaymentRequired()).isEqualTo(expectedPgAmount);
-			assertThat(result.paymentId()).isEqualTo(100L);
-			assertThat(result.orderId()).startsWith("GFTFY_FUNDING_");
-
-			// 예치금 전액 차감 검증
-			verify(walletService).withdraw(eq(userId), eq(walletBalance), anyString(), anyString(), anyLong());
-			// Payment 생성 검증
-			verify(paymentRepository).save(argThat(payment ->
-				payment.getAmount().equals(expectedPgAmount) &&
-					payment.getType() == PaymentType.FUNDING &&
-					payment.getWalletUsedAmount().equals(walletBalance)
-			));
+			// 예치금 차감 안 됨
+			verify(walletService, never()).withdraw(anyLong(), any(), anyString(), anyString(), anyLong());
+			// Payment 생성 안 됨
+			verify(paymentRepository, never()).save(any());
 		}
 
 		@Test
-		@DisplayName("예치금이 0원이면 전액 PG 결제로 처리")
-		void contribute_ShouldRequireFullPgPayment_WhenWalletEmpty() {
+		@DisplayName("예치금이 0원이면 INSUFFICIENT_WALLET_BALANCE 예외 발생")
+		void contribute_ShouldThrowException_WhenWalletEmpty() {
 			// Given
 			Long userId = 1L;
 			Money requestAmount = Money.of(10000);
@@ -138,25 +125,20 @@ class FundingPaymentServiceTest {
 			Wallet wallet = Wallet.create(userId, walletBalance);
 			given(walletService.getWalletByMemberId(userId)).willReturn(wallet);
 
-			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> {
-				Payment p = invocation.getArgument(0);
-				return p.withId(100L);
-			});
-
 			FundingContributeCommand command = new FundingContributeCommand(userId, requestAmount);
 
-			// When
-			FundingContributeResult result = fundingPaymentService.contribute(command);
+			// When & Then
+			assertThatThrownBy(() -> fundingPaymentService.contribute(command))
+				.isInstanceOf(PaymentException.class)
+				.satisfies(ex -> {
+					PaymentException paymentEx = (PaymentException) ex;
+					assertThat(paymentEx.getErrorCode()).isEqualTo(PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE);
+				});
 
-			// Then
-			assertThat(result.completed()).isFalse();
-			assertThat(result.walletUsed()).isEqualTo(Money.zero());
-			assertThat(result.pgPaymentRequired()).isEqualTo(requestAmount);
-
-			// 예치금 차감 호출 안 됨 (0원이므로)
+			// 예치금 차감 안 됨
 			verify(walletService, never()).withdraw(anyLong(), any(), anyString(), anyString(), anyLong());
-			// Payment 생성됨
-			verify(paymentRepository).save(any(Payment.class));
+			// Payment 생성 안 됨
+			verify(paymentRepository, never()).save(any());
 		}
 
 		@Test
