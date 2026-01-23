@@ -67,6 +67,13 @@ public class AuthenticatedMemberArgumentResolver implements HandlerMethodArgumen
 			return null;
 		}
 
+		// Case 3: Authentication 자체가 Principal인 경우 (드문 케이스지만 방어적 코드)
+		if (authentication.getPrincipal() instanceof MemberPrincipal memberPrincipal) {
+			if (paramType.equals(String.class)) {
+				return memberPrincipal.authSub();
+			}
+		}
+
 		return null;
 	}
 }
