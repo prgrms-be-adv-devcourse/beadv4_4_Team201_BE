@@ -14,6 +14,7 @@ import app.giftify.security.common.context.AuthenticatedMember;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class MemberController {
 
     private final GetMemberUseCase getMemberUseCase;
@@ -38,13 +40,20 @@ public class MemberController {
     public ResponseEntity<?> checkRegistration(
             @AuthenticatedMember String authSub
     ) {
+        log.debug("[Controller] checkRegistration called with authSub: {}", authSub);
         if (authSub == null) {
             return ResponseEntity.status(401).body(Map.of("message", "인증 정보(JWT)가 누락되었습니다."));
         }
 
         return getMemberUseCase.getMemberByAuthSub(authSub)
-                .map(member -> ResponseEntity.ok().body((Object) member))
-                .orElseGet(() -> ResponseEntity.ok().body(Map.of("status", "NOT_REGISTERED")));
+                .map(member -> {
+                    log.debug("[Controller] Member found for authSub: {}", authSub);
+                    return ResponseEntity.ok().body((Object) member);
+                })
+                .orElseGet(() -> {
+                    log.debug("[Controller] Member NOT found for authSub: {}", authSub);
+                    return ResponseEntity.ok().body(Map.of("status", "NOT_REGISTERED"));
+                });
     }
 
     // 신규 회원 가입 (추가 정보 입력)
