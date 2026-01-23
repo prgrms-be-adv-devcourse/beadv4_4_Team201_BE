@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import app.giftify.shared.domain.base.BaseDomainModel;
 
 public class WishlistItem extends BaseDomainModel {
-	// private final String authSub;
 	private final Long wishlistId; // id로 Aggregate 참조
 	private final Long productId;
 	private WishlistItemStatus wishlistItemStatus;
@@ -14,8 +13,6 @@ public class WishlistItem extends BaseDomainModel {
 	private WishlistItem(Long id, Long wishlistId, Long productId, WishlistItemStatus wishlistItemStatus) {
 		super(id);
 		validate(wishlistId, productId);
-		// validate(authSub, productId);
-		// this.authSub = authSub;
 		this.wishlistId = wishlistId;
 		this.productId = productId;
 		this.wishlistItemStatus = wishlistItemStatus;
@@ -26,8 +23,6 @@ public class WishlistItem extends BaseDomainModel {
 		LocalDate addedAt) {
 		super(id);
 		validate(wishlistId, productId);
-		// validate(authSub, productId);
-		// this.authSub = authSub;
 		this.wishlistId = wishlistId;
 		this.productId = productId;
 		this.wishlistItemStatus = wishlistItemStatus;
@@ -35,10 +30,6 @@ public class WishlistItem extends BaseDomainModel {
 	}
 
 	// TODO: 도메인 검증 로직 추가
-
-	// public String getAuthSub() {
-	// 	return authSub;
-	// }
 
 	public Long getProductId() {
 		return productId;
@@ -59,7 +50,6 @@ public class WishlistItem extends BaseDomainModel {
 	@Override
 	public String toString() {
 		return "WishlistItem{" +
-			// "authSub=" + authSub +
 			"wishlistId=" + wishlistId +
 			", productId=" + productId +
 			", wishlistItemStatus=" + wishlistItemStatus +
@@ -85,16 +75,6 @@ public class WishlistItem extends BaseDomainModel {
 			return this;
 		}
 
-		// public Builder authSub(String authSub) {
-		// 	this.authSub = authSub;
-		// 	return this;
-		// }
-
-		// public Builder wishlist(Wishlist wishlist) {
-		// 	this.wishlist = wishlist;
-		// 	return this;
-		// }
-
 		public Builder wishlistId(Long wishlistId) {
 			this.wishlistId = wishlistId;
 			return this;
@@ -115,12 +95,6 @@ public class WishlistItem extends BaseDomainModel {
 			return this;
 		}
 
-		// public WishlistItem build() {
-		// 	if (addedAt == null) {
-		// 		return new WishlistItem(id, authSub, productId, wishlistItemStatus);
-		// 	}
-		// 	return new WishlistItem(id, authSub, productId, wishlistItemStatus, addedAt);
-		// }
 		public WishlistItem build() {
 			if (addedAt == null) {
 				return new WishlistItem(id, wishlistId, productId, wishlistItemStatus);
@@ -137,17 +111,4 @@ public class WishlistItem extends BaseDomainModel {
 			throw new IllegalArgumentException("유효하지 않은 상품 ID입니다.");
 		}
 	}
-	// private void validate(String authSub, Long productId) {
-	// 	if (authSub == null || authSub.isBlank()) {
-	// 		throw new IllegalArgumentException("유효하지 않은 authSub 입니다.");
-	// 	}
-	// 	if (productId == null || productId <= 0) {
-	// 		throw new IllegalArgumentException("유효하지 않은 상품 ID입니다.");
-	// 	}
-	// }
-	// private void validate(Long productId) {
-	// 	if (productId == null || productId <= 0) {
-	// 		throw new IllegalArgumentException("유효하지 않은 상품 ID입니다.");
-	// 	}
-	// }
 }

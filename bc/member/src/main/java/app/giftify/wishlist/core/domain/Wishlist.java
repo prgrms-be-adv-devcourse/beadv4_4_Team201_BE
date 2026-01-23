@@ -50,17 +50,12 @@ public class Wishlist extends BaseDomainModel {
 		return createdAt;
 	}
 
-	// public String getAuthSub() {
-	//     return authSub;
-	// }
-
 	@Override
 	public String toString() {
 		return "Wishlist{" +
 			"memberId=" + memberId +
 			", visibility=" + visibility +
 			", createdAt=" + createdAt +
-			// ", authSub='" + authSub + '\'' +
 			'}';
 	}
 
@@ -73,7 +68,6 @@ public class Wishlist extends BaseDomainModel {
 		private Long memberId;
 		private Visibility visibility;
 		private LocalDate createdAt;
-		private String authSub;
 
 		public Builder id(Long id) {
 			this.id = id;
@@ -92,11 +86,6 @@ public class Wishlist extends BaseDomainModel {
 
 		public Builder createdAt(LocalDate createdAt) {
 			this.createdAt = createdAt;
-			return this;
-		}
-
-		public Builder authSub(String authSub) {
-			this.authSub = authSub;
 			return this;
 		}
 
