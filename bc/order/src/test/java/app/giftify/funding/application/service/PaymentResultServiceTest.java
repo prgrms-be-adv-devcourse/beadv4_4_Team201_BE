@@ -70,4 +70,41 @@ class PaymentResultServiceTest {
                 .isInstanceOf(OrderException.class)
                 .hasMessageContaining("찾을 수 없는 주문입니다");
     }
+    @Test
+    @DisplayName("환불 처리 시 주문 상태를 REFUNDED로 변경하고 저장한다")
+    void refundPayment_success() {
+        // given
+        Long orderId = 1L;
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123456")
+                .buyerId(100L)
+                .totalAmount(Money.of(10000))
+                .paymentMethod(PaymentMethod.CARD)
+                .status(OrderStatus.ORDERED)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(orderRepositoryPort.findById(orderId)).willReturn(Optional.of(order));
+
+        // when
+        paymentResultService.refundPayment(orderId, "환불 사유");
+
+        // then
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.REFUNDED);
+        verify(orderRepositoryPort).save(order);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 주문의 환불 처리 시 예외가 발생한다")
+    void refundPayment_fail_notFound() {
+        // given
+        Long orderId = 1L;
+        given(orderRepositoryPort.findById(orderId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> paymentResultService.refundPayment(orderId, "사유"))
+                .isInstanceOf(OrderException.class)
+                .hasMessageContaining("찾을 수 없는 주문입니다");
+    }
 }

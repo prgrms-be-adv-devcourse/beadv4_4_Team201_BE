@@ -1,6 +1,7 @@
 package app.giftify.funding.adapter.inbound.eventListener;
 
 import app.giftify.funding.adapter.inbound.handler.PaymentResultHandler;
+import app.giftify.shared.domain.event.payment.PaymentRefundedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededForOrderEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,5 +36,18 @@ class PaymentResultEventListenerTest {
 
         // then
         verify(paymentResultHandler, timeout(1000)).handlePaymentResultSucceed(any(PaymentSucceededForOrderEvent.class));
+    }
+
+    @Test
+    @DisplayName("환불 이벤트가 발행되면 리스너가 수신하여 핸들러에게 전달한다")
+    void handlePaymentResultRefundedEvent_success() {
+        // given
+        PaymentRefundedForOrderEvent event = new PaymentRefundedForOrderEvent(1L, "환불사유");
+
+        // when
+        eventPublisher.publishEvent(event);
+
+        // then
+        verify(paymentResultHandler, timeout(1000)).handlePaymentResultRefund(any(PaymentRefundedForOrderEvent.class));
     }
 }

@@ -1,6 +1,7 @@
 package app.giftify.funding.adapter.inbound.handler;
 
 import app.giftify.funding.application.inbound.PaymentResultUseCase;
+import app.giftify.shared.domain.event.payment.PaymentRefundedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededForOrderEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,5 +47,30 @@ class PaymentResultHandlerTest {
 
         // then
         verify(paymentResultUseCase, never()).completePayment(anyLong(), anyString());
+    }
+    @Test
+    @DisplayName("올바른 환불 이벤트가 전달되면 UseCase를 호출한다")
+    void handlePaymentResultRefund_success() {
+        // given
+        PaymentRefundedForOrderEvent event = new PaymentRefundedForOrderEvent(1L, "환불사유");
+
+        // when
+        paymentResultHandler.handlePaymentResultRefund(event);
+
+        // then
+        verify(paymentResultUseCase, times(1)).refundPayment(1L, "환불사유");
+    }
+
+    @Test
+    @DisplayName("환불 이벤트에 필수 값이 누락된 경우 UseCase를 호출하지 않는다")
+    void handlePaymentResultRefund_fail_missingData() {
+        // given
+        PaymentRefundedForOrderEvent event = new PaymentRefundedForOrderEvent(null, null);
+
+        // when
+        paymentResultHandler.handlePaymentResultRefund(event);
+
+        // then
+        verify(paymentResultUseCase, never()).refundPayment(anyLong(), anyString());
     }
 }
