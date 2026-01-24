@@ -4,11 +4,11 @@ import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 
 public interface UpdateWishlistSettingsUseCase {
-    Wishlist updateSettings(UpdateSettingsCommand command);
+	Wishlist updateSettings(UpdateSettingsCommand command);
 
-    record UpdateSettingsCommand(
-            String authSub,
-            Visibility visibility
-    ) {
-    }
+	record UpdateSettingsCommand(
+		Long memberId,
+		Visibility visibility
+	) {
+	}
 }

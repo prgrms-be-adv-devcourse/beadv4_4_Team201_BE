@@ -1,26 +1,26 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
-import app.giftify.wishlist.core.domain.ItemStatus;
-import app.giftify.wishlist.core.domain.WishlistItem;
-import lombok.Builder;
-
 import java.time.LocalDate;
+
+import app.giftify.wishlist.core.domain.WishlistItem;
+import app.giftify.wishlist.core.domain.WishlistItemStatus;
+import lombok.Builder;
 
 @Builder
 public record WishlistItemResponse(
-        Long id,
-        String authSub,
-        Long productId,
-        ItemStatus status,
-        LocalDate addedAt
+	Long id,
+	Long wishlistId,
+	Long productId,
+	WishlistItemStatus status,
+	LocalDate addedAt
 ) {
-    public static WishlistItemResponse from(WishlistItem item) {
-        return WishlistItemResponse.builder()
-                .id(item.getId())
-                .authSub(item.getAuthSub())
-                .productId(item.getProductId())
-                .status(item.getItemStatus())
-                .addedAt(item.getAddedAt())
-                .build();
-    }
+	public static WishlistItemResponse from(WishlistItem item) {
+		return WishlistItemResponse.builder()
+			.id(item.getId())
+			.wishlistId(item.getWishlistId())
+			.productId(item.getProductId())
+			.status(item.getWishlistItemStatus())
+			.addedAt(item.getAddedAt())
+			.build();
+	}
 }
