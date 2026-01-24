@@ -106,7 +106,7 @@ class WishlistItemServiceTest {
 		given(wishlistProductReplicaPort.findByProductId(productId)).willReturn(Optional.empty());
 
 		// QueryPort에서 판매 중이지 않은 상태 반환
-		given(wishlistProductQueryPort.getProductStatus(productId))
+		given(wishlistProductQueryPort.getProductStatus(eq(productId), any()))
 			.willReturn(new WishlistProductQueryPort.ProductStatus(productId, false, "Product", 1000, "Seller"));
 
 		// when & then

@@ -31,8 +31,8 @@ public class ProductFacade {
 	}
 
 	@Transactional(readOnly = true)
-	public ProductDto getProduct(Long id) { // todo auth: ACTIVE 상태가 아닌 상품은 판매자 본인만 조회 가능 (seller == 로그인 유저)
-		return productGetUseCase.getProduct(id);
+	public ProductDto getProduct(Long productId, Long memberId) {
+		return productGetUseCase.getProduct(productId, memberId);
 	}
 
 	@Transactional(readOnly = true)

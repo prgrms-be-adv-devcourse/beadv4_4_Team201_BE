@@ -1,7 +1,5 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +28,7 @@ public class WishlistController {
 	private final UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
 	private final GetWishlistUseCase getWishlistUseCase;
 
-	// 위시리스트 조회 //todo ResponseEntity<List<WishlistItemDto>>
+	// 위시리스트 조회
 	// 현재 로그인한 사용자의 위시리스트 기본 정보 조회
 	@GetMapping("/me")
 	public ResponseEntity<WishlistResponse> getMyInfo(
@@ -48,11 +46,6 @@ public class WishlistController {
 		@CurrentMemberId Long memberId,
 		@RequestBody @Valid UpdateWishlistSettingsRequest request
 	) {
-		Optional<Wishlist> wishlist = getWishlistUseCase.getWishlistByMemberId(memberId);
-		if (wishlist.isEmpty()) {
-			throw new WishlistNotFoundException(memberId);
-		}
-
 		Visibility visibility = Visibility.from(request.visibility());
 
 		UpdateWishlistSettingsUseCase.UpdateSettingsCommand command = new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(

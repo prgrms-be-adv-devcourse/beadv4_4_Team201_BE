@@ -1,87 +1,141 @@
 package app.giftify.wishlist.adapter.out.api.adapter;
 
-import app.giftify.wishlist.adapter.out.api.dto.ProductResponse;
-import app.giftify.wishlist.adapter.out.jpa.adapter.WishlistProductQueryAdapter;
-import app.giftify.wishlist.application.port.out.WishlistProductQueryPort;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.client.MockRestServiceServer;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import app.giftify.wishlist.adapter.out.api.dto.ProductResponse;
+import app.giftify.wishlist.adapter.out.jpa.adapter.WishlistProductQueryAdapter;
+import app.giftify.wishlist.application.port.out.WishlistProductQueryPort;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
+@ExtendWith(MockitoExtension.class)
 class WishlistProductQueryAdapterTest {
 
-    private WishlistProductQueryAdapter adapter;
-    private MockRestServiceServer mockServer;
-    private ObjectMapper objectMapper = new ObjectMapper();
+	@Mock
+	private RestClient restClient;
 
-    @BeforeEach
-    void setUp() {
-        RestClient.Builder builder = RestClient.builder();
-        mockServer = MockRestServiceServer.bindTo(builder).build();
-        adapter = new WishlistProductQueryAdapter(builder, "http://localhost:8080");
-    }
+	@Mock
+	private RestClient.RequestHeadersUriSpec requestHeadersUriSpec;
 
-    @Test
-    @DisplayName("API 호출을 통해 상품 상태를 정상적으로 가져온다")
-    void getProductStatus_Success() throws Exception {
-        // Given
-        Long productId = 1L;
-        ProductResponse response = new ProductResponse(1L, "Test Product", 10000, "ACTIVE", "SellerA");
-        String responseBody = objectMapper.writeValueAsString(response);
+	@Mock
+	private RestClient.RequestHeadersSpec requestHeadersSpec;
 
-        mockServer.expect(requestTo("http://localhost:8080/api/products/1"))
-                .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
+	@Mock
+	private RestClient.ResponseSpec responseSpec;
 
-        // When
-        WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId);
+	private WishlistProductQueryAdapter adapter;
 
-        // Then
-        assertThat(status.productId()).isEqualTo(productId);
-        assertThat(status.onSale()).isTrue();
-        assertThat(status.name()).isEqualTo("Test Product");
-        assertThat(status.price()).isEqualTo(10000);
-        assertThat(status.sellerNickName()).isEqualTo("SellerA");
-    }
+	@BeforeEach
+	void setUp() {
+		RestClient.Builder builder = mock(RestClient.Builder.class);
+		when(builder.baseUrl(anyString())).thenReturn(builder);
+		when(builder.build()).thenReturn(restClient);
 
-    @Test
-    @DisplayName("상품 상태가 ACTIVE가 아니면 onSale은 false를 반환한다")
-    void getProductStatus_NotActive() throws Exception {
-        // Given
-        Long productId = 1L;
-        ProductResponse response = new ProductResponse(1L, "Test Product", 10000, "INACTIVE", "SellerA");
-        String responseBody = objectMapper.writeValueAsString(response);
+		adapter = new WishlistProductQueryAdapter(builder, "http://localhost:8080");
+	}
 
-        mockServer.expect(requestTo("http://localhost:8080/api/products/1"))
-                .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
+	private void setupMockRestClient(ProductResponse response) {
+		when(restClient.get()).thenReturn(requestHeadersUriSpec);
+		when(requestHeadersUriSpec.uri(anyString(), any(Object[].class))).thenReturn(requestHeadersSpec);
+		when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+		when(responseSpec.body(ProductResponse.class)).thenReturn(response);
+	}
 
-        // When
-        WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId);
+	private void setupMockRestClientWithException(Exception exception) {
+		when(restClient.get()).thenReturn(requestHeadersUriSpec);
+		when(requestHeadersUriSpec.uri(anyString(), any(Object[].class))).thenReturn(requestHeadersSpec);
+		when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+		when(responseSpec.body(ProductResponse.class)).thenThrow(exception);
+	}
 
-        // Then
-        assertThat(status.onSale()).isFalse();
-    }
+	@Test
+	@DisplayName("API 호출을 통해 상품 상태를 정상적으로 가져온다")
+	void getProductStatus_Success() {
+		// Given
+		Long productId = 1L;
+		ProductResponse response = new ProductResponse(1L, "Test Product", 10000, "ACTIVE", "SellerA");
+		setupMockRestClient(response);
 
-    @Test
-    @DisplayName("API 호출 실패 시 기본값을 반환한다")
-    void getProductStatus_Fail() {
-        // Given
-        Long productId = 1L;
-        mockServer.expect(requestTo("http://localhost:8080/api/products/1"))
-                .andRespond(withServerError());
+		// When
+		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
 
-        // When
-        WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId);
+		// Then
+		assertThat(status.productId()).isEqualTo(productId);
+		assertThat(status.onSale()).isTrue();
+		assertThat(status.name()).isEqualTo("Test Product");
+		assertThat(status.price()).isEqualTo(10000);
+		assertThat(status.sellerNickName()).isEqualTo("SellerA");
+	}
 
-        // Then
-        assertThat(status.onSale()).isFalse();
-        assertThat(status.name()).isEqualTo("Unknown");
-    }
+	@Test
+	@DisplayName("상품 상태가 ACTIVE일 때만 onSale은 true를 반환한다")
+	void getProductStatus_OnlyActiveReturnsTrue() {
+		// Given
+		Long productId = 1L;
+		ProductResponse response = new ProductResponse(1L, "Test Product", 10000, "ACTIVE", "SellerA");
+		setupMockRestClient(response);
+
+		// When
+		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
+
+		// Then
+		assertThat(status.onSale()).isTrue();
+	}
+
+	@Test
+	@DisplayName("상품이 INACTIVE 상태이면 상품 모듈에서 에러가 발생하여 onSale은 false를 반환한다")
+	void getProductStatus_InactiveProduct_ThrowsError() {
+		// Given
+		Long productId = 1L;
+		// 상품 모듈은 INACTIVE 상품 조회 시 에러를 반환함
+		setupMockRestClientWithException(new RuntimeException("Product is not active"));
+
+		// When
+		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
+
+		// Then
+		assertThat(status.onSale()).isFalse();
+		assertThat(status.name()).isNull();
+	}
+
+	@Test
+	@DisplayName("API 호출 실패 시 기본값을 반환한다")
+	void getProductStatus_Fail() {
+		// Given
+		Long productId = 1L;
+		setupMockRestClientWithException(new RuntimeException("API Error"));
+
+		// When
+		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
+
+		// Then
+		assertThat(status.onSale()).isFalse();
+		assertThat(status.name()).isNull();
+	}
+
+	@Test
+	@DisplayName("API 응답이 null이면 기본값을 반환한다")
+	void getProductStatus_NullResponse() {
+		// Given
+		Long productId = 1L;
+		setupMockRestClient(null);
+
+		// When
+		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
+
+		// Then
+		assertThat(status.onSale()).isFalse();
+		assertThat(status.name()).isNull();
+	}
 }

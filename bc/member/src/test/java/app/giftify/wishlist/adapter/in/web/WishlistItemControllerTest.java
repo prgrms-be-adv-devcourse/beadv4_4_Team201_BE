@@ -5,6 +5,8 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,24 +66,36 @@ class WishlistItemControllerTest {
 			.build();
 	}
 
-	// 컨트롤러에서 /me 엔드포인트가 주석 처리되어 있어 테스트 제외
-	// @Test
-	// @DisplayName("내 위시리스트 아이템 전체 조회")
-	// void getAllProducts_Success() throws Exception {
-	// 	// given
-	// 	WishlistItem item = WishlistItem.builder()
-	// 		.id(1L)
-	// 		.wishlistId(1L)
-	// 		.productId(100L)
-	// 		.wishlistItemStatus(WishlistItemStatus.PENDING)
-	// 		.build();
-	// 	given(getWishlistItemUseCase.getWishlistItems(1L)).willReturn(List.of(item));
-	//
-	// 	// when & then
-	// 	mockMvc.perform(get("/api/wishlist/items/me"))
-	// 		.andExpect(status().isOk())
-	// 		.andExpect(jsonPath("$[0].productId").value(100));
-	// }
+	@Test
+	@DisplayName("내 위시리스트 아이템 전체 조회")
+	void getAllProducts_Success() throws Exception {
+		// given
+		WishlistItem item = WishlistItem.builder()
+			.id(1L)
+			.wishlistId(1L)
+			.productId(100L)
+			.wishlistItemStatus(WishlistItemStatus.PENDING)
+			.build();
+		given(getWishlistItemUseCase.getWishlistItems(MEMBER_ID)).willReturn(List.of(item));
+
+		// when & then
+		mockMvc.perform(get("/api/wishlist/items/me"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0].productId").value(100));
+	}
+
+	@Test
+	@DisplayName("내 위시리스트 아이템 전체 조회 - 빈 목록")
+	void getAllProducts_EmptyList() throws Exception {
+		// given
+		given(getWishlistItemUseCase.getWishlistItems(MEMBER_ID)).willReturn(List.of());
+
+		// when & then
+		mockMvc.perform(get("/api/wishlist/items/me"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$").isArray())
+			.andExpect(jsonPath("$").isEmpty());
+	}
 
 	@Test
 	@DisplayName("특정 상품의 위시리스트 포함 여부 확인")

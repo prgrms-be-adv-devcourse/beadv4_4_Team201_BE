@@ -1,5 +1,8 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,6 +29,19 @@ public class WishlistItemController {
 	private final GetWishlistItemUseCase getWishlistItemUseCase;
 	private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
+	// 위시리스트에 담긴 모든 상품 조회
+	@GetMapping("/me")
+	public ResponseEntity<List<WishlistItemResponse>> getAllProducts(
+		@CurrentMemberId Long memberId
+	) {
+		List<WishlistItemResponse> items = getWishlistItemUseCase.getWishlistItems(memberId)
+			.stream()
+			.map(WishlistItemResponse::from)
+			.collect(Collectors.toList());
+		return ResponseEntity.ok(items);
+	}
+
+	// 위시리스트아이템에 특정 상품이 담겨있는지 확인
 	@GetMapping("/me/check")
 	public ResponseEntity<?> isExistProduct(
 		@CurrentMemberId Long memberId,

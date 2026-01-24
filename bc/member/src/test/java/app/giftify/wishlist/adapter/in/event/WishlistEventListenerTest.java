@@ -1,21 +1,24 @@
 package app.giftify.wishlist.adapter.in.event;
 
-import app.giftify.wishlist.application.port.out.WishlistProductReplicaPort;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
+import app.giftify.wishlist.application.port.out.WishlistProductReplicaPort;
 
 class WishlistEventListenerTest {
 
-    @Test
-    @DisplayName("WishlistEventListener 인스턴스 생성 테스트")
-    void instanceCreationTest() {
-        WishlistProductReplicaPort mockPort = mock(WishlistProductReplicaPort.class);
+	@Test
+	@DisplayName("WishlistEventListener 인스턴스 생성 테스트")
+	void instanceCreationTest() {
+		WishlistProductReplicaPort mockReplicaPort = mock(WishlistProductReplicaPort.class);
+		WishlistItemRepositoryPort mockWishlistPort = mock(WishlistItemRepositoryPort.class);
 
-        WishlistEventListener listener = new WishlistEventListener(mockPort);
+		WishlistEventListener listener = new WishlistEventListener(mockReplicaPort, mockWishlistPort);
 
-        assertThat(listener).isNotNull();
-    }
+		assertThat(listener).isNotNull();
+	}
 }
