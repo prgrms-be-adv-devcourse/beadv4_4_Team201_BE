@@ -208,7 +208,7 @@ class OrderCreateServiceTest {
         given(orderItemRepositoryPort.findByOrderId(orderId)).willReturn(List.of(item));
 
         // when
-        OrderResponse response = orderCreateService.cancelOrder(orderId, memberId);
+        orderCreateService.cancelOrder(orderId, memberId);
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);

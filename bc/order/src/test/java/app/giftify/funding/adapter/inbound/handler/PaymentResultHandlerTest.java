@@ -60,7 +60,7 @@ class PaymentResultHandlerTest {
         paymentResultHandler.handlePaymentResultRefund(event);
 
         // then
-        verify(paymentResultUseCase, times(1)).refundPayment(1L, "환불사유");
+        verify(paymentResultUseCase, times(1)).refundPayment(1L);
     }
 
     @Test
@@ -73,7 +73,7 @@ class PaymentResultHandlerTest {
         paymentResultHandler.handlePaymentResultRefund(event);
 
         // then
-        verify(paymentResultUseCase, never()).refundPayment(anyLong(), anyString());
+        verify(paymentResultUseCase, never()).refundPayment(anyLong());
     }
 
     @Test
