@@ -6,7 +6,6 @@ import app.giftify.funding.adapter.outbound.jpa.repository.OrderItemRepository;
 import app.giftify.funding.application.outbound.OrderItemRepositoryPort;
 import app.giftify.funding.domain.OrderItem;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,5 +21,17 @@ public class OrderItemAdapter implements OrderItemRepositoryPort {
         List<OrderItemEntity> entities = OrderItemMapper.toEntities(orderItems);
         List<OrderItemEntity> savedEntities = orderItemRepository.saveAll(entities);
         return OrderItemMapper.toDomains(savedEntities);
+    }
+
+    @Override
+    public List<OrderItem> findByOrderId(Long orderId) {
+        List<OrderItemEntity> entities = orderItemRepository.findByOrderId(orderId);
+        return OrderItemMapper.toDomains(entities);
+    }
+
+    @Override
+    public void deleteAll(List<OrderItem> orderItems) {
+        List<OrderItemEntity> entities = OrderItemMapper.toEntities(orderItems);
+        orderItemRepository.deleteAll(entities);
     }
 }
