@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import app.giftify.wishlist.adapter.out.api.dto.ProductResponse;
@@ -45,8 +46,9 @@ public class WishlistProductQueryAdapter implements WishlistProductQueryPort {
 
 			return ProductStatus.fromApi(productId, productResponse);
 
-		} catch (Exception e) { // 상품 조회 실패 (판매 중이 아님, 네트워크 오류 등)
-			log.error("[Wishlist] 위시리스트에서 상품 정보를 조회하는 API 호출에 실패했습니다 | productId: {}", productId, e);
+		} catch (HttpClientErrorException.BadRequest e) {
+			// 상품이 판매 중이 아님 (ProductException → 400 Bad Request)
+			log.warn("[Wishlist] 상품이 판매 중이 아닙니다 | productId: {}", productId);
 
 			return replica.map(wishlistProductReplica -> ProductStatus.apiFailedKeepReplica(
 					productId,
@@ -55,6 +57,11 @@ public class WishlistProductQueryAdapter implements WishlistProductQueryPort {
 					wishlistProductReplica.getSellerNickname()
 				))
 				.orElseGet(() -> ProductStatus.apiFailedNoReplica(productId));
+
+		} catch (Exception e) {
+			// 404, 네트워크 오류, 서버 오류 등 예상치 못한 예외
+			log.error("[Wishlist] 상품 API 호출 중 오류 발생 | productId: {}", productId, e);
+			throw new RuntimeException("상품 정보 조회에 실패했습니다", e);
 		}
 	}
 }

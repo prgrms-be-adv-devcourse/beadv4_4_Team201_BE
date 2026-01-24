@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import app.giftify.wishlist.adapter.out.api.dto.ProductResponse;
@@ -94,12 +95,18 @@ class WishlistProductQueryAdapterTest {
 	}
 
 	@Test
-	@DisplayName("상품이 INACTIVE 상태이면 상품 모듈에서 에러가 발생하여 onSale은 false를 반환한다")
-	void getProductStatus_InactiveProduct_ThrowsError() {
+	@DisplayName("상품이 INACTIVE 상태이면 400 에러가 발생하고 onSale은 false를 반환한다")
+	void getProductStatus_InactiveProduct_BadRequest() {
 		// Given
 		Long productId = 1L;
-		// 상품 모듈은 INACTIVE 상품 조회 시 에러를 반환함
-		setupMockRestClientWithException(new RuntimeException("Product is not active"));
+		// 상품 모듈은 INACTIVE 상품 조회 시 400 Bad Request 반환
+		setupMockRestClientWithException(HttpClientErrorException.BadRequest.create(
+			org.springframework.http.HttpStatus.BAD_REQUEST,
+			"Product is not active",
+			org.springframework.http.HttpHeaders.EMPTY,
+			new byte[0],
+			null
+		));
 
 		// When
 		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
@@ -110,18 +117,35 @@ class WishlistProductQueryAdapterTest {
 	}
 
 	@Test
-	@DisplayName("API 호출 실패 시 기본값을 반환한다")
-	void getProductStatus_Fail() {
+	@DisplayName("404 에러 발생 시 RuntimeException을 던진다")
+	void getProductStatus_NotFound_ThrowsException() {
 		// Given
 		Long productId = 1L;
-		setupMockRestClientWithException(new RuntimeException("API Error"));
+		setupMockRestClientWithException(HttpClientErrorException.NotFound.create(
+			org.springframework.http.HttpStatus.NOT_FOUND,
+			"Product not found",
+			org.springframework.http.HttpHeaders.EMPTY,
+			new byte[0],
+			null
+		));
 
-		// When
-		WishlistProductQueryPort.ProductStatus status = adapter.getProductStatus(productId, Optional.empty());
+		// When & Then
+		assertThatThrownBy(() -> adapter.getProductStatus(productId, Optional.empty()))
+			.isInstanceOf(RuntimeException.class)
+			.hasMessageContaining("상품 정보 조회에 실패했습니다");
+	}
 
-		// Then
-		assertThat(status.onSale()).isFalse();
-		assertThat(status.name()).isNull();
+	@Test
+	@DisplayName("네트워크 오류 발생 시 RuntimeException을 던진다")
+	void getProductStatus_NetworkError_ThrowsException() {
+		// Given
+		Long productId = 1L;
+		setupMockRestClientWithException(new RuntimeException("Network Error"));
+
+		// When & Then
+		assertThatThrownBy(() -> adapter.getProductStatus(productId, Optional.empty()))
+			.isInstanceOf(RuntimeException.class)
+			.hasMessageContaining("상품 정보 조회에 실패했습니다");
 	}
 
 	@Test
