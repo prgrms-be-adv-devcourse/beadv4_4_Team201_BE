@@ -1,6 +1,7 @@
 package app.giftify.wishlist.adapter.in.event;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -35,7 +36,7 @@ public class WishlistEventListener {
 
 	// 상품의 상태가 [판매 가능]으로 변경되었을 때
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleProductSaleEnabled(ProductSaleEnabledEvent event) {
 		log.info("[Wishlist] 상품의 상태가 [판매 가능]으로 변경되었습니다 | productId: {}", event.getProductId());
 		// 위시리스트ID로 레플리카 조회
@@ -59,7 +60,7 @@ public class WishlistEventListener {
 
 	// 상품의 상태가 [판매 불가능]으로 변경되었을 때
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleProductSaleDisabled(ProductSaleDisabledEvent event) {
 		log.info("[Wishlist] 상품의 상태가 [판매 불가능]으로 변경되었습니다 | productId: {}", event.getProductId());
 		wishlistProductReplicaPort.findByProductId(event.getProductId())
@@ -82,7 +83,7 @@ public class WishlistEventListener {
 
 	// 상품이 등록되었을 때
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleProductReplicaCreationRequested(ProductReplicaCreationRequestedEvent event) {
 		log.info("[Wishlist] 상품이 등록되었습니다 | productId: {}", event.getId());
 		wishlistProductReplicaPort.findByProductId(event.getId())
@@ -112,7 +113,7 @@ public class WishlistEventListener {
 
 	// 상품 정보가 변경되었을 때
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleProductReplicaUpdated(ProductReplicaUpdatedEvent event) {
 		log.info("[Wishlist] Product snapshot updated event received for productId: {}", event.getId());
 		wishlistProductReplicaPort.findByProductId(event.getId())
@@ -135,7 +136,7 @@ public class WishlistEventListener {
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional // 필요하면 @Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleFundingCreated(FundingCreatedEvent event) {
 		updateStatus(event.getWishlistItemId(),
 			WishlistItemStatus.IN_PROGRESS,
@@ -143,7 +144,7 @@ public class WishlistEventListener {
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleFundingAchieved(FundingAchievedEvent event) {
 		updateStatus(event.getWishlistItemId(),
 			WishlistItemStatus.REQUESTED_CONFIRM,
@@ -151,7 +152,7 @@ public class WishlistEventListener {
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleFundingAccepted(FundingAcceptedEvent event) {
 		updateStatus(event.getWishlistItemId(),
 			WishlistItemStatus.COMPLETED,
@@ -159,7 +160,7 @@ public class WishlistEventListener {
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleFundingCanceled(FundingCanceledEvent event) {
 		updateStatus(event.getWishlistItemId(),
 			WishlistItemStatus.NO_THANKS,
@@ -167,7 +168,7 @@ public class WishlistEventListener {
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleFundingExpired(FundingExpiredEvent event) {
 		updateStatus(event.getWishlistItemId(),
 			WishlistItemStatus.PENDING,
