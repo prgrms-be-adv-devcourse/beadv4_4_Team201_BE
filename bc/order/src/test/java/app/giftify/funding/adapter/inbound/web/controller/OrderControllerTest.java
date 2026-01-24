@@ -1,7 +1,7 @@
 package app.giftify.funding.adapter.inbound.web.controller;
 
-import app.giftify.funding.adapter.inbound.web.dto.OrderCreateRequest;
-import app.giftify.funding.adapter.inbound.web.dto.OrderResponse;
+import app.giftify.funding.adapter.inbound.web.dto.request.OrderCreateRequest;
+import app.giftify.funding.adapter.inbound.web.dto.response.OrderResponse;
 import app.giftify.funding.application.inbound.OrderCreateUseCase;
 import app.giftify.funding.domain.OrderStatus;
 import app.giftify.security.common.CurrentMemberId;
@@ -25,6 +25,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -115,5 +116,22 @@ class OrderControllerTest {
         } catch (Exception e) {
             assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
         }
+    }
+
+    @Test
+    @DisplayName("주문 확정 API 호출 시 200 상태코드와 확정 정보를 반환한다")
+    void confirmOrder_success() throws Exception {
+        // given
+        Long orderId = 1L;
+        Long memberId = 1L;
+        given(orderCreateUseCase.confirmOrder(orderId, memberId)).willReturn("ORDERED");
+
+        // when & then
+        mockMvc.perform(patch("/api/order/orders/{orderId}/confirm", orderId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId").value(orderId))
+                .andExpect(jsonPath("$.previousStatus").value("ORDERED"))
+                .andExpect(jsonPath("$.currentStatus").value("CONFIRMED"))
+                .andExpect(jsonPath("$.message").value("주문이 확정되었습니다."));
     }
 }
