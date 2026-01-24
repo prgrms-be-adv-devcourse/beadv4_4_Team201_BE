@@ -27,7 +27,6 @@ class OrderItemMapperTest {
                 .receiverId(300L)
                 .price(Money.of(10000L))
                 .quantity(new Quantity(2))
-                .status(OrderStatus.PAYMENT_PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -42,7 +41,6 @@ class OrderItemMapperTest {
         assertThat(entity.getReceiverId()).isEqualTo(orderItem.getReceiverId());
         assertThat(entity.getPrice()).isEqualByComparingTo(orderItem.getPrice().amount());
         assertThat(entity.getQuantity()).isEqualTo(orderItem.getQuantity().getValue());
-        assertThat(entity.getStatus()).isEqualTo(orderItem.getStatus());
     }
 
     @Test
@@ -57,7 +55,6 @@ class OrderItemMapperTest {
                 .receiverId(300L)
                 .price(java.math.BigDecimal.valueOf(10000))
                 .quantity(2)
-                .status(OrderStatus.PAYMENT_PENDING)
                 .build();
 
         // when
@@ -71,6 +68,5 @@ class OrderItemMapperTest {
         assertThat(orderItem.getReceiverId()).isEqualTo(entity.getReceiverId());
         assertThat(orderItem.getPrice().amount()).isEqualByComparingTo(entity.getPrice());
         assertThat(orderItem.getQuantity().getValue()).isEqualTo(entity.getQuantity());
-        assertThat(orderItem.getStatus()).isEqualTo(entity.getStatus());
     }
 }

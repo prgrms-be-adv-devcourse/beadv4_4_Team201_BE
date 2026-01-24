@@ -73,7 +73,6 @@ class OrderCreateServiceTest {
                 .receiverId(300L)
                 .price(Money.of(10000L))
                 .quantity(new app.giftify.shared.domain.vo.Quantity(2))
-                .status(OrderStatus.PAYMENT_PENDING)
                 .build();
 
         given(orderRepositoryPort.save(any(Order.class))).willReturn(savedOrder);
@@ -200,7 +199,6 @@ class OrderCreateServiceTest {
         OrderItem item = OrderItem.builder()
                 .id(1L)
                 .orderId(orderId)
-                .status(OrderStatus.ORDERED)
                 .price(Money.of(10000))
                 .quantity(new app.giftify.shared.domain.vo.Quantity(1))
                 .build();
@@ -214,7 +212,6 @@ class OrderCreateServiceTest {
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
-        assertThat(item.getStatus()).isEqualTo(OrderStatus.CANCELED);
         verify(orderPaymentPort).cancelPayment(orderNumber);
         verify(orderRepositoryPort).save(order);
         verify(orderItemRepositoryPort).saveAll(anyList());

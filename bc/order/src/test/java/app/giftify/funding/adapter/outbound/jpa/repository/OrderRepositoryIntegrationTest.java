@@ -51,7 +51,6 @@ class OrderRepositoryIntegrationTest {
                 .receiverId(300L)
                 .price(BigDecimal.valueOf(10000))
                 .quantity(2)
-                .status(OrderStatus.PAYMENT_PENDING)
                 .build();
 
         orderItemRepository.save(itemEntity);
