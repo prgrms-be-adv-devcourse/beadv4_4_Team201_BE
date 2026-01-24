@@ -32,7 +32,7 @@ public class WishlistProductReplicaJpaEntity extends BaseJpaEntity {
 
 	private String name;
 	private int price;
-	private String sellerNickName;
+	private String sellerNickname;
 
 	@Builder
 	public WishlistProductReplicaJpaEntity(
@@ -41,22 +41,22 @@ public class WishlistProductReplicaJpaEntity extends BaseJpaEntity {
 		LocalDateTime updatedAt,
 		String name,
 		int price,
-		String sellerNickName
+		String sellerNickname
 	) {
 		this.productId = productId;
 		this.wishlistAllowed = wishlistAllowed;
 		this.updatedAt = updatedAt;
 		this.name = name;
 		this.price = price;
-		this.sellerNickName = sellerNickName;
+		this.sellerNickname = sellerNickname;
 	}
 
 	public void update(boolean wishlistAllowed, LocalDateTime updatedAt, String name, int price,
-		String sellerNickName) {
+		String sellerNickname) {
 		this.wishlistAllowed = wishlistAllowed;
 		this.updatedAt = updatedAt;
 		this.name = name;
 		this.price = price;
-		this.sellerNickName = sellerNickName;
+		this.sellerNickname = sellerNickname;
 	}
 }

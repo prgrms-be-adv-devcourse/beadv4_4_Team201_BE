@@ -39,7 +39,7 @@ public class WishlistProductQueryAdapter implements WishlistProductQueryPort {
 			if (productResponse == null) {
 				return replica.map(wishlistProductReplica -> ProductStatus.apiFailedKeepReplica(productId,
 						wishlistProductReplica.getName(), wishlistProductReplica.getPrice(),
-						wishlistProductReplica.getSellerNickName()))
+						wishlistProductReplica.getSellerNickname()))
 					.orElseGet(() -> ProductStatus.apiFailedNoReplica(productId));
 			}
 
@@ -52,7 +52,7 @@ public class WishlistProductQueryAdapter implements WishlistProductQueryPort {
 					productId,
 					wishlistProductReplica.getName(),
 					wishlistProductReplica.getPrice(),
-					wishlistProductReplica.getSellerNickName()
+					wishlistProductReplica.getSellerNickname()
 				))
 				.orElseGet(() -> ProductStatus.apiFailedNoReplica(productId));
 		}

@@ -36,7 +36,7 @@ public class WishlistProductReplicaAdapter implements WishlistProductReplicaPort
 					domain.getUpdatedAt(),
 					domain.getName(),
 					domain.getPrice(),
-					domain.getSellerNickName()
+					domain.getSellerNickname()
 				),
 				() -> repository.save(WishlistProductReplicaMapper.toEntity(domain))
 			);

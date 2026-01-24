@@ -10,7 +10,7 @@ public class WishlistProductReplica extends BaseDomainModel {
 	private final Long productId;
 	private String name;
 	private int price;
-	private String sellerNickName;
+	private String sellerNickname;
 	private boolean saleStatus;
 	private LocalDateTime updatedAt;
 
@@ -19,7 +19,7 @@ public class WishlistProductReplica extends BaseDomainModel {
 		Long productId,
 		String name,
 		int price,
-		String sellerNickName,
+		String sellerNickname,
 		boolean wishlistAllowed,
 		LocalDateTime updatedAt
 	) {
@@ -27,7 +27,7 @@ public class WishlistProductReplica extends BaseDomainModel {
 		this.productId = productId;
 		this.name = name;
 		this.price = price;
-		this.sellerNickName = sellerNickName;
+		this.sellerNickname = sellerNickname;
 		this.saleStatus = wishlistAllowed;
 		this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
 	}
@@ -48,8 +48,8 @@ public class WishlistProductReplica extends BaseDomainModel {
 		return price;
 	}
 
-	public String getSellerNickName() {
-		return sellerNickName;
+	public String getSellerNickname() {
+		return sellerNickname;
 	}
 
 	public LocalDateTime getUpdatedAt() {
@@ -66,10 +66,10 @@ public class WishlistProductReplica extends BaseDomainModel {
 		this.updatedAt = LocalDateTime.now();
 	}
 
-	public void updateInfo(String name, int price, String sellerNickName) {
+	public void updateInfo(String name, int price, String sellerNickname) {
 		this.name = name;
 		this.price = price;
-		this.sellerNickName = sellerNickName;
+		this.sellerNickname = sellerNickname;
 		this.updatedAt = LocalDateTime.now();
 	}
 
@@ -113,8 +113,8 @@ public class WishlistProductReplica extends BaseDomainModel {
 			return this;
 		}
 
-		public Builder sellerNickname(String sellerNickName) {
-			this.sellerNickname = sellerNickName;
+		public Builder sellerNickname(String sellerNickname) {
+			this.sellerNickname = sellerNickname;
 			return this;
 		}
 

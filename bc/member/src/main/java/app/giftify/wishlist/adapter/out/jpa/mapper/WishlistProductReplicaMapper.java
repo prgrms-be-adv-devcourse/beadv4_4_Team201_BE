@@ -14,7 +14,7 @@ public class WishlistProductReplicaMapper {
 			.updatedAt(entity.getUpdatedAt())
 			.name(entity.getName())
 			.price(entity.getPrice())
-			.sellerNickname(entity.getSellerNickName())
+			.sellerNickname(entity.getSellerNickname())
 			.build();
 	}
 
@@ -27,7 +27,7 @@ public class WishlistProductReplicaMapper {
 			.updatedAt(domain.getUpdatedAt())
 			.name(domain.getName())
 			.price(domain.getPrice())
-			.sellerNickName(domain.getSellerNickName())
+			.sellerNickname(domain.getSellerNickname())
 			.build();
 	}
 }
