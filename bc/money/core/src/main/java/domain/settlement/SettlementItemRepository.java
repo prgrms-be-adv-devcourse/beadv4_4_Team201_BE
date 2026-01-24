@@ -1,5 +1,5 @@
 package domain.settlement;
 
 public interface SettlementItemRepository {
-    public void save(SettlementItem item);
+    void save(SettlementItem item);
 }

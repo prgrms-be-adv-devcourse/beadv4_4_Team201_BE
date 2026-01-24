@@ -5,18 +5,13 @@ import java.math.BigDecimal;
 /**
  * 금액은 수정되어선 안된다.
  * 불변 객체로 매번 새로운 객체를 반환하도록 해야 한다.
+ * 정산 도메인에서 차감을 처리하려면 Money 객체가 음수를 지원
+ * 필요 시 Money을 사용하는 도메인에서 양수 검증 수행
  */
 public record Money(BigDecimal amount) {
 
 	public Money {
-		if (amount == null) {
-			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
-		}
-
-		if (amount.signum() < 0) {
-			// todo: 커스텀 예외 적용
-			throw new IllegalArgumentException("금액은 음수가 될 수 없습니다.");
-		}
+		validateNotNull(amount);
 	}
 
 	public static Money of(long amount) {
@@ -45,21 +40,25 @@ public record Money(BigDecimal amount) {
 		return this.amount.compareTo(other.amount) >= 0;
 	}
 
-	public Money plus(Money money) {
+	public Money plus(Money other) {
+		validateNotNull(other);
+
+		return new Money(this.amount.add(other.amount));
+	}
+
+	public Money minus(Money other) {
+		validateNotNull(other);
+
+		return new Money(this.amount.subtract(other.amount));
+	}
+
+	public Money negate() {
+		return new Money(amount.negate());
+	}
+
+	private static void validateNotNull(Object money) {
 		if (money == null) {
 			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
 		}
-
-		return new Money(this.amount.add(money.amount));
 	}
-
-	public Money minus(Money money) {
-		// todo: 중복 검증 코드 정리
-		if (money == null) {
-			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
-		}
-
-		return new Money(this.amount.subtract(money.amount));
-	}
-
 }

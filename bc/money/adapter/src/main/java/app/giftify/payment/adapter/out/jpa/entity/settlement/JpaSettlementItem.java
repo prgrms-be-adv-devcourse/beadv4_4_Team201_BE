@@ -1,7 +1,10 @@
 package app.giftify.payment.adapter.out.jpa.entity.settlement;
 
-import domain.settlement.SettlementStatus;
-import domain.settlement.SettlementType;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.vo.OrderItemInfo;
+import domain.settlement.SettlementItem;
+import domain.settlement.SettlementItemStatus;
+import domain.settlement.SettlementItemType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -9,51 +12,57 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "SETTLEMENT_ITEM")
 @NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class JpaSettlementItem {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String orderId;                   // 결제/주문 식별자(현재는 결제)
+    private Long sellerId;
 
-    @Column(nullable = false, unique = true)
-    private String paymentKey;              // PG 결제 식별자
+    @Setter
+    private Long settlementId;
 
-//    private String transactionKey;          // PG 트랜잭션 식별자(멱등키) (todo: 토스 대조 미정)
+    private Long orderId;
 
-    @Column(nullable = false)
-    private Long sellerId;                  // 판매자 식별자
+    private String orderNumber;
+
+    private Long orderItemId;
+
+    private Long quantity;
+
+    private BigDecimal totalAmount;
+
+    private LocalDateTime orderedAt;
+
+    private String paymentKey;
+
+    private String transactionKey;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SettlementType type;            // PAYMENT, CANCEL
+    private PaymentMethodType paymentMethodType;
 
-    @Column(nullable = false)
-    private BigDecimal totalAmount;              // 판매 금액(₩)
+    private BigDecimal platformFee;
 
-    @Column(nullable = false)
-    private BigDecimal platformFee;              // 우리 수수료(₩)
+    private BigDecimal pgFee;
 
-    @Column(nullable = false)
-    private BigDecimal pgFee;                    // pg 수수료(₩)
+    private BigDecimal settlementItemAmount;
 
-    @Column(nullable = false)
-    private BigDecimal settlementAmount;         // 정산 금액(₩) (totalAmount - platformFee - pgFee)
+    @Enumerated(EnumType.STRING)
+    private SettlementItemType type;
 
-    @Column(nullable = false)
-    private SettlementStatus status;        // READY, WAIT, COMPLETE
+    private Long originId;
 
-    @Column(nullable = false)
-    private LocalDateTime settlementDate;   // 정산 예정일
+    private SettlementItemStatus status;
+
+    private LocalDate expectedDate;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -61,8 +70,29 @@ public class JpaSettlementItem {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public void updateStatus(SettlementStatus status) {
+    private JpaSettlementItem(Long sellerId, OrderItemInfo orderItemInfo, SettlementItemType type, SettlementItemStatus status) {
+        this.sellerId = sellerId;
+        this.orderId = orderItemInfo.orderId();
+        this.orderNumber = orderItemInfo.orderNumber();
+        this.quantity = orderItemInfo.quantity();
+        this.orderItemId = orderItemInfo.orderItemId();
+        this.totalAmount = orderItemInfo.totalAmount().amount();
+        this.orderedAt = orderItemInfo.orderedAt();
+        this.type = type;
         this.status = status;
+
+        this.platformFee = BigDecimal.ZERO;
+        this.pgFee = BigDecimal.ZERO;
+        this.settlementItemAmount = BigDecimal.ZERO;
+    }
+
+    public static JpaSettlementItem from(SettlementItem settlementItem) {
+        return new JpaSettlementItem(
+                settlementItem.getSellerId(),
+                settlementItem.getOrderInfo(),
+                settlementItem.getType(),
+                settlementItem.getStatus()
+        );
     }
 }
 
