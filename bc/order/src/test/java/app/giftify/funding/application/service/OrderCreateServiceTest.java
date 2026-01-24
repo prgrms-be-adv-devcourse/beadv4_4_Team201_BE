@@ -3,6 +3,7 @@ package app.giftify.funding.application.service;
 import app.giftify.funding.adapter.inbound.web.dto.OrderCreateRequest;
 import app.giftify.funding.adapter.inbound.web.dto.OrderResponse;
 import app.giftify.funding.application.outbound.OrderItemRepositoryPort;
+import app.giftify.funding.application.outbound.OrderPaymentPort;
 import app.giftify.funding.application.outbound.OrderRepositoryPort;
 import app.giftify.funding.domain.Order;
 import app.giftify.funding.domain.OrderItem;
@@ -38,6 +39,9 @@ class OrderCreateServiceTest {
 
     @Mock
     private OrderItemRepositoryPort orderItemRepositoryPort;
+
+    @Mock
+    private OrderPaymentPort orderPaymentPort;
 
     @Test
     @DisplayName("주문 생성 요청이 올바르면 주문과 주문 아이템을 생성하고 저장한다")
@@ -86,6 +90,7 @@ class OrderCreateServiceTest {
 
         verify(orderRepositoryPort).save(any(Order.class));
         verify(orderItemRepositoryPort).saveAll(anyList());
+        verify(orderPaymentPort).initiatePayment(any(Order.class));
     }
 
     @Test
