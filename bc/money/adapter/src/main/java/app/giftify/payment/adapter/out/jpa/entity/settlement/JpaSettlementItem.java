@@ -37,7 +37,7 @@ public class JpaSettlementItem {
     @Column(nullable = false)
     private String orderNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long orderItemId;
 
     @Column(nullable = false)
