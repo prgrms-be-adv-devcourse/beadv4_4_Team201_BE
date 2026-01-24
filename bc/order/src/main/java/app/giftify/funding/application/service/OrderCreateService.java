@@ -1,7 +1,7 @@
 package app.giftify.funding.application.service;
 
-import app.giftify.funding.adapter.inbound.web.dto.OrderCreateRequest;
-import app.giftify.funding.adapter.inbound.web.dto.OrderResponse;
+import app.giftify.funding.adapter.inbound.web.dto.request.OrderCreateRequest;
+import app.giftify.funding.adapter.inbound.web.dto.response.OrderResponse;
 import app.giftify.funding.application.inbound.OrderCreateUseCase;
 import app.giftify.funding.application.outbound.OrderItemRepositoryPort;
 import app.giftify.funding.application.outbound.OrderPaymentPort;
@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -90,5 +89,17 @@ public class OrderCreateService implements OrderCreateUseCase {
                 .toList();
 
         return OrderResponse.from(savedOrder, itemResponses);
+    }
+
+    @Override
+    public String confirmOrder(Long orderId, Long memberId) {
+        Order order = orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "주문을 찾을 수 없습니다."));
+        String previousStatus = order.getStatus().toString();
+
+        order.toConfirmed();
+        orderRepositoryPort.save(order);
+
+        return previousStatus;
     }
 }
