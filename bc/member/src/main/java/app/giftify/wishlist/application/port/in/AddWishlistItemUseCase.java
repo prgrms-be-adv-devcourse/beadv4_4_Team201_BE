@@ -1,15 +1,14 @@
 package app.giftify.wishlist.application.port.in;
 
-import app.giftify.wishlist.core.domain.ItemStatus;
 import app.giftify.wishlist.core.domain.WishlistItem;
+import app.giftify.wishlist.core.domain.WishlistItemStatus;
 
 public interface AddWishlistItemUseCase {
-    WishlistItem addWishlistItem(WishlistItemAddCommand command);
+	WishlistItem addWishlistItem(Long memberId, WishlistItemAddCommand command);
 
-    record WishlistItemAddCommand(
-            String authSub,
-            Long productId,
-            ItemStatus itemStatus
-    ) {
-    }
+	record WishlistItemAddCommand(
+		Long productId,
+		WishlistItemStatus wishListItemStatus
+	) {
+	}
 }
