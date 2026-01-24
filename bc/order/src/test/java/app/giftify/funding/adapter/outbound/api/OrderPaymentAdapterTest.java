@@ -53,4 +53,21 @@ class OrderPaymentAdapterTest {
         // then
         mockServer.verify();
     }
+
+    @Test
+    @DisplayName("결제 취소 요청 시 올바른 URL과 바디로 API를 호출한다")
+    void cancelPayment_success() {
+        // given
+        String orderNumber = "ORD-123";
+
+        mockServer.expect(requestTo("/payments/cancel"))
+                .andExpect(jsonPath("$.orderNumber").value(orderNumber))
+                .andRespond(withStatus(HttpStatus.OK));
+
+        // when
+        orderPaymentAdapter.cancelPayment(orderNumber);
+
+        // then
+        mockServer.verify();
+    }
 }

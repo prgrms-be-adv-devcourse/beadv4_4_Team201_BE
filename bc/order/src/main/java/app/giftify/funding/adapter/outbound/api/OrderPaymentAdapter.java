@@ -32,16 +32,37 @@ public class OrderPaymentAdapter implements OrderPaymentPort {
 
         try {
             log.info("결제 요청을 보냅니다. [주문 ID: {}, 금액: {}]", order.getId(), order.getTotalAmount().amount());
-            
+
             restClient.post()
                     .uri("/payments/initiate")
                     .body(request)
                     .retrieve()
                     .toBodilessEntity();
-            
+
             log.info("결제 요청이 성공적으로 전송되었습니다.");
         } catch (Exception e) {
             log.error("결제 요청 중 오류가 발생했습니다. [주문 ID: {}]", order.getId(), e);
+        }
+    }
+
+    @Override
+    public void cancelPayment(String orderNumber) {
+        Map<String, Object> request = Map.of(
+                "orderNumber", orderNumber
+        );
+
+        try {
+            log.info("결제 취소 및 환불 요청을 보냅니다. [주문번호: {}]", orderNumber);
+
+            restClient.post()
+                    .uri("/payments/cancel")
+                    .body(request)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            log.info("결제 취소 요청이 성공적으로 전송되었습니다.");
+        } catch (Exception e) {
+            log.error("결제 취소 요청 중 오류가 발생했습니다. [주문번호: {}]", orderNumber, e);
         }
     }
 }
