@@ -16,7 +16,7 @@ import app.giftify.payment.adapter.out.pg.TossConfirmResult;
 import app.giftify.payment.adapter.out.pg.TossPaymentsClient;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.CommonResponse;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 import domain.payment.PaymentErrorCode;

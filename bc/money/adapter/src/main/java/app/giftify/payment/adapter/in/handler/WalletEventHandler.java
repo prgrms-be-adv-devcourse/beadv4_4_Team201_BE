@@ -3,7 +3,7 @@ package app.giftify.payment.adapter.in.handler;
 import org.springframework.stereotype.Component;
 
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import domain.exception.DuplicateTransactionException;
 import domain.exception.EventIgnoreException;
 import domain.exception.WalletException;
@@ -37,7 +37,7 @@ public class WalletEventHandler {
 
     private void processPayment(PaymentSucceededEvent event) {
         switch (event.getType()) {
-            case PaymentType.CHARGE -> walletService.charge(
+            case PaymentType.POINT_CHARGE -> walletService.charge(
                     event.getUserId(),
                     event.getAmount(),
                     event.getType().name(),

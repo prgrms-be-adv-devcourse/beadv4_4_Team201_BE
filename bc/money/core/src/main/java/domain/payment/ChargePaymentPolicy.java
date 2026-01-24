@@ -1,6 +1,6 @@
 package domain.payment;
 
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class ChargePaymentPolicy implements PaymentPolicy {
@@ -9,7 +9,7 @@ public class ChargePaymentPolicy implements PaymentPolicy {
 
 	@Override
 	public boolean support(PaymentType type) {
-		return type.equals(PaymentType.CHARGE);
+		return type.equals(PaymentType.POINT_CHARGE);
 	}
 
 	@Override

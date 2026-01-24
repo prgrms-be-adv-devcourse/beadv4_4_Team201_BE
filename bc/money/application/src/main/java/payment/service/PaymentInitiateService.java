@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.Payment;
 import domain.payment.PaymentCreateContext;
@@ -220,7 +220,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 	private String getTransactionType(PaymentType paymentType) {
 		return switch (paymentType) {
 			case FUNDING -> "FUNDING_PAYMENT";
-			case CHARGE -> "CHARGE_PAYMENT";
+			case POINT_CHARGE -> "CHARGE_PAYMENT";
 			default -> paymentType.name() + "_PAYMENT";
 		};
 	}
@@ -231,7 +231,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 	private String getRollbackTransactionType(PaymentType paymentType) {
 		return switch (paymentType) {
 			case FUNDING -> "FUNDING_ROLLBACK";
-			case CHARGE -> "CHARGE_ROLLBACK";
+			case POINT_CHARGE -> "CHARGE_ROLLBACK";
 			default -> paymentType.name() + "_ROLLBACK";
 		};
 	}

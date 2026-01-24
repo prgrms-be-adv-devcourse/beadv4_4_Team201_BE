@@ -1,6 +1,7 @@
 package app.giftify.shared.domain.event.payment;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class PaymentRefundedEvent extends BaseDomainEvent {

@@ -1,6 +1,6 @@
 package wallet.service;
 
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.errorCode.WalletErrorCode;
 import domain.exception.DuplicateTransactionException;
@@ -233,7 +233,7 @@ class WalletServiceTest {
                 .thenReturn(Optional.of(wallet));
 
         // when
-        String transactionType = PaymentType.CHARGE.name();
+        String transactionType = PaymentType.POINT_CHARGE.name();
         String referenceType = Payment.class.getSimpleName();
         Long referenceId = 3L;
         Money amount = Money.of(1000L);
@@ -242,7 +242,7 @@ class WalletServiceTest {
         walletService.charge(
                 wallet.getMemberId(),
                 amount,
-                PaymentType.CHARGE.name(),
+                PaymentType.POINT_CHARGE.name(),
                 Payment.class.getSimpleName(),
                 referenceId
         );

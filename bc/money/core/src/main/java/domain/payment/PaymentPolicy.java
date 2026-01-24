@@ -1,6 +1,6 @@
 package domain.payment;
 
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 
 public interface PaymentPolicy {
 	boolean support(PaymentType type);

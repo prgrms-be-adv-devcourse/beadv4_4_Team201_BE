@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 class PaymentTest {
@@ -20,7 +20,7 @@ class PaymentTest {
 		// When
 		Payment payment = Payment.create(
 			userId,
-			PaymentType.CHARGE,
+			PaymentType.POINT_CHARGE,
 			amount,
 			PaymentMethod.GIFTIFY_CASH
 		);
@@ -35,7 +35,7 @@ class PaymentTest {
 	@DisplayName("결제 완료(markAsPaid) 시 PAID 상태로 변경되고 PAID 이력이 생성되어야 한다")
 	void markAsPaid_ShouldChangeStatusToPaid_AndAddHistory() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 		String pgTxId = "TX_12345";
 
 		// When
@@ -56,7 +56,7 @@ class PaymentTest {
 	@DisplayName("PENDING 상태가 아니면 markAsPaid는 실패해야 한다")
 	void markAsPaid_ShouldFail_WhenNotPending() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 		payment.markAsPaid("TX_1"); // 이미 PAID 상태
 
 		// When & Then
@@ -69,7 +69,7 @@ class PaymentTest {
 	@DisplayName("PENDING 상태에서는 취소가 가능하고 CANCELED 이력이 생성된다")
 	void cancel_ShouldSucceed_WhenPending() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 
 		// When
 		PaymentHistory history = payment.cancel();
@@ -84,7 +84,7 @@ class PaymentTest {
 	@DisplayName("PAID 상태에서는 취소할 수 없고 예외가 발생한다")
 	void cancel_ShouldFail_WhenAlreadyPaid() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 		payment.markAsPaid("TX_123");
 
 		// When & Then
@@ -97,7 +97,7 @@ class PaymentTest {
 	@DisplayName("PAID 상태에서는 환불이 가능하고 REFUNDED 이력이 생성된다")
 	void refund_ShouldSucceed_WhenPaid() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 		payment.markAsPaid("TX_123");
 
 		// When
@@ -112,7 +112,7 @@ class PaymentTest {
 	@DisplayName("PAID 상태에서만 정산(SETTLED)이 가능하고 그 후에는 환불이 불가하다")
 	void settle_ShouldChangeStatusToSettled_AndPreventRefund() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 		payment.markAsPaid("TX_123");
 
 		// When
@@ -131,7 +131,7 @@ class PaymentTest {
 	@DisplayName("PENDING 상태에서만 실패(FAILED) 처리가 가능하다")
 	void markAsFailed_ShouldSucceed_WhenPending() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 
 		// When
 		payment.markAsFailed();
@@ -144,7 +144,7 @@ class PaymentTest {
 	@DisplayName("clearUncommittedHistory 호출 시 누적된 이력이 모두 삭제된다")
 	void clearUncommittedHistory_ShouldRemoveAllHistory() {
 		// Given
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000L), PaymentMethod.GIFTIFY_CASH);
 		payment.markAsPaid("TX_123");
 		assertThat(payment.getUncommittedHistory()).hasSize(2);
 

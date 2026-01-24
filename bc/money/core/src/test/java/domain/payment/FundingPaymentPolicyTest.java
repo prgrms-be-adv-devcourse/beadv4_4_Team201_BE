@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 class FundingPaymentPolicyTest {
@@ -16,7 +16,7 @@ class FundingPaymentPolicyTest {
 	@DisplayName("support: FUNDING 타입을 지원한다")
 	void support_ShouldReturnTrue_WhenFundingType() {
 		assertThat(policy.support(PaymentType.FUNDING)).isTrue();
-		assertThat(policy.support(PaymentType.CHARGE)).isFalse();
+		assertThat(policy.support(PaymentType.POINT_CHARGE)).isFalse();
 	}
 
 	@Test

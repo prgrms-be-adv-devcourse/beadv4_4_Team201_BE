@@ -13,7 +13,7 @@ import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSettledEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import domain.payment.Payment;
 import domain.payment.PaymentCreateContext;
 import domain.payment.PaymentErrorCode;
@@ -51,7 +51,7 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 
 	@Override
 	public PaymentResult charge(PaymentChargeCommand command) {
-		PaymentType type = PaymentType.CHARGE;
+		PaymentType type = PaymentType.POINT_CHARGE;
 
 		PaymentPolicy policy = policies.stream().filter(p -> p.support(type))
 			.findFirst()

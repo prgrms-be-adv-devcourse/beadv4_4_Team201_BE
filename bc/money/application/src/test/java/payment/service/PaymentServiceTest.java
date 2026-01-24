@@ -18,7 +18,7 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import domain.payment.CancelReason;
 import domain.payment.Payment;
@@ -81,7 +81,7 @@ class PaymentServiceTest {
 			.paymentId(paymentId)
 			.userId(1L)
 			.amount(Money.of(10000))
-			.type(PaymentType.CHARGE)
+			.type(PaymentType.POINT_CHARGE)
 			.status(PaymentStatus.PAID) // 이미 완료된 상태
 			.build();
 
@@ -101,7 +101,7 @@ class PaymentServiceTest {
 		PaymentChargeCommand command = new PaymentChargeCommand(userId, amount);
 
 		// Mocking: 정책 지원 및 검증 통과
-		given(paymentPolicy.support(PaymentType.CHARGE)).willReturn(true);
+		given(paymentPolicy.support(PaymentType.POINT_CHARGE)).willReturn(true);
 		willDoNothing().given(paymentPolicy).validate(any(PaymentCreateContext.class));
 
 		// Mocking: 저장 시 ID 부여된 객체 반환
@@ -128,7 +128,7 @@ class PaymentServiceTest {
 		// Given
 		Long paymentId = 1L;
 		String pgTxId = "pg_key_123";
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000), null).withId(paymentId);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000), null).withId(paymentId);
 
 		given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
@@ -148,7 +148,7 @@ class PaymentServiceTest {
 	void complete_ShouldMarkAsFailed_WhenPgReject() {
 		// Given
 		Long paymentId = 1L;
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000), null).withId(paymentId);
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000), null).withId(paymentId);
 
 		given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
@@ -167,7 +167,7 @@ class PaymentServiceTest {
 	void cancel_ShouldCancelPayment_AndPublishEvent() {
 		// Given
 		Long paymentId = 1L;
-		Payment payment = Payment.create(1L, PaymentType.CHARGE, Money.of(10000), null)
+		Payment payment = Payment.create(1L, PaymentType.POINT_CHARGE, Money.of(10000), null)
 			.withId(paymentId); // PENDING 상태로 생성
 
 		given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));

@@ -32,7 +32,7 @@ import app.giftify.payment.adapter.in.web.payment.PaymentController;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentConfirmRequest;
 import app.giftify.payment.adapter.in.web.payment.dto.PaymentInitiateRequest;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.payment.adapter.out.pg.TossConfirmResult;
 import app.giftify.payment.adapter.out.pg.TossPaymentsClient;
 import app.giftify.security.common.CurrentMemberId;
@@ -427,7 +427,7 @@ class PaymentControllerTest {
 				.paymentId(paymentId)
 				.orderUuid(orderUuid)
 				.userId(memberId)
-				.type(PaymentType.CHARGE)
+				.type(PaymentType.POINT_CHARGE)
 				.status(PaymentStatus.PENDING)
 				.amount(Money.of(amount))
 				.build();

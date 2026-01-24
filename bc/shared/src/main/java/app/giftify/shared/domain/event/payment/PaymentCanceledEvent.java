@@ -3,6 +3,7 @@ package app.giftify.shared.domain.event.payment;
 import java.time.LocalDateTime;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class PaymentCanceledEvent extends BaseDomainEvent {

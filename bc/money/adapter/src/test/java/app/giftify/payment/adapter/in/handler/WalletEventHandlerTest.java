@@ -1,7 +1,7 @@
 package app.giftify.payment.adapter.in.handler;
 
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -45,7 +45,7 @@ class WalletEventHandlerTest {
             "PAYMENT",
             2L,
             Money.of(1000L),
-            PaymentType.CHARGE,
+            PaymentType.POINT_CHARGE,
             LocalDateTime.now()
     );
 

@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.event.payment.PaymentType;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
@@ -43,7 +43,7 @@ public class Payment extends BaseDomainModel {
 	}
 
 	private static String generateOrderUuid(PaymentType type) {
-		String prefix = (type == PaymentType.CHARGE) ? ORDER_UUID_PREFIX_CHARGE : ORDER_UUID_PREFIX_FUNDING;
+		String prefix = (type == PaymentType.POINT_CHARGE) ? ORDER_UUID_PREFIX_CHARGE : ORDER_UUID_PREFIX_FUNDING;
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		return prefix + uuid;
 	}
