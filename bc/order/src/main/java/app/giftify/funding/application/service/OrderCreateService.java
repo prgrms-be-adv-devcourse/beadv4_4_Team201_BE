@@ -4,6 +4,7 @@ import app.giftify.funding.adapter.inbound.web.dto.OrderCreateRequest;
 import app.giftify.funding.adapter.inbound.web.dto.OrderResponse;
 import app.giftify.funding.application.inbound.OrderCreateUseCase;
 import app.giftify.funding.application.outbound.OrderItemRepositoryPort;
+import app.giftify.funding.application.outbound.OrderPaymentPort;
 import app.giftify.funding.application.outbound.OrderRepositoryPort;
 import app.giftify.funding.domain.Order;
 import app.giftify.funding.domain.OrderItem;
@@ -29,6 +30,7 @@ public class OrderCreateService implements OrderCreateUseCase {
 
     private final OrderRepositoryPort orderRepositoryPort;
     private final OrderItemRepositoryPort orderItemRepositoryPort;
+    private final OrderPaymentPort orderPaymentPort;
 
     @Override
     public OrderResponse createOrder(OrderCreateRequest request) {
@@ -69,7 +71,7 @@ public class OrderCreateService implements OrderCreateUseCase {
                         .status(OrderStatus.PAYMENT_PENDING)
                         .createdAt(now)
                         .build())
-                .collect(Collectors.toList());
+                .toList();
 
         List<OrderItem> savedItems = orderItemRepositoryPort.saveAll(orderItems);
 
@@ -79,10 +81,13 @@ public class OrderCreateService implements OrderCreateUseCase {
 
         log.info("주문 생성이 완료되었습니다. [주문 ID: {}]", savedOrder.getId());
 
-        // 4. 응답 반환
+        // 결제 요청 (bc:money:payment API 호출)
+        orderPaymentPort.initiatePayment(savedOrder);
+
+        // 응답 반환
         List<OrderResponse.OrderItemResponse> itemResponses = savedItems.stream()
                 .map(OrderResponse.OrderItemResponse::from)
-                .collect(Collectors.toList());
+                .toList();
 
         return OrderResponse.from(savedOrder, itemResponses);
     }
