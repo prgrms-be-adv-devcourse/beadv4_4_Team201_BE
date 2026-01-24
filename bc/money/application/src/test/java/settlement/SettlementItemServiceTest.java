@@ -30,8 +30,8 @@ class SettlementItemServiceTest {
     private SettlementItemRepository settlementItemRepository;
 
     private CreatePaymentItemCommand createCommand(Long orderItemId) {
-        OrderItemInfo info = new OrderItemInfo(1L, "ORD-001", orderItemId, 1L, Money.of(10000L), LocalDateTime.now());
-        return new CreatePaymentItemCommand(100L, info);
+        OrderItemInfo info = new OrderItemInfo(1L, "ORD-001", orderItemId, 1L, 1L, Money.of(10000L), LocalDateTime.now());
+        return new CreatePaymentItemCommand(info);
     }
 
     @Test

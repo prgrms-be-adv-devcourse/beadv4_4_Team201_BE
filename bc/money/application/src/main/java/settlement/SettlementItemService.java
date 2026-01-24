@@ -28,10 +28,7 @@ public class SettlementItemService implements SettlementItemCreateUseCase {
         }
 
         try {
-            SettlementItem settlementItem = SettlementItem.createPaymentItem(
-                    command.sellerId(),
-                    command.orderItemInfo()
-            );
+            SettlementItem settlementItem = SettlementItem.createPaymentItem(command.orderItemInfo());
 
             // 중복이 있다면 이 자리에서 예외가 발생하도록 saveAndFlush 호출
             settlementItemRepository.saveAndFlush(settlementItem);
@@ -40,8 +37,9 @@ public class SettlementItemService implements SettlementItemCreateUseCase {
                     orderItemId, settlementItem.getStatus());
 
         } catch (DataIntegrityViolationException e) {
-            // 동시성 이슈로 인해 유니크 제약 조건 위반 시 로그만 남기고 정상 종료(멱등성 보장)
+            // 동시성 이슈로 인해 유니크 제약 조건 위반 시 로그만 남기고 정상 진행(멱등성 보장)
             log.warn("[SETTLEMENT] 동시성 이슈 - 이미 처리 중인 정산 아이템입니다. orderItemId: {}", orderItemId);
         }
+        // DB 연결 끊김 등의 다른 RuntimeException은 그대로 밖으로 던져짐 -> 리스너 전체 롤백
     }
 }

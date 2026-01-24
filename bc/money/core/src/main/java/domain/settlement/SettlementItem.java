@@ -11,8 +11,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class SettlementItem extends BaseDomainModel {
-    private Long sellerId;
-
     private OrderItemInfo orderItemInfo;
     private PaymentInfo paymentInfo;
     private AmountInfo amountInfo;
@@ -28,7 +26,7 @@ public class SettlementItem extends BaseDomainModel {
     private LocalDateTime cancelledAt;
 
     private SettlementItem(
-            Long id, Long sellerId, OrderItemInfo orderItemInfo,
+            Long id, OrderItemInfo orderItemInfo,
             PaymentInfo paymentInfo, AmountInfo amountInfo, Long originId,
             SettlementItemType type, SettlementItemStatus status, LocalDateTime occurredAt,
             LocalDate expectedDate, Long settlementId, LocalDateTime settledAt, LocalDateTime cancelledAt
@@ -36,7 +34,6 @@ public class SettlementItem extends BaseDomainModel {
         super(id);
         validateState(status, paymentInfo, amountInfo, expectedDate, settlementId, settledAt, cancelledAt);
 
-        this.sellerId = sellerId;
         this.orderItemInfo = orderItemInfo;
         this.paymentInfo = paymentInfo;
         this.amountInfo = amountInfo;
@@ -51,7 +48,7 @@ public class SettlementItem extends BaseDomainModel {
     }
 
     public Long getSellerId() {
-        return sellerId;
+        return orderItemInfo.sellerId();
     }
 
     public Long getOrderId() {
@@ -175,12 +172,11 @@ public class SettlementItem extends BaseDomainModel {
         return cancelledAt;
     }
 
-    public static SettlementItem createPaymentItem(Long sellerId, OrderItemInfo orderItemInfo) {
-        validateNewOrder(sellerId, orderItemInfo);
+    public static SettlementItem createPaymentItem(OrderItemInfo orderItemInfo) {
+        validateNewOrder(orderItemInfo);
 
         return new SettlementItem(
                 null,
-                sellerId,
                 orderItemInfo,
                 null,
                 null,
@@ -195,13 +191,15 @@ public class SettlementItem extends BaseDomainModel {
         );
     }
 
-    private static void validateNewOrder(Long sellerId, OrderItemInfo orderItemInfo) {
-        if (sellerId == null) {
-            throw new IllegalArgumentException("판매자 ID는 필수입니다.");
-        }
+    private static void validateNewOrder(OrderItemInfo orderItemInfo) {
         if (orderItemInfo == null) {
             throw new IllegalArgumentException("주문 정보는 필수입니다.");
         }
+
+        if (orderItemInfo.sellerId() == null) {
+            throw new IllegalArgumentException("판매자 ID는 필수입니다.");
+        }
+
         if (orderItemInfo.totalAmount().isLessThanOrEqual(Money.zero())) {
             throw new IllegalArgumentException("정산 대상 금액은 0원보다 커야 합니다.");
         }
