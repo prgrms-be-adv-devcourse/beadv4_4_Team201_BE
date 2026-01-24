@@ -107,4 +107,54 @@ class PaymentResultServiceTest {
                 .isInstanceOf(OrderException.class)
                 .hasMessageContaining("찾을 수 없는 주문입니다");
     }
+
+    @Test
+    @DisplayName("결제 실패(재시도용) 처리 시 주문 상태를 FAILED로 변경하고 저장한다")
+    void failPayment_success() {
+        // given
+        Long orderId = 1L;
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123456")
+                .buyerId(100L)
+                .totalAmount(Money.of(10000))
+                .paymentMethod(PaymentMethod.CARD)
+                .status(OrderStatus.PAYMENT_PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(orderRepositoryPort.findById(orderId)).willReturn(Optional.of(order));
+
+        // when
+        paymentResultService.failPayment(orderId);
+
+        // then
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.FAILED);
+        verify(orderRepositoryPort).save(order);
+    }
+
+    @Test
+    @DisplayName("결제 취소 처리 시 주문 상태를 CANCELED로 변경하고 저장한다")
+    void cancelPayment_success() {
+        // given
+        Long orderId = 1L;
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123456")
+                .buyerId(100L)
+                .totalAmount(Money.of(10000))
+                .paymentMethod(PaymentMethod.CARD)
+                .status(OrderStatus.PAYMENT_PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(orderRepositoryPort.findById(orderId)).willReturn(Optional.of(order));
+
+        // when
+        paymentResultService.cancelPayment(orderId);
+
+        // then
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        verify(orderRepositoryPort).save(order);
+    }
 }
