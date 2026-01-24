@@ -1,5 +1,7 @@
 package app.giftify.wishlist.adapter.out.jpa.entity;
 
+import java.time.LocalDateTime;
+
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,47 +11,52 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "wishlist_product_replica")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WishlistProductReplicaJpaEntity extends BaseJpaEntity {
 
-    @Column(nullable = false, unique = true)
-    private Long productId;
+	@Column(nullable = false, unique = true)
+	private Long productId;
 
-    private boolean wishlistAllowed;
+	private boolean wishlistAllowed;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
 
-    @Override
-    public LocalDateTime getUpdatedAt() {
-        return this.updatedAt;
-    }
+	@Override
+	public LocalDateTime getUpdatedAt() {
+		return this.updatedAt;
+	}
 
-    private String name;
-    private int price;
-    private String sellerNickName;
+	private String name;
+	private int price;
+	private String sellerNickname;
 
-    @Builder
-    public WishlistProductReplicaJpaEntity(Long productId, boolean wishlistAllowed, LocalDateTime updatedAt,
-                                           String name, int price, String sellerNickName) {
-        this.productId = productId;
-        this.wishlistAllowed = wishlistAllowed;
-        this.updatedAt = updatedAt;
-        this.name = name;
-        this.price = price;
-        this.sellerNickName = sellerNickName;
-    }
+	@Builder
+	public WishlistProductReplicaJpaEntity(
+		Long productId,
+		boolean wishlistAllowed,
+		LocalDateTime updatedAt,
+		String name,
+		int price,
+		String sellerNickname
+	) {
+		this.productId = productId;
+		this.wishlistAllowed = wishlistAllowed;
+		this.updatedAt = updatedAt;
+		this.name = name;
+		this.price = price;
+		this.sellerNickname = sellerNickname;
+	}
 
-    public void update(boolean wishlistAllowed, LocalDateTime updatedAt, String name, int price, String sellerNickName) {
-        this.wishlistAllowed = wishlistAllowed;
-        this.updatedAt = updatedAt;
-        this.name = name;
-        this.price = price;
-        this.sellerNickName = sellerNickName;
-    }
+	public void update(boolean wishlistAllowed, LocalDateTime updatedAt, String name, int price,
+		String sellerNickname) {
+		this.wishlistAllowed = wishlistAllowed;
+		this.updatedAt = updatedAt;
+		this.name = name;
+		this.price = price;
+		this.sellerNickname = sellerNickname;
+	}
 }

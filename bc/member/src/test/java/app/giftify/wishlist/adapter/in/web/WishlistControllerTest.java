@@ -1,14 +1,10 @@
 package app.giftify.wishlist.adapter.in.web;
 
-import app.giftify.security.common.context.AuthenticatedMember;
-import app.giftify.wishlist.adapter.in.web.controller.WishlistController;
-import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
-import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
-import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
-import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
-import app.giftify.wishlist.core.domain.Visibility;
-import app.giftify.wishlist.core.domain.Wishlist;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,92 +20,91 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import app.giftify.security.common.CurrentMemberId;
+import app.giftify.wishlist.adapter.in.web.controller.WishlistController;
+import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
+import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
+import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
+import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
+import app.giftify.wishlist.core.domain.Visibility;
+import app.giftify.wishlist.core.domain.Wishlist;
 
 @WebMvcTest(WishlistController.class)
 class WishlistControllerTest {
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired
+	private ObjectMapper objectMapper;
 
-    @MockBean
-    private GetWishlistUseCase getWishlistUseCase;
+	@MockBean
+	private GetWishlistUseCase getWishlistUseCase;
 
-    @MockBean
-    private UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
+	@MockBean
+	private UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
 
-    private static final String AUTH_SUB = "auth0|12345";
+	private static final Long MEMBER_ID = 10L;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase))
-                .setControllerAdvice(new WishlistExceptionHandler())
-                .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
-                    @Override
-                    public boolean supportsParameter(MethodParameter parameter) {
-                        return parameter.hasParameterAnnotation(AuthenticatedMember.class);
-                    }
+	@BeforeEach
+	void setUp() {
+		mockMvc = MockMvcBuilders
+			.standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase))
+			.setControllerAdvice(new WishlistExceptionHandler())
+			.setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
+				@Override
+				public boolean supportsParameter(MethodParameter parameter) {
+					return parameter.hasParameterAnnotation(CurrentMemberId.class);
+				}
 
-                    @Override
-                    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-                        return AUTH_SUB;
-                    }
-                })
-                .build();
-    }
+				@Override
+				public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+					NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+					return MEMBER_ID;
+				}
+			})
+			.build();
+	}
 
-    @Test
-    @DisplayName("내 위시리스트 조회 성공")
-    void getMyInfo_Success() throws Exception {
-        // given
-        Wishlist wishlist = Wishlist.builder()
-                .authSub(AUTH_SUB)
-                .memberId(10L)
-                .visibility(Visibility.PUBLIC)
-                .build();
-        given(getWishlistUseCase.getWishlistByAuthSub(AUTH_SUB)).willReturn(Optional.of(wishlist));
+	@Test
+	@DisplayName("내 위시리스트 조회 성공")
+	void getMyInfo_Success() throws Exception {
+		// given
+		Wishlist wishlist = Wishlist.builder()
+			.memberId(10L)
+			.visibility(Visibility.PUBLIC)
+			.build();
+		given(getWishlistUseCase.getOrCreateWishlistByMemberId(10L)).willReturn(wishlist);
 
-        // when & then
-        mockMvc.perform(get("/api/wishlist/me"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authSub").value(AUTH_SUB))
-                .andExpect(jsonPath("$.visibility").value("PUBLIC"));
-    }
+		// when & then
+		mockMvc.perform(get("/api/wishlist/me"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.visibility").value("PUBLIC"));
+	}
 
-    @Test
-    @DisplayName("위시리스트 설정 변경 성공")
-    void updateSettings_Success() throws Exception {
-        // given
-        UpdateWishlistSettingsRequest request = new UpdateWishlistSettingsRequest("PRIVATE");
-        Wishlist existingWishlist = Wishlist.builder()
-                .authSub(AUTH_SUB)
-                .memberId(10L)
-                .visibility(Visibility.PUBLIC)
-                .build();
-        Wishlist updatedWishlist = Wishlist.builder()
-                .authSub(AUTH_SUB)
-                .memberId(10L)
-                .visibility(Visibility.PRIVATE)
-                .build();
+	@Test
+	@DisplayName("위시리스트 설정 변경 성공")
+	void updateSettings_Success() throws Exception {
+		// given
+		UpdateWishlistSettingsRequest request = new UpdateWishlistSettingsRequest("PRIVATE");
+		Wishlist existingWishlist = Wishlist.builder()
+			.memberId(MEMBER_ID)
+			.visibility(Visibility.PUBLIC)
+			.build();
+		Wishlist updatedWishlist = Wishlist.builder()
+			.memberId(MEMBER_ID)
+			.visibility(Visibility.PRIVATE)
+			.build();
 
-        given(getWishlistUseCase.getWishlistByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingWishlist));
-        given(updateWishlistSettingsUseCase.updateSettings(any())).willReturn(updatedWishlist);
+		given(getWishlistUseCase.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(existingWishlist);
+		given(updateWishlistSettingsUseCase.updateSettings(any())).willReturn(updatedWishlist);
 
-        // when & then
-        mockMvc.perform(patch("/api/wishlist/me/settings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.visibility").value("PRIVATE"));
-    }
+		// when & then
+		mockMvc.perform(patch("/api/wishlist/me/settings")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.visibility").value("PRIVATE"));
+	}
 }
