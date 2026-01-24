@@ -170,7 +170,7 @@ public class SettlementItem extends BaseDomainModel {
 
     public LocalDateTime getCancelledAt() {
         if (this.status != SettlementItemStatus.CANCELLED) {
-            throw new IllegalStateException("결제 취소인 경우에만 취소 정보를 조회할 수 있습니다.");
+            throw new IllegalArgumentException("결제 취소인 경우에만 취소 정보를 조회할 수 있습니다.");
         }
         return cancelledAt;
     }

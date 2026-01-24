@@ -50,7 +50,10 @@ public class JpaSettlementItem {
     private LocalDateTime orderedAt;
 
     private String paymentKey;
+
     private String transactionKey;
+
+    private LocalDateTime paidAt;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethodType paymentMethodType;
@@ -74,7 +77,14 @@ public class JpaSettlementItem {
     @Column(nullable = false)
     private SettlementItemStatus status;
 
+    @Column(nullable = false)
+    private LocalDateTime occurredAt;
+
     private LocalDate expectedDate;
+
+    private LocalDate settledAt;
+
+    private LocalDateTime cancelledAt;
 
     @CreatedDate
     @Column(updatable = false)
@@ -84,7 +94,7 @@ public class JpaSettlementItem {
     private LocalDateTime updatedAt;
 
     // 도메인 생성 시점(PENDING)에 맞춘 생성자
-    private JpaSettlementItem(Long sellerId, OrderItemInfo orderItemInfo, SettlementItemType type, SettlementItemStatus status) {
+    private JpaSettlementItem(Long sellerId, OrderItemInfo orderItemInfo, SettlementItemType type, SettlementItemStatus status, LocalDateTime occurredAt) {
         this.sellerId = sellerId;
         this.orderId = orderItemInfo.orderId();
         this.orderNumber = orderItemInfo.orderNumber();
@@ -94,18 +104,16 @@ public class JpaSettlementItem {
         this.orderedAt = orderItemInfo.orderedAt();
         this.type = type;
         this.status = status;
-
-        this.platformFee = BigDecimal.ZERO;
-        this.pgFee = BigDecimal.ZERO;
-        this.settlementItemAmount = BigDecimal.ZERO;
+        this.occurredAt = occurredAt;
     }
 
     public static JpaSettlementItem from(SettlementItem domain) {
         return new JpaSettlementItem(
                 domain.getSellerId(),
-                domain.getOrderInfo(),
+                domain.getOrderItemInfo(),
                 domain.getType(),
-                domain.getStatus()
+                domain.getStatus(),
+                domain.getOccurredAt()
         );
     }
 }
