@@ -1,6 +1,7 @@
 plugins {
     id("java")
 }
+val springModulithVersion by extra("1.4.7")
 
 group = "app.giftify"
 version = "1.0.0-SNAPSHOT"
@@ -13,10 +14,19 @@ dependencies {
     implementation(project(":bc:shared"))
 
     implementation(libs.spring.boot.starter.web)
+    implementation("org.springframework.modulith:spring-modulith-starter-core")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.modulith:spring-modulith-bom:$springModulithVersion")
+    }
 }
 
 tasks.test {
