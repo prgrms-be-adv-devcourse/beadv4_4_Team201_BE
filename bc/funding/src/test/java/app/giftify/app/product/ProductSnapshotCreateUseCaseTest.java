@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import app.giftify.domain.FundingMember;
 import app.giftify.domain.product.Product;
@@ -41,6 +42,8 @@ class ProductSnapshotCreateUseCaseTest {
 		FundingMember seller = new FundingMember(1L, "auth0|123", "판매자");
 		Product product1 = new Product(seller, "상품1", "설명1", 10000, 100);
 		Product product2 = new Product(seller, "상품2", "설명2", 20000, 50);
+		ReflectionTestUtils.setField(product1, "id", 1L);
+		ReflectionTestUtils.setField(product2, "id", 2L);
 		product1.approve();
 		product1.active();
 		product2.approve();
@@ -72,6 +75,7 @@ class ProductSnapshotCreateUseCaseTest {
 		// given
 		FundingMember seller = new FundingMember(1L, "auth0|123", "판매자");
 		Product product1 = new Product(seller, "상품1", "설명1", 10000, 100);
+		ReflectionTestUtils.setField(product1, "id", 1L);
 
 		List<ProductSnapshotRequestDto.SnapshotItem> items = List.of(
 			new ProductSnapshotRequestDto.SnapshotItem(1L),
@@ -96,6 +100,7 @@ class ProductSnapshotCreateUseCaseTest {
 		// given
 		FundingMember seller = new FundingMember(1L, "auth0|123", "판매자닉네임");
 		Product product = new Product(seller, "테스트 상품", "테스트 설명", 15000, 10);
+		ReflectionTestUtils.setField(product, "id", 1L);
 		product.approve();
 		product.active();
 
