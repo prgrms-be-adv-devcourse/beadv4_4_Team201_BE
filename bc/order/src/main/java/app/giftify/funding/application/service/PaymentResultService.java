@@ -24,7 +24,7 @@ public class PaymentResultService implements PaymentResultUseCase {
     }
 
     @Override
-    public void refundPayment(Long orderId, String reason) {
+    public void refundPayment(Long orderId) {
         Order order = orderRepositoryPort.findById(orderId)
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "찾을 수 없는 주문입니다. [ 주문 ID: " + orderId +" ]"));
 

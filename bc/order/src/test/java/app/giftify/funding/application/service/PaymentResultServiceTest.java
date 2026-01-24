@@ -88,7 +88,7 @@ class PaymentResultServiceTest {
         given(orderRepositoryPort.findById(orderId)).willReturn(Optional.of(order));
 
         // when
-        paymentResultService.refundPayment(orderId, "환불 사유");
+        paymentResultService.refundPayment(orderId);
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.REFUNDED);
@@ -103,7 +103,7 @@ class PaymentResultServiceTest {
         given(orderRepositoryPort.findById(orderId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> paymentResultService.refundPayment(orderId, "사유"))
+        assertThatThrownBy(() -> paymentResultService.refundPayment(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessageContaining("찾을 수 없는 주문입니다");
     }

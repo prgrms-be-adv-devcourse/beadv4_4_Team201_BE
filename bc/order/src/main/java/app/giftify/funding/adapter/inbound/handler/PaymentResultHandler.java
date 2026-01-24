@@ -31,7 +31,7 @@ public class PaymentResultHandler {
             return;
         }
 
-        paymentResultUseCase.refundPayment(event.getOrderId(), event.getReason());
+        paymentResultUseCase.refundPayment(event.getOrderId());
     }
 
     public void handlePaymentResultFail(PaymentFailedForOrderEvent event) {
