@@ -77,7 +77,7 @@ class OrderControllerTest {
 
         OrderResponse response = new OrderResponse(
                 1L, "ORD-123", buyerId, 20000L, PaymentMethod.CARD, OrderStatus.PAYMENT_PENDING, LocalDateTime.now(),
-                List.of(new OrderResponse.OrderItemResponse(1L, 100L, TargetType.PRODUCT, 200L, 300L, 10000L, 2, OrderStatus.PAYMENT_PENDING))
+                List.of(new OrderResponse.OrderItemResponse(1L, 100L, TargetType.PRODUCT, 200L, 300L, 10000L, 2))
         );
 
         given(orderCreateUseCase.createOrder(any(OrderCreateRequest.class))).willReturn(response);
@@ -146,7 +146,7 @@ class OrderControllerTest {
 
         OrderResponse response = new OrderResponse(
                 orderId, "ORD-123", buyerId, 20000L, PaymentMethod.CARD, OrderStatus.CANCELED, LocalDateTime.now(),
-                List.of(new OrderResponse.OrderItemResponse(1L, 100L, TargetType.PRODUCT, 200L, 300L, 10000L, 2, OrderStatus.CANCELED))
+                List.of(new OrderResponse.OrderItemResponse(1L, 100L, TargetType.PRODUCT, 200L, 300L, 10000L, 2))
         );
 
         given(orderCreateUseCase.cancelOrder(orderId, buyerId)).willReturn(response);
