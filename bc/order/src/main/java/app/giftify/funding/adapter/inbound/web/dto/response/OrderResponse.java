@@ -41,8 +41,7 @@ public record OrderResponse(
             Long sellerId,
             Long receiverId,
             long price,
-            int quantity,
-            OrderStatus status
+            int quantity
     ) {
         public static OrderItemResponse from(OrderItem item) {
             return new OrderItemResponse(
@@ -52,8 +51,7 @@ public record OrderResponse(
                     item.getSellerId(),
                     item.getReceiverId(),
                     item.getPrice().amount().longValue(),
-                    item.getQuantity().getValue(),
-                    item.getStatus()
+                    item.getQuantity().getValue()
             );
         }
     }
