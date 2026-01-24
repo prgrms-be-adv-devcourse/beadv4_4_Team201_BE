@@ -6,9 +6,9 @@
 # Core
 java = "21"
 kotlin = "1.9.22"
-springBoot = "3.3.5"
-springModulith = "1.1.2"
-springDependencyManagement = "1.1.4"
+springBoot = "3.5.10"
+springModulith = "1.4.6"
+springDependencyManagement = "1.1.7"
 
 # Database
 mysql = "8.3.0"

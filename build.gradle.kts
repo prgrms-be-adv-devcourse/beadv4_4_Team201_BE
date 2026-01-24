@@ -44,10 +44,10 @@ subprojects {
             targetCompatibility = JavaVersion.VERSION_21
         }
 
-        // Spring Boot BOM 전역 적용
+        // Spring Boot BOM 전역 적용 (Version Catalog 참조)
         the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
             imports {
-                mavenBom("org.springframework.boot:spring-boot-dependencies:3.2.2")
+                mavenBom("org.springframework.boot:spring-boot-dependencies:${rootProject.libs.versions.springBoot.get()}")
             }
         }
 
