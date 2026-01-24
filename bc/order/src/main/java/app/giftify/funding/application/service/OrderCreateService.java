@@ -102,4 +102,28 @@ public class OrderCreateService implements OrderCreateUseCase {
 
         return previousStatus;
     }
+
+    @Override
+    public OrderResponse cancelOrder(Long orderId, Long memberId) {
+        Order order = orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "주문을 찾을 수 없습니다."));
+
+        // 도메인 로직을 통한 상태 변경 (이미 확정된 주문인지 체크 포함)
+        order.toCancelled();
+        Order savedOrder = orderRepositoryPort.save(order);
+
+        // 관련 주문 아이템들도 취소 처리
+        List<OrderItem> items = orderItemRepositoryPort.findByOrderId(orderId);
+        items.forEach(OrderItem::toCancelled);
+        orderItemRepositoryPort.saveAll(items);
+
+        // 결제 취소 및 환불 API 호출
+        orderPaymentPort.cancelPayment(savedOrder.getOrderNumber());
+
+        List<OrderResponse.OrderItemResponse> itemResponses = items.stream()
+                .map(OrderResponse.OrderItemResponse::from)
+                .toList();
+
+        return OrderResponse.from(savedOrder, itemResponses);
+    }
 }

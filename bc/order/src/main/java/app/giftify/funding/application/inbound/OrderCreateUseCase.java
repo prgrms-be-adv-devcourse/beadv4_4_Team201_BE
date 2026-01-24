@@ -7,4 +7,6 @@ public interface OrderCreateUseCase {
     OrderResponse createOrder(OrderCreateRequest request);
 
     String confirmOrder(Long orderId, Long memberId);
+
+    OrderResponse cancelOrder(Long orderId, Long memberId);
 }

@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/order")
 @RequiredArgsConstructor
@@ -36,6 +38,17 @@ public class OrderController {
     ) {
         String previousStatus = orderCreateUseCase.confirmOrder(orderId, memberId);
         OrderStatusResponse response = OrderStatusResponse.of(orderId, previousStatus, "CONFIRMED", "주문이 확정되었습니다.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<OrderResponse> cancelOrder(
+            @CurrentMemberId Long memberId,
+            @RequestBody Map<String, Long> request
+    ) {
+        Long orderId = request.get("orderId");
+        OrderResponse response = orderCreateUseCase.cancelOrder(orderId, memberId);
 
         return ResponseEntity.ok(response);
     }
