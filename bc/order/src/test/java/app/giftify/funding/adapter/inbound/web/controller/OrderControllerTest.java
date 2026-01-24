@@ -21,6 +21,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -133,5 +134,29 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.previousStatus").value("ORDERED"))
                 .andExpect(jsonPath("$.currentStatus").value("CONFIRMED"))
                 .andExpect(jsonPath("$.message").value("주문이 확정되었습니다."));
+    }
+
+    @Test
+    @DisplayName("주문 취소 API 호출 시 200 상태코드와 취소된 주문 정보를 반환한다")
+    void cancelOrder_success() throws Exception {
+        // given
+        Long orderId = 1L;
+        Long buyerId = 1L;
+        Map<String, Long> request = Map.of("orderId", orderId);
+
+        OrderResponse response = new OrderResponse(
+                orderId, "ORD-123", buyerId, 20000L, PaymentMethod.CARD, OrderStatus.CANCELED, LocalDateTime.now(),
+                List.of(new OrderResponse.OrderItemResponse(1L, 100L, TargetType.PRODUCT, 200L, 300L, 10000L, 2, OrderStatus.CANCELED))
+        );
+
+        given(orderCreateUseCase.cancelOrder(orderId, buyerId)).willReturn(response);
+
+        // when & then
+        mockMvc.perform(post("/api/order/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(orderId))
+                .andExpect(jsonPath("$.status").value("CANCELED"));
     }
 }
