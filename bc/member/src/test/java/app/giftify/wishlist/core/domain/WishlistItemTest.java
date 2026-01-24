@@ -1,54 +1,90 @@
 package app.giftify.wishlist.core.domain;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import app.giftify.member.domain.member.Member;
 
 class WishlistItemTest {
 
-    @Test
-    @DisplayName("Builder를 사용하여 WishlistItem 객체를 성공적으로 생성한다")
-    void createWishlistItemWithBuilder() {
-        // given
-        Long id = 1L;
-        String authSub = "auth0|12345";
-        Long productId = 200L;
-        ItemStatus itemStatus = ItemStatus.ACTIVE;
+	private Member member;
+	private Wishlist wishlist;
 
-        // when
-        WishlistItem wishlistItem = WishlistItem.builder()
-                .id(id)
-                .authSub(authSub)
-                .productId(productId)
-                .itemStatus(itemStatus)
-                .addedAt(LocalDate.now())
-                .build();
+	@BeforeEach
+	void setUp() {
+		// Member 생성
+		member = Member.builder()
+			.id(1L)
+			.email("test@example.com")
+			.nickname("tester")
+			.birthday(LocalDate.of(1990, 1, 1))
+			.authSub("auth0|123")
+			.build();
 
-        // then
-        assertThat(wishlistItem.getId()).isEqualTo(id);
-        assertThat(wishlistItem.getAuthSub()).isEqualTo(authSub);
-        assertThat(wishlistItem.getProductId()).isEqualTo(productId);
-        assertThat(wishlistItem.getItemStatus()).isEqualTo(itemStatus);
-        assertThat(wishlistItem.getAddedAt()).isNotNull();
-    }
+		// Wishlist 생성
+		wishlist = Wishlist.builder()
+			.id(100L)
+			.memberId(member.getId())
+			.visibility(Visibility.PUBLIC)
+			.build();
+	}
 
-    @Test
-    @DisplayName("유효하지 않은 authSub 또는 productId로 생성 시 예외가 발생한다")
-    void createWishlistItemWithInvalidIds() {
-        assertThatThrownBy(() -> WishlistItem.builder().authSub(null).productId(1L).build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("유효하지 않은 authSub 입니다.");
+	@Test
+	@DisplayName("Builder를 사용하여 WishlistItem 객체를 성공적으로 생성한다")
+	void createWishlistItemWithBuilder() {
+		// given
+		Long id = 1L;
+		Long wishlistId = wishlist.getId();
+		Long productId = 200L;
+		WishlistItemStatus wishlistItemStatus = WishlistItemStatus.PENDING;
 
-        assertThatThrownBy(() -> WishlistItem.builder().authSub(" ").productId(1L).build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("유효하지 않은 authSub 입니다.");
+		// when
+		WishlistItem wishlistItem = WishlistItem.builder()
+			.id(id)
+			.wishlistId(wishlistId)
+			.productId(productId)
+			.wishlistItemStatus(wishlistItemStatus)
+			.addedAt(LocalDate.now())
+			.build();
 
-        assertThatThrownBy(() -> WishlistItem.builder().authSub("auth0|123").productId(0L).build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("유효하지 않은 상품 ID입니다.");
-    }
+		// then
+		assertThat(wishlistItem.getId()).isEqualTo(id);
+		assertThat(wishlistItem.getWishlistId()).isEqualTo(wishlistId);
+		assertThat(wishlistItem.getProductId()).isEqualTo(productId);
+		assertThat(wishlistItem.getWishlistItemStatus()).isEqualTo(wishlistItemStatus);
+		assertThat(wishlistItem.getAddedAt()).isNotNull();
+	}
+
+	@Test
+	@DisplayName("유효하지 않은 wishlistId 또는 productId로 생성 시 예외가 발생한다")
+	void createWishlistItemWithInvalidIds() {
+		assertThatThrownBy(() -> WishlistItem.builder()
+			.wishlistId(null)
+			.productId(1L)
+			.wishlistItemStatus(WishlistItemStatus.PENDING)
+			.build())
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("유효하지 않은 위시리스트 ID 입니다.");
+
+		assertThatThrownBy(() -> WishlistItem.builder()
+			.wishlistId(0L)
+			.productId(1L)
+			.wishlistItemStatus(WishlistItemStatus.PENDING)
+			.build())
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("유효하지 않은 위시리스트 ID 입니다.");
+
+		assertThatThrownBy(() -> WishlistItem.builder()
+			.wishlistId(wishlist.getId())
+			.productId(0L)
+			.wishlistItemStatus(WishlistItemStatus.PENDING)
+			.build())
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("유효하지 않은 상품 ID입니다.");
+	}
 }

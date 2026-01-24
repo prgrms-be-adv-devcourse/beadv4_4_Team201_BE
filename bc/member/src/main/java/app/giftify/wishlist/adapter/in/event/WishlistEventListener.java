@@ -1,13 +1,28 @@
 package app.giftify.wishlist.adapter.in.event;
 
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
+import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
+import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
+import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
+import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
+import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.product.ProductReplicaCreationRequestedEvent;
 import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
+import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistProductReplicaPort;
+import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
+import app.giftify.wishlist.core.domain.Wishlist;
+import app.giftify.wishlist.core.domain.WishlistItem;
+import app.giftify.wishlist.core.domain.WishlistItemStatus;
+import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import app.giftify.wishlist.core.domain.replica.WishlistProductReplica;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +33,27 @@ import lombok.extern.slf4j.Slf4j;
 public class WishlistEventListener {
 
 	private final WishlistProductReplicaPort wishlistProductReplicaPort;
+	private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
+	private final WishlistRepositoryPort wishlistRepositoryPort;
+
+	// todo 트랜잭션 생각해보기
+
+	// 회원생성 시 위시리스트 생성
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleMemberSigned(MemberSignedEvent event) {
+		log.info("[Wishlist] 회원 가입으로 위시리스트를 생성합니다 | memberId: {}", event.getMemberId());
+
+		Wishlist wishlist = Wishlist.builder()
+			.memberId(event.getMemberId())
+			.build();
+
+		wishlistRepositoryPort.save(wishlist);
+	}
 
 	// 상품의 상태가 [판매 가능]으로 변경되었을 때
-	@EventListener
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleProductSaleEnabled(ProductSaleEnabledEvent event) {
 		log.info("[Wishlist] 상품의 상태가 [판매 가능]으로 변경되었습니다 | productId: {}", event.getProductId());
 		// 위시리스트ID로 레플리카 조회
@@ -43,7 +76,8 @@ public class WishlistEventListener {
 	}
 
 	// 상품의 상태가 [판매 불가능]으로 변경되었을 때
-	@EventListener
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleProductSaleDisabled(ProductSaleDisabledEvent event) {
 		log.info("[Wishlist] 상품의 상태가 [판매 불가능]으로 변경되었습니다 | productId: {}", event.getProductId());
 		wishlistProductReplicaPort.findByProductId(event.getProductId())
@@ -65,8 +99,9 @@ public class WishlistEventListener {
 	}
 
 	// 상품이 등록되었을 때
-	@EventListener
-	public void handleProductSnapshotCreationRequested(ProductReplicaCreationRequestedEvent event) {
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleProductReplicaCreationRequested(ProductReplicaCreationRequestedEvent event) {
 		log.info("[Wishlist] 상품이 등록되었습니다 | productId: {}", event.getId());
 		wishlistProductReplicaPort.findByProductId(event.getId())
 			.ifPresentOrElse(
@@ -75,7 +110,7 @@ public class WishlistEventListener {
 					replica.updateInfo(
 						event.getName(),
 						event.getPrice(),
-						event.getSellerNickName()
+						event.getSellerNickname()
 					);
 					wishlistProductReplicaPort.upsert(replica);
 				},
@@ -85,7 +120,7 @@ public class WishlistEventListener {
 						.productId(event.getId())
 						.name(event.getName())
 						.price(event.getPrice())
-						.sellerNickName(event.getSellerNickName())
+						.sellerNickname(event.getSellerNickname())
 						.wishlistAllowed(false)
 						.build();
 					wishlistProductReplicaPort.upsert(newReplica);
@@ -94,13 +129,14 @@ public class WishlistEventListener {
 	}
 
 	// 상품 정보가 변경되었을 때
-	@EventListener
-	public void handleProductSnapshotUpdated(ProductReplicaUpdatedEvent event) {
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleProductReplicaUpdated(ProductReplicaUpdatedEvent event) {
 		log.info("[Wishlist] Product snapshot updated event received for productId: {}", event.getId());
 		wishlistProductReplicaPort.findByProductId(event.getId())
 			.ifPresentOrElse(
 				replica -> {
-					replica.updateInfo(event.getName(), event.getPrice(), event.getSellerNickName());
+					replica.updateInfo(event.getName(), event.getPrice(), event.getSellerNickname());
 					wishlistProductReplicaPort.upsert(replica);
 				},
 				() -> {
@@ -108,7 +144,7 @@ public class WishlistEventListener {
 						.productId(event.getId())
 						.name(event.getName())
 						.price(event.getPrice())
-						.sellerNickName(event.getSellerNickName()) // TODO: 이벤트 형식에 맞게 수정
+						.sellerNickname(event.getSellerNickname())
 						.wishlistAllowed(false)
 						.build();
 					wishlistProductReplicaPort.upsert(newReplica);
@@ -116,4 +152,55 @@ public class WishlistEventListener {
 			);
 	}
 
+	/**
+	 * 펀딩 - 위시리스트아이템 상태 전이
+	 */
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleFundingCreated(FundingCreatedEvent event) {
+		updateStatus(event.getWishlistItemId(),
+			WishlistItemStatus.IN_PROGRESS,
+			"[Wishlist] 위시리스트상품의 펀딩이 시작되었습니다.");
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleFundingAchieved(FundingAchievedEvent event) {
+		updateStatus(event.getWishlistItemId(),
+			WishlistItemStatus.REQUESTED_CONFIRM,
+			"[Wishlist] 위시리스트상품의 펀딩이 달성되었습니다.");
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleFundingAccepted(FundingAcceptedEvent event) {
+		updateStatus(event.getWishlistItemId(),
+			WishlistItemStatus.COMPLETED,
+			"[Wishlist] 위시리스트상품의 펀딩이 수락되었습니다.");
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleFundingCanceled(FundingCanceledEvent event) {
+		updateStatus(event.getWishlistItemId(),
+			WishlistItemStatus.NO_THANKS,
+			"[Wishlist] 위시리스트상품의 펀딩이 거절되었습니다.");
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleFundingExpired(FundingExpiredEvent event) {
+		updateStatus(event.getWishlistItemId(),
+			WishlistItemStatus.PENDING,
+			"[Wishlist] 위시리스트상품의 펀딩이 만료되었습니다.");
+	}
+
+	// 위시리스트아이템 상태 변경 메서드
+	private void updateStatus(Long wishlistItemId, WishlistItemStatus next, String message) {
+		WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
+			.orElseThrow(WishlistNotFoundException::new);
+
+		log.info("{} | productId: {}", message, wishlistItem.getProductId());
+		wishlistItem.changeStatus(next);
+	}
 }
