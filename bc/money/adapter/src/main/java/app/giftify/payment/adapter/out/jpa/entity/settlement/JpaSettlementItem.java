@@ -17,59 +17,73 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "SETTLEMENT_ITEM")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 public class JpaSettlementItem {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Long sellerId;
 
-    @Setter
     private Long settlementId;
 
+    @Column(nullable = false)
     private Long orderId;
 
+    @Column(nullable = false)
     private String orderNumber;
 
+    @Column(nullable = false)
     private Long orderItemId;
 
+    @Column(nullable = false)
     private Long quantity;
 
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal totalAmount;
 
+    @Column(nullable = false)
     private LocalDateTime orderedAt;
 
     private String paymentKey;
-
     private String transactionKey;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethodType paymentMethodType;
 
+    @Column(precision = 19, scale = 4)
     private BigDecimal platformFee;
 
+    @Column(precision = 19, scale = 4)
     private BigDecimal pgFee;
 
+    @Column(precision = 19, scale = 4)
     private BigDecimal settlementItemAmount;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SettlementItemType type;
 
     private Long originId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SettlementItemStatus status;
 
     private LocalDate expectedDate;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    // 도메인 생성 시점(PENDING)에 맞춘 생성자
     private JpaSettlementItem(Long sellerId, OrderItemInfo orderItemInfo, SettlementItemType type, SettlementItemStatus status) {
         this.sellerId = sellerId;
         this.orderId = orderItemInfo.orderId();
@@ -86,12 +100,12 @@ public class JpaSettlementItem {
         this.settlementItemAmount = BigDecimal.ZERO;
     }
 
-    public static JpaSettlementItem from(SettlementItem settlementItem) {
+    public static JpaSettlementItem from(SettlementItem domain) {
         return new JpaSettlementItem(
-                settlementItem.getSellerId(),
-                settlementItem.getOrderInfo(),
-                settlementItem.getType(),
-                settlementItem.getStatus()
+                domain.getSellerId(),
+                domain.getOrderInfo(),
+                domain.getType(),
+                domain.getStatus()
         );
     }
 }

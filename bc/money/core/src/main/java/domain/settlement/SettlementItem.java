@@ -17,6 +17,7 @@ public class SettlementItem extends BaseDomainModel {
     private OrderItemInfo orderItemInfo;
     private PaymentInfo paymentInfo;
     private FeeInfo feeInfo;
+    private Money settlementAmount;
 
     private Long originId;
     private SettlementItemType type;
@@ -38,16 +39,15 @@ public class SettlementItem extends BaseDomainModel {
     ) {
         super(id);
 
-        if (status == SettlementItemStatus.COMPLETED && settlementId == null) {
-            throw new IllegalStateException("정산 완료 상태에는 settlementId가 필요합니다.");
-        }
+        // todo: 상태 및 타입에 따른 도메인 검증
 
-        if (status == SettlementItemStatus.READY && settlementId != null) {
-            throw new IllegalStateException("정산 전에는 settlementId가 존재할 수 없습니다.");
-        }
-
-        if (type == SettlementItemType.DEDUCTION_REFUND && originId == null) {
-            throw new IllegalStateException("정산 환불인 경우 originId가 필요합니다.");
+        if (status == SettlementItemStatus.PENDING) {
+            if (paymentInfo != null || feeInfo != null || expectedDate != null) {
+                throw new IllegalStateException("결제 대기 상태에서는 결제 및 수수료 정보가 존재할 수 없습니다.");
+            }
+            if (settlementId != null) {
+                throw new IllegalStateException("결제 대기 상태에서는 정산 그룹 ID가 존재할 수 없습니다.");
+            }
         }
 
         this.sellerId = sellerId;
@@ -59,6 +59,12 @@ public class SettlementItem extends BaseDomainModel {
         this.type = type;
         this.status = status;
         this.expectedDate = expectedDate;
+        this.settlementAmount = calculateAmount();
+    }
+
+    private Money calculateAmount() {
+        if (feeInfo == null) return Money.zero();
+        return getTotalAmount().minus(feeInfo.platformFee()).minus(feeInfo.pgFee());
     }
 
     public Long getSellerId() {
@@ -122,7 +128,7 @@ public class SettlementItem extends BaseDomainModel {
     }
 
     public Money getSettlementAmount() {
-        return feeInfo.getSettlementAmount(getTotalAmount());
+        return settlementAmount != null ? settlementAmount : Money.zero();
     }
 
     public SettlementItemType getType() {
@@ -146,6 +152,8 @@ public class SettlementItem extends BaseDomainModel {
     }
 
     public static SettlementItem create(Long sellerId, OrderItemInfo orderItemInfo) {
+        validateNewOrder(sellerId, orderItemInfo);
+
         return new SettlementItem(
                 null,
                 sellerId,
@@ -158,5 +166,20 @@ public class SettlementItem extends BaseDomainModel {
                 SettlementItemStatus.PENDING,
                 null
         );
+    }
+
+    private static void validateNewOrder(Long sellerId, OrderItemInfo orderItemInfo) {
+        if (sellerId == null) {
+            throw new IllegalArgumentException("판매자 ID는 필수입니다.");
+        }
+        if (orderItemInfo == null) {
+            throw new IllegalArgumentException("주문 정보는 필수입니다.");
+        }
+        if (orderItemInfo.totalAmount().isLessThanOrEqual(Money.zero())) {
+            throw new IllegalArgumentException("정산 대상 금액은 0원보다 커야 합니다.");
+        }
+        if (orderItemInfo.quantity() < 1) {
+            throw new IllegalArgumentException("주문 수량은 1개 이상이어야 합니다.");
+        }
     }
 }

@@ -10,8 +10,4 @@ public record FeeInfo(
         Objects.requireNonNull(platformFee, "platformFee는 필수입니다.");
         Objects.requireNonNull(pgFee, "pgFee는 필수입니다.");
     }
-
-    public Money getSettlementAmount(Money totalAmount) {
-        return totalAmount.minus(platformFee).minus(pgFee);
-    }
 }
