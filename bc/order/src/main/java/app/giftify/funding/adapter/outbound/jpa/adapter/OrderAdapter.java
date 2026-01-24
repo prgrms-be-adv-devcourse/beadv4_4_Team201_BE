@@ -41,4 +41,10 @@ public class OrderAdapter implements OrderRepositoryPort {
     public void delete(Order order) {
         orderRepository.deleteById(order.getId());
     }
+
+    @Override
+    public Optional<Order> findByIdAndBuyerId(Long orderId, Long memberId) {
+        return orderRepository.findByIdAndBuyerId(orderId, memberId)
+                .map(OrderMapper::toDomain);
+    }
 }

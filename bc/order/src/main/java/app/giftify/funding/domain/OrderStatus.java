@@ -24,4 +24,9 @@ public enum OrderStatus {
     public String getDetail() {
         return detail;
     }
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
 }

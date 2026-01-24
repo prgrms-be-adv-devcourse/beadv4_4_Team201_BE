@@ -1,4 +1,4 @@
-package app.giftify.funding.adapter.inbound.web.dto;
+package app.giftify.funding.adapter.inbound.web.dto.request;
 
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;

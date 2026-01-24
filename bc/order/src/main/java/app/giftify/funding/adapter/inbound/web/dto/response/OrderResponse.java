@@ -1,4 +1,4 @@
-package app.giftify.funding.adapter.inbound.web.dto;
+package app.giftify.funding.adapter.inbound.web.dto.response;
 
 import app.giftify.funding.domain.Order;
 import app.giftify.funding.domain.OrderItem;
