@@ -1,6 +1,8 @@
 package app.giftify.funding.adapter.inbound.eventListener;
 
 import app.giftify.funding.adapter.inbound.handler.PaymentResultHandler;
+import app.giftify.shared.domain.event.payment.PaymentCancelledForOrderEvent;
+import app.giftify.shared.domain.event.payment.PaymentFailedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentRefundedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededForOrderEvent;
 import org.junit.jupiter.api.DisplayName;
@@ -49,5 +51,31 @@ class PaymentResultEventListenerTest {
 
         // then
         verify(paymentResultHandler, timeout(1000)).handlePaymentResultRefund(any(PaymentRefundedForOrderEvent.class));
+    }
+
+    @Test
+    @DisplayName("결제 실패 이벤트가 발행되면 리스너가 수신하여 핸들러에게 전달한다")
+    void handlePaymentResultFailedEvent_success() {
+        // given
+        PaymentFailedForOrderEvent event = new PaymentFailedForOrderEvent(1L);
+
+        // when
+        eventPublisher.publishEvent(event);
+
+        // then
+        verify(paymentResultHandler, timeout(1000)).handlePaymentResultFail(any(PaymentFailedForOrderEvent.class));
+    }
+
+    @Test
+    @DisplayName("결제 취소 이벤트가 발행되면 리스너가 수신하여 핸들러에게 전달한다")
+    void handlePaymentResultCancelledEvent_success() {
+        // given
+        PaymentCancelledForOrderEvent event = new PaymentCancelledForOrderEvent(1L);
+
+        // when
+        eventPublisher.publishEvent(event);
+
+        // then
+        verify(paymentResultHandler, timeout(1000)).handlePaymentResultCancel(any(PaymentCancelledForOrderEvent.class));
     }
 }
