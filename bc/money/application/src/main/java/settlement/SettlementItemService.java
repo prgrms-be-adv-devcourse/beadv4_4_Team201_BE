@@ -28,7 +28,7 @@ public class SettlementItemService implements SettlementItemCreateUseCase {
         }
 
         try {
-            SettlementItem settlementItem = SettlementItem.create(
+            SettlementItem settlementItem = SettlementItem.createPaymentItem(
                     command.sellerId(),
                     command.orderItemInfo()
             );

@@ -1,7 +1,7 @@
 package domain.settlement;
 
 import app.giftify.shared.domain.type.PaymentMethodType;
-import app.giftify.shared.domain.vo.FeeInfo;
+import app.giftify.shared.domain.vo.AmountInfo;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.vo.OrderItemInfo;
 import app.giftify.shared.domain.vo.PaymentInfo;
@@ -27,10 +27,10 @@ class SettlementItemTest {
         @DisplayName("유효한 정보로 생성 시 PENDING 상태의 아이템이 생성된다")
         void create_success() {
             // given
-            OrderItemInfo itemInfo = createOrderItemInfo(10000L, 1L);
+            OrderItemInfo itemInfo = createPaymentItemOrderItemInfo(10000L, 1L);
 
             // when
-            SettlementItem item = SettlementItem.create(sellerId, itemInfo);
+            SettlementItem item = SettlementItem.createPaymentItem(sellerId, itemInfo);
 
             // then
             assertAll(
@@ -45,9 +45,9 @@ class SettlementItemTest {
         @Test
         @DisplayName("정산 금액이 0원 이하인 주문은 생성이 실패한다")
         void create_fail_invalid_amount() {
-            OrderItemInfo zeroAmountItem = createOrderItemInfo(0L, 1L);
+            OrderItemInfo zeroAmountItem = createPaymentItemOrderItemInfo(0L, 1L);
 
-            assertThatThrownBy(() -> SettlementItem.create(sellerId, zeroAmountItem))
+            assertThatThrownBy(() -> SettlementItem.createPaymentItem(sellerId, zeroAmountItem))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("0원보다 커야 합니다");
         }
@@ -55,9 +55,9 @@ class SettlementItemTest {
         @Test
         @DisplayName("주문 수량이 1개 미만인 주문은 생성이 실패한다")
         void create_fail_invalid_quantity() {
-            OrderItemInfo invalidQuantityItem = createOrderItemInfo(10000L, 0L);
+            OrderItemInfo invalidQuantityItem = createPaymentItemOrderItemInfo(10000L, 0L);
 
-            assertThatThrownBy(() -> SettlementItem.create(sellerId, invalidQuantityItem))
+            assertThatThrownBy(() -> SettlementItem.createPaymentItem(sellerId, invalidQuantityItem))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("수량은 1개 이상");
         }
@@ -71,7 +71,7 @@ class SettlementItemTest {
         @DisplayName("결제 대기(PENDING) 상태인데 결제 정보가 포함되면 예외가 발생한다")
         void pending_status_with_payment_info_fails() {
             // given
-            OrderItemInfo itemInfo = createOrderItemInfo(10000L, 1L);
+            OrderItemInfo itemInfo = createPaymentItemOrderItemInfo(10000L, 1L);
             PaymentInfo mockPayment = new PaymentInfo("key", "t-key", PaymentMethodType.WALLET);
 
             // then
@@ -85,7 +85,7 @@ class SettlementItemTest {
         @DisplayName("결제 대기(PENDING) 상태인데 settlementId가 존재하면 예외가 발생한다")
         void pending_status_with_settlement_id_fails() {
             // given
-            OrderItemInfo itemInfo = createOrderItemInfo(10000L, 1L);
+            OrderItemInfo itemInfo = createPaymentItemOrderItemInfo(10000L, 1L);
 
             // then
             assertThatThrownBy(() ->
@@ -97,7 +97,7 @@ class SettlementItemTest {
 
     // --- Helper Methods ---
 
-    private OrderItemInfo createOrderItemInfo(long amount, long quantity) {
+    private OrderItemInfo createPaymentItemOrderItemInfo(long amount, long quantity) {
         return new OrderItemInfo(
                 1L,
                 "ORD-2026-001",
@@ -115,20 +115,20 @@ class SettlementItemTest {
             SettlementItemStatus status,
             Long settlementId,
             PaymentInfo paymentInfo,
-            FeeInfo feeInfo
+            AmountInfo amountInfo
     ) {
         // Reflection을 쓰거나 패키지 내 접근을 활용할 수 있으나,
         // 여기서는 이해를 돕기 위해 직접 작성을 가정한 호출입니다.
         try {
             var constructor = SettlementItem.class.getDeclaredConstructor(
                     Long.class, Long.class, Long.class, OrderItemInfo.class,
-                    PaymentInfo.class, FeeInfo.class, Long.class,
+                    PaymentInfo.class, AmountInfo.class, Long.class,
                     SettlementItemType.class, SettlementItemStatus.class, java.time.LocalDate.class
             );
             constructor.setAccessible(true);
             return constructor.newInstance(
-                    null, 100L, settlementId, createOrderItemInfo(10000L, 1L),
-                    paymentInfo, feeInfo, null,
+                    null, 100L, settlementId, createPaymentItemOrderItemInfo(10000L, 1L),
+                    paymentInfo, amountInfo, null,
                     SettlementItemType.ITEM_PAYMENT, status, null
             );
         } catch (Exception e) {
