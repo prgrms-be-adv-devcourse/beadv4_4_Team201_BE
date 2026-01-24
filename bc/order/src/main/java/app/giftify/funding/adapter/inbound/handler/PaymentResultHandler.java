@@ -1,6 +1,8 @@
 package app.giftify.funding.adapter.inbound.handler;
 
 import app.giftify.funding.application.inbound.PaymentResultUseCase;
+import app.giftify.shared.domain.event.payment.PaymentCancelledForOrderEvent;
+import app.giftify.shared.domain.event.payment.PaymentFailedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentRefundedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededForOrderEvent;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +32,23 @@ public class PaymentResultHandler {
         }
 
         paymentResultUseCase.refundPayment(event.getOrderId(), event.getReason());
+    }
+
+    public void handlePaymentResultFail(PaymentFailedForOrderEvent event) {
+        if (event.getOrderId() == null) {
+            log.error("[PaymentResultHandler] 결제 재시도용 취소 이벤트 검증 실패: orderId 누락");
+            return;
+        }
+
+        paymentResultUseCase.failPayment(event.getOrderId());
+    }
+
+    public void handlePaymentResultCancel(PaymentCancelledForOrderEvent event) {
+        if (event.getOrderId() == null) {
+            log.error("[PaymentResultHandler] 결제 취소 이벤트 검증 실패: orderId 누락");
+            return;
+        }
+
+        paymentResultUseCase.cancelPayment(event.getOrderId());
     }
 }

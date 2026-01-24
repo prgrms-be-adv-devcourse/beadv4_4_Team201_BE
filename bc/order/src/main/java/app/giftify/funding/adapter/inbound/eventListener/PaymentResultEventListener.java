@@ -1,9 +1,7 @@
 package app.giftify.funding.adapter.inbound.eventListener;
 
 import app.giftify.funding.adapter.inbound.handler.PaymentResultHandler;
-import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
-import app.giftify.shared.domain.event.payment.PaymentRefundedForOrderEvent;
-import app.giftify.shared.domain.event.payment.PaymentSucceededForOrderEvent;
+import app.giftify.shared.domain.event.payment.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -29,6 +27,20 @@ public class PaymentResultEventListener {
     public void handlePaymentResultRefundedEvent(PaymentRefundedForOrderEvent event) {
         log.info("[PaymentResultEventListener] 환불 이벤트 수신: {}", event);
         paymentResultHandler.handlePaymentResultRefund(event);
-        log.info("[PaymentResultEventListener] 환불 이벤트 처리 완료 - 사유: {}", event.getReason());
+        log.info("[PaymentResultEventListener] 환불 이벤트 처리 완료 {}", event.getReason());
+    }
+
+    @EventListener
+    public void handlePaymentResultFailedEvent(PaymentFailedForOrderEvent event) {
+        log.info("[PaymentResultEventListener] 결제 재시도용 취소 이벤트 수신: {}", event);
+        paymentResultHandler.handlePaymentResultFail(event);
+        log.info("[PaymentResultEventListener] 결제 재시도용 취소 이벤트 처리 완료");
+    }
+
+    @EventListener
+    public void handlePaymentResultCancelledEvent(PaymentCancelledForOrderEvent event) {
+        log.info("[PaymentResultEventListener] 결제 취소 이벤트 수신: {}", event);
+        paymentResultHandler.handlePaymentResultCancel(event);
+        log.info("[PaymentResultEventListener] 결제 취소 이벤트 처리 완료");
     }
 }
