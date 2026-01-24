@@ -17,7 +17,7 @@ public record Money(BigDecimal amount) {
 			throw new IllegalArgumentException("금액은 음수가 될 수 없습니다.");
 		}
 
-		if (amount.compareTo(BigDecimal.valueOf(1000)) < 0) {
+		if (amount.signum() != 0 && amount.compareTo(BigDecimal.valueOf(1000)) < 0) {
 			throw new IllegalArgumentException("금액은 1000원 이상이어야 합니다.");
 		}
 	}
