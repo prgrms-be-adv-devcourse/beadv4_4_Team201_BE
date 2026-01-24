@@ -12,12 +12,12 @@ import app.giftify.shared.domain.event.payment.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
-	private static final String ORDER_ID_PREFIX_CHARGE = "GFTFY_CHARGE_";
-	private static final String ORDER_ID_PREFIX_FUNDING = "GFTFY_FUNDING_"; // FIXME : Order 도메인에게 받아서 사용하도록 변경 필요
+	private static final String ORDER_UUID_PREFIX_CHARGE = "GFTFY_CHARGE_";
+	private static final String ORDER_UUID_PREFIX_FUNDING = "GFTFY_FUNDING_"; // FIXME : Order 도메인에게 받아서 사용하도록 변경 필요
 
 	private final Long userId;
 	private final PaymentType type;
-	private final String orderId;
+	private final String orderUuid;
 	private PaymentStatus status;
 	private final Money amount;
 	private String paymentKey;
@@ -28,7 +28,7 @@ public class Payment extends BaseDomainModel {
 
 	private Payment(
 		Long id, Long userId, PaymentType type, PaymentStatus status,
-		Money amount, String paymentKey, PaymentMethod method, String orderId,
+		Money amount, String paymentKey, PaymentMethod method, String orderUuid,
 		Money walletUsedAmount
 	) {
 		super(id);
@@ -38,12 +38,12 @@ public class Payment extends BaseDomainModel {
 		this.amount = amount;
 		this.paymentKey = paymentKey;
 		this.method = method;
-		this.orderId = orderId;
+		this.orderUuid = orderUuid;
 		this.walletUsedAmount = walletUsedAmount;
 	}
 
-	private static String generateOrderId(PaymentType type) {
-		String prefix = (type == PaymentType.CHARGE) ? ORDER_ID_PREFIX_CHARGE : ORDER_ID_PREFIX_FUNDING;
+	private static String generateOrderUuid(PaymentType type) {
+		String prefix = (type == PaymentType.CHARGE) ? ORDER_UUID_PREFIX_CHARGE : ORDER_UUID_PREFIX_FUNDING;
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		return prefix + uuid;
 	}
@@ -65,7 +65,7 @@ public class Payment extends BaseDomainModel {
 		PaymentMethod method
 	) {
 		LocalDateTime now = LocalDateTime.now();
-		String orderId = generateOrderId(type);
+		String orderUuid = generateOrderUuid(type);
 
 		Payment payment = Payment.builder()
 			.userId(userId)
@@ -73,7 +73,7 @@ public class Payment extends BaseDomainModel {
 			.status(PaymentStatus.PENDING) // 항상 대기 상태로 시작
 			.amount(amount)
 			.method(method)
-			.orderId(orderId)
+			.orderUuid(orderUuid)
 			.build();
 
 		payment.uncommittedHistory.add(new PaymentHistory(
@@ -92,15 +92,15 @@ public class Payment extends BaseDomainModel {
 	 * PG 결제 없이 예치금으로만 완납하는 경우 사용합니다.
 	 * 초기 상태는 PENDING이며, 예치금 차감 후 markAsPaidByWallet()을 호출해야 합니다.
 	 *
-	 * <p>흐름: createWalletOnlyPayment → save → withdraw → markAsPaidByWallet → save</p>
+	 * <p>흐름: createGiftifyCashOnlyPayment → save → withdraw → markAsPaidByWallet → save</p>
 	 */
-	public static Payment createWalletOnlyPayment(
+	public static Payment createGiftifyCashOnlyPayment(
 		Long userId,
 		Money walletAmount,
 		PaymentType type
 	) {
 		LocalDateTime now = LocalDateTime.now();
-		String orderId = generateOrderId(type);
+		String orderUuid = generateOrderUuid(type);
 
 		Payment payment = Payment.builder()
 			.userId(userId)
@@ -108,7 +108,7 @@ public class Payment extends BaseDomainModel {
 			.status(PaymentStatus.PENDING)  // PENDING으로 시작, 예치금 차감 후 PAID로 전환
 			.amount(Money.zero())           // PG 결제액 없음
 			.walletUsedAmount(walletAmount)
-			.orderId(orderId)
+			.orderUuid(orderUuid)
 			.build();
 
 		payment.uncommittedHistory.add(new PaymentHistory(
@@ -132,7 +132,7 @@ public class Payment extends BaseDomainModel {
 		Money walletUsedAmount
 	) {
 		LocalDateTime now = LocalDateTime.now();
-		String orderId = generateOrderId(PaymentType.FUNDING);
+		String orderUuid = generateOrderUuid(PaymentType.FUNDING);
 
 		Payment payment = Payment.builder()
 			.userId(userId)
@@ -140,7 +140,7 @@ public class Payment extends BaseDomainModel {
 			.status(PaymentStatus.PENDING)
 			.amount(pgAmount)
 			.walletUsedAmount(walletUsedAmount)
-			.orderId(orderId)
+			.orderUuid(orderUuid)
 			.build();
 
 		payment.uncommittedHistory.add(new PaymentHistory(
@@ -355,8 +355,8 @@ public class Payment extends BaseDomainModel {
 		return method;
 	}
 
-	public String getOrderId() {
-		return orderId;
+	public String getOrderUuid() {
+		return orderUuid;
 	}
 
 	public Money getWalletUsedAmount() {
@@ -372,7 +372,7 @@ public class Payment extends BaseDomainModel {
 			.amount(this.amount)
 			.paymentKey(this.paymentKey)
 			.method(this.method)
-			.orderId(this.orderId)
+			.orderUuid(this.orderUuid)
 			.walletUsedAmount(this.walletUsedAmount)
 			.build();
 
@@ -385,7 +385,7 @@ public class Payment extends BaseDomainModel {
 	public String toString() {
 		return "Payment{" +
 			"id=" + getId() +
-			", orderId='" + orderId + '\'' +
+			", orderUuid='" + orderUuid + '\'' +
 			", userId=" + userId +
 			", type=" + type +
 			", status=" + status +
@@ -400,8 +400,8 @@ public class Payment extends BaseDomainModel {
 		if (!super.equals(object))
 			return false;
 
-		return Objects.equals(userId, payment.userId) && type == payment.type && Objects.equals(orderId,
-			payment.orderId) && status == payment.status && Objects.equals(amount, payment.amount)
+		return Objects.equals(userId, payment.userId) && type == payment.type && Objects.equals(orderUuid,
+			payment.orderUuid) && status == payment.status && Objects.equals(amount, payment.amount)
 			&& Objects.equals(paymentKey, payment.paymentKey) && method == payment.method
 			&& Objects.equals(walletUsedAmount, payment.walletUsedAmount) && uncommittedHistory.equals(
 			payment.uncommittedHistory);
@@ -412,7 +412,7 @@ public class Payment extends BaseDomainModel {
 		int result = super.hashCode();
 		result = 31 * result + Objects.hashCode(userId);
 		result = 31 * result + Objects.hashCode(type);
-		result = 31 * result + Objects.hashCode(orderId);
+		result = 31 * result + Objects.hashCode(orderUuid);
 		result = 31 * result + Objects.hashCode(status);
 		result = 31 * result + Objects.hashCode(amount);
 		result = 31 * result + Objects.hashCode(paymentKey);
@@ -432,7 +432,7 @@ public class Payment extends BaseDomainModel {
 		private PaymentStatus status;
 		private Money amount;
 		private PaymentMethod method;
-		private String orderId;
+		private String orderUuid;
 		private Money walletUsedAmount;
 
 		public Builder paymentId(Long paymentId) {
@@ -470,8 +470,8 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
-		public Builder orderId(String orderId) {
-			this.orderId = orderId;
+		public Builder orderUuid(String orderUuid) {
+			this.orderUuid = orderUuid;
 			return this;
 		}
 
@@ -489,7 +489,7 @@ public class Payment extends BaseDomainModel {
 				amount,
 				pgTransactionId,
 				method,
-				orderId,
+				orderUuid,
 				walletUsedAmount
 			);
 		}

@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
+import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
+import app.giftify.shared.domain.event.payment.PaymentSettledEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.payment.PaymentType;
 import domain.payment.Payment;
@@ -22,13 +24,17 @@ import domain.payment.PaymentRepository;
 import payment.usecase.PaymentCancelUseCase;
 import payment.usecase.PaymentChargeUseCase;
 import payment.usecase.PaymentCompleteUseCase;
+import payment.usecase.PaymentRefundUseCase;
+import payment.usecase.PaymentSettleUseCase;
 import payment.usecase.command.CancelPaymentCommand;
 import payment.usecase.command.PaymentChargeCommand;
+import payment.usecase.command.RefundPaymentCommand;
 import payment.usecase.result.PaymentResult;
 
 @Service
 @Transactional
-public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseCase, PaymentCancelUseCase {
+public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseCase, PaymentCancelUseCase,
+	PaymentSettleUseCase, PaymentRefundUseCase {
 
 	private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
@@ -71,7 +77,7 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 
 		return new PaymentResult(
 			savedPayment.getPaymentId(),
-			savedPayment.getOrderId(),
+			savedPayment.getOrderUuid(),
 			savedPayment.getStatus(),
 			savedPayment.getAmount()
 		);
@@ -148,5 +154,56 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 			return command.metadata();
 		}
 		return "{\"reason\":\"" + command.reason().name() + "\"}";
+	}
+
+	@Override
+	public void settle(Long paymentId) {
+		Payment payment = paymentRepository.findById(paymentId)
+			.orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND,
+				"[Payment] 결제를 찾을 수 없습니다: " + paymentId));
+
+		PaymentHistory history = payment.settle();
+		paymentRepository.save(payment);
+
+		eventPublisher.publish(new PaymentSettledEvent(
+			payment.getPaymentId(),
+			payment.getModelType(),
+			payment.getUserId(),
+			payment.getAmount(),
+			payment.getType(),
+			history.occurredAt()
+		));
+
+		log.info("[Payment] 결제 정산 완료. paymentId={}, userId={}", paymentId, payment.getUserId());
+	}
+
+	@Override
+	public void refund(RefundPaymentCommand command) {
+		Payment payment = paymentRepository.findById(command.paymentId())
+			.orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND,
+				"[Payment] 결제를 찾을 수 없습니다: " + command.paymentId()));
+
+		// 이미 환불 불가능한 상태면 예외 없이 종료 (중복 처리 방지)
+		if (!payment.getStatus().canRefund()) {
+			log.info("[Payment] 환불 불가능한 상태입니다. 요청 무시됨. paymentId={}, status={}",
+				payment.getPaymentId(), payment.getStatus());
+			return;
+		}
+
+		PaymentHistory history = payment.refund();
+		paymentRepository.save(payment);
+
+		eventPublisher.publish(new PaymentRefundedEvent(
+			payment.getPaymentId(),
+			null,  // refundId - PG 환불 응답에서 추출 (추후 구현)
+			payment.getModelType(),
+			payment.getUserId(),
+			payment.getAmount(),
+			payment.getType(),
+			command.reason()
+		));
+
+		log.info("[Payment] 결제 환불 완료. paymentId={}, userId={}, reason={}",
+			payment.getPaymentId(), payment.getUserId(), command.reason());
 	}
 }

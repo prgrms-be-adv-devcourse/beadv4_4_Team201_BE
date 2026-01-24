@@ -20,7 +20,7 @@ public class JpaPayment extends BaseJpaEntity {
 	private Long userId;
 
 	@Column(nullable = false, unique = true, length = 64)
-	private String orderId;
+	private String orderUuid;
 
 	private String pgTransactionId;
 
@@ -47,14 +47,14 @@ public class JpaPayment extends BaseJpaEntity {
 	protected JpaPayment() {
 	}
 
-	private JpaPayment(Long userId, String orderId, String pgTransactionId,
+	private JpaPayment(Long userId, String orderUuid, String pgTransactionId,
 		PaymentType type, PaymentStatus status,
 		BigDecimal amount,
 		PaymentMethod method,
 		BigDecimal walletUsedAmount
 	) {
 		this.userId = userId;
-		this.orderId = orderId;
+		this.orderUuid = orderUuid;
 		this.type = type;
 		this.status = status;
 		this.amount = amount;
@@ -65,7 +65,7 @@ public class JpaPayment extends BaseJpaEntity {
 
 	public void update(domain.payment.Payment domain) {
 		this.userId = domain.getUserId();
-		this.orderId = domain.getOrderId();
+		this.orderUuid = domain.getOrderUuid();
 		this.type = domain.getType();
 		this.status = domain.getStatus();
 		this.amount = domain.getAmount().amount();
@@ -79,8 +79,8 @@ public class JpaPayment extends BaseJpaEntity {
 		return userId;
 	}
 
-	public String getOrderId() {
-		return orderId;
+	public String getOrderUuid() {
+		return orderUuid;
 	}
 
 	public String getPaymentKey() {
@@ -109,7 +109,7 @@ public class JpaPayment extends BaseJpaEntity {
 
 	public static class Builder {
 		private Long userId;
-		private String orderId;
+		private String orderUuid;
 		private String pgTransactionId;
 		private PaymentType type;
 		private PaymentStatus status;
@@ -122,8 +122,8 @@ public class JpaPayment extends BaseJpaEntity {
 			return this;
 		}
 
-		public JpaPayment.Builder orderId(String orderId) {
-			this.orderId = orderId;
+		public JpaPayment.Builder orderUuid(String orderUuid) {
+			this.orderUuid = orderUuid;
 			return this;
 		}
 
@@ -160,7 +160,7 @@ public class JpaPayment extends BaseJpaEntity {
 		public JpaPayment build() {
 			return new JpaPayment(
 				userId,
-				orderId,
+				orderUuid,
 				pgTransactionId,
 				type,
 				status,
