@@ -149,7 +149,7 @@ class OrderCreateServiceTest {
                 .buyerId(memberId)
                 .totalAmount(Money.of(10000))
                 .paymentMethod(PaymentMethod.CARD)
-                .status(OrderStatus.ORDERED)
+                .status(OrderStatus.PAID)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -159,7 +159,7 @@ class OrderCreateServiceTest {
         String previousStatus = orderCreateService.confirmOrder(orderId, memberId);
 
         // then
-        assertThat(previousStatus).isEqualTo("ORDERED");
+        assertThat(previousStatus).isEqualTo("PAID");
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
         verify(orderRepositoryPort).findByIdAndBuyerId(orderId, memberId);
         verify(orderRepositoryPort).save(order);
@@ -192,7 +192,7 @@ class OrderCreateServiceTest {
                 .buyerId(memberId)
                 .totalAmount(Money.of(10000))
                 .paymentMethod(PaymentMethod.CARD)
-                .status(OrderStatus.ORDERED)
+                .status(OrderStatus.PAID)
                 .createdAt(LocalDateTime.now())
                 .build();
 

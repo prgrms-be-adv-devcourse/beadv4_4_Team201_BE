@@ -1,6 +1,5 @@
 package app.giftify.funding.domain;
 
-import app.giftify.funding.domain.exception.OrderErrorCode;
 import app.giftify.funding.domain.exception.OrderException;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
@@ -87,7 +86,7 @@ class OrderTest {
         order.toOrdered(paymentKey);
 
         // then
-        assertThat(order.getStatus()).isEqualTo(OrderStatus.ORDERED);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
         assertThat(order.getPaymentKey()).isEqualTo(paymentKey);
     }
 
@@ -189,7 +188,7 @@ class OrderTest {
                 .buyerId(1L)
                 .totalAmount(Money.of(10000))
                 .paymentMethod(PaymentMethod.CARD)
-                .status(OrderStatus.ORDERED)
+                .status(OrderStatus.PAID)
                 .createdAt(LocalDateTime.now().minusMinutes(31))
                 .build();
 

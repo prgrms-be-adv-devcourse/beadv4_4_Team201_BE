@@ -125,13 +125,13 @@ class OrderControllerTest {
         // given
         Long orderId = 1L;
         Long memberId = 1L;
-        given(orderCreateUseCase.confirmOrder(orderId, memberId)).willReturn("ORDERED");
+        given(orderCreateUseCase.confirmOrder(orderId, memberId)).willReturn("PAID");
 
         // when & then
         mockMvc.perform(patch("/api/order/orders/{orderId}/confirm", orderId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.orderId").value(orderId))
-                .andExpect(jsonPath("$.previousStatus").value("ORDERED"))
+                .andExpect(jsonPath("$.previousStatus").value("PAID"))
                 .andExpect(jsonPath("$.currentStatus").value("CONFIRMED"))
                 .andExpect(jsonPath("$.message").value("주문이 확정되었습니다."));
     }

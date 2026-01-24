@@ -77,13 +77,13 @@ public class Order extends BaseDomainModel {
         if (this.status != OrderStatus.PAYMENT_PENDING) {
             throw new OrderException(OrderErrorCode.ORDER_NOT_PAYABLE, "주문 대기 상태에서만 결제가 가능합니다.");
         }
-        this.status = OrderStatus.ORDERED;
+        this.status = OrderStatus.PAID;
         this.paymentKey = paymentKey;
     }
 
     // 주문 확정 처리
     public void toConfirmed() {
-        if (this.status != OrderStatus.ORDERED) {
+        if (this.status != OrderStatus.PAID) {
             throw new OrderException(OrderErrorCode.ORDER_NOT_CONFIRMABLE, "주문 결제 완료 상태에서만 확정이 가능합니다.");
         }
         this.status = OrderStatus.CONFIRMED;
@@ -119,7 +119,7 @@ public class Order extends BaseDomainModel {
             throw new OrderException(OrderErrorCode.ORDER_ALREADY_CONFIRMED, "이미 확정된 주문은 환불할 수 없습니다.");
         }
 
-        if(this.status != OrderStatus.ORDERED){
+        if(this.status != OrderStatus.PAID){
             throw new OrderException(OrderErrorCode.ORDER_CANNOT_REFUND, "결제 이력이 없어 환불 가능한 상태가 아닙니다.");
         }
 
