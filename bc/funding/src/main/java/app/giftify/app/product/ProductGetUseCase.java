@@ -18,18 +18,13 @@ public class ProductGetUseCase {
 	/**
 	 * 상품 단건 조회
 	 */
-	public ProductDto getProduct(Long productId, Long memberId) {
+	public ProductDto getProduct(Long productId) {
 
 		Product product = productSupport.findById(productId); // 상품이 없으면 404
 
-		/**
-		 * 판매중이 아닌 상품
-		 * - 요청 유저가 해당 상품의 판매자일 경우에만 조회 가능
-		 */
-		if (!product.getStatus().equals(ACTIVE)) {
-			if (memberId == null || !product.getSeller().getId().equals(memberId))
-				throw new ProductException(PRODUCT_NOT_ACTIVE); // 400
-		}
+		// 판매중이 아닌 상품
+		if (!product.getStatus().equals(ACTIVE))
+			throw new ProductException(PRODUCT_NOT_ACTIVE); // 400
 
 		return ProductDto.from(product);
 	}

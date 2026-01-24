@@ -31,8 +31,8 @@ public class ProductFacade {
 	}
 
 	@Transactional(readOnly = true)
-	public ProductDto getProduct(Long productId, Long memberId) {
-		return productGetUseCase.getProduct(productId, memberId);
+	public ProductDto getProduct(Long productId) {
+		return productGetUseCase.getProduct(productId);
 	}
 
 	@Transactional(readOnly = true)
