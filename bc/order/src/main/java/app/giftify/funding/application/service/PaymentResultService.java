@@ -31,4 +31,22 @@ public class PaymentResultService implements PaymentResultUseCase {
         order.toRefunded();
         orderRepositoryPort.save(order);
     }
+
+    @Override
+    public void failPayment(Long orderId) {
+        Order order = orderRepositoryPort.findById(orderId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "찾을 수 없는 주문입니다. [ 주문 ID: " + orderId +" ]"));
+
+        order.toFailed();
+        orderRepositoryPort.save(order);
+    }
+
+    @Override
+    public void cancelPayment(Long orderId) {
+        Order order = orderRepositoryPort.findById(orderId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "찾을 수 없는 주문입니다. [ 주문 ID: " + orderId +" ]"));
+
+        order.toCancelled();
+        orderRepositoryPort.save(order);
+    }
 }

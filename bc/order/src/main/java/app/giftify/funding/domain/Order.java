@@ -99,6 +99,14 @@ public class Order extends BaseDomainModel {
         this.cancelledAt = LocalDateTime.now();
     }
 
+    // 결제 재시도용 취소 처리
+    public void toFailed() {
+        if (this.status == OrderStatus.CONFIRMED) {
+            throw new OrderException(OrderErrorCode.ORDER_ALREADY_CONFIRMED, "이미 확정된 주문은 취소할 수 없습니다.");
+        }
+        this.status = OrderStatus.FAILED;
+    }
+
     // 자동 취소 가능 여부
     public boolean canAutoCancel(int minutes) {
         return this.status == OrderStatus.PAYMENT_PENDING
