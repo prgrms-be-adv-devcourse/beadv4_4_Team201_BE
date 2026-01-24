@@ -141,7 +141,7 @@ class PaymentControllerTest {
 			mockMvc = createMockMvc(memberId);
 
 			Long paymentId = 1L;
-			String orderId = "GFTFY_CHARGE_test123uuid";
+			String orderUuid = "GFTFY_CHARGE_test123uuid";
 			String paymentKey = "toss_payment_key_xxx";
 			BigDecimal amount = new BigDecimal("10000");
 
@@ -149,14 +149,14 @@ class PaymentControllerTest {
 
 			Payment payment = Payment.builder()
 				.paymentId(paymentId)
-				.orderId(orderId)
+				.orderUuid(orderUuid)
 				.userId(memberId) // memberId와 일치
 				.status(PaymentStatus.PENDING)
 				.amount(Money.of(amount))
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderId), eq(amount)))
+			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderUuid), eq(amount)))
 				.willReturn(TossConfirmResult.success(paymentKey));
 
 			// When & Then
@@ -203,7 +203,7 @@ class PaymentControllerTest {
 
 			Payment payment = Payment.builder()
 				.paymentId(paymentId)
-				.orderId("GFTFY_CHARGE_test")
+				.orderUuid("GFTFY_CHARGE_test")
 				.userId(memberId)
 				.status(PaymentStatus.PENDING)
 				.amount(Money.of(new BigDecimal("10000"))) // 원래 금액
@@ -234,7 +234,7 @@ class PaymentControllerTest {
 
 			Payment payment = Payment.builder()
 				.paymentId(paymentId)
-				.orderId(orderId)
+				.orderUuid(orderId)
 				.userId(memberId)
 				.status(PaymentStatus.PENDING)
 				.amount(Money.of(amount))
@@ -268,7 +268,7 @@ class PaymentControllerTest {
 
 			Payment payment = Payment.builder()
 				.paymentId(paymentId)
-				.orderId("GFTFY_CHARGE_test")
+				.orderUuid("GFTFY_CHARGE_test")
 				.userId(actualOwnerId) // 다른 사용자의 결제
 				.status(PaymentStatus.PENDING)
 				.amount(Money.of(new BigDecimal("10000")))
@@ -375,7 +375,7 @@ class PaymentControllerTest {
 			mockMvc = createMockMvc(memberId);
 
 			Long paymentId = 1L;
-			String orderId = "GFTFY_FUNDING_test123";
+			String orderUuid = "GFTFY_FUNDING_test123";
 			String paymentKey = "toss_key";
 			BigDecimal pgAmount = new BigDecimal("20000");
 			Money walletUsed = Money.of(30000);
@@ -385,7 +385,7 @@ class PaymentControllerTest {
 			// FUNDING 타입 + walletUsedAmount 있는 Payment
 			Payment payment = Payment.builder()
 				.paymentId(paymentId)
-				.orderId(orderId)
+				.orderUuid(orderUuid)
 				.userId(memberId)
 				.type(PaymentType.FUNDING)
 				.status(PaymentStatus.PENDING)
@@ -394,7 +394,7 @@ class PaymentControllerTest {
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderId), eq(pgAmount)))
+			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderUuid), eq(pgAmount)))
 				.willReturn(TossConfirmResult.failure("CARD_ERROR", "카드 오류"));
 
 			// When & Then
@@ -416,7 +416,7 @@ class PaymentControllerTest {
 			mockMvc = createMockMvc(memberId);
 
 			Long paymentId = 1L;
-			String orderId = "GFTFY_CHARGE_test";
+			String orderUuid = "GFTFY_CHARGE_test";
 			String paymentKey = "toss_key";
 			BigDecimal amount = new BigDecimal("10000");
 
@@ -425,7 +425,7 @@ class PaymentControllerTest {
 			// CHARGE 타입 Payment
 			Payment payment = Payment.builder()
 				.paymentId(paymentId)
-				.orderId(orderId)
+				.orderUuid(orderUuid)
 				.userId(memberId)
 				.type(PaymentType.CHARGE)
 				.status(PaymentStatus.PENDING)
@@ -433,7 +433,7 @@ class PaymentControllerTest {
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderId), eq(amount)))
+			given(tossPaymentsClient.confirm(eq(paymentKey), eq(orderUuid), eq(amount)))
 				.willReturn(TossConfirmResult.failure("CARD_ERROR", "카드 오류"));
 
 			// When & Then

@@ -117,10 +117,10 @@ public class PaymentController {
 				"결제 금액이 일치하지 않습니다");
 		}
 
-		// 4. Toss confirm API 호출 (서버에 저장된 orderId 사용)
+		// 4. Toss confirm API 호출 (서버에 저장된 orderUuid 사용)
 		TossConfirmResult confirmResult = tossPaymentsClient.confirm(
 			request.paymentKey(),
-			payment.getOrderId(),
+			payment.getOrderUuid(),
 			request.amount()
 		);
 

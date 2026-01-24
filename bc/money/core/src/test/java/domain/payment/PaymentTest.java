@@ -171,7 +171,7 @@ class PaymentTest {
 		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
 		assertThat(payment.getAmount()).isEqualTo(pgAmount);
 		assertThat(payment.getWalletUsedAmount()).isEqualTo(walletUsedAmount);
-		assertThat(payment.getOrderId()).startsWith("GFTFY_FUNDING_");
+		assertThat(payment.getOrderUuid()).startsWith("GFTFY_FUNDING_");
 		assertThat(payment.getUncommittedHistory()).hasSize(1);
 		assertThat(payment.getUncommittedHistory().getFirst().eventType()).isEqualTo(PaymentEventType.CREATED);
 	}

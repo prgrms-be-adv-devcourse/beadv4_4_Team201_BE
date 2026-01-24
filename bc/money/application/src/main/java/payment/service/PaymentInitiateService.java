@@ -91,7 +91,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 	 */
 	private PaymentInitiateResult payWithWalletOnly(Long userId, Long orderId, Money amount, PaymentType paymentType) {
 		// 1. Payment를 PENDING 상태로 먼저 저장 → paymentId 획득
-		Payment payment = Payment.createWalletOnlyPayment(userId, amount, paymentType);
+		Payment payment = Payment.createGiftifyCashOnlyPayment(userId, amount, paymentType);
 		Payment savedPayment = paymentRepository.save(payment);
 		Long paymentId = savedPayment.getPaymentId();
 
@@ -166,7 +166,7 @@ public class PaymentInitiateService implements PaymentInitiateUseCase {
 			walletUsed,
 			pgRequired,
 			savedPayment.getPaymentId(),
-			savedPayment.getOrderId()
+			savedPayment.getOrderUuid()
 		);
 	}
 

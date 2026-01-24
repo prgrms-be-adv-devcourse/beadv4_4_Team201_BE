@@ -26,6 +26,7 @@ public class TossPaymentsClient {
 
 	private static final Logger log = LoggerFactory.getLogger(TossPaymentsClient.class);
 	private static final String CONFIRM_URL = "/v1/payments/confirm";
+	private static final String CANCEL_URL = "/v1/payments/%s/cancel";
 
 	private final RestTemplate restTemplate;
 	private final TossPaymentsProperties properties;
@@ -111,5 +112,63 @@ public class TossPaymentsClient {
 	}
 
 	private record TossConfirmRequest(String paymentKey, String orderId, Long amount) {
+	}
+
+	/**
+	 * Toss Payments 결제 취소 API를 호출합니다.
+	 *
+	 * @param paymentKey   취소할 결제의 paymentKey
+	 * @param cancelReason 취소 사유
+	 * @return 취소 성공 시 TossCancelResult.success, 실패 시 TossCancelResult.failure
+	 * @throws PaymentException 서버 오류 또는 연결 실패 시
+	 */
+	public TossCancelResult cancelPayment(String paymentKey, String cancelReason) {
+		String url = properties.getApi().getBaseUrl() + String.format(CANCEL_URL, paymentKey);
+
+		HttpHeaders headers = createHeaders();
+		TossCancelRequest requestBody = new TossCancelRequest(cancelReason);
+
+		try {
+			HttpEntity<TossCancelRequest> entity = new HttpEntity<>(requestBody, headers);
+			String response = restTemplate.postForObject(url, entity, String.class);
+
+			log.info("[TossPayments] 결제 취소 성공. paymentKey={}", paymentKey);
+			return TossCancelResult.success(paymentKey);
+
+		} catch (HttpClientErrorException e) {
+			return handleCancelError(e, paymentKey);
+		} catch (Exception e) {
+			log.error("[TossPayments] 결제 취소 중 예외 발생. paymentKey={}", paymentKey, e);
+			throw new PaymentException(PaymentErrorCode.PG_CONNECTION_ERROR,
+				"PG사 연결 중 오류가 발생했습니다: " + e.getMessage());
+		}
+	}
+
+	private TossCancelResult handleCancelError(HttpClientErrorException e, String paymentKey) {
+		String errorCode = "UNKNOWN";
+		String errorMessage = "알 수 없는 오류";
+
+		try {
+			JsonNode errorBody = objectMapper.readTree(e.getResponseBodyAsString());
+			errorCode = errorBody.path("code").asText("UNKNOWN");
+			errorMessage = errorBody.path("message").asText("알 수 없는 오류");
+		} catch (Exception parseEx) {
+			log.warn("[TossPayments] 취소 에러 응답 파싱 실패", parseEx);
+		}
+
+		log.warn("[TossPayments] 결제 취소 실패. paymentKey={}, errorCode={}, message={}",
+			paymentKey, errorCode, errorMessage);
+
+		if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+			// 클라이언트 오류 (이미 취소됨, 환불 불가 등)
+			return TossCancelResult.failure(errorCode, errorMessage);
+		}
+
+		// 서버 오류 또는 기타 오류
+		throw new PaymentException(PaymentErrorCode.PG_APPROVAL_FAILED,
+			String.format("PG사 취소 실패 [%s]: %s", errorCode, errorMessage));
+	}
+
+	private record TossCancelRequest(String cancelReason) {
 	}
 }

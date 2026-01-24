@@ -44,7 +44,7 @@ public class PgWebhookController {
 	}
 
 	@PostMapping("/pg/cancel")
-	public ResponseEntity<Void> handlePgCancel(
+	public ResponseEntity<Void> handlePgSystemCancel(
 		@RequestBody String rawPayload,
 		@RequestHeader("tosspayments-webhook-transmission-time") String timestamp,
 		@RequestHeader("tosspayments-webhook-signature") String signature
@@ -65,9 +65,9 @@ public class PgWebhookController {
 		}
 
 		// 3. 비즈니스 로직
-		Payment payment = paymentRepository.findByPgTransactionId(request.pgTransactionId())
+		Payment payment = paymentRepository.findByPgTransactionId(request.paymentKey())
 			.orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND,
-				"[Payment] 해당 PG 거래건을 찾을 수 없습니다: " + request.pgTransactionId()));
+				"[Payment] 해당 PG 거래건을 찾을 수 없습니다: " + request.paymentKey()));
 
 		paymentCancelUseCase.cancel(new CancelPaymentCommand(
 			payment.getPaymentId(),

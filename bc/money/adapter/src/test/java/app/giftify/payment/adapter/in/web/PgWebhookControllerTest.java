@@ -53,7 +53,7 @@ class PgWebhookControllerTest {
 
 	@Test
 	@DisplayName("PG 취소 웹훅: 서명이 유효하고 결제 건이 존재하면 취소 유즈케이스를 호출한다")
-	void handlePgCancel_ShouldCallCancelUseCase_WhenValidRequest() throws Exception {
+	void handlePgCancel_ShouldCallSystemCancelUseCase_WhenValidRequest() throws Exception {
 		// Given
 		String pgTxId = "pg_tx_12345";
 		String timestamp = "2024-01-01T12:00:00";
@@ -63,7 +63,7 @@ class PgWebhookControllerTest {
 
 		Payment payment = Payment.builder()
 			.paymentId(100L)
-			.orderId("GFTFY_CHARGE_test123")
+			.orderUuid("GFTFY_CHARGE_test123")
 			.paymentKey(pgTxId)
 			.status(PaymentStatus.PAID)
 			.build();
@@ -90,7 +90,7 @@ class PgWebhookControllerTest {
 
 	@Test
 	@DisplayName("PG 취소 웹훅: 서명이 유효하지 않으면 403 Forbidden을 반환한다")
-	void handlePgCancel_ShouldReturnForbidden_WhenInvalidSignature() throws Exception {
+	void handlePgSystemCancel_ShouldReturnForbidden_WhenInvalidSignature() throws Exception {
 		// Given
 		given(pgWebhookValidator.validate(any(), any(), any())).willReturn(false);
 
@@ -107,7 +107,7 @@ class PgWebhookControllerTest {
 
 	@Test
 	@DisplayName("PG 취소 웹훅: 결제 건을 찾을 수 없으면 400 Bad Request를 반환한다")
-	void handlePgCancel_ShouldReturnBadRequest_WhenPaymentNotFound() throws Exception {
+	void handlePgSystemCancel_ShouldReturnBadRequest_WhenPaymentNotFound() throws Exception {
 		// Given
 		String pgTxId = "not_found_id";
 		PgCancelWebhookRequest requestDto = new PgCancelWebhookRequest(pgTxId, "사유", "time");
