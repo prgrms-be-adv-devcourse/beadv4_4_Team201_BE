@@ -105,6 +105,19 @@ public class Order extends BaseDomainModel {
                 && this.createdAt.plusMinutes(minutes).isBefore(LocalDateTime.now());
     }
 
+    // 환불 처리
+    public void toRefunded() {
+        if(this.status == OrderStatus.CONFIRMED){
+            throw new OrderException(OrderErrorCode.ORDER_ALREADY_CONFIRMED, "이미 확정된 주문은 환불할 수 없습니다.");
+        }
+
+        if(this.status != OrderStatus.ORDERED){
+            throw new OrderException(OrderErrorCode.ORDER_CANNOT_REFUND, "결제 이력이 없어 환불 가능한 상태가 아닙니다.");
+        }
+
+        this.status = OrderStatus.REFUNDED;
+    }
+
     // getters
     public String getOrderNumber() {
         return orderNumber;

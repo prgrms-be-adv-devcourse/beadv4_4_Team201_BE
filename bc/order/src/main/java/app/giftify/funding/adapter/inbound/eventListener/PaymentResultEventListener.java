@@ -1,6 +1,8 @@
 package app.giftify.funding.adapter.inbound.eventListener;
 
 import app.giftify.funding.adapter.inbound.handler.PaymentResultHandler;
+import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
+import app.giftify.shared.domain.event.payment.PaymentRefundedForOrderEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededForOrderEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +18,17 @@ public class PaymentResultEventListener {
 
     private final PaymentResultHandler paymentResultHandler;
 
-    // 이벤트명에 맞게 수정
-    // 예상: PaymentSucceededForOrderEvent
     @EventListener
     public void handlePaymentResultSucceededEvent(PaymentSucceededForOrderEvent event) {
         log.info("[PaymentResultEventListener] 결제 성공 이벤트 수신: {}", event);
         paymentResultHandler.handlePaymentResultSucceed(event);
         log.info("[PaymentResultEventListener] 결제 성공 이벤트 처리 완료 ");
+    }
+
+    @EventListener
+    public void handlePaymentResultRefundedEvent(PaymentRefundedForOrderEvent event) {
+        log.info("[PaymentResultEventListener] 환불 이벤트 수신: {}", event);
+        paymentResultHandler.handlePaymentResultRefund(event);
+        log.info("[PaymentResultEventListener] 환불 이벤트 처리 완료 - 사유: {}", event.getReason());
     }
 }

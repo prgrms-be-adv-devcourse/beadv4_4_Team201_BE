@@ -19,6 +19,7 @@ public enum OrderErrorCode implements ErrorCode {
     ORDER_CANNOT_BE_CANCELED("O203", "현재 상태에서는 주문을 취소할 수 없습니다."),
     ORDER_NOT_PAYABLE("O204", "결제할 수 없는 주문 상태입니다."),
     ORDER_NOT_CONFIRMABLE("O205", "확정할 수 없는 주문 상태입니다."),
+    ORDER_CANNOT_REFUND("O206", "결제 이력이 없어 환불 가능한 상태가 아닙니다."),
 
     // [300 ~ 399] 주문 아이템 관련
     ORDER_ITEM_ALREADY_CONFIRMED("O301", "이미 확정된 주문 아이템입니다."),

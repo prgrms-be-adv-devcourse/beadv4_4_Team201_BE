@@ -1,7 +1,6 @@
 package app.giftify.funding.application.service;
 
 import app.giftify.funding.application.inbound.PaymentResultUseCase;
-import app.giftify.funding.application.outbound.OrderPaymentPort;
 import app.giftify.funding.application.outbound.OrderRepositoryPort;
 import app.giftify.funding.domain.Order;
 import app.giftify.funding.domain.exception.OrderErrorCode;
@@ -21,6 +20,15 @@ public class PaymentResultService implements PaymentResultUseCase {
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "찾을 수 없는 주문입니다. [ 주문 ID: " + orderId +" ]"));
 
         order.toOrdered(paymentKey);
+        orderRepositoryPort.save(order);
+    }
+
+    @Override
+    public void refundPayment(Long orderId, String reason) {
+        Order order = orderRepositoryPort.findById(orderId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND, "찾을 수 없는 주문입니다. [ 주문 ID: " + orderId +" ]"));
+
+        order.toRefunded();
         orderRepositoryPort.save(order);
     }
 }
