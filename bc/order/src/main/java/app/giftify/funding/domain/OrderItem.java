@@ -22,7 +22,6 @@ public class OrderItem extends BaseDomainModel {
     private Quantity quantity; // 수량
     private Money price; // 단가 기준 금액
 
-    private OrderStatus status;
     private LocalDateTime confirmedAt;
     private LocalDateTime cancelledAt;
     private final LocalDateTime createdAt;
@@ -36,7 +35,6 @@ public class OrderItem extends BaseDomainModel {
             Long receiverId,
             Money price,
             Quantity quantity,
-            OrderStatus status,
             LocalDateTime createdAt,
             LocalDateTime confirmedAt,
             LocalDateTime cancelledAt
@@ -49,39 +47,9 @@ public class OrderItem extends BaseDomainModel {
         this.receiverId = receiverId;
         this.price = price;
         this.quantity = quantity;
-        this.status = status;
         this.createdAt = createdAt;
         this.confirmedAt = confirmedAt;
         this.cancelledAt = cancelledAt;
-    }
-
-    // 결제 완료 처리
-    // PAYMENT_PENDING → ORDERED
-    public void toOrdered() {
-        if (this.status != OrderStatus.PAYMENT_PENDING) {
-            throw new OrderException(OrderErrorCode.ORDER_NOT_PAYABLE, "주문 대기 상태에서만 결제 완료로 변경 가능합니다.");
-        }
-        this.status = OrderStatus.ORDERED;
-    }
-
-    // 구매 확정 처리
-    // ORDERED → CONFIRMED
-    public void toConfirmed() {
-        if (this.status != OrderStatus.ORDERED) {
-            throw new OrderException(OrderErrorCode.ORDER_ITEM_CANNOT_BE_CANCELED, "주문 결제 완료 상태에서만 확정이 가능합니다.");
-        }
-        this.status = OrderStatus.CONFIRMED;
-        this.confirmedAt = LocalDateTime.now();
-    }
-
-    // 주문 아이템 취소 처리
-    // CONFIRMED 이후 취소 불가
-    public void toCancelled() {
-        if (this.status == OrderStatus.CONFIRMED) {
-            throw new OrderException(OrderErrorCode.ORDER_ITEM_ALREADY_CONFIRMED, "이미 확정된 주문 아이템은 취소할 수 없습니다.");
-        }
-        this.status = OrderStatus.CANCELED;
-        this.cancelledAt = LocalDateTime.now();
     }
 
     public Long getOrderId() {
@@ -112,10 +80,6 @@ public class OrderItem extends BaseDomainModel {
         return quantity;
     }
 
-    public OrderStatus getStatus() {
-        return status;
-    }
-
     public LocalDateTime getConfirmedAt() {
         return confirmedAt;
     }
@@ -141,7 +105,6 @@ public class OrderItem extends BaseDomainModel {
         private Long receiverId;
         private Money price;
         private Quantity quantity;
-        private OrderStatus status;
         private LocalDateTime createdAt;
         private LocalDateTime confirmedAt;
         private LocalDateTime cancelledAt;
@@ -186,11 +149,6 @@ public class OrderItem extends BaseDomainModel {
             return this;
         }
 
-        public Builder status(OrderStatus status) {
-            this.status = status;
-            return this;
-        }
-
         public Builder createdAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
@@ -216,7 +174,6 @@ public class OrderItem extends BaseDomainModel {
                     receiverId,
                     price,
                     quantity,
-                    status,
                     createdAt,
                     confirmedAt,
                     cancelledAt

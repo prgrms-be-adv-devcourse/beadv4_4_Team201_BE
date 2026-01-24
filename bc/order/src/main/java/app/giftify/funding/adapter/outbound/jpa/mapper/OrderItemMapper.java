@@ -17,7 +17,6 @@ public class OrderItemMapper {
                 .receiverId(orderItem.getReceiverId())
                 .price(orderItem.getPrice().amount())
                 .quantity(orderItem.getQuantity().getValue())
-                .status(orderItem.getStatus())
                 .confirmedAt(orderItem.getConfirmedAt())
                 .cancelledAt(orderItem.getCancelledAt())
                 .build();
@@ -33,7 +32,6 @@ public class OrderItemMapper {
                 .receiverId(entity.getReceiverId())
                 .price(Money.of(entity.getPrice()))
                 .quantity(new Quantity(entity.getQuantity()))
-                .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
                 .confirmedAt(entity.getConfirmedAt())
                 .cancelledAt(entity.getCancelledAt())

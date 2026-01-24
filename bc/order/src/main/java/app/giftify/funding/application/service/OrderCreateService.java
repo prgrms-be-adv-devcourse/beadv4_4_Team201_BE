@@ -67,7 +67,6 @@ public class OrderCreateService implements OrderCreateUseCase {
                         .receiverId(itemReq.receiverId())
                         .price(Money.of(itemReq.price()))
                         .quantity(new Quantity(itemReq.quantity()))
-                        .status(OrderStatus.PAYMENT_PENDING)
                         .createdAt(now)
                         .build())
                 .toList();
@@ -114,7 +113,6 @@ public class OrderCreateService implements OrderCreateUseCase {
 
         // 관련 주문 아이템들도 취소 처리
         List<OrderItem> items = orderItemRepositoryPort.findByOrderId(orderId);
-        items.forEach(OrderItem::toCancelled);
         orderItemRepositoryPort.saveAll(items);
 
         // 결제 취소 및 환불 API 호출

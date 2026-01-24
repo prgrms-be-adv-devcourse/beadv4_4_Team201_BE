@@ -41,10 +41,6 @@ public class OrderItemEntity extends BaseJpaEntity {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private OrderStatus status;
-
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 
