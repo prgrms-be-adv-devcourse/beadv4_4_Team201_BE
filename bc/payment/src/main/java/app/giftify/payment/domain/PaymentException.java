@@ -1,0 +1,14 @@
+package app.giftify.payment.domain;
+
+import app.giftify.shared.api.exception.DomainException;
+
+public class PaymentException extends DomainException {
+
+	public PaymentException(PaymentErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public PaymentException(PaymentErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
+}
