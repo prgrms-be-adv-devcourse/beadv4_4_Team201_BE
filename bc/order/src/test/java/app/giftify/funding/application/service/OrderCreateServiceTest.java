@@ -1,7 +1,7 @@
 package app.giftify.funding.application.service;
 
-import app.giftify.funding.adapter.inbound.web.dto.OrderCreateRequest;
-import app.giftify.funding.adapter.inbound.web.dto.OrderResponse;
+import app.giftify.funding.adapter.inbound.web.dto.request.OrderCreateRequest;
+import app.giftify.funding.adapter.inbound.web.dto.response.OrderResponse;
 import app.giftify.funding.application.outbound.OrderItemRepositoryPort;
 import app.giftify.funding.application.outbound.OrderPaymentPort;
 import app.giftify.funding.application.outbound.OrderRepositoryPort;
@@ -19,12 +19,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -135,5 +136,47 @@ class OrderCreateServiceTest {
         assertThatThrownBy(() -> orderCreateService.createOrder(request))
                 .isInstanceOf(OrderException.class)
                 .hasMessageContaining("주문 아이템 생성에 실패했습니다.");
+    }
+
+    @Test
+    @DisplayName("주문 확정 시 주문 상태를 CONFIRMED로 변경하고 저장한다")
+    void confirmOrder_success() {
+        // given
+        Long orderId = 1L;
+        Long memberId = 1L;
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123")
+                .buyerId(memberId)
+                .totalAmount(Money.of(10000))
+                .paymentMethod(PaymentMethod.CARD)
+                .status(OrderStatus.ORDERED)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)).willReturn(Optional.of(order));
+
+        // when
+        String previousStatus = orderCreateService.confirmOrder(orderId, memberId);
+
+        // then
+        assertThat(previousStatus).isEqualTo("ORDERED");
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        verify(orderRepositoryPort).findByIdAndBuyerId(orderId, memberId);
+        verify(orderRepositoryPort).save(order);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 주문 확정 시 예외가 발생한다")
+    void confirmOrder_fail_notFound() {
+        // given
+        Long orderId = 1L;
+        Long memberId = 1L;
+        given(orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> orderCreateService.confirmOrder(orderId, memberId))
+                .isInstanceOf(OrderException.class)
+                .hasMessageContaining("주문을 찾을 수 없습니다.");
     }
 }
