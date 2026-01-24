@@ -2,8 +2,6 @@ package app.giftify.wishlist.core.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,21 +14,18 @@ class WishlistTest {
 		Long id = 1L;
 		Long memberId = 100L;
 		Visibility visibility = Visibility.PUBLIC;
-		LocalDate createdAt = LocalDate.now();
 
 		// when
 		Wishlist wishlist = Wishlist.builder()
 			.id(id)
 			.memberId(memberId)
 			.visibility(visibility)
-			.createdAt(createdAt)
 			.build();
 
 		// then
 		assertThat(wishlist.getId()).isEqualTo(id);
 		assertThat(wishlist.getMemberId()).isEqualTo(memberId);
 		assertThat(wishlist.getVisibility()).isEqualTo(visibility);
-		assertThat(wishlist.getCreatedAt()).isEqualTo(createdAt);
 	}
 
 	@Test

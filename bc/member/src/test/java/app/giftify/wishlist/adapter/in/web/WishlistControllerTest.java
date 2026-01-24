@@ -5,8 +5,6 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,7 +75,7 @@ class WishlistControllerTest {
 			.memberId(10L)
 			.visibility(Visibility.PUBLIC)
 			.build();
-		given(getWishlistUseCase.getWishlistByMemberId(10L)).willReturn(Optional.of(wishlist));
+		given(getWishlistUseCase.getOrCreateWishlistByMemberId(10L)).willReturn(wishlist);
 
 		// when & then
 		mockMvc.perform(get("/api/wishlist/me"))
@@ -99,7 +97,7 @@ class WishlistControllerTest {
 			.visibility(Visibility.PRIVATE)
 			.build();
 
-		given(getWishlistUseCase.getWishlistByMemberId(MEMBER_ID)).willReturn(Optional.of(existingWishlist));
+		given(getWishlistUseCase.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(existingWishlist);
 		given(updateWishlistSettingsUseCase.updateSettings(any())).willReturn(updatedWishlist);
 
 		// when & then

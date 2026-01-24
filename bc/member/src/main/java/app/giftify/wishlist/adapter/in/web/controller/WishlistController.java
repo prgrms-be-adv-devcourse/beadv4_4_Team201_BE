@@ -15,7 +15,6 @@ import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
-import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -34,9 +33,7 @@ public class WishlistController {
 	public ResponseEntity<WishlistResponse> getMyInfo(
 		@CurrentMemberId Long memberId
 	) {
-		return getWishlistUseCase.getWishlistByMemberId(memberId)
-			.map(wishlist -> ResponseEntity.ok(WishlistResponse.from(wishlist)))
-			.orElseThrow(() -> new WishlistNotFoundException(memberId));
+		return ResponseEntity.ok(WishlistResponse.from(getWishlistUseCase.getOrCreateWishlistByMemberId(memberId)));
 	}
 
 	// 위시리스트 설정 변경

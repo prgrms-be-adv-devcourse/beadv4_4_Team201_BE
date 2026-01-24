@@ -52,7 +52,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 	@Override
 	@Transactional(readOnly = true)
 	public boolean isItemExists(Long memberId, Long productId) {
-		Wishlist wishlist = getWishlistByMemberIdOrThrow(memberId);
+		Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
 
 		Optional<WishlistItem> wishlistItem = wishlistItemRepositoryPort.findByWishlistIdAndProductId(
 			wishlist.getId(),
@@ -67,7 +67,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 	@Override
 	@Transactional(readOnly = true)
 	public List<WishlistItem> getWishlistItems(Long memberId) {
-		Wishlist wishlist = getWishlistByMemberIdOrThrow(memberId);
+		Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
 		return wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
 	}
 
@@ -80,7 +80,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 	@Override
 	@Transactional
 	public WishlistItem addWishlistItem(Long memberId, WishlistItemAddCommand command) {
-		Wishlist wishlist = getWishlistByMemberIdOrThrow(memberId);
+		Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
 
 		// 위시리스트 DB에 상품 id가 있는지 조회 (중복 확인)
 		if (wishlistItemRepositoryPort.findByWishlistIdAndProductId(wishlist.getId(), command.productId())
@@ -143,7 +143,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 	@Override
 	@Transactional
 	public void removeWishlistItem(WishlistItemRemoveCommand command) {
-		Wishlist wishlist = getWishlistByMemberIdOrThrow(command.memberId());
+		Wishlist wishlist = getOrCreateWishlistByMemberId(command.memberId());
 
 		WishlistItem wishlistItem = wishlistItemRepositoryPort
 			.findByWishlistIdAndProductId(wishlist.getId(), command.productId())
@@ -155,10 +155,15 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 		// todo 위시리스트 아이템 삭제 이벤트 발행 (장바구니)
 	}
 
-	// memberId로 Wishlist 조회, 없으면 예외 발생
-	private Wishlist getWishlistByMemberIdOrThrow(Long memberId) {
+	// memberId로 Wishlist 조회 없으면 생성
+	private Wishlist getOrCreateWishlistByMemberId(Long memberId) {
 		return wishlistRepositoryPort.findByMemberId(memberId)
-			.orElseThrow(() -> new WishlistNotFoundException(memberId));
+			.orElseGet(() -> {
+				Wishlist wishlist = Wishlist.builder()
+					.memberId(memberId)
+					.build();
+				return wishlistRepositoryPort.save(wishlist);
+			});
 	}
 
 	// 위시리스트아이템의 상태를 체크하여 삭제 가능 여부 검증

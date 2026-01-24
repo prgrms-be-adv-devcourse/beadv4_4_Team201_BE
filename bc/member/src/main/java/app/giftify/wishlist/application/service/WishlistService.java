@@ -1,11 +1,8 @@
 package app.giftify.wishlist.application.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
@@ -21,11 +18,16 @@ import lombok.extern.slf4j.Slf4j;
 public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettingsUseCase {
 
 	private final WishlistRepositoryPort wishlistRepositoryPort;
-	private final EventPublisher eventPublisher;
 
 	@Override
-	public Optional<Wishlist> getWishlistByMemberId(Long memberId) {
-		return wishlistRepositoryPort.findByMemberId(memberId);
+	public Wishlist getOrCreateWishlistByMemberId(Long memberId) {
+		return wishlistRepositoryPort.findByMemberId(memberId)
+			.orElseGet(() -> {
+				Wishlist wishlist = Wishlist.builder()
+					.memberId(memberId)
+					.build();
+				return wishlistRepositoryPort.save(wishlist);
+			});
 	}
 
 	@Override

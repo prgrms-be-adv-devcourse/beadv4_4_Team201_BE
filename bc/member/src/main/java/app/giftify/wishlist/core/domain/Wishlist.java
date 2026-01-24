@@ -1,6 +1,6 @@
 package app.giftify.wishlist.core.domain;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
 
@@ -8,17 +8,17 @@ public class Wishlist extends BaseDomainModel {
 
 	private final Long memberId;
 	private Visibility visibility;
-	private final LocalDate createdAt;
+	private final LocalDateTime createdAt;
 
 	private Wishlist(Long id, Long memberId, Visibility visibility) {
 		super(id);
 		validateMemberId(memberId);
 		this.memberId = memberId;
 		this.visibility = visibility;
-		this.createdAt = LocalDate.now();
+		this.createdAt = LocalDateTime.now();
 	}
 
-	private Wishlist(Long id, Long memberId, Visibility visibility, LocalDate createdAt) {
+	private Wishlist(Long id, Long memberId, Visibility visibility, LocalDateTime createdAt) {
 		super(id);
 		validateMemberId(memberId);
 		this.memberId = memberId;
@@ -46,7 +46,7 @@ public class Wishlist extends BaseDomainModel {
 		return visibility;
 	}
 
-	public LocalDate getCreatedAt() {
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
@@ -66,8 +66,8 @@ public class Wishlist extends BaseDomainModel {
 	public static class Builder {
 		private Long id;
 		private Long memberId;
-		private Visibility visibility;
-		private LocalDate createdAt;
+		private Visibility visibility = Visibility.PUBLIC;
+		private LocalDateTime createdAt;
 
 		public Builder id(Long id) {
 			this.id = id;
@@ -80,21 +80,21 @@ public class Wishlist extends BaseDomainModel {
 		}
 
 		public Builder visibility(Visibility visibility) {
-			this.visibility = visibility;
+			if (visibility != null)
+				this.visibility = visibility;
 			return this;
 		}
 
-		public Builder createdAt(LocalDate createdAt) {
+		public Builder createdAt(LocalDateTime createdAt) {
 			this.createdAt = createdAt;
 			return this;
 		}
 
 		public Wishlist build() {
-			if (createdAt == null) {
-				return new Wishlist(id, memberId, visibility);
+			if (id == null) {
+				return new Wishlist(null, memberId, visibility); // 생성
 			}
-			return new Wishlist(id, memberId, visibility, createdAt);
+			return new Wishlist(id, memberId, visibility, createdAt); // 복원
 		}
 	}
-
 }

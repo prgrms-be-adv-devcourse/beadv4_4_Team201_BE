@@ -36,7 +36,7 @@ class WishlistServiceTest {
 
 	@Test
 	@DisplayName("memberId로 위시리스트를 조회한다")
-	void getWishlistByMemberId() {
+	void getOrCreateWishlistByMemberId() {
 		// given
 		Wishlist wishlist = Wishlist.builder()
 			.memberId(MEMBER_ID)
@@ -45,7 +45,7 @@ class WishlistServiceTest {
 		given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
 
 		// when
-		Optional<Wishlist> result = wishlistService.getWishlistByMemberId(MEMBER_ID);
+		Optional<Wishlist> result = Optional.of(wishlistService.getOrCreateWishlistByMemberId(MEMBER_ID));
 
 		// then
 		assertThat(result).isPresent();

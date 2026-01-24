@@ -11,12 +11,15 @@ import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.product.ProductReplicaCreationRequestedEvent;
 import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistProductReplicaPort;
+import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
+import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
@@ -31,8 +34,22 @@ public class WishlistEventListener {
 
 	private final WishlistProductReplicaPort wishlistProductReplicaPort;
 	private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
+	private final WishlistRepositoryPort wishlistRepositoryPort;
 
 	// todo 트랜잭션 생각해보기
+
+	// 회원생성 시 위시리스트 생성
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleMemberSigned(MemberSignedEvent event) {
+		log.info("[Wishlist] 회원 가입으로 위시리스트를 생성합니다 | memberId: {}", event.getMemberId());
+
+		Wishlist wishlist = Wishlist.builder()
+			.memberId(event.getMemberId())
+			.build();
+
+		wishlistRepositoryPort.save(wishlist);
+	}
 
 	// 상품의 상태가 [판매 가능]으로 변경되었을 때
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -135,6 +152,9 @@ public class WishlistEventListener {
 			);
 	}
 
+	/**
+	 * 펀딩 - 위시리스트아이템 상태 전이
+	 */
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleFundingCreated(FundingCreatedEvent event) {
@@ -175,6 +195,7 @@ public class WishlistEventListener {
 			"[Wishlist] 위시리스트상품의 펀딩이 만료되었습니다.");
 	}
 
+	// 위시리스트아이템 상태 변경 메서드
 	private void updateStatus(Long wishlistItemId, WishlistItemStatus next, String message) {
 		WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
 			.orElseThrow(WishlistNotFoundException::new);

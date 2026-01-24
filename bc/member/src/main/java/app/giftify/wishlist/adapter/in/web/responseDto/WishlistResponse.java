@@ -1,6 +1,6 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
@@ -11,7 +11,7 @@ public record WishlistResponse(
 	Long id,
 	Long memberId,
 	Visibility visibility,
-	LocalDate createdAt
+	LocalDateTime createdAt
 ) {
 	public static WishlistResponse from(Wishlist wishlist) {
 		return WishlistResponse.builder()

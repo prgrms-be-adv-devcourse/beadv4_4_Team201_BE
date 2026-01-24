@@ -17,6 +17,7 @@ public class WishlistMapper {
 			.id(entity.getId())
 			.memberId(entity.getMemberId())
 			.visibility(entity.getVisibility())
+			.createdAt(entity.getCreatedAt())
 			.build();
 	}
 }
