@@ -220,6 +220,46 @@ class OrderTest {
         assertThat(canCancel).isFalse();
     }
 
+    @Test
+    @DisplayName("결제 완료 상태의 주문은 환불 상태로 변경할 수 있다")
+    void toRefunded_success() {
+        // given
+        Order order = createPendingOrder();
+        order.toOrdered("payment-key");
+
+        // when
+        order.toRefunded();
+
+        // then
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.REFUNDED);
+    }
+
+    @Test
+    @DisplayName("이미 확정된 주문은 환불할 수 없으며 예외가 발생한다")
+    void toRefunded_fail_alreadyConfirmed() {
+        // given
+        Order order = createPendingOrder();
+        order.toOrdered("key");
+        order.toConfirmed();
+
+        // when & then
+        assertThatThrownBy(order::toRefunded)
+                .isInstanceOf(OrderException.class)
+                .hasMessageContaining("이미 확정된 주문은 환불할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("결제 전 상태의 주문은 환불할 수 없으며 예외가 발생한다")
+    void toRefunded_fail_notPaid() {
+        // given
+        Order order = createPendingOrder();
+
+        // when & then
+        assertThatThrownBy(order::toRefunded)
+                .isInstanceOf(OrderException.class)
+                .hasMessageContaining("결제 이력이 없어 환불 가능한 상태가 아닙니다.");
+    }
+
     private Order createPendingOrder() {
         return Order.builder()
                 .orderNumber(Order.generateOrderNumber())
