@@ -53,7 +53,7 @@ class PaymentResultServiceTest {
         paymentResultService.completePayment(orderId, paymentKey);
 
         // then
-        assertThat(order.getStatus()).isEqualTo(OrderStatus.ORDERED);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
         assertThat(order.getPaymentKey()).isEqualTo(paymentKey);
         verify(orderRepositoryPort).save(order);
     }
@@ -81,7 +81,7 @@ class PaymentResultServiceTest {
                 .buyerId(100L)
                 .totalAmount(Money.of(10000))
                 .paymentMethod(PaymentMethod.CARD)
-                .status(OrderStatus.ORDERED)
+                .status(OrderStatus.PAID)
                 .createdAt(LocalDateTime.now())
                 .build();
 

@@ -95,7 +95,7 @@ class OrderRepositoryIntegrationTest {
                 .buyerId(savedOrder.getBuyerId())
                 .totalAmount(savedOrder.getTotalAmount())
                 .paymentMethod(savedOrder.getPaymentMethod())
-                .status(OrderStatus.ORDERED)
+                .status(OrderStatus.PAID)
                 .build();
         
         // ID를 명시적으로 설정하여 기존 엔티티를 업데이트하도록 함
