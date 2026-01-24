@@ -3,6 +3,8 @@ package app.giftify.in.product;
 import static app.giftify.domain.product.exception.ProductErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -114,4 +116,18 @@ public class ProductController {
 
 		return ResponseEntity.status(OK).body(stockHistories);
 	}
+
+	/**
+	 * 상품 스냅샷 생성 (내부 서비스 호출용)
+	 * - productId List를 받아 스냅샷 생성 후 반환
+	 * - 요청 순서대로 스냅샷 반환 보장
+	 */
+	@PostMapping("/snapshots")
+	public ResponseEntity<List<ProductSnapshotDto>> createProductSnapshots(
+		@RequestBody ProductSnapshotRequestDto requestDto
+	) {
+		List<ProductSnapshotDto> snapshotDtos = productFacade.createProductSnapshots(requestDto);
+		return ResponseEntity.status(CREATED).body(snapshotDtos);
+	}
+
 }
