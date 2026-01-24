@@ -179,4 +179,68 @@ class OrderCreateServiceTest {
                 .isInstanceOf(OrderException.class)
                 .hasMessageContaining("주문을 찾을 수 없습니다.");
     }
+
+    @Test
+    @DisplayName("주문 취소 시 주문 상태를 CANCELED로 변경하고 저장한다")
+    void cancelOrder_success() {
+        // given
+        Long orderId = 1L;
+        Long memberId = 1L;
+        String orderNumber = "ORD-123";
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber(orderNumber)
+                .buyerId(memberId)
+                .totalAmount(Money.of(10000))
+                .paymentMethod(PaymentMethod.CARD)
+                .status(OrderStatus.ORDERED)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        OrderItem item = OrderItem.builder()
+                .id(1L)
+                .orderId(orderId)
+                .status(OrderStatus.ORDERED)
+                .price(Money.of(10000))
+                .quantity(new app.giftify.shared.domain.vo.Quantity(1))
+                .build();
+
+        given(orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)).willReturn(Optional.of(order));
+        given(orderRepositoryPort.save(any(Order.class))).willReturn(order);
+        given(orderItemRepositoryPort.findByOrderId(orderId)).willReturn(List.of(item));
+
+        // when
+        OrderResponse response = orderCreateService.cancelOrder(orderId, memberId);
+
+        // then
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        assertThat(item.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        verify(orderPaymentPort).cancelPayment(orderNumber);
+        verify(orderRepositoryPort).save(order);
+        verify(orderItemRepositoryPort).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("이미 확정된 주문 취소 시 예외가 발생한다")
+    void cancelOrder_fail_alreadyConfirmed() {
+        // given
+        Long orderId = 1L;
+        Long memberId = 1L;
+        Order order = Order.builder()
+                .id(orderId)
+                .orderNumber("ORD-123")
+                .buyerId(memberId)
+                .totalAmount(Money.of(10000))
+                .paymentMethod(PaymentMethod.CARD)
+                .status(OrderStatus.CONFIRMED)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)).willReturn(Optional.of(order));
+
+        // when & then
+        assertThatThrownBy(() -> orderCreateService.cancelOrder(orderId, memberId))
+                .isInstanceOf(OrderException.class)
+                .hasMessageContaining("이미 확정된 주문은 취소할 수 없습니다.");
+    }
 }
