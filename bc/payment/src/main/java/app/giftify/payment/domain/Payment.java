@@ -1,6 +1,7 @@
 package app.giftify.payment.domain;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,9 @@ public class Payment extends BaseDomainModel {
 	private String approveCode;
 	private LocalDateTime paidAt;
 
+	// 상태 변경 시 발생한 이력들 (영속화 전까지 보관)
+	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>();
+
 	private Payment(Long id, String idempotencyKey, PaymentType type, PaymentMethod method,
 		String orderId, Long memberId,
 		Money originAmount, Money paidAmount, List<OrderItemSnapshot> orderItems,
@@ -38,7 +42,7 @@ public class Payment extends BaseDomainModel {
 		this.method = method;
 		this.originAmount = originAmount;
 		this.paidAmount = paidAmount;
-		this.orderItems = orderItems != null ? List.copyOf(orderItems) : Collections.emptyList();
+		this.orderItems = List.copyOf(orderItems);
 		this.status = status;
 		this.paymentKey = paymentKey;
 		this.approveCode = approveCode;
@@ -60,9 +64,10 @@ public class Payment extends BaseDomainModel {
 	 * @param paymentKey  PG사 결제 키
 	 * @param approveCode PG사 승인 코드
 	 * @param paidAt      결제 완료 시각
+	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
-	public void markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt) {
+	public PaymentHistory markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt) {
 		if (!PaymentEventType.PAID.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
 				"[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
@@ -71,62 +76,134 @@ public class Payment extends BaseDomainModel {
 		this.paymentKey = paymentKey;
 		this.approveCode = approveCode;
 		this.paidAt = paidAt;
+
+		PaymentHistory history = PaymentHistory.create(
+			getId(), this.idempotencyKey, PaymentEventType.PAID, paidAt);
+		this.uncommittedHistory.add(history);
+		return history;
 	}
 
 	/**
 	 * 결제를 환불 처리합니다.
 	 * PAID 상태에서만 호출 가능합니다.
 	 *
+	 * @param occurredAt 환불 발생 시각
+	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 환불 불가능한 상태인 경우
 	 */
-	public void markAsRefunded() {
+	public PaymentHistory markAsRefunded(LocalDateTime occurredAt) {
 		if (!PaymentEventType.REFUNDED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
 				"[Payment] 환불 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.REFUNDED.getResultStatus();
+
+		PaymentHistory history = PaymentHistory.create(
+			getId(), this.idempotencyKey, PaymentEventType.REFUNDED, occurredAt);
+		this.uncommittedHistory.add(history);
+		return history;
 	}
 
 	/**
 	 * 결제를 취소 처리합니다.
 	 * PENDING 상태에서만 호출 가능합니다.
 	 *
+	 * @param occurredAt 취소 발생 시각
+	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 취소 불가능한 상태인 경우
 	 */
-	public void markAsCanceled() {
+	public PaymentHistory markAsCanceled(LocalDateTime occurredAt) {
 		if (!PaymentEventType.CANCELED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
 				"[Payment] 취소 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.CANCELED.getResultStatus();
+
+		PaymentHistory history = PaymentHistory.create(
+			getId(), this.idempotencyKey, PaymentEventType.CANCELED, occurredAt);
+		this.uncommittedHistory.add(history);
+		return history;
 	}
 
 	/**
 	 * 결제를 실패 처리합니다.
 	 * PENDING 상태에서만 호출 가능합니다.
 	 *
+	 * @param occurredAt 실패 발생 시각
+	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
-	public void markAsFailed() {
+	public PaymentHistory markAsFailed(LocalDateTime occurredAt) {
 		if (!PaymentEventType.FAILED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
 				"[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
 		}
 		this.status = PaymentEventType.FAILED.getResultStatus();
+
+		PaymentHistory history = PaymentHistory.create(
+			getId(), this.idempotencyKey, PaymentEventType.FAILED, occurredAt);
+		this.uncommittedHistory.add(history);
+		return history;
 	}
 
 	/**
 	 * 수령 확정 처리합니다.
 	 * PAID 상태에서만 호출 가능하며, 수령 확정 후에는 환불이 불가능합니다.
 	 *
+	 * @param occurredAt 수령 확정 시각
+	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 수령 확정 불가능한 상태인 경우
 	 */
-	public void markAsReceived() {
+	public PaymentHistory markAsReceived(LocalDateTime occurredAt) {
 		if (!PaymentEventType.RECEIVED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
 				"[Payment] 수령 확정 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.RECEIVED.getResultStatus();
+
+		PaymentHistory history = PaymentHistory.create(
+			getId(), this.idempotencyKey, PaymentEventType.RECEIVED, occurredAt);
+		this.uncommittedHistory.add(history);
+		return history;
+	}
+
+	/**
+	 * 취소 실패를 기록합니다.
+	 * PAID 상태에서만 호출 가능하며, 상태는 변경되지 않습니다.
+	 *
+	 * @param errorMetadata 에러 메타데이터 (JSON 등)
+	 * @param occurredAt    취소 실패 발생 시각
+	 * @return 생성된 PaymentHistory
+	 * @throws PaymentException PAID 상태가 아닌 경우
+	 */
+	public PaymentHistory recordCancelFailed(String errorMetadata, LocalDateTime occurredAt) {
+		if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
+			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
+				"[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
+		}
+
+		PaymentHistory history = PaymentHistory.withMetadata(
+			getId(), this.idempotencyKey, PaymentEventType.CANCEL_FAILED,
+			occurredAt, errorMetadata);
+		this.uncommittedHistory.add(history);
+		return history;
+	}
+
+	// ========== uncommittedHistory 관리 ========== //
+
+	/**
+	 * 영속화되지 않은 이력 목록을 반환합니다.
+	 * 반환된 리스트는 불변입니다.
+	 */
+	public List<PaymentHistory> getUncommittedHistory() {
+		return Collections.unmodifiableList(uncommittedHistory);
+	}
+
+	/**
+	 * 영속화 완료 후 이력 목록을 비웁니다.
+	 */
+	public void clearUncommittedHistory() {
+		uncommittedHistory.clear();
 	}
 
 	// ========== 상태 조회 메서드 ========== //
@@ -320,6 +397,7 @@ public class Payment extends BaseDomainModel {
 		}
 
 		private void validate() {
+			// 필수 필드 검증
 			if (idempotencyKey == null || idempotencyKey.isBlank()) {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] idempotencyKey는 필수입니다.");
@@ -355,6 +433,20 @@ public class Payment extends BaseDomainModel {
 			if (status == null) {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] status는 필수입니다.");
+			}
+
+			// 금액 불변식 검증
+			if (paidAmount.isGreaterThan(originAmount)) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
+			}
+
+			Money itemsTotal = orderItems.stream()
+				.map(OrderItemSnapshot::subtotal)
+				.reduce(Money.zero(), Money::plus);
+			if (!itemsTotal.equals(originAmount)) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
 			}
 		}
 	}

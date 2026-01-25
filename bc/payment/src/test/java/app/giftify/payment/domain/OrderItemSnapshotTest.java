@@ -44,20 +44,20 @@ class OrderItemSnapshotTest {
 
 		@Test
 		@DisplayName("orderItemId null 시 PaymentException 발생")
-		void itemId_null() {
+		void orderItemId_null() {
 			assertThatThrownBy(() ->
 				new OrderItemSnapshot(null, "상품명", Money.of(1000), 1, Money.of(1000), 1L))
 				.isInstanceOf(PaymentException.class)
-				.hasMessageContaining("itemId는 필수");
+				.hasMessageContaining("orderItemId는 필수");
 		}
 
 		@Test
 		@DisplayName("orderItemId 빈 문자열 시 PaymentException 발생")
-		void itemId_빈_문자열() {
+		void orderItemId_빈_문자열() {
 			assertThatThrownBy(() ->
 				new OrderItemSnapshot("  ", "상품명", Money.of(1000), 1, Money.of(1000), 1L))
 				.isInstanceOf(PaymentException.class)
-				.hasMessageContaining("itemId는 필수");
+				.hasMessageContaining("orderItemId는 필수");
 		}
 
 		@Test

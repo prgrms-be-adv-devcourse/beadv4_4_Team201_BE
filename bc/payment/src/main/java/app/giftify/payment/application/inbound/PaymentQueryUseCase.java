@@ -1,4 +1,4 @@
-package app.giftify.application.inbound;
+package app.giftify.payment.application.inbound;
 
 import app.giftify.shared.api.paging.PageResponse;
 

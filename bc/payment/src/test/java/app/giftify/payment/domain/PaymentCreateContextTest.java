@@ -22,47 +22,47 @@ class PaymentCreateContextTest {
 	class Given_필수_필드_누락_시 {
 
 		@Test
-		@DisplayName("memberId가 null이면 IllegalArgumentException 발생")
+		@DisplayName("memberId가 null이면 PaymentException 발생")
 		void memberId_null() {
 			assertThatThrownBy(() ->
 				new PaymentCreateContext(null, "order-123", PaymentType.FUNDING, PaymentMethod.WALLET))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("memberId는 필수");
 		}
 
 		@Test
-		@DisplayName("orderId가 null이면 IllegalArgumentException 발생")
+		@DisplayName("orderId가 null이면 PaymentException 발생")
 		void orderId_null() {
 			assertThatThrownBy(() ->
 				new PaymentCreateContext(1L, null, PaymentType.FUNDING, PaymentMethod.WALLET))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("orderId는 필수");
 		}
 
 		@Test
-		@DisplayName("orderId가 빈 문자열이면 IllegalArgumentException 발생")
+		@DisplayName("orderId가 빈 문자열이면 PaymentException 발생")
 		void orderId_blank() {
 			assertThatThrownBy(() ->
 				new PaymentCreateContext(1L, "   ", PaymentType.FUNDING, PaymentMethod.WALLET))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("orderId는 필수");
 		}
 
 		@Test
-		@DisplayName("type이 null이면 IllegalArgumentException 발생")
+		@DisplayName("type이 null이면 PaymentException 발생")
 		void type_null() {
 			assertThatThrownBy(() ->
 				new PaymentCreateContext(1L, "order-123", null, PaymentMethod.WALLET))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("type은 필수");
 		}
 
 		@Test
-		@DisplayName("method가 null이면 IllegalArgumentException 발생")
+		@DisplayName("method가 null이면 PaymentException 발생")
 		void method_null() {
 			assertThatThrownBy(() ->
 				new PaymentCreateContext(1L, "order-123", PaymentType.FUNDING, null))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("method는 필수");
 		}
 	}

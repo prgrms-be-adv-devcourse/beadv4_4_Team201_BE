@@ -1,6 +1,7 @@
 package app.giftify.payment.domain;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
 
@@ -93,5 +94,36 @@ public class PaymentHistory extends BaseDomainModel {
 
 	public String getMetadata() {
 		return metadata;
+	}
+
+	// ========== equals / hashCode ========== //
+
+	/**
+	 * Entity 동일성은 id로 판단합니다.
+	 * id가 null인 경우(비영속 상태)에는 비즈니스 키(idempotencyKey)를 비교합니다.
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof PaymentHistory that))
+			return false;
+
+		// id가 있으면 id로 비교
+		if (getId() != null && that.getId() != null) {
+			return Objects.equals(getId(), that.getId());
+		}
+
+		// 비영속 상태에서는 비즈니스 키(idempotencyKey)로 비교
+		return Objects.equals(idempotencyKey, that.idempotencyKey);
+	}
+
+	@Override
+	public int hashCode() {
+		// id가 있으면 id 기반, 없으면 idempotencyKey 기반
+		if (getId() != null) {
+			return Objects.hash(getId());
+		}
+		return Objects.hash(idempotencyKey);
 	}
 }

@@ -17,16 +17,20 @@ public record PaymentCreateContext(
 	 */
 	public PaymentCreateContext {
 		if (memberId == null) {
-			throw new IllegalArgumentException("[PaymentCreateContext] memberId는 필수입니다.");
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+				"[PaymentCreateContext] memberId는 필수입니다.");
 		}
 		if (orderId == null || orderId.isBlank()) {
-			throw new IllegalArgumentException("[PaymentCreateContext] orderId는 필수입니다.");
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+				"[PaymentCreateContext] orderId는 필수입니다.");
 		}
 		if (type == null) {
-			throw new IllegalArgumentException("[PaymentCreateContext] type은 필수입니다.");
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+				"[PaymentCreateContext] type은 필수입니다.");
 		}
 		if (method == null) {
-			throw new IllegalArgumentException("[PaymentCreateContext] method는 필수입니다.");
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+				"[PaymentCreateContext] method는 필수입니다.");
 		}
 	}
 }

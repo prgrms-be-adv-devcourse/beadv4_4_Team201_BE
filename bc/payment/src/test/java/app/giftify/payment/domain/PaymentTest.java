@@ -85,7 +85,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPaidPayment();
 
-				assertThatThrownBy(payment::markAsCanceled)
+				assertThatThrownBy(() -> payment.markAsCanceled(LocalDateTime.now()))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("취소 불가능한 상태");
 			}
@@ -100,7 +100,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPaidPayment();
 
-				assertThatThrownBy(payment::markAsFailed)
+				assertThatThrownBy(() -> payment.markAsFailed(LocalDateTime.now()))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("대기 중인 결제만");
 			}
@@ -120,7 +120,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPendingPayment();
 
-				assertThatThrownBy(payment::markAsRefunded)
+				assertThatThrownBy(() -> payment.markAsRefunded(LocalDateTime.now()))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("환불 불가능한 상태");
 			}
@@ -135,7 +135,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPendingPayment();
 
-				assertThatThrownBy(payment::markAsReceived)
+				assertThatThrownBy(() -> payment.markAsReceived(LocalDateTime.now()))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("수령 확정 불가능한 상태");
 			}
@@ -155,7 +155,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = baseBuilder().status(PaymentStatus.RECEIVED).build();
 
-				assertThatThrownBy(payment::markAsRefunded)
+				assertThatThrownBy(() -> payment.markAsRefunded(LocalDateTime.now()))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("환불 불가능한 상태");
 			}
@@ -169,37 +169,53 @@ class PaymentTest {
 	class Given_PENDING_상태의_결제에서_성공_케이스 {
 
 		@Test
-		@DisplayName("markAsPaid 호출 시 PAID 상태로 변경")
+		@DisplayName("markAsPaid 호출 시 PAID 상태로 변경되고 PaymentHistory 반환")
 		void markAsPaid_성공() {
 			Payment payment = createPendingPayment();
 			LocalDateTime paidAt = LocalDateTime.of(2026, 1, 25, 12, 0);
 
-			payment.markAsPaid("pg-key-123", "approve-456", paidAt);
+			PaymentHistory history = payment.markAsPaid("pg-key-123", "approve-456", paidAt);
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 			assertThat(payment.getPaymentKey()).isEqualTo("pg-key-123");
 			assertThat(payment.getApproveCode()).isEqualTo("approve-456");
 			assertThat(payment.getPaidAt()).isEqualTo(paidAt);
+
+			// PaymentHistory 검증
+			assertThat(history).isNotNull();
+			assertThat(history.getEventType()).isEqualTo(PaymentEventType.PAID);
+			assertThat(history.getOccurredAt()).isEqualTo(paidAt);
+			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
 		@Test
-		@DisplayName("markAsCanceled 호출 시 CANCELED 상태로 변경")
+		@DisplayName("markAsCanceled 호출 시 CANCELED 상태로 변경되고 PaymentHistory 반환")
 		void markAsCanceled_성공() {
 			Payment payment = createPendingPayment();
+			LocalDateTime canceledAt = LocalDateTime.of(2026, 1, 25, 13, 0);
 
-			payment.markAsCanceled();
+			PaymentHistory history = payment.markAsCanceled(canceledAt);
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
+			assertThat(history).isNotNull();
+			assertThat(history.getEventType()).isEqualTo(PaymentEventType.CANCELED);
+			assertThat(history.getOccurredAt()).isEqualTo(canceledAt);
+			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
 		@Test
-		@DisplayName("markAsFailed 호출 시 FAILED 상태로 변경")
+		@DisplayName("markAsFailed 호출 시 FAILED 상태로 변경되고 PaymentHistory 반환")
 		void markAsFailed_성공() {
 			Payment payment = createPendingPayment();
+			LocalDateTime failedAt = LocalDateTime.of(2026, 1, 25, 14, 0);
 
-			payment.markAsFailed();
+			PaymentHistory history = payment.markAsFailed(failedAt);
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
+			assertThat(history).isNotNull();
+			assertThat(history.getEventType()).isEqualTo(PaymentEventType.FAILED);
+			assertThat(history.getOccurredAt()).isEqualTo(failedAt);
+			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 	}
 
@@ -208,23 +224,65 @@ class PaymentTest {
 	class Given_PAID_상태의_결제에서_성공_케이스 {
 
 		@Test
-		@DisplayName("markAsRefunded 호출 시 REFUNDED 상태로 변경")
+		@DisplayName("markAsRefunded 호출 시 REFUNDED 상태로 변경되고 PaymentHistory 반환")
 		void markAsRefunded_성공() {
 			Payment payment = createPaidPayment();
+			LocalDateTime refundedAt = LocalDateTime.of(2026, 1, 25, 15, 0);
 
-			payment.markAsRefunded();
+			PaymentHistory history = payment.markAsRefunded(refundedAt);
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+			assertThat(history).isNotNull();
+			assertThat(history.getEventType()).isEqualTo(PaymentEventType.REFUNDED);
+			assertThat(history.getOccurredAt()).isEqualTo(refundedAt);
+			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
 		@Test
-		@DisplayName("markAsReceived 호출 시 RECEIVED 상태로 변경")
+		@DisplayName("markAsReceived 호출 시 RECEIVED 상태로 변경되고 PaymentHistory 반환")
 		void markAsReceived_성공() {
 			Payment payment = createPaidPayment();
+			LocalDateTime receivedAt = LocalDateTime.of(2026, 1, 25, 16, 0);
 
-			payment.markAsReceived();
+			PaymentHistory history = payment.markAsReceived(receivedAt);
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.RECEIVED);
+			assertThat(history).isNotNull();
+			assertThat(history.getEventType()).isEqualTo(PaymentEventType.RECEIVED);
+			assertThat(history.getOccurredAt()).isEqualTo(receivedAt);
+			assertThat(payment.getUncommittedHistory()).contains(history);
+		}
+
+		@Test
+		@DisplayName("recordCancelFailed 호출 시 상태 유지되고 PaymentHistory 반환")
+		void recordCancelFailed_성공() {
+			Payment payment = createPaidPayment();
+			String errorMetadata = "{\"code\":\"TIMEOUT\",\"message\":\"PG 응답 타임아웃\"}";
+			LocalDateTime occurredAt = LocalDateTime.of(2026, 1, 25, 17, 0);
+
+			PaymentHistory history = payment.recordCancelFailed(errorMetadata, occurredAt);
+
+			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID); // 상태 유지
+			assertThat(history).isNotNull();
+			assertThat(history.getEventType()).isEqualTo(PaymentEventType.CANCEL_FAILED);
+			assertThat(history.getMetadata()).isEqualTo(errorMetadata);
+			assertThat(history.getOccurredAt()).isEqualTo(occurredAt);
+			assertThat(payment.getUncommittedHistory()).contains(history);
+		}
+	}
+
+	@Nested
+	@DisplayName("Given PENDING 상태에서 recordCancelFailed 호출 시")
+	class Given_PENDING_상태에서_recordCancelFailed_호출_시 {
+
+		@Test
+		@DisplayName("Then PaymentException 발생")
+		void Then_PaymentException_발생() {
+			Payment payment = createPendingPayment();
+
+			assertThatThrownBy(() -> payment.recordCancelFailed("error", LocalDateTime.now()))
+				.isInstanceOf(PaymentException.class)
+				.hasMessageContaining("취소 실패 기록은 PAID 상태에서만 가능");
 		}
 	}
 
@@ -307,6 +365,60 @@ class PaymentTest {
 		}
 	}
 
+	// ========== 금액 불변식 검증 ========== //
+
+	@Nested
+	@DisplayName("Given 금액 불변식 검증")
+	class Given_금액_불변식_검증 {
+
+		@Test
+		@DisplayName("paidAmount > originAmount 시 PaymentException 발생")
+		void paidAmount가_originAmount_초과() {
+			assertThatThrownBy(() ->
+				baseBuilder()
+					.originAmount(Money.of(10000))
+					.paidAmount(Money.of(15000))
+					.build())
+				.isInstanceOf(PaymentException.class)
+				.hasMessageContaining("paidAmount는 originAmount를 초과할 수 없습니다");
+		}
+
+		@Test
+		@DisplayName("orderItems 합계 != originAmount 시 PaymentException 발생")
+		void orderItems_합계_불일치() {
+			OrderItemSnapshot item = new OrderItemSnapshot(
+				"item-001", "상품", Money.of(5000), 1, Money.of(5000), 100L);
+
+			assertThatThrownBy(() ->
+				baseBuilder()
+					.originAmount(Money.of(10000))
+					.paidAmount(Money.of(10000))
+					.orderItems(List.of(item))
+					.build())
+				.isInstanceOf(PaymentException.class)
+				.hasMessageContaining("orderItems 합계와 originAmount가 일치하지 않습니다");
+		}
+
+		@Test
+		@DisplayName("paidAmount <= originAmount이고 orderItems 합계 == originAmount이면 정상 생성")
+		void 금액_검증_통과() {
+			OrderItemSnapshot item1 = new OrderItemSnapshot(
+				"item-001", "상품1", Money.of(6000), 1, Money.of(6000), 100L);
+			OrderItemSnapshot item2 = new OrderItemSnapshot(
+				"item-002", "상품2", Money.of(4000), 1, Money.of(4000), 101L);
+
+			Payment payment = baseBuilder()
+				.originAmount(Money.of(10000))
+				.paidAmount(Money.of(8000)) // 할인 적용
+				.orderItems(List.of(item1, item2))
+				.build();
+
+			assertThat(payment).isNotNull();
+			assertThat(payment.getOriginAmount()).isEqualTo(Money.of(10000));
+			assertThat(payment.getPaidAmount()).isEqualTo(Money.of(8000));
+		}
+	}
+
 	// ========== 상태 조회 메서드 ========== //
 
 	@Nested
@@ -339,6 +451,57 @@ class PaymentTest {
 		void PAID_상태에서_isCancelable_false() {
 			Payment payment = createPaidPayment();
 			assertThat(payment.isCancelable()).isFalse();
+		}
+	}
+
+	// ========== uncommittedHistory 관리 ========== //
+
+	@Nested
+	@DisplayName("Given uncommittedHistory 관리")
+	class Given_uncommittedHistory_관리 {
+
+		@Test
+		@DisplayName("초기 상태에서 uncommittedHistory는 비어있음")
+		void 초기_uncommittedHistory_비어있음() {
+			Payment payment = createPendingPayment();
+
+			assertThat(payment.getUncommittedHistory()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("여러 상태 변경 시 모든 이력이 uncommittedHistory에 축적")
+		void 여러_상태_변경_이력_축적() {
+			Payment payment = createPendingPayment();
+			LocalDateTime paidAt = LocalDateTime.of(2026, 1, 25, 12, 0);
+
+			payment.markAsPaid("key", "code", paidAt);
+
+			assertThat(payment.getUncommittedHistory()).hasSize(1);
+		}
+
+		@Test
+		@DisplayName("clearUncommittedHistory 호출 시 이력이 비워짐")
+		void clearUncommittedHistory_이력_비우기() {
+			Payment payment = createPendingPayment();
+			payment.markAsPaid("key", "code", LocalDateTime.now());
+
+			assertThat(payment.getUncommittedHistory()).hasSize(1);
+
+			payment.clearUncommittedHistory();
+
+			assertThat(payment.getUncommittedHistory()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("getUncommittedHistory는 불변 리스트 반환")
+		void getUncommittedHistory_불변_리스트() {
+			Payment payment = createPendingPayment();
+			payment.markAsPaid("key", "code", LocalDateTime.now());
+
+			List<PaymentHistory> history = payment.getUncommittedHistory();
+
+			assertThatThrownBy(() -> history.add(null))
+				.isInstanceOf(UnsupportedOperationException.class);
 		}
 	}
 
