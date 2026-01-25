@@ -26,7 +26,8 @@ include(
     "bc:shared",            // Shared Kernel
     "bc:member",
     "bc:auth",
-    "bc:funding"            // Funding 모듈
+    "bc:funding",            // Funding 모듈
+    "bc:order"
 )
 
 include(
@@ -42,6 +43,7 @@ project(":bc:shared").projectDir = file("bc/shared")
 project(":bc:member").projectDir = file("bc/member")
 project(":bc:auth").projectDir = file("bc/auth")
 project(":bc:funding").projectDir = file("bc/funding")
+project(":bc:order").projectDir = file("bc/order")
 
 project(":bc:money").projectDir = file("bc/money")
 project(":bc:money:core").projectDir = file("bc/money/core")
