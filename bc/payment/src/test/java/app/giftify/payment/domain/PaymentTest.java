@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,6 +22,17 @@ class PaymentTest {
 
 	// ========== 테스트 픽스처 ========== //
 
+	private OrderItemSnapshot createOrderItem() {
+		return new OrderItemSnapshot(
+			"item-001",
+			"테스트 상품",
+			Money.of(10000),
+			1,
+			Money.of(10000),
+			100L
+		);
+	}
+
 	private Payment.Builder baseBuilder() {
 		return Payment.builder()
 			.idempotencyKey("test-key-123")
@@ -29,6 +42,7 @@ class PaymentTest {
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
+			.orderItems(List.of(createOrderItem()))
 			.status(PaymentStatus.PENDING);
 	}
 
@@ -272,6 +286,24 @@ class PaymentTest {
 				baseBuilder().status(null).build())
 				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("status는 필수");
+		}
+
+		@Test
+		@DisplayName("orderItems null 시 PaymentException 발생")
+		void orderItems_null() {
+			assertThatThrownBy(() ->
+				baseBuilder().orderItems(null).build())
+				.isInstanceOf(PaymentException.class)
+				.hasMessageContaining("orderItems는 필수");
+		}
+
+		@Test
+		@DisplayName("orderItems 빈 리스트 시 PaymentException 발생")
+		void orderItems_빈_리스트() {
+			assertThatThrownBy(() ->
+				baseBuilder().orderItems(Collections.emptyList()).build())
+				.isInstanceOf(PaymentException.class)
+				.hasMessageContaining("orderItems는 필수");
 		}
 	}
 

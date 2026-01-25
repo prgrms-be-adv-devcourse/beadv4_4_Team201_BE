@@ -1,6 +1,8 @@
 package app.giftify.payment.domain;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
@@ -9,21 +11,22 @@ import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
 	private final String idempotencyKey;
-	private final String orderId;
-	private final Long memberId;
 	private final PaymentType type;
 	private final PaymentMethod method;
+	private final String orderId;
+	private final Long memberId;
 	private final Money originAmount;
 	private final Money paidAmount;
+	private final List<OrderItemSnapshot> orderItems;
 
 	private PaymentStatus status;
 	private String paymentKey;
 	private String approveCode;
 	private LocalDateTime paidAt;
 
-	private Payment(Long id, String idempotencyKey, String orderId, Long memberId,
-		PaymentType type, PaymentMethod method,
-		Money originAmount, Money paidAmount,
+	private Payment(Long id, String idempotencyKey, PaymentType type, PaymentMethod method,
+		String orderId, Long memberId,
+		Money originAmount, Money paidAmount, List<OrderItemSnapshot> orderItems,
 		PaymentStatus status, String paymentKey, String approveCode,
 		LocalDateTime paidAt
 	) {
@@ -35,6 +38,7 @@ public class Payment extends BaseDomainModel {
 		this.method = method;
 		this.originAmount = originAmount;
 		this.paidAmount = paidAmount;
+		this.orderItems = orderItems != null ? List.copyOf(orderItems) : Collections.emptyList();
 		this.status = status;
 		this.paymentKey = paymentKey;
 		this.approveCode = approveCode;
@@ -161,6 +165,10 @@ public class Payment extends BaseDomainModel {
 		return paidAmount;
 	}
 
+	public List<OrderItemSnapshot> getOrderItems() {
+		return orderItems;
+	}
+
 	public PaymentStatus getStatus() {
 		return status;
 	}
@@ -225,6 +233,7 @@ public class Payment extends BaseDomainModel {
 		private Long memberId;
 		private Money originAmount;
 		private Money paidAmount;
+		private List<OrderItemSnapshot> orderItems;
 		private PaymentStatus status;
 		private PaymentType type;
 		private PaymentMethod method;
@@ -262,6 +271,11 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
+		public Builder orderItems(List<OrderItemSnapshot> orderItems) {
+			this.orderItems = orderItems;
+			return this;
+		}
+
 		public Builder status(PaymentStatus status) {
 			this.status = status;
 			return this;
@@ -296,9 +310,10 @@ public class Payment extends BaseDomainModel {
 			validate();
 			return new Payment(
 				id,
-				idempotencyKey, orderId, memberId,
+				idempotencyKey,
 				type, method,
-				originAmount, paidAmount,
+				orderId, memberId,
+				originAmount, paidAmount, orderItems,
 				status, paymentKey, approveCode,
 				paidAt
 			);
@@ -333,6 +348,10 @@ public class Payment extends BaseDomainModel {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] paidAmount는 필수입니다.");
 			}
+			if (orderItems == null || orderItems.isEmpty()) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] orderItems는 필수입니다.");
+			}
 			if (status == null) {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] status는 필수입니다.");
@@ -349,13 +368,15 @@ public class Payment extends BaseDomainModel {
 	 * @param idempotencyKey 멱등성 키 (중복 결제 방지)
 	 * @param originAmount   원래 결제 금액
 	 * @param paidAmount     실제 결제 금액 (할인 적용 후)
+	 * @param orderItems     주문 항목 정보
 	 * @return 새로운 Payment 객체 (PENDING 상태)
 	 */
 	public static Payment create(
 		PaymentCreateContext context,
 		String idempotencyKey,
 		Money originAmount,
-		Money paidAmount
+		Money paidAmount,
+		List<OrderItemSnapshot> orderItems
 	) {
 		return builder()
 			.idempotencyKey(idempotencyKey)
@@ -365,6 +386,7 @@ public class Payment extends BaseDomainModel {
 			.method(context.method())
 			.originAmount(originAmount)
 			.paidAmount(paidAmount)
+			.orderItems(orderItems)
 			.status(PaymentStatus.PENDING)
 			.build();
 	}
