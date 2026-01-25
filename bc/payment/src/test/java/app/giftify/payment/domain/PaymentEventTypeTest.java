@@ -147,6 +147,30 @@ class PaymentEventTypeTest {
 				assertThat(PaymentEventType.REFUNDED.getResultStatus()).isEqualTo(PaymentStatus.REFUNDED);
 			}
 		}
+
+		@Nested
+		@DisplayName("When CANCEL_FAILED 이벤트를 적용하면")
+		class When_CANCEL_FAILED_이벤트를_적용하면 {
+
+			@Test
+			@DisplayName("Then PAID 상태에서만 적용 가능하다")
+			void Then_PAID_상태에서만_적용_가능하다() {
+				assertThat(PaymentEventType.CANCEL_FAILED.canApply(PaymentStatus.PAID)).isTrue();
+				assertThat(PaymentEventType.CANCEL_FAILED.canApply(PaymentStatus.PENDING)).isFalse();
+			}
+
+			@Test
+			@DisplayName("Then 결과 상태는 PAID로 유지된다 (상태 변경 없음)")
+			void Then_결과_상태는_PAID로_유지된다() {
+				assertThat(PaymentEventType.CANCEL_FAILED.getResultStatus()).isEqualTo(PaymentStatus.PAID);
+			}
+
+			@Test
+			@DisplayName("Then changesState는 false를 반환한다")
+			void Then_changesState는_false를_반환한다() {
+				assertThat(PaymentEventType.CANCEL_FAILED.changesState()).isFalse();
+			}
+		}
 	}
 
 	@Nested
@@ -154,10 +178,9 @@ class PaymentEventTypeTest {
 	class Given_모든_이벤트에_대해 {
 
 		@ParameterizedTest
-		@EnumSource(PaymentEventType.class)
-		@DisplayName("When changesState를 호출하면 Then 상태 변경 여부를 정확히 반환한다")
-		void When_changesState를_호출하면_Then_상태_변경_여부를_정확히_반환한다(PaymentEventType eventType) {
-			// 현재 모든 이벤트는 상태를 변경함
+		@EnumSource(value = PaymentEventType.class, names = "CANCEL_FAILED", mode = EnumSource.Mode.EXCLUDE)
+		@DisplayName("When changesState를 호출하면 Then 대부분의 이벤트는 상태를 변경한다")
+		void When_changesState를_호출하면_Then_상태_변경_이벤트는_true를_반환한다(PaymentEventType eventType) {
 			assertThat(eventType.changesState()).isTrue();
 		}
 

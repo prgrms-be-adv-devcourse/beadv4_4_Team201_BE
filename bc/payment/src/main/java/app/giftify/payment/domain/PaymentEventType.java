@@ -10,7 +10,8 @@ public enum PaymentEventType {
 	FAILED(PaymentStatus.PENDING, PaymentStatus.FAILED),
 	CANCELED(PaymentStatus.PENDING, PaymentStatus.CANCELED),
 	RECEIVED(PaymentStatus.PAID, PaymentStatus.RECEIVED),
-	REFUNDED(PaymentStatus.PAID, PaymentStatus.REFUNDED);
+	REFUNDED(PaymentStatus.PAID, PaymentStatus.REFUNDED),
+	CANCEL_FAILED(PaymentStatus.PAID, PaymentStatus.PAID);  // 취소 실패 - 상태 변경 없음
 
 	private final PaymentStatus fromStatus;
 	private final PaymentStatus toStatus;

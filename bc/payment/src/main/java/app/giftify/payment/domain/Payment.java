@@ -55,67 +55,88 @@ public class Payment extends BaseDomainModel {
 	 *
 	 * @param paymentKey  PG사 결제 키
 	 * @param approveCode PG사 승인 코드
-	 * @throws IllegalStateException 상태가 PENDING이 아닌 경우
+	 * @param paidAt      결제 완료 시각
+	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
-	public void markAsPaid(String paymentKey, String approveCode) {
-		if (!this.status.equals(PaymentStatus.PENDING)) {
-			throw new PaymentException(PaymentErrorCode.NOT_PAYABLE, "[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
+	public void markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt) {
+		if (!PaymentEventType.PAID.canApply(this.status)) {
+			throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
+				"[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
 		}
-		this.status = PaymentStatus.PAID;
+		this.status = PaymentEventType.PAID.getResultStatus();
 		this.paymentKey = paymentKey;
 		this.approveCode = approveCode;
-		this.paidAt = LocalDateTime.now();
+		this.paidAt = paidAt;
 	}
 
 	/**
 	 * 결제를 환불 처리합니다.
 	 * PAID 상태에서만 호출 가능합니다.
 	 *
-	 * @throws IllegalStateException 환불 불가능한 상태인 경우
+	 * @throws PaymentException 환불 불가능한 상태인 경우
 	 */
-	public void refund() {
-		if (!this.isRefundable()) {
+	public void markAsRefunded() {
+		if (!PaymentEventType.REFUNDED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
 				"[Payment] 환불 불가능한 상태입니다: " + this.status);
 		}
-		this.status = PaymentStatus.REFUNDED;
+		this.status = PaymentEventType.REFUNDED.getResultStatus();
 	}
 
 	/**
 	 * 결제를 취소 처리합니다.
 	 * PENDING 상태에서만 호출 가능합니다.
 	 *
-	 * @throws IllegalStateException 취소 불가능한 상태인 경우
+	 * @throws PaymentException 취소 불가능한 상태인 경우
 	 */
-	public void cancel() {
-		if (!this.isCancelable()) {
-			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE, "[Payment] 취소 불가능한 상태입니다: " + this.status);
+	public void markAsCanceled() {
+		if (!PaymentEventType.CANCELED.canApply(this.status)) {
+			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
+				"[Payment] 취소 불가능한 상태입니다: " + this.status);
 		}
-		this.status = PaymentStatus.CANCELED;
+		this.status = PaymentEventType.CANCELED.getResultStatus();
 	}
 
 	/**
 	 * 결제를 실패 처리합니다.
 	 * PENDING 상태에서만 호출 가능합니다.
 	 *
-	 * @throws IllegalStateException 상태가 PENDING이 아닌 경우
+	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
 	public void markAsFailed() {
-		if (this.status != PaymentStatus.PENDING) {
+		if (!PaymentEventType.FAILED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
 				"[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
 		}
-		this.status = PaymentStatus.FAILED;
+		this.status = PaymentEventType.FAILED.getResultStatus();
+	}
+
+	/**
+	 * 수령 확정 처리합니다.
+	 * PAID 상태에서만 호출 가능하며, 수령 확정 후에는 환불이 불가능합니다.
+	 *
+	 * @throws PaymentException 수령 확정 불가능한 상태인 경우
+	 */
+	public void markAsReceived() {
+		if (!PaymentEventType.RECEIVED.canApply(this.status)) {
+			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
+				"[Payment] 수령 확정 불가능한 상태입니다: " + this.status);
+		}
+		this.status = PaymentEventType.RECEIVED.getResultStatus();
 	}
 
 	// ========== 상태 조회 메서드 ========== //
 
 	public boolean isRefundable() {
-		return this.status == PaymentStatus.PAID;
+		return PaymentEventType.REFUNDED.canApply(this.status);
 	}
 
 	public boolean isCancelable() {
-		return this.status == PaymentStatus.PENDING;
+		return PaymentEventType.CANCELED.canApply(this.status);
+	}
+
+	public boolean isReceivable() {
+		return PaymentEventType.RECEIVED.canApply(this.status);
 	}
 
 	// ========== Getter ========== //
@@ -308,10 +329,43 @@ public class Payment extends BaseDomainModel {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] originAmount는 필수입니다.");
 			}
+			if (paidAmount == null) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] paidAmount는 필수입니다.");
+			}
 			if (status == null) {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] status는 필수입니다.");
 			}
 		}
+	}
+
+	// ========== 정적 팩토리 메서드  ========== //
+
+	/**
+	 * 새로운 결제를 생성합니다.
+	 *
+	 * @param context        결제 생성에 필요한 컨텍스트 정보
+	 * @param idempotencyKey 멱등성 키 (중복 결제 방지)
+	 * @param originAmount   원래 결제 금액
+	 * @param paidAmount     실제 결제 금액 (할인 적용 후)
+	 * @return 새로운 Payment 객체 (PENDING 상태)
+	 */
+	public static Payment create(
+		PaymentCreateContext context,
+		String idempotencyKey,
+		Money originAmount,
+		Money paidAmount
+	) {
+		return builder()
+			.idempotencyKey(idempotencyKey)
+			.orderId(context.orderId())
+			.memberId(context.memberId())
+			.type(context.type())
+			.method(context.method())
+			.originAmount(originAmount)
+			.paidAmount(paidAmount)
+			.status(PaymentStatus.PENDING)
+			.build();
 	}
 }

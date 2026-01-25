@@ -12,4 +12,21 @@ public record PaymentCreateContext(
 	PaymentType type,
 	PaymentMethod method
 ) {
+	/**
+	 * Compact Constructor - 필수 필드 검증
+	 */
+	public PaymentCreateContext {
+		if (memberId == null) {
+			throw new IllegalArgumentException("[PaymentCreateContext] memberId는 필수입니다.");
+		}
+		if (orderId == null || orderId.isBlank()) {
+			throw new IllegalArgumentException("[PaymentCreateContext] orderId는 필수입니다.");
+		}
+		if (type == null) {
+			throw new IllegalArgumentException("[PaymentCreateContext] type은 필수입니다.");
+		}
+		if (method == null) {
+			throw new IllegalArgumentException("[PaymentCreateContext] method는 필수입니다.");
+		}
+	}
 }
