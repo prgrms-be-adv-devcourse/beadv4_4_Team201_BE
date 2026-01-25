@@ -64,10 +64,11 @@ public class Payment extends BaseDomainModel {
 	 * @param paymentKey  PG사 결제 키
 	 * @param approveCode PG사 승인 코드
 	 * @param paidAt      결제 완료 시각
+	 * @param requestId   요청 식별자
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
-	public PaymentHistory markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt) {
+	public PaymentHistory markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt, String requestId) {
 		if (!PaymentEventType.PAID.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
 				"[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
@@ -77,9 +78,15 @@ public class Payment extends BaseDomainModel {
 		this.approveCode = approveCode;
 		this.paidAt = paidAt;
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.PAID);
+		String historyKey = PaymentHistoryKeyGenerator.generate(
+			this.idempotencyKey,
+			PaymentEventType.PAID,
+			requestId                 // ← 호출자가 제공한 ID 사용
+		);
+
 		PaymentHistory history = PaymentHistory.create(
-			getId(), historyKey, PaymentEventType.PAID, paidAt);
+			getId(), historyKey, PaymentEventType.PAID, paidAt
+		);
 		this.uncommittedHistory.add(history);
 		return history;
 	}
@@ -92,14 +99,19 @@ public class Payment extends BaseDomainModel {
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 환불 불가능한 상태인 경우
 	 */
-	public PaymentHistory markAsRefunded(LocalDateTime occurredAt) {
+	public PaymentHistory markAsRefunded(LocalDateTime occurredAt, String requestId) {
 		if (!PaymentEventType.REFUNDED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
 				"[Payment] 환불 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.REFUNDED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.REFUNDED);
+		String historyKey = PaymentHistoryKeyGenerator.generate(
+			this.idempotencyKey,
+			PaymentEventType.REFUNDED,
+			requestId
+		);
+
 		PaymentHistory history = PaymentHistory.create(
 			getId(), historyKey, PaymentEventType.REFUNDED, occurredAt);
 		this.uncommittedHistory.add(history);
@@ -114,14 +126,19 @@ public class Payment extends BaseDomainModel {
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 취소 불가능한 상태인 경우
 	 */
-	public PaymentHistory markAsCanceled(LocalDateTime occurredAt) {
+	public PaymentHistory markAsCanceled(LocalDateTime occurredAt, String requestId) {
 		if (!PaymentEventType.CANCELED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
 				"[Payment] 취소 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.CANCELED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.CANCELED);
+		String historyKey = PaymentHistoryKeyGenerator.generate(
+			this.idempotencyKey,
+			PaymentEventType.CANCELED,
+			requestId
+		);
+
 		PaymentHistory history = PaymentHistory.create(
 			getId(), historyKey, PaymentEventType.CANCELED, occurredAt);
 		this.uncommittedHistory.add(history);
@@ -136,14 +153,19 @@ public class Payment extends BaseDomainModel {
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
-	public PaymentHistory markAsFailed(LocalDateTime occurredAt) {
+	public PaymentHistory markAsFailed(LocalDateTime occurredAt, String requestId) {
 		if (!PaymentEventType.FAILED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
 				"[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
 		}
 		this.status = PaymentEventType.FAILED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.FAILED);
+		String historyKey = PaymentHistoryKeyGenerator.generate(
+			this.idempotencyKey,
+			PaymentEventType.FAILED,
+			requestId
+		);
+
 		PaymentHistory history = PaymentHistory.create(
 			getId(), historyKey, PaymentEventType.FAILED, occurredAt);
 		this.uncommittedHistory.add(history);
@@ -158,14 +180,19 @@ public class Payment extends BaseDomainModel {
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 수령 확정 불가능한 상태인 경우
 	 */
-	public PaymentHistory markAsReceived(LocalDateTime occurredAt) {
+	public PaymentHistory markAsReceived(LocalDateTime occurredAt, String requestId) {
 		if (!PaymentEventType.RECEIVED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
 				"[Payment] 수령 확정 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.RECEIVED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.RECEIVED);
+		String historyKey = PaymentHistoryKeyGenerator.generate(
+			this.idempotencyKey,
+			PaymentEventType.RECEIVED,
+			requestId
+		);
+
 		PaymentHistory history = PaymentHistory.create(
 			getId(), historyKey, PaymentEventType.RECEIVED, occurredAt);
 		this.uncommittedHistory.add(history);
@@ -181,13 +208,18 @@ public class Payment extends BaseDomainModel {
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException PAID 상태가 아닌 경우
 	 */
-	public PaymentHistory recordCancelFailed(String errorMetadata, LocalDateTime occurredAt) {
+	public PaymentHistory recordCancelFailed(String errorMetadata, LocalDateTime occurredAt, String requestId) {
 		if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
 				"[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
 		}
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.CANCEL_FAILED);
+		String historyKey = PaymentHistoryKeyGenerator.generate(
+			this.idempotencyKey,
+			PaymentEventType.CANCEL_FAILED,
+			requestId
+		);
+
 		PaymentHistory history = PaymentHistory.withMetadata(
 			getId(), historyKey, PaymentEventType.CANCEL_FAILED,
 			occurredAt, errorMetadata);

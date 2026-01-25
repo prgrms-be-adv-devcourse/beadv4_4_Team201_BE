@@ -70,7 +70,7 @@ class PaymentTest {
 				Payment payment = createPaidPayment();
 
 				assertThatThrownBy(() ->
-					payment.markAsPaid("key", "code", LocalDateTime.now()))
+					payment.markAsPaid("key", "code", LocalDateTime.now(), "request-001"))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("결제 완료 불가능한 상태");
 			}
@@ -85,7 +85,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPaidPayment();
 
-				assertThatThrownBy(() -> payment.markAsCanceled(LocalDateTime.now()))
+				assertThatThrownBy(() -> payment.markAsCanceled(LocalDateTime.now(), "request-001"))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("취소 불가능한 상태");
 			}
@@ -100,7 +100,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPaidPayment();
 
-				assertThatThrownBy(() -> payment.markAsFailed(LocalDateTime.now()))
+				assertThatThrownBy(() -> payment.markAsFailed(LocalDateTime.now(), "request-001"))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("대기 중인 결제만");
 			}
@@ -120,7 +120,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPendingPayment();
 
-				assertThatThrownBy(() -> payment.markAsRefunded(LocalDateTime.now()))
+				assertThatThrownBy(() -> payment.markAsRefunded(LocalDateTime.now(), "request-001"))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("환불 불가능한 상태");
 			}
@@ -135,7 +135,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = createPendingPayment();
 
-				assertThatThrownBy(() -> payment.markAsReceived(LocalDateTime.now()))
+				assertThatThrownBy(() -> payment.markAsReceived(LocalDateTime.now(), "request-001"))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("수령 확정 불가능한 상태");
 			}
@@ -155,7 +155,7 @@ class PaymentTest {
 			void Then_PaymentException_발생() {
 				Payment payment = baseBuilder().status(PaymentStatus.RECEIVED).build();
 
-				assertThatThrownBy(() -> payment.markAsRefunded(LocalDateTime.now()))
+				assertThatThrownBy(() -> payment.markAsRefunded(LocalDateTime.now(), "request-001"))
 					.isInstanceOf(PaymentException.class)
 					.hasMessageContaining("환불 불가능한 상태");
 			}
@@ -174,7 +174,7 @@ class PaymentTest {
 			Payment payment = createPendingPayment();
 			LocalDateTime paidAt = LocalDateTime.of(2026, 1, 25, 12, 0);
 
-			PaymentHistory history = payment.markAsPaid("pg-key-123", "approve-456", paidAt);
+			PaymentHistory history = payment.markAsPaid("pg-key-123", "approve-456", paidAt, "toss-evt-001");
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 			assertThat(payment.getPaymentKey()).isEqualTo("pg-key-123");
@@ -185,6 +185,7 @@ class PaymentTest {
 			assertThat(history).isNotNull();
 			assertThat(history.getEventType()).isEqualTo(PaymentEventType.PAID);
 			assertThat(history.getOccurredAt()).isEqualTo(paidAt);
+			assertThat(history.getIdempotencyKey()).isEqualTo("test-key-123-PAID-toss-evt-001");
 			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
@@ -194,12 +195,13 @@ class PaymentTest {
 			Payment payment = createPendingPayment();
 			LocalDateTime canceledAt = LocalDateTime.of(2026, 1, 25, 13, 0);
 
-			PaymentHistory history = payment.markAsCanceled(canceledAt);
+			PaymentHistory history = payment.markAsCanceled(canceledAt, "cancel-req-001");
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
 			assertThat(history).isNotNull();
 			assertThat(history.getEventType()).isEqualTo(PaymentEventType.CANCELED);
 			assertThat(history.getOccurredAt()).isEqualTo(canceledAt);
+			assertThat(history.getIdempotencyKey()).isEqualTo("test-key-123-CANCELED-cancel-req-001");
 			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
@@ -209,12 +211,13 @@ class PaymentTest {
 			Payment payment = createPendingPayment();
 			LocalDateTime failedAt = LocalDateTime.of(2026, 1, 25, 14, 0);
 
-			PaymentHistory history = payment.markAsFailed(failedAt);
+			PaymentHistory history = payment.markAsFailed(failedAt, "fail-evt-001");
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
 			assertThat(history).isNotNull();
 			assertThat(history.getEventType()).isEqualTo(PaymentEventType.FAILED);
 			assertThat(history.getOccurredAt()).isEqualTo(failedAt);
+			assertThat(history.getIdempotencyKey()).isEqualTo("test-key-123-FAILED-fail-evt-001");
 			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 	}
@@ -229,12 +232,13 @@ class PaymentTest {
 			Payment payment = createPaidPayment();
 			LocalDateTime refundedAt = LocalDateTime.of(2026, 1, 25, 15, 0);
 
-			PaymentHistory history = payment.markAsRefunded(refundedAt);
+			PaymentHistory history = payment.markAsRefunded(refundedAt, "refund-req-001");
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
 			assertThat(history).isNotNull();
 			assertThat(history.getEventType()).isEqualTo(PaymentEventType.REFUNDED);
 			assertThat(history.getOccurredAt()).isEqualTo(refundedAt);
+			assertThat(history.getIdempotencyKey()).isEqualTo("test-key-123-REFUNDED-refund-req-001");
 			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
@@ -244,12 +248,13 @@ class PaymentTest {
 			Payment payment = createPaidPayment();
 			LocalDateTime receivedAt = LocalDateTime.of(2026, 1, 25, 16, 0);
 
-			PaymentHistory history = payment.markAsReceived(receivedAt);
+			PaymentHistory history = payment.markAsReceived(receivedAt, "receive-req-001");
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.RECEIVED);
 			assertThat(history).isNotNull();
 			assertThat(history.getEventType()).isEqualTo(PaymentEventType.RECEIVED);
 			assertThat(history.getOccurredAt()).isEqualTo(receivedAt);
+			assertThat(history.getIdempotencyKey()).isEqualTo("test-key-123-RECEIVED-receive-req-001");
 			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 
@@ -260,13 +265,14 @@ class PaymentTest {
 			String errorMetadata = "{\"code\":\"TIMEOUT\",\"message\":\"PG 응답 타임아웃\"}";
 			LocalDateTime occurredAt = LocalDateTime.of(2026, 1, 25, 17, 0);
 
-			PaymentHistory history = payment.recordCancelFailed(errorMetadata, occurredAt);
+			PaymentHistory history = payment.recordCancelFailed(errorMetadata, occurredAt, "cancel-fail-001");
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID); // 상태 유지
 			assertThat(history).isNotNull();
 			assertThat(history.getEventType()).isEqualTo(PaymentEventType.CANCEL_FAILED);
 			assertThat(history.getMetadata()).isEqualTo(errorMetadata);
 			assertThat(history.getOccurredAt()).isEqualTo(occurredAt);
+			assertThat(history.getIdempotencyKey()).isEqualTo("test-key-123-CANCEL_FAILED-cancel-fail-001");
 			assertThat(payment.getUncommittedHistory()).contains(history);
 		}
 	}
@@ -280,7 +286,7 @@ class PaymentTest {
 		void Then_PaymentException_발생() {
 			Payment payment = createPendingPayment();
 
-			assertThatThrownBy(() -> payment.recordCancelFailed("error", LocalDateTime.now()))
+			assertThatThrownBy(() -> payment.recordCancelFailed("error", LocalDateTime.now(), "cancel-fail-001"))
 				.isInstanceOf(PaymentException.class)
 				.hasMessageContaining("취소 실패 기록은 PAID 상태에서만 가능");
 		}
@@ -474,7 +480,7 @@ class PaymentTest {
 			Payment payment = createPendingPayment();
 			LocalDateTime paidAt = LocalDateTime.of(2026, 1, 25, 12, 0);
 
-			payment.markAsPaid("key", "code", paidAt);
+			payment.markAsPaid("key", "code", paidAt, "request-001");
 
 			assertThat(payment.getUncommittedHistory()).hasSize(1);
 		}
@@ -483,7 +489,7 @@ class PaymentTest {
 		@DisplayName("clearUncommittedHistory 호출 시 이력이 비워짐")
 		void clearUncommittedHistory_이력_비우기() {
 			Payment payment = createPendingPayment();
-			payment.markAsPaid("key", "code", LocalDateTime.now());
+			payment.markAsPaid("key", "code", LocalDateTime.now(), "request-001");
 
 			assertThat(payment.getUncommittedHistory()).hasSize(1);
 
@@ -496,7 +502,7 @@ class PaymentTest {
 		@DisplayName("getUncommittedHistory는 불변 리스트 반환")
 		void getUncommittedHistory_불변_리스트() {
 			Payment payment = createPendingPayment();
-			payment.markAsPaid("key", "code", LocalDateTime.now());
+			payment.markAsPaid("key", "code", LocalDateTime.now(), "request-001");
 
 			List<PaymentHistory> history = payment.getUncommittedHistory();
 
