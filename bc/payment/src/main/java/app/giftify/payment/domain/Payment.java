@@ -77,8 +77,9 @@ public class Payment extends BaseDomainModel {
 		this.approveCode = approveCode;
 		this.paidAt = paidAt;
 
+		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.PAID);
 		PaymentHistory history = PaymentHistory.create(
-			getId(), this.idempotencyKey, PaymentEventType.PAID, paidAt);
+			getId(), historyKey, PaymentEventType.PAID, paidAt);
 		this.uncommittedHistory.add(history);
 		return history;
 	}
@@ -98,8 +99,9 @@ public class Payment extends BaseDomainModel {
 		}
 		this.status = PaymentEventType.REFUNDED.getResultStatus();
 
+		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.REFUNDED);
 		PaymentHistory history = PaymentHistory.create(
-			getId(), this.idempotencyKey, PaymentEventType.REFUNDED, occurredAt);
+			getId(), historyKey, PaymentEventType.REFUNDED, occurredAt);
 		this.uncommittedHistory.add(history);
 		return history;
 	}
@@ -119,8 +121,9 @@ public class Payment extends BaseDomainModel {
 		}
 		this.status = PaymentEventType.CANCELED.getResultStatus();
 
+		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.CANCELED);
 		PaymentHistory history = PaymentHistory.create(
-			getId(), this.idempotencyKey, PaymentEventType.CANCELED, occurredAt);
+			getId(), historyKey, PaymentEventType.CANCELED, occurredAt);
 		this.uncommittedHistory.add(history);
 		return history;
 	}
@@ -140,8 +143,9 @@ public class Payment extends BaseDomainModel {
 		}
 		this.status = PaymentEventType.FAILED.getResultStatus();
 
+		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.FAILED);
 		PaymentHistory history = PaymentHistory.create(
-			getId(), this.idempotencyKey, PaymentEventType.FAILED, occurredAt);
+			getId(), historyKey, PaymentEventType.FAILED, occurredAt);
 		this.uncommittedHistory.add(history);
 		return history;
 	}
@@ -161,8 +165,9 @@ public class Payment extends BaseDomainModel {
 		}
 		this.status = PaymentEventType.RECEIVED.getResultStatus();
 
+		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.RECEIVED);
 		PaymentHistory history = PaymentHistory.create(
-			getId(), this.idempotencyKey, PaymentEventType.RECEIVED, occurredAt);
+			getId(), historyKey, PaymentEventType.RECEIVED, occurredAt);
 		this.uncommittedHistory.add(history);
 		return history;
 	}
@@ -182,8 +187,9 @@ public class Payment extends BaseDomainModel {
 				"[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
 		}
 
+		String historyKey = PaymentHistoryKeyGenerator.generate(this.idempotencyKey, PaymentEventType.CANCEL_FAILED);
 		PaymentHistory history = PaymentHistory.withMetadata(
-			getId(), this.idempotencyKey, PaymentEventType.CANCEL_FAILED,
+			getId(), historyKey, PaymentEventType.CANCEL_FAILED,
 			occurredAt, errorMetadata);
 		this.uncommittedHistory.add(history);
 		return history;
