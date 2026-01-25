@@ -15,7 +15,7 @@ public record CreatePaymentCommand(
 	String orderId,
 	PaymentType type,
 	PaymentMethod method,
-	Money amount,
+	Money expectedAmount,
 	List<OrderItemSnapshot> orderItems
 ) {
 	public CreatePaymentCommand {
@@ -29,14 +29,16 @@ public record CreatePaymentCommand(
 				"[CreatePaymentCommand] orderItems는 필수입니다.");
 		}
 
+		// 실제 금액 계산
 		Money itemsTotal = orderItems.stream()
 			.map(OrderItemSnapshot::subtotal)
 			.reduce(Money.zero(), Money::plus);
 
-		if (!itemsTotal.equals(amount)) {
-			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				String.format("[CreatePaymentCommand] orderItems 합계(%s)와 amount(%s)가 일치하지 않습니다.",
-					itemsTotal, amount));
+		//  "기대 금액"과 "실제 계산 금액" 비교
+		if (!itemsTotal.equals(expectedAmount)) {
+			throw new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH,
+				String.format("[CreatePaymentCommand] 주문 금액이 변경되었습니다. " +
+					"기대 금액: %s, 현재 금액: %s", expectedAmount, itemsTotal));
 		}
 	}
 }

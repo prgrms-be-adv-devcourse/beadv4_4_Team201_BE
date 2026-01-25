@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSettledEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.type.PaymentType;
@@ -193,15 +192,15 @@ public class PaymentService implements PaymentChargeUseCase, PaymentCompleteUseC
 		PaymentHistory history = payment.refund();
 		paymentRepository.save(payment);
 
-		eventPublisher.publish(new PaymentRefundedEvent(
-			payment.getPaymentId(),
-			null,  // refundId - PG 환불 응답에서 추출 (추후 구현)
-			payment.getModelType(),
-			payment.getUserId(),
-			payment.getAmount(),
-			payment.getType(),
-			command.reason()
-		));
+		// eventPublisher.publish(new PaymentRefundedEvent(
+		// 	payment.getPaymentId(),
+		// 	null,  // refundId - PG 환불 응답에서 추출 (추후 구현)
+		// 	payment.getModelType(),
+		// 	payment.getUserId(),
+		// 	payment.getAmount(),
+		// 	payment.getType(),
+		// 	command.reason()
+		// ));
 
 		log.info("[Payment] 결제 환불 완료. paymentId={}, userId={}, reason={}",
 			payment.getPaymentId(), payment.getUserId(), command.reason());
