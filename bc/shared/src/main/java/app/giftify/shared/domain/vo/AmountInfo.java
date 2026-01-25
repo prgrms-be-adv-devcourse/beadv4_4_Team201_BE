@@ -9,9 +9,9 @@ public record AmountInfo(
         Money settlementAmount
 ) {
     public AmountInfo {
-        Objects.requireNonNull(totalAmount, "totalAmount는 필수입니다.");
-        Objects.requireNonNull(platformFee, "platformFee는 필수입니다.");
-        Objects.requireNonNull(pgFee, "pgFee는 필수입니다.");
+        if (totalAmount == null) throw new IllegalArgumentException("totalAmount는 필수입니다.");
+        if (platformFee == null) throw new IllegalArgumentException("platformFee는 필수입니다.");
+        if (pgFee == null) throw new IllegalArgumentException("pgFee는 필수입니다.");
 
         Money expectedAmount = calculateSettlementAmount(totalAmount, platformFee, pgFee);
         if (!expectedAmount.equals(settlementAmount)) {

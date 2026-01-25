@@ -12,9 +12,9 @@ public record PaymentInfo(
     LocalDateTime paidAt
 ) {
     public PaymentInfo {
-        Objects.requireNonNull(paymentKey, "paymentKey는 필수입니다.");
-        Objects.requireNonNull(transactionKey, "transactionKey는 필수입니다.");
-        Objects.requireNonNull(paymentMethodType, "paymentMethodType은 필수입니다.");
-        Objects.requireNonNull(paidAt, "paidAt는 필수입니다.");
+        if (paymentKey == null || paymentKey.isBlank()) throw new IllegalArgumentException("paymentKey는 필수입니다.");
+        if (transactionKey == null || transactionKey.isBlank()) throw new IllegalArgumentException("transactionKey는 필수입니다.");
+        if (paymentMethodType == null) throw new IllegalArgumentException("paymentMethodType은 필수입니다.");
+        if (paidAt == null) throw new IllegalArgumentException("paidAt은 필수입니다.");
     }
 }
