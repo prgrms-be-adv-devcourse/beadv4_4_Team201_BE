@@ -1,38 +1,38 @@
 package app.giftify.payment.application.inbound;
 
+import java.time.LocalDateTime;
+
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
 
+/**
+ * 결제 승인 Command.
+ * PG사 결제 완료 후 Payment 상태를 PAID로 변경할 때 사용합니다.
+ *
+ * @param paymentId   승인할 Payment ID
+ * @param paymentKey  PG사에서 받은 결제 키 (암호화 저장됨)
+ * @param approveCode PG사 승인 코드 (optional, 암호화 저장됨)
+ * @param paidAt      결제 완료 시각
+ */
 public record ConfirmPaymentCommand(
-	Long memberId,
-	String orderId,
-	PaymentType type,
-	PaymentMethod method,
-	Money amount
+	Long paymentId,
+	String paymentKey,
+	String approveCode,
+	LocalDateTime paidAt
 ) {
 	public ConfirmPaymentCommand {
-		if (memberId == null) {
+		if (paymentId == null) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ConfirmPaymentCommand] memberId는 필수입니다.");
+				"[ConfirmPaymentCommand] paymentId는 필수입니다.");
 		}
-		if (orderId == null || orderId.isBlank()) {
+		if (paymentKey == null || paymentKey.isBlank()) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ConfirmPaymentCommand] orderId는 필수입니다.");
+				"[ConfirmPaymentCommand] paymentKey는 필수입니다.");
 		}
-		if (type == null) {
+		if (paidAt == null) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ConfirmPaymentCommand] type은 필수입니다.");
+				"[ConfirmPaymentCommand] paidAt은 필수입니다.");
 		}
-		if (method == null) {
-			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ConfirmPaymentCommand] method는 필수입니다.");
-		}
-		if (amount == null) {
-			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ConfirmPaymentCommand] amount는 필수입니다.");
-		}
+		// approveCode는 optional (PG사에 따라 없을 수 있음)
 	}
 }
