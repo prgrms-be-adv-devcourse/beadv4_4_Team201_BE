@@ -9,6 +9,9 @@ public enum PaymentErrorCode implements ErrorCode {
 	// [100 ~ 199] 조회 및 리소스 존재 여부
 	PAYMENT_NOT_FOUND("PAY_101", "결제 내역을 찾을 수 없습니다."),
 
+	// [100 ~ 199] 조회 및 리소스 존재 여부, 권한
+	UNAUTHORIZED_ACCESS("PAY_102", "해당 결제에 대한 접근 권한이 없습니다."),
+
 	// [200 ~ 299] 상태 변경 및 비즈니스 흐름 제어
 	INVALID_PAYMENT_STATUS("PAY_201", "유효하지 않은 결제 상태 변경입니다."),
 	NOT_REFUNDABLE("PAY_202", "환불 불가능한 상태입니다."),

@@ -220,6 +220,16 @@ public class Payment extends BaseDomainModel {
 		return PaymentEventType.RECEIVED.canApply(this.status);
 	}
 
+	/**
+	 * 해당 회원이 이 결제의 소유자인지 확인합니다.
+	 *
+	 * @param requesterId 요청자 회원 ID
+	 * @return 소유자이면 true
+	 */
+	public boolean isOwnedBy(Long requesterId) {
+		return this.memberId != null && this.memberId.equals(requesterId);
+	}
+
 	// ========== Getter ========== //
 
 	public String getIdempotencyKey() {

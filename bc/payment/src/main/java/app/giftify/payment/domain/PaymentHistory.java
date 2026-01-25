@@ -100,7 +100,11 @@ public class PaymentHistory extends BaseDomainModel {
 
 	/**
 	 * Entity 동일성은 id로 판단합니다.
-	 * id가 null인 경우(비영속 상태)에는 비즈니스 키(idempotencyKey)를 비교합니다.
+	 * id가 null인 경우(비영속 상태)에는 복합 비즈니스 키
+	 * (idempotencyKey, eventType, occurredAt)를 비교합니다.
+	 *
+	 * <p>같은 Payment의 여러 이벤트(PAID, REFUNDED 등)가 동일한 idempotencyKey를
+	 * 가지므로, eventType과 occurredAt도 함께 비교해야 정확한 동일성 판단이 가능합니다.</p>
 	 */
 	@Override
 	public boolean equals(Object o) {
@@ -114,16 +118,18 @@ public class PaymentHistory extends BaseDomainModel {
 			return Objects.equals(getId(), that.getId());
 		}
 
-		// 비영속 상태에서는 비즈니스 키(idempotencyKey)로 비교
-		return Objects.equals(idempotencyKey, that.idempotencyKey);
+		// 비영속 상태에서는 복합 비즈니스 키로 비교
+		return Objects.equals(idempotencyKey, that.idempotencyKey)
+			&& Objects.equals(eventType, that.eventType)
+			&& Objects.equals(occurredAt, that.occurredAt);
 	}
 
 	@Override
 	public int hashCode() {
-		// id가 있으면 id 기반, 없으면 idempotencyKey 기반
+		// id가 있으면 id 기반, 없으면 복합 비즈니스 키 기반
 		if (getId() != null) {
 			return Objects.hash(getId());
 		}
-		return Objects.hash(idempotencyKey);
+		return Objects.hash(idempotencyKey, eventType, occurredAt);
 	}
 }
