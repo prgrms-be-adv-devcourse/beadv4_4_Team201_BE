@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":bc:auth"))
     implementation(project(":bc:funding"))
     implementation(project(":bc:money:adapter"))
+    implementation(project(":bc:order"))
 
     // Support 모듈들
     implementation(project(":support:common"))

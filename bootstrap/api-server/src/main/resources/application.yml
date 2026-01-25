@@ -26,16 +26,19 @@ spring:
         - money-local
         - member-local
         - funding-local
+        - order-local
       dev:
         - auth-dev
         - money-dev
         - member-dev
         - funding-dev
+        - order-dev
       prod:
         - auth-prod
         - money-prod
         - member-prod
         - funding-prod
+        - order-prod
 
 server:
   port: 8080
