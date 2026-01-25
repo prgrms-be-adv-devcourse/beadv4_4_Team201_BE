@@ -1,18 +1,25 @@
 package app.giftify.payment.domain.event;
 
-import java.time.LocalDateTime;
+import app.giftify.shared.domain.event.BaseDomainEvent;
 
 /**
  * Payment BC 내부에서만 사용되는 도메인 이벤트.
  * 외부 BC로 발행되는 이벤트는 bc/shared의 PaymentExternalEvent를 사용합니다.
  */
-public sealed interface PaymentInternalEvent
+public abstract sealed class PaymentInternalEvent extends BaseDomainEvent
 	permits PaymentPaidEvent,
 			PaymentCanceledEvent,
 			PaymentRefundedEvent,
-			PaymentReceivedEvent { // FIXME BaseDomainEvent 상속하도록 바꿔야 함
+			PaymentReceivedEvent {
 
-	Long paymentId();
+	private final Long paymentId;
 
-	LocalDateTime occurredAt();
+	protected PaymentInternalEvent(Long paymentId) {
+		super();
+		this.paymentId = paymentId;
+	}
+
+	public Long getPaymentId() {
+		return paymentId;
+	}
 }

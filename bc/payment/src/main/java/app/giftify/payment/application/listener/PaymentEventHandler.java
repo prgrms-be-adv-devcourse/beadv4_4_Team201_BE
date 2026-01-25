@@ -31,48 +31,48 @@ public class PaymentEventHandler {
 
 	@EventListener
 	public void handle(PaymentPaidEvent event) {
-		log.info("[PaymentEventHandler] 결제 완료 이벤트 수신. paymentId={}", event.paymentId());
+		log.info("[PaymentEventHandler] 결제 완료 이벤트 수신. paymentId={}", event.getPaymentId());
 
-		if (event.paymentType() == PaymentType.FUNDING) {
+		if (event.getPaymentType() == PaymentType.FUNDING) {
 			// Funding BC용 이벤트
 			// TODO: fundingId 추출 로직 필요 (orderId에서 파싱 또는 별도 필드)
 			eventPublisher.publish(PaymentCompletedForFunding.create(
-				event.paymentId(),
+				event.getPaymentId(),
 				null,  // fundingId
-				event.memberId(),
-				event.paidAmount(),
-				event.occurredAt()
+				event.getMemberId(),
+				event.getPaidAmount(),
+				event.getOccurredAt()
 			));
 		} else {
 			// 기본: Order BC용 이벤트 (POINT_CHARGE 등)
 			eventPublisher.publish(PaymentConfirmedForOrder.create(
-				event.paymentId(),
-				event.orderId(),
-				event.paidAmount(),
-				event.occurredAt()
+				event.getPaymentId(),
+				event.getOrderId(),
+				event.getPaidAmount(),
+				event.getOccurredAt()
 			));
 		}
 	}
 
 	@EventListener
 	public void handle(PaymentCanceledEvent event) {
-		log.info("[PaymentEventHandler] 결제 취소 이벤트 수신. paymentId={}", event.paymentId());
+		log.info("[PaymentEventHandler] 결제 취소 이벤트 수신. paymentId={}", event.getPaymentId());
 
 		eventPublisher.publish(PaymentCanceledForOrder.create(
-			event.paymentId(),
-			event.orderId(),
-			event.reason(),
-			event.occurredAt()
+			event.getPaymentId(),
+			event.getOrderId(),
+			event.getReason(),
+			event.getOccurredAt()
 		));
 	}
 
 	@EventListener
 	public void handle(PaymentRefundedEvent event) {
-		log.info("[PaymentEventHandler] 결제 환불 이벤트 수신. paymentId={}", event.paymentId());
+		log.info("[PaymentEventHandler] 결제 환불 이벤트 수신. paymentId={}", event.getPaymentId());
 
-		Payment payment = paymentRepository.findById(event.paymentId())
+		Payment payment = paymentRepository.findById(event.getPaymentId())
 			.orElseThrow(() -> new IllegalStateException(
-				"[PaymentEventHandler] Payment not found: " + event.paymentId()));
+				"[PaymentEventHandler] Payment not found: " + event.getPaymentId()));
 
 		List<Long> sellerIds = payment.getOrderItems().stream()
 			.map(item -> item.sellerId())
@@ -80,10 +80,10 @@ public class PaymentEventHandler {
 			.toList();
 
 		eventPublisher.publish(PaymentRefundedForSettlement.create(
-			event.paymentId(),
-			event.refundAmount(),
+			event.getPaymentId(),
+			event.getRefundAmount(),
 			sellerIds,
-			event.occurredAt()
+			event.getOccurredAt()
 		));
 	}
 }
