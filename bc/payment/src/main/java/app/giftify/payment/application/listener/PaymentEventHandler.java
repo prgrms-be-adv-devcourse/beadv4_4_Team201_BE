@@ -1,0 +1,89 @@
+package app.giftify.payment.application.listener;
+
+import java.util.List;
+
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.domain.Payment;
+import app.giftify.payment.domain.event.PaymentCanceledEvent;
+import app.giftify.payment.domain.event.PaymentPaidEvent;
+import app.giftify.payment.domain.event.PaymentRefundedEvent;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentCanceledForOrder;
+import app.giftify.shared.domain.event.payment.PaymentCompletedForFunding;
+import app.giftify.shared.domain.event.payment.PaymentConfirmedForOrder;
+import app.giftify.shared.domain.event.payment.PaymentRefundedForSettlement;
+import app.giftify.shared.domain.type.PaymentType;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Payment 내부 이벤트를 수신하여 외부 BC 전용 이벤트로 발행합니다.
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class PaymentEventHandler {
+	private final EventPublisher eventPublisher;
+	private final PaymentRepository paymentRepository;
+
+	@EventListener
+	public void handle(PaymentPaidEvent event) {
+		log.info("[PaymentEventHandler] 결제 완료 이벤트 수신. paymentId={}", event.paymentId());
+
+		if (event.paymentType() == PaymentType.FUNDING) {
+			// Funding BC용 이벤트
+			// TODO: fundingId 추출 로직 필요 (orderId에서 파싱 또는 별도 필드)
+			eventPublisher.publish(PaymentCompletedForFunding.create(
+				event.paymentId(),
+				null,  // fundingId
+				event.memberId(),
+				event.paidAmount(),
+				event.occurredAt()
+			));
+		} else {
+			// 기본: Order BC용 이벤트 (POINT_CHARGE 등)
+			eventPublisher.publish(PaymentConfirmedForOrder.create(
+				event.paymentId(),
+				event.orderId(),
+				event.paidAmount(),
+				event.occurredAt()
+			));
+		}
+	}
+
+	@EventListener
+	public void handle(PaymentCanceledEvent event) {
+		log.info("[PaymentEventHandler] 결제 취소 이벤트 수신. paymentId={}", event.paymentId());
+
+		eventPublisher.publish(PaymentCanceledForOrder.create(
+			event.paymentId(),
+			event.orderId(),
+			event.reason(),
+			event.occurredAt()
+		));
+	}
+
+	@EventListener
+	public void handle(PaymentRefundedEvent event) {
+		log.info("[PaymentEventHandler] 결제 환불 이벤트 수신. paymentId={}", event.paymentId());
+
+		Payment payment = paymentRepository.findById(event.paymentId())
+			.orElseThrow(() -> new IllegalStateException(
+				"[PaymentEventHandler] Payment not found: " + event.paymentId()));
+
+		List<Long> sellerIds = payment.getOrderItems().stream()
+			.map(item -> item.sellerId())
+			.distinct()
+			.toList();
+
+		eventPublisher.publish(PaymentRefundedForSettlement.create(
+			event.paymentId(),
+			event.refundAmount(),
+			sellerIds,
+			event.occurredAt()
+		));
+	}
+}

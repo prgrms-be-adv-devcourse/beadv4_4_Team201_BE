@@ -10,8 +10,8 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
+import app.giftify.payment.domain.event.PaymentPaidEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -62,13 +62,13 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		// 4. 저장 (uncommittedHistory 포함)
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 이벤트 발행
-		eventPublisher.publish(new PaymentSucceededEvent(
+		// 5. 내부 이벤트 발행 (Handler에서 외부 이벤트로 변환)
+		eventPublisher.publish(new PaymentPaidEvent(
 			savedPayment.getId(),
-			savedPayment.getType().name(),
 			savedPayment.getMemberId(),
-			savedPayment.getPaidAmount(),
+			savedPayment.getOrderId(),
 			savedPayment.getType(),
+			savedPayment.getPaidAmount(),
 			command.paidAt()
 		));
 	}

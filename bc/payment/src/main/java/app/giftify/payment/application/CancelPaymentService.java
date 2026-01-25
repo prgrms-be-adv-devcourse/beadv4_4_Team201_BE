@@ -12,10 +12,13 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
+import app.giftify.payment.domain.event.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 결제 취소 UseCase 구현체.
+ */
 @Slf4j
 @Service
 @Transactional
@@ -56,13 +59,13 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		// 4. 저장
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 이벤트 발행
+		// 5. 내부 이벤트 발행 (Handler에서 외부 이벤트로 변환)
 		eventPublisher.publish(new PaymentCanceledEvent(
 			savedPayment.getId(),
-			savedPayment.getType().name(),
 			savedPayment.getMemberId(),
-			savedPayment.getPaidAmount(),
+			savedPayment.getOrderId(),
 			savedPayment.getType(),
+			savedPayment.getPaidAmount(),
 			command.reason(),
 			canceledAt
 		));

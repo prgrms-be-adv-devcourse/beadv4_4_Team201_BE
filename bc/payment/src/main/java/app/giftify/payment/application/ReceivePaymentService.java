@@ -12,6 +12,7 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
+import app.giftify.payment.domain.event.PaymentReceivedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,9 +59,14 @@ public class ReceivePaymentService implements ReceivePaymentUseCase {
 		payment.markAsReceived(receivedAt, requestId);
 
 		// 4. 저장
-		paymentRepository.save(payment);
+		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 이벤트 발행 (필요시 PaymentReceivedEvent 생성)
-		// eventPublisher.publish(new PaymentReceivedEvent(...));
+		// 5. 내부 이벤트 발행
+		eventPublisher.publish(new PaymentReceivedEvent(
+			savedPayment.getId(),
+			savedPayment.getMemberId(),
+			savedPayment.getOrderId(),
+			receivedAt
+		));
 	}
 }
