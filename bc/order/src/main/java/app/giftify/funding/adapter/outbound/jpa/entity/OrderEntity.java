@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class OrderEntity extends BaseJpaEntity {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "order_number", nullable = false, unique = true)
     private String orderNumber;
