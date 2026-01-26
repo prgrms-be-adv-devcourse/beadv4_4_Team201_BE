@@ -11,7 +11,7 @@ import app.giftify.funding.domain.OrderStatus;
 import app.giftify.funding.domain.exception.OrderException;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.funding.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,7 +72,7 @@ class OrderCreateServiceTest {
                 .sellerId(200L)
                 .receiverId(300L)
                 .price(Money.of(10000L))
-                .quantity(new app.giftify.shared.domain.vo.Quantity(2))
+                .quantity(new app.giftify.funding.domain.vo.Quantity(2))
                 .build();
 
         given(orderRepositoryPort.save(any(Order.class))).willReturn(savedOrder);
@@ -200,7 +200,7 @@ class OrderCreateServiceTest {
                 .id(1L)
                 .orderId(orderId)
                 .price(Money.of(10000))
-                .quantity(new app.giftify.shared.domain.vo.Quantity(1))
+                .quantity(new app.giftify.funding.domain.vo.Quantity(1))
                 .build();
 
         given(orderRepositoryPort.findByIdAndBuyerId(orderId, memberId)).willReturn(Optional.of(order));

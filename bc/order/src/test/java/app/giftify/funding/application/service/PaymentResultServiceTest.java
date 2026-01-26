@@ -5,7 +5,7 @@ import app.giftify.funding.domain.Order;
 import app.giftify.funding.domain.OrderStatus;
 import app.giftify.funding.domain.exception.OrderException;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.funding.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

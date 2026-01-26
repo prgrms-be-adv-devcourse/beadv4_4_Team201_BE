@@ -2,7 +2,7 @@ package app.giftify.funding.adapter.outbound.api;
 
 import app.giftify.funding.domain.Order;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.funding.domain.vo.Money;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
