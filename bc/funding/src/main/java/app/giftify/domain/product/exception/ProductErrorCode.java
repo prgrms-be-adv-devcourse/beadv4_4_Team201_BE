@@ -13,6 +13,7 @@ public enum ProductErrorCode implements ErrorCode {
 	// P1xx: 조회/리소스 관련
 	PRODUCT_NOT_FOUND(NOT_FOUND, "P101", "상품을 찾을 수 없습니다."),
 	FUNDING_MEMBER_NOT_FOUND(NOT_FOUND, "P102", "사용자를 찾을 수 없습니다."),
+	PRODUCTS_NOT_FOUND(NOT_FOUND, "P103", "일부 상품을 찾을 수 없습니다."),
 
 	// P2xx: 상태/비즈니스 규칙/전이 관련
 	PRODUCT_OUT_OF_STOCK(BAD_REQUEST, "P201", "상품 재고가 부족합니다."),
@@ -32,6 +33,7 @@ public enum ProductErrorCode implements ErrorCode {
 	INVALID_PRODUCT_PRICE(BAD_REQUEST, "P304", "상품 가격이 올바르지 않습니다."),
 	INVALID_PRODUCT_SEARCH_PRICE_RANGE(BAD_REQUEST, "P305", "가격 범위가 올바르지 않습니다."),
 	INVALID_PRODUCT_STOCK(BAD_REQUEST, "P306", "재고량이 올바르지 않습니다."),
+	PRODUCT_ID_REQUIRED(BAD_REQUEST, "P307", "Product ID는 필수입니다."),
 
 	// P4xx: 상품 수정/요청 검증
 	PRODUCT_UPDATE_EMPTY_REQUEST(NO_CONTENT, "P401", "수정할 내용이 없습니다."),
