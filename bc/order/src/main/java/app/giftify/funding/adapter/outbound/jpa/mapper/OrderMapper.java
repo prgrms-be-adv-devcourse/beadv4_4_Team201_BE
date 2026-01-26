@@ -10,6 +10,7 @@ public class OrderMapper {
 
     public static OrderEntity toEntity(Order order) {
         return OrderEntity.builder()
+                .id(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .buyerId(order.getBuyerId())
                 .totalAmount(order.getTotalAmount().amount())

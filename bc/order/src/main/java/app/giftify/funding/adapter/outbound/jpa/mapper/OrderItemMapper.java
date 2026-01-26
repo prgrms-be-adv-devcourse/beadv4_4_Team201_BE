@@ -10,6 +10,7 @@ import java.util.List;
 public class OrderItemMapper {
     public static OrderItemEntity toEntity(OrderItem orderItem) {
         return OrderItemEntity.builder()
+                .id(orderItem.getId())
                 .orderId(orderItem.getOrderId())
                 .targetSnapshotId(orderItem.getTargetSnapshotId())
                 .targetType(orderItem.getTargetType())
