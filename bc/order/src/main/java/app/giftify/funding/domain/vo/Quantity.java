@@ -1,4 +1,4 @@
-package app.giftify.shared.domain.vo;
+package app.giftify.funding.domain.vo;
 
 public class Quantity {
 
