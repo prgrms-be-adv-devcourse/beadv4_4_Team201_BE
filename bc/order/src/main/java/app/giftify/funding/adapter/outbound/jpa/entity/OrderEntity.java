@@ -21,6 +21,7 @@ public class OrderEntity extends BaseJpaEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter(AccessLevel.NONE)
     private Long id;
 
     @Column(name = "order_number", nullable = false, unique = true)
@@ -48,4 +49,9 @@ public class OrderEntity extends BaseJpaEntity {
 
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
+
+    @Override
+    public Long getId() {
+        return id;
+    }
 }
