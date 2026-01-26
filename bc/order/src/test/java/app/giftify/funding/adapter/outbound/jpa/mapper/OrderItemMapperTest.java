@@ -2,10 +2,9 @@ package app.giftify.funding.adapter.outbound.jpa.mapper;
 
 import app.giftify.funding.adapter.outbound.jpa.entity.OrderItemEntity;
 import app.giftify.funding.domain.OrderItem;
-import app.giftify.funding.domain.OrderStatus;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.Quantity;
+import app.giftify.funding.domain.vo.Money;
+import app.giftify.funding.domain.vo.Quantity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
