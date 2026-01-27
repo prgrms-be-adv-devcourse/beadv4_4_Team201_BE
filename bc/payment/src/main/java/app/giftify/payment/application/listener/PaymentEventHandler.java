@@ -34,11 +34,10 @@ public class PaymentEventHandler {
 		log.info("[PaymentEventHandler] 결제 완료 이벤트 수신. paymentId={}", event.getPaymentId());
 
 		if (event.getPaymentType() == PaymentType.FUNDING) {
-			// Funding BC용 이벤트
-			// TODO: fundingId 추출 로직 필요 (orderId에서 파싱 또는 별도 필드)
+			// Funding BC용 이벤트 - orderId를 그대로 전달 (Funding BC가 펀딩 식별 책임)
 			eventPublisher.publish(PaymentCompletedForFunding.create(
 				event.getPaymentId(),
-				null,  // fundingId
+				event.getOrderId(),
 				event.getMemberId(),
 				event.getPaidAmount(),
 				event.getOccurredAt()
