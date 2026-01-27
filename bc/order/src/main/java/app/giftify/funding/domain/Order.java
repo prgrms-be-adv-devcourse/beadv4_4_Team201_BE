@@ -2,9 +2,9 @@ package app.giftify.funding.domain;
 
 import app.giftify.funding.domain.exception.OrderErrorCode;
 import app.giftify.funding.domain.exception.OrderException;
+import app.giftify.funding.domain.vo.Money;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

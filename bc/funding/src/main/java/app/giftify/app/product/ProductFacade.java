@@ -1,5 +1,7 @@
 package app.giftify.app.product;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +9,8 @@ import app.giftify.in.product.MyProductSearchDto;
 import app.giftify.in.product.ProductCreateRequestDto;
 import app.giftify.in.product.ProductDto;
 import app.giftify.in.product.ProductSearchDto;
+import app.giftify.in.product.ProductSnapshotDto;
+import app.giftify.in.product.ProductSnapshotRequestDto;
 import app.giftify.in.product.ProductUpdateRequestDto;
 import app.giftify.in.product.ProductUpdateResponseDto;
 import app.giftify.in.product.StockHistoryDto;
@@ -24,6 +28,7 @@ public class ProductFacade {
 	private final ProductRejectUseCase productRejectUseCase;
 	private final ProductUpdateUseCase productUpdateUseCase;
 	private final ProductStockHistoryUseCase productStockHistoryUseCase;
+	private final ProductSnapshotCreateUseCase productSnapshotCreateUseCase;
 
 	@Transactional //todo event
 	public ProductDto createProduct(Long sellerId, ProductCreateRequestDto requestDto) {
@@ -63,5 +68,10 @@ public class ProductFacade {
 	@Transactional(readOnly = true)
 	public PageResponse<StockHistoryDto> searchStockHistories(Long sellerId, StockHistorySearchDto searchDto) {
 		return productStockHistoryUseCase.searchStockHistories(sellerId, searchDto);
+	}
+
+	@Transactional
+	public List<ProductSnapshotDto> createProductSnapshots(ProductSnapshotRequestDto requestDto) {
+		return productSnapshotCreateUseCase.createProductSnapshots(requestDto);
 	}
 }

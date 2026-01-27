@@ -19,6 +19,11 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class OrderItemEntity extends BaseJpaEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter(AccessLevel.NONE)
+    private Long id;
+
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
@@ -46,4 +51,9 @@ public class OrderItemEntity extends BaseJpaEntity {
 
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
+
+    @Override
+    public Long getId() {
+        return id;
+    }
 }

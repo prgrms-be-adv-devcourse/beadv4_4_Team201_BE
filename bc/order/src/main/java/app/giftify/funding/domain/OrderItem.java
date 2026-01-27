@@ -1,11 +1,9 @@
 package app.giftify.funding.domain;
 
-import app.giftify.funding.domain.exception.OrderErrorCode;
-import app.giftify.funding.domain.exception.OrderException;
+import app.giftify.funding.domain.vo.Money;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.Quantity;
+import app.giftify.funding.domain.vo.Quantity;
 
 import java.time.LocalDateTime;
 

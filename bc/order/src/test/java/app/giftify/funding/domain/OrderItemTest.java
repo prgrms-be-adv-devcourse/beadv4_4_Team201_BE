@@ -1,9 +1,8 @@
 package app.giftify.funding.domain;
 
-import app.giftify.funding.domain.exception.OrderException;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.Quantity;
+import app.giftify.funding.domain.vo.Money;
+import app.giftify.funding.domain.vo.Quantity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -19,7 +19,6 @@ public class ProductGetUseCase {
 	 * 상품 단건 조회
 	 */
 	public ProductDto getProduct(Long productId) {
-
 		Product product = productSupport.findById(productId); // 상품이 없으면 404
 
 		// 판매중이 아닌 상품

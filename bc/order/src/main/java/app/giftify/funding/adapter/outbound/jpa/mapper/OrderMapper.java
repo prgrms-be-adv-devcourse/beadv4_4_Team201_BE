@@ -2,7 +2,7 @@ package app.giftify.funding.adapter.outbound.jpa.mapper;
 
 import app.giftify.funding.adapter.outbound.jpa.entity.OrderEntity;
 import app.giftify.funding.domain.Order;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.funding.domain.vo.Money;
 
 import java.util.List;
 
@@ -10,6 +10,7 @@ public class OrderMapper {
 
     public static OrderEntity toEntity(Order order) {
         return OrderEntity.builder()
+                .id(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .buyerId(order.getBuyerId())
                 .totalAmount(order.getTotalAmount().amount())
