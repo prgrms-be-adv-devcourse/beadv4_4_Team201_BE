@@ -1,5 +1,7 @@
 package app.giftify.payment.application;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,17 +9,17 @@ import app.giftify.payment.application.inbound.PaymentDetailQuery;
 import app.giftify.payment.application.inbound.PaymentDetailResult;
 import app.giftify.payment.application.inbound.PaymentHistoryQuery;
 import app.giftify.payment.application.inbound.PaymentSummaryResult;
+import app.giftify.payment.application.inbound.QueryPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
+import app.giftify.shared.api.paging.Page;
 import app.giftify.shared.api.paging.PageResponse;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @Transactional(readOnly = true)
-public class QueryPaymentService implements app.giftify.payment.application.inbound.QueryPaymentUseCase {
+public class QueryPaymentService implements QueryPaymentUseCase {
 	private final PaymentRepository paymentRepository;
 
 	public QueryPaymentService(PaymentRepository paymentRepository) {
@@ -45,8 +47,20 @@ public class QueryPaymentService implements app.giftify.payment.application.inbo
 
 	@Override
 	public PageResponse<PaymentSummaryResult> getPaymentHistory(PaymentHistoryQuery query) {
-		// 페이징 조회 구현 (Repository에 메서드 필요)
-		// NOTE 향후 구현
-		return null;
+		Page<Payment> paymentPage = paymentRepository.findByMemberId(
+			query.memberId(),
+			query.pageRequest()
+		);
+
+		List<PaymentSummaryResult> content = paymentPage.content().stream()
+			.map(PaymentSummaryResult::from)
+			.toList();
+
+		return PageResponse.of(
+			content,
+			query.pageRequest().page(),
+			query.pageRequest().size(),
+			paymentPage.totalElements()
+		);
 	}
 }

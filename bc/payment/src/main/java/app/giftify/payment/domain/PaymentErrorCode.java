@@ -6,10 +6,8 @@ public enum PaymentErrorCode implements ErrorCode {
 	// [000 ~ 099] 공통 및 입력값 유효성
 	INVALID_INPUT_VALUE("PAY_001", "유효하지 않은 입력값입니다."),
 
-	// [100 ~ 199] 조회 및 리소스 존재 여부
+	// [100 ~ 199] 조회, 리소스 존재 여부 및 권한
 	PAYMENT_NOT_FOUND("PAY_101", "결제 내역을 찾을 수 없습니다."),
-
-	// [100 ~ 199] 조회 및 리소스 존재 여부, 권한
 	UNAUTHORIZED_ACCESS("PAY_102", "해당 결제에 대한 접근 권한이 없습니다."),
 
 	// [200 ~ 299] 상태 변경 및 비즈니스 흐름 제어
@@ -32,6 +30,8 @@ public enum PaymentErrorCode implements ErrorCode {
 	PG_CONNECTION_ERROR("PAY_402", "PG사 연결 중 오류가 발생했습니다."),
 
 	// [900 ~ 999] 시스템 및 내부 오류
+	/** PG 민감 정보(paymentKey, approveCode) 복호화 실패 시 */
+	DECRYPTION_FAILED("PAY_901", "결제 정보 복호화에 실패했습니다."),
 	INTERNAL_SERVER_ERROR("PAY_999", "서버 내부 오류가 발생했습니다.");
 
 	private final String code;

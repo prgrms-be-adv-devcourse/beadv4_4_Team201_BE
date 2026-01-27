@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import app.giftify.payment.domain.Payment;
+import app.giftify.shared.api.paging.Page;
+import app.giftify.shared.api.paging.PageRequest;
 
 public interface PaymentRepository {
 	Payment save(Payment payment);
@@ -32,4 +34,6 @@ public interface PaymentRepository {
 	 * @return 해당 키로 생성된 결제 (없으면 empty)
 	 */
 	Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
+	Page<Payment> findByMemberId(Long memberId, PageRequest pageRequest);
 }
