@@ -1,7 +1,10 @@
 package app.giftify.payment.adapter.out.jpa.entity.settlement;
 
-import domain.settlement.SettlementStatus;
-import domain.settlement.SettlementType;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.vo.OrderItemInfo;
+import domain.settlement.SettlementItem;
+import domain.settlement.SettlementItemStatus;
+import domain.settlement.SettlementItemType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -9,60 +12,109 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "SETTLEMENT_ITEM")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class JpaSettlementItem {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String orderId;                   // 결제/주문 식별자(현재는 결제)
+    @Column(nullable = false)
+    private Long sellerId;
 
-    @Column(nullable = false, unique = true)
-    private String paymentKey;              // PG 결제 식별자
-
-//    private String transactionKey;          // PG 트랜잭션 식별자(멱등키) (todo: 토스 대조 미정)
+    private Long settlementId;
 
     @Column(nullable = false)
-    private Long sellerId;                  // 판매자 식별자
+    private Long orderId;
+
+    @Column(nullable = false)
+    private String orderNumber;
+
+    @Column(nullable = false, unique = true)
+    private Long orderItemId;
+
+    @Column(nullable = false)
+    private Long quantity;
+
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal totalAmount;
+
+    @Column(nullable = false)
+    private LocalDateTime orderedAt;
+
+    private String paymentKey;
+
+    private String transactionKey;
+
+    private LocalDateTime paidAt;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethodType paymentMethodType;
+
+    @Column(precision = 19, scale = 4)
+    private BigDecimal platformFee;
+
+    @Column(precision = 19, scale = 4)
+    private BigDecimal pgFee;
+
+    @Column(precision = 19, scale = 4)
+    private BigDecimal settlementItemAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SettlementType type;            // PAYMENT, CANCEL
+    private SettlementItemType type;
+
+    private Long originId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SettlementItemStatus status;
 
     @Column(nullable = false)
-    private BigDecimal totalAmount;              // 판매 금액(₩)
+    private LocalDateTime occurredAt;
 
-    @Column(nullable = false)
-    private BigDecimal platformFee;              // 우리 수수료(₩)
+    private LocalDate expectedDate;
 
-    @Column(nullable = false)
-    private BigDecimal pgFee;                    // pg 수수료(₩)
+    private LocalDate settledAt;
 
-    @Column(nullable = false)
-    private BigDecimal settlementAmount;         // 정산 금액(₩) (totalAmount - platformFee - pgFee)
-
-    @Column(nullable = false)
-    private SettlementStatus status;        // READY, WAIT, COMPLETE
-
-    @Column(nullable = false)
-    private LocalDateTime settlementDate;   // 정산 예정일
+    private LocalDateTime cancelledAt;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public void updateStatus(SettlementStatus status) {
+    // 도메인 생성 시점(PENDING)에 맞춘 생성자
+    private JpaSettlementItem(Long sellerId, OrderItemInfo orderItemInfo, SettlementItemType type, SettlementItemStatus status, LocalDateTime occurredAt) {
+        this.sellerId = sellerId;
+        this.orderId = orderItemInfo.orderId();
+        this.orderNumber = orderItemInfo.orderNumber();
+        this.quantity = orderItemInfo.quantity();
+        this.orderItemId = orderItemInfo.orderItemId();
+        this.totalAmount = orderItemInfo.totalAmount().amount();
+        this.orderedAt = orderItemInfo.orderedAt();
+        this.type = type;
         this.status = status;
+        this.occurredAt = occurredAt;
+    }
+
+    public static JpaSettlementItem from(SettlementItem domain) {
+        return new JpaSettlementItem(
+                domain.getSellerId(),
+                domain.getOrderItemInfo(),
+                domain.getType(),
+                domain.getStatus(),
+                domain.getOccurredAt()
+        );
     }
 }
 

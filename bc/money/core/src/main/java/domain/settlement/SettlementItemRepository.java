@@ -1,5 +1,10 @@
 package domain.settlement;
 
 public interface SettlementItemRepository {
-    public void save(SettlementItem item);
+    void save(SettlementItem item);                 // 업데이트용
+
+    void saveAndFlush(SettlementItem item);         // 생성/방어용
+
+    boolean existsByOrderItemId(Long orderItemId);
+
 }

@@ -1,178 +1,240 @@
 package domain.settlement;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.vo.AmountInfo;
 import app.giftify.shared.domain.vo.Money;
+import app.giftify.shared.domain.vo.OrderItemInfo;
+import app.giftify.shared.domain.vo.PaymentInfo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class SettlementItem extends BaseDomainModel {
-    private String orderId;                   // 결제/주문 식별자(현재는 결제)
-    private String paymentKey;              // PG 결제 식별자
-//    private String transactionKey;          // PG 트랜잭션 식별자(멱등키) (todo: 토스 대조 미정)
+    private OrderItemInfo orderItemInfo;
+    private PaymentInfo paymentInfo;
+    private AmountInfo amountInfo;
 
-    private Long sellerId;                  // 판매자 식별자
-    private SettlementType type;            // PAYMENT, CANCEL
+    private Long originId;
+    private SettlementItemType type;
+    private SettlementItemStatus status;
+    private LocalDateTime occurredAt;
+    private LocalDate expectedDate;
 
-    private Money totalAmount;              // 판매 금액
-    private Money platformFee;              // 우리 수수료(₩)
-    private Money pgFee;                    // pg 수수료(₩)
-    private Money settlementAmount;         // 정산 금액(₩) (totalAmount - platformFee - pgFee)
+    private Long settlementId;
+    private LocalDateTime settledAt;
+    private LocalDateTime cancelledAt;
 
-    private SettlementStatus status;        // READY, WAIT, COMPLETE
-    private LocalDateTime settlementDate;   // 정산 예정일
+    private SettlementItem(
+            Long id, OrderItemInfo orderItemInfo,
+            PaymentInfo paymentInfo, AmountInfo amountInfo, Long originId,
+            SettlementItemType type, SettlementItemStatus status, LocalDateTime occurredAt,
+            LocalDate expectedDate, Long settlementId, LocalDateTime settledAt, LocalDateTime cancelledAt
+    ) {
+        super(id);
+        validateState(status, paymentInfo, amountInfo, expectedDate, settlementId, settledAt, cancelledAt);
 
-    private SettlementItem(Builder builder) {
-        super(builder.id);
-        this.orderId = builder.orderId;
-        this.paymentKey = builder.paymentKey;
-        this.sellerId = builder.sellerId;
-        this.type = builder.type;
-        this.totalAmount = builder.totalAmount;
-        this.platformFee = builder.platformFee;
-        this.pgFee = builder.pgFee;
-        this.settlementAmount = builder.settlementAmount;
-        this.status = builder.status;
-        this.settlementDate = builder.settlementDate;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private Long id;
-        private String orderId;
-        private String paymentKey;
-        private Long sellerId;
-        private SettlementType type;
-        private Money totalAmount;
-        private Money platformFee;
-        private Money pgFee;
-        private Money settlementAmount;
-        private SettlementStatus status;
-        private LocalDateTime settlementDate;
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder orderId(String orderId) {
-            this.orderId = orderId;
-            return this;
-        }
-
-        public Builder paymentKey(String paymentKey) {
-            this.paymentKey = paymentKey;
-            return this;
-        }
-
-        public Builder sellerId(Long sellerId) {
-            this.sellerId = sellerId;
-            return this;
-        }
-
-        public Builder type(SettlementType type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder totalAmount(Money totalAmount) {
-            this.totalAmount = totalAmount;
-            return this;
-        }
-
-        public Builder platformFee(Money platformFee) {
-            this.platformFee = platformFee;
-            return this;
-        }
-
-        public Builder pgFee(Money pgFee) {
-            this.pgFee = pgFee;
-            return this;
-        }
-
-        public Builder settlementAmount(Money settlementAmount) {
-            this.settlementAmount = settlementAmount;
-            return this;
-        }
-
-        public Builder status(SettlementStatus status) {
-            this.status = status;
-            return this;
-        }
-
-        public Builder settlementDate(LocalDateTime settlementDate) {
-            this.settlementDate = settlementDate;
-            return this;
-        }
-
-        public SettlementItem build() {
-            return new SettlementItem(this);
-        }
-    }
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public String getPaymentKey() {
-        return paymentKey;
+        this.orderItemInfo = orderItemInfo;
+        this.paymentInfo = paymentInfo;
+        this.amountInfo = amountInfo;
+        this.originId = originId;
+        this.type = type;
+        this.status = status;
+        this.occurredAt = occurredAt != null ? occurredAt : LocalDateTime.now();
+        this.expectedDate = expectedDate;
+        this.settlementId = settlementId;
+        this.settledAt = settledAt;
+        this.cancelledAt = cancelledAt;
     }
 
     public Long getSellerId() {
-        return sellerId;
+        return orderItemInfo.sellerId();
     }
 
-    public SettlementType getType() {
-        return type;
+    public Long getOrderId() {
+        return orderItemInfo.orderId();
+    }
+
+    public String getOrderNumber() {
+        return orderItemInfo.orderNumber();
+    }
+
+    public Long getOrderItemId() {
+        return orderItemInfo.orderItemId();
+    }
+
+    public Long getQuantity() {
+        return orderItemInfo.quantity();
     }
 
     public Money getTotalAmount() {
-        return totalAmount;
+        return orderItemInfo.totalAmount();
+    }
+
+    public LocalDateTime getOrderedAt() {
+        return orderItemInfo.orderedAt();
+    }
+
+    public PaymentInfo getPaymentInfo() {
+        validatePaymentInfoAvailability();
+
+        return paymentInfo;
+    }
+
+    public String getPaymentKey() {
+        validatePaymentInfoAvailability();
+
+        return paymentInfo.paymentKey();
+    }
+
+    public String getTransactionKey() {
+        validatePaymentInfoAvailability();
+
+        return paymentInfo.transactionKey();
+    }
+
+    public PaymentMethodType getPaymentMethodType() {
+        validatePaymentInfoAvailability();
+
+        return paymentInfo.paymentMethodType();
+    }
+
+    public LocalDateTime getPaidAt() {
+        validatePaymentInfoAvailability();
+
+        return paymentInfo.paidAt();
     }
 
     public Money getPlatformFee() {
-        return platformFee;
+        validateAmountInfoAvailability();
+
+        return amountInfo.platformFee();
     }
 
     public Money getPgFee() {
-        return pgFee;
+        validateAmountInfoAvailability();
+
+        return amountInfo.pgFee();
     }
 
     public Money getSettlementAmount() {
-        return settlementAmount;
+        validateAmountInfoAvailability();
+
+        return amountInfo.settlementAmount();
     }
 
-    public SettlementStatus getStatus() {
+    public SettlementItemType getType() {
+        return type;
+    }
+
+    public Long getOriginId() {
+        return originId;
+    }
+
+    public SettlementItemStatus getStatus() {
         return status;
     }
 
-    public LocalDateTime getSettlementDate() {
-        return settlementDate;
+    public LocalDate getExpectedDate() {
+        return expectedDate;
     }
 
-    public void changeStatusToPaid() {
-        if (this.status != SettlementStatus.EXPECTED) {
-            throw new IllegalStateException("EXPECTED 상태인 정산 건만 PAID로 변경할 수 있습니다.");   // todo: 예외 처리
+    public Long getSettlementId() {
+        validateSettlementAvailability();
+
+        return settlementId;
+    }
+
+    public OrderItemInfo getOrderItemInfo() {
+        return orderItemInfo;
+    }
+
+    public AmountInfo getAmountInfo() {
+        validateAmountInfoAvailability();
+
+        return amountInfo;
+    }
+
+    public LocalDateTime getOccurredAt() {
+        return occurredAt;
+    }
+
+    public LocalDateTime getSettledAt() {
+        validateSettlementAvailability();
+
+        return settledAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        if (this.status != SettlementItemStatus.CANCELLED) {
+            throw new IllegalArgumentException("결제 취소인 경우에만 취소 정보를 조회할 수 있습니다.");
         }
-        this.status = SettlementStatus.PAID;
+        return cancelledAt;
     }
 
-    public void changeStatusToCancel() {
-        if (this.status == SettlementStatus.PAID) {
-            throw new IllegalStateException("이미 지급 완료된 정산 건은 상태를 취소할 수 없습니다. (마이너스 정산 필요)");    // todo: 예외 처리
+    public static SettlementItem createPaymentItem(OrderItemInfo orderItemInfo) {
+        validateNewOrder(orderItemInfo);
+
+        return new SettlementItem(
+                null,
+                orderItemInfo,
+                null,
+                null,
+                null,
+                SettlementItemType.ITEM_PAYMENT,
+                SettlementItemStatus.PENDING,
+                LocalDateTime.now(),
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    private static void validateNewOrder(OrderItemInfo orderItemInfo) {
+        if (orderItemInfo == null) {
+            throw new IllegalArgumentException("주문 정보는 필수입니다.");
         }
-        this.status = SettlementStatus.CANCELLED;
-    }
 
-    public void changeStatusToExpected() {
-        if (this.status != SettlementStatus.READY) {
-            throw new IllegalStateException("READY 상태인 정산 건만 EXPECTED 변경할 수 있습니다.");   // todo: 예외 처리
+        if (orderItemInfo.sellerId() == null) {
+            throw new IllegalArgumentException("판매자 ID는 필수입니다.");
         }
-        this.status = SettlementStatus.EXPECTED;
+
+        if (orderItemInfo.totalAmount().isLessThanOrEqual(Money.zero())) {
+            throw new IllegalArgumentException("정산 대상 금액은 0원보다 커야 합니다.");
+        }
+        if (orderItemInfo.quantity() < 1) {
+            throw new IllegalArgumentException("주문 수량은 1개 이상이어야 합니다.");
+        }
     }
 
+    private void validateState(SettlementItemStatus status, PaymentInfo paymentInfo, AmountInfo amountInfo, LocalDate expectedDate, Long settlementId, LocalDateTime settledAt, LocalDateTime cancelledAt) {
+        if (status == SettlementItemStatus.PENDING) {
+            if (paymentInfo != null || amountInfo != null || expectedDate != null || settlementId != null || settledAt != null || cancelledAt != null) {
+                throw new IllegalStateException("결제 대기 상태에서는 결제/금액/정산/취소 정보가 존재할 수 없습니다.");
+            }
+        }
+    }
 
+    private void validatePaymentInfoAvailability() {
+        if (this.status == SettlementItemStatus.PENDING) {
+            throw new IllegalStateException("결제 대기 상태에서는 결제 정보를 조회할 수 없습니다.");
+        }
+    }
 
+    private void validateAmountInfoAvailability() {
+        if (this.status == SettlementItemStatus.PENDING) {
+            throw new IllegalStateException("결제 대기 상태에서는 금액 정보를 조회할 수 없습니다.");
+        }
+
+        if (this.status == SettlementItemStatus.CANCELLED && this.amountInfo == null) {
+            throw new IllegalStateException("결제 전 취소된 항목은 금액 정보가 존재하지 않습니다.");
+        }
+    }
+
+    private void validateSettlementAvailability() {
+        if (this.status != SettlementItemStatus.COMPLETED) {
+            throw new IllegalStateException("정산 완료 상태인 경우에만 정산 정보를 조회할 수 있습니다.");
+        }
+    }
 }
