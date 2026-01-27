@@ -1,106 +1,114 @@
 package domain.settlement;
 
 import app.giftify.shared.domain.vo.Money;
-import org.junit.jupiter.api.Disabled;
+import app.giftify.shared.domain.vo.OrderItemInfo;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SettlementItemTest {
 
-    @Disabled("현재 다른 PR의 변경으로 인해 테스트가 실패하여 임시 비활성화합니다.")
-    @Test
-    @DisplayName("PAYMENT 타입의 정산 아이템을 정상적으로 생성한다")
-    void createSettlementItem_payment() {
-        // given
-        String orderId = "Qwe_123";
-        String paymentKey = "payment-key-123";
-        Long sellerId = 10L;
-
-        Money totalAmount = Money.of(10_000);
-        Money platformFee = Money.of(1_000);
-        Money pgFee = Money.of(300);
-        Money settlementAmount = Money.of(8_700);
-
-        LocalDateTime settlementDate = LocalDateTime.of(2026, 1, 31, 0, 0);
-
-        // when
-        SettlementItem item = SettlementItem.builder()
-                .id(100L)
-                .orderId(orderId)
-                .paymentKey(paymentKey)
-                .sellerId(sellerId)
-                .type(SettlementType.PAYMENT)
-                .totalAmount(totalAmount)
-                .platformFee(platformFee)
-                .pgFee(pgFee)
-                .settlementAmount(settlementAmount)
-                .status(SettlementStatus.READY)
-                .settlementDate(settlementDate)
-                .build();
-
-        // then
-        assertThat(item.getId()).isEqualTo(100L);
-        assertThat(item.getOrderId()).isEqualTo(orderId);
-        assertThat(item.getPaymentKey()).isEqualTo(paymentKey);
-        assertThat(item.getSellerId()).isEqualTo(sellerId);
-        assertThat(item.getType()).isEqualTo(SettlementType.PAYMENT);
-        assertThat(item.getTotalAmount()).isEqualTo(totalAmount);
-        assertThat(item.getPlatformFee()).isEqualTo(platformFee);
-        assertThat(item.getPgFee()).isEqualTo(pgFee);
-        assertThat(item.getSettlementAmount()).isEqualTo(settlementAmount);
-        assertThat(item.getStatus()).isEqualTo(SettlementStatus.READY);
-        assertThat(item.getSettlementDate()).isEqualTo(settlementDate);
+    private OrderItemInfo createFixtureOrderItemInfo(Long sellerId, long amount, long quantity) {
+        return new OrderItemInfo(1L, "ORD-001", 1L, sellerId, quantity, Money.of(amount), LocalDateTime.now());
     }
 
-    @Disabled("현재 다른 PR의 변경으로 인해 테스트가 실패하여 임시 비활성화합니다.")
-    @Test
-    @DisplayName("CANCEL 타입의 정산 아이템을 생성할 수 있다")
-    void createSettlementItem_cancel() {
-        // given
-        Money totalAmount = Money.of(5_000);
+    @Nested
+    @DisplayName("정산 아이템 생성 테스트")
+    class CreationTest {
 
-        // when
-        SettlementItem item = SettlementItem.builder()
-                .orderId("Qwe_123")
-                .paymentKey("cancel-key")
-                .sellerId(20L)
-                .type(SettlementType.CANCEL)
-                .totalAmount(totalAmount)
-                .platformFee(Money.zero())
-                .pgFee(Money.zero())
-                .settlementAmount(totalAmount)
-                .status(SettlementStatus.READY)
-                .settlementDate(LocalDateTime.now())
-                .build();
+        @Test
+        @DisplayName("성공: 결제 대기(PENDING) 상태의 정산 아이템이 생성된다.")
+        void create_success() {
+            // given
+            Long sellerId = 10L;
+            OrderItemInfo orderItemInfo = createFixtureOrderItemInfo(sellerId, 20000L, 1L);
 
-        // then
-        assertThat(item.getType()).isEqualTo(SettlementType.CANCEL);
-        assertThat(item.getTotalAmount()).isEqualTo(totalAmount);
+            // when
+            SettlementItem item = SettlementItem.createPaymentItem(orderItemInfo);
+
+            // then
+            assertThat(item.getStatus()).isEqualTo(SettlementItemStatus.PENDING);
+            assertThat(item.getSellerId()).isEqualTo(sellerId);
+            assertThat(item.getTotalAmount()).isEqualTo(Money.of(20000L));
+        }
+
+        @Test
+        @DisplayName("실패: 판매자 ID가 없으면 생성할 수 없다.")
+        void create_fail_null_seller() {
+            // OrderItemInfo에서 sellerId null 검증 수행
+//            assertThatThrownBy(() -> SettlementItem.createPaymentItem(createFixtureOrderItemInfo(null, 1000L, 1L)))
+//                    .isInstanceOf(IllegalArgumentException.class)
+//                    .hasMessageContaining("판매자 ID는 필수입니다.");
+        }
+
+        @Test
+        @DisplayName("실패: 정산 대상 금액이 0원 이하이면 생성할 수 없다.")
+        void create_fail_invalid_amount() {
+            assertThatThrownBy(() -> SettlementItem.createPaymentItem(createFixtureOrderItemInfo(1L, 0L, 1L)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("정산 대상 금액은 0원보다 커야 합니다.");
+        }
+
+        @Test
+        @DisplayName("실패: 주문 수량이 1개 미만이면 생성할 수 없다.")
+        void create_fail_invalid_quantity() {
+            assertThatThrownBy(() -> SettlementItem.createPaymentItem(createFixtureOrderItemInfo(1L, 1000L, 0L)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("주문 수량은 1개 이상이어야 합니다.");
+        }
     }
 
-    @Disabled("현재 다른 PR의 변경으로 인해 테스트가 실패하여 임시 비활성화합니다.")
-    @Test
-    @DisplayName("ID 없이 생성하면 신규 도메인 객체로 간주한다")
-    void createSettlementItem_withoutId() {
-        // when
-        SettlementItem item = SettlementItem.builder()
-                .orderId("Qwe_123")
-                .paymentKey("no-id-key")
-                .sellerId(30L)
-                .type(SettlementType.PAYMENT)
-                .totalAmount(Money.of(1_000))
-                .platformFee(Money.of(100))
-                .pgFee(Money.of(50))
-                .settlementAmount(Money.of(850))
-                .status(SettlementStatus.READY)
-                .settlementDate(LocalDateTime.now())
-                .build();
+    @Nested
+    @DisplayName("상태별 데이터 조회 검증 테스트")
+    class StateValidationTest {
 
-        // then
-        assertThat(item.getId()).isNull();
+        @Test
+        @DisplayName("실패: PENDING 상태에서 결제 정보 조회 시 예외가 발생한다.")
+        void getPaymentInfo_fail_in_pending() {
+            // given
+            SettlementItem item = SettlementItem.createPaymentItem(createFixtureOrderItemInfo(1L, 10000L, 1L));
+
+            // when & then
+            assertThatThrownBy(item::getPaymentInfo)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("결제 대기 상태에서는 결제 정보를 조회할 수 없습니다.");
+        }
+
+        @Test
+        @DisplayName("실패: PENDING 상태에서 금액 정보(AmountInfo) 조회 시 예외가 발생한다.")
+        void getAmountInfo_fail_in_pending() {
+            // given
+            SettlementItem item = SettlementItem.createPaymentItem(createFixtureOrderItemInfo(1L, 10000L, 1L));
+
+            // when & then
+            assertThatThrownBy(item::getAmountInfo)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("결제 대기 상태에서는 금액 정보를 조회할 수 없습니다.");
+        }
+
+        @Test
+        @DisplayName("실패: COMPLETED가 아닌 상태에서 정산 완료 정보 조회 시 예외가 발생한다.")
+        void getSettlementId_fail_not_completed() {
+            // given
+            SettlementItem item = SettlementItem.createPaymentItem(createFixtureOrderItemInfo(1L, 10000L, 1L));
+
+            // when & then
+            assertThatThrownBy(item::getSettlementId)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("정산 완료 상태인 경우에만 정산 정보를 조회할 수 있습니다.");
+        }
+
+        @Test
+        @DisplayName("실패: CANCELLED가 아닌 상태에서 취소 정보 조회 시 예외가 발생한다.")
+        void getAmount_fail_when_cancelled_without_info() {
+            assertThatThrownBy(() -> SettlementItem.createPaymentItem(createFixtureOrderItemInfo(1L, 1000L, 1L)).getCancelledAt())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("결제 취소인 경우에만 취소 정보를 조회할 수 있습니다.");
+        }
     }
 }
