@@ -19,6 +19,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import app.giftify.payment.application.inbound.PaymentEventHandler;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;

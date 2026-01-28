@@ -13,6 +13,8 @@ repositories {
 dependencies {
     implementation(project(":bc:shared"))
     implementation(project(":support:security"))
+    implementation(project(":support:jpa"))
+    implementation(libs.spring.boot.starter.data.jpa)
 
     implementation(libs.spring.boot.starter.web)
     implementation("org.springframework.boot:spring-boot-starter-validation")
