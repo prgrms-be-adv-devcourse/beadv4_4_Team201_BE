@@ -25,7 +25,10 @@ dependencies {
     annotationProcessor(libs.lombok)
 
     // Test
+    testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.modulith.test)
     testImplementation(libs.spring.security.test)
     testImplementation(libs.archunit)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
 }

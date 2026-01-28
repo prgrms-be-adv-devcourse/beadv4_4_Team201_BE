@@ -8,28 +8,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.member.domain.member.Member;
-
 class WishlistItemTest {
 
-	private Member member;
+	private Long memberId;
 	private Wishlist wishlist;
 
 	@BeforeEach
 	void setUp() {
-		// Member 생성
-		member = Member.builder()
-			.id(1L)
-			.email("test@example.com")
-			.nickname("tester")
-			.birthday(LocalDate.of(1990, 1, 1))
-			.authSub("auth0|123")
-			.build();
+		// Member ID만 사용 (BC 간 직접 의존 제거)
+		memberId = 1L;
 
 		// Wishlist 생성
 		wishlist = Wishlist.builder()
 			.id(100L)
-			.memberId(member.getId())
+			.memberId(memberId)
 			.visibility(Visibility.PUBLIC)
 			.build();
 	}
