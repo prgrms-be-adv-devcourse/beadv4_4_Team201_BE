@@ -1,8 +1,0 @@
-# Money module local configuration
-tosspayments:
-  api:
-    base-url: ${TOSSPAYMENTS_API_BASE_URL:https://api.tosspayments.com}
-  secret-key: ${TOSSPAYMENTS_SECRET_KEY}
-  client-key: ${TOSSPAYMENTS_CLIENT_KEY}
-  webhook:
-    secret-key: ${TOSSPAYMENTS_WEBHOOK_SECRET_KEY:dummy-key}
