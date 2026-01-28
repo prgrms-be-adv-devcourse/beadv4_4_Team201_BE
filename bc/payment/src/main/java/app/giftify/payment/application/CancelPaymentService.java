@@ -1,6 +1,9 @@
 package app.giftify.payment.application;
 
+import static app.giftify.payment.domain.SystemConstants.SYSTEM_REQUESTER_ID;
+
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -43,8 +46,9 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 				"[CancelPaymentService] 결제를 찾을 수 없습니다. paymentId=" + command.paymentId()
 			));
 
-		// 2. 권한 검증
-		if (!payment.isOwnedBy(command.requesterId())) {
+		// 2. 권한 검증 (시스템 호출자는 스킵)
+		if (!Objects.equals(command.requesterId(), SYSTEM_REQUESTER_ID)
+			&& !payment.isOwnedBy(command.requesterId())) {
 			throw new PaymentException(
 				PaymentErrorCode.UNAUTHORIZED_ACCESS,
 				"[CancelPaymentService] 결제 취소 권한이 없습니다. requesterId=" + command.requesterId()

@@ -8,15 +8,9 @@ public class TossPaymentsProperties {
 	private Api api = new Api();
 	private String secretKey;
 	private String clientKey;
-	private Webhook webhook = new Webhook();
 
 	@Data
 	public static class Api {
 		private String baseUrl = "https://api.tosspayments.com";
-	}
-
-	@Data
-	public static class Webhook {
-		private String secretKey;
 	}
 }
