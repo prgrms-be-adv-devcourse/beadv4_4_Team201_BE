@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/wallet")
+@RequestMapping("/api/v2/wallet")
 @RequiredArgsConstructor
 @Validated
 public class WalletController {
