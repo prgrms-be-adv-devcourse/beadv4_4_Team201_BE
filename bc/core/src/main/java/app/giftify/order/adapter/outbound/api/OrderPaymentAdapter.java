@@ -17,7 +17,7 @@ public class OrderPaymentAdapter implements OrderPaymentPort {
     private final RestClient restClient;
 
     public OrderPaymentAdapter(
-            @Value("${custom.global.internalBackUrl}") String internalBackUrl) {
+            @Value("${custom.global.internalBackUrl:http://localhost:8080}") String internalBackUrl) {
         this.restClient = RestClient.builder()
                 .baseUrl(internalBackUrl + "/api")
                 .build();

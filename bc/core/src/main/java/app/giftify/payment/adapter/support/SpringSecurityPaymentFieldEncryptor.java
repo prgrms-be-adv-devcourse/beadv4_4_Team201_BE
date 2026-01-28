@@ -18,8 +18,8 @@ public class SpringSecurityPaymentFieldEncryptor implements PaymentFieldEncrypto
 	private final TextEncryptor encryptor;
 
 	public SpringSecurityPaymentFieldEncryptor(
-		@Value("${payment.encryption.password}") String password,
-		@Value("${payment.encryption.salt}") String salt
+		@Value("${payment.encryption.password:dev-encryption-password}") String password,
+		@Value("${payment.encryption.salt:deadbeefcafebabe}") String salt
 	) {
 		this.encryptor = Encryptors.delux(password, salt); //  Default + Lux(ury) 또는 Deluxe의 약자로, "고급 기본 암호화"를 의미
 	}
