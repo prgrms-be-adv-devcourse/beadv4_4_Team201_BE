@@ -10,6 +10,10 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentCreateContext;
 import app.giftify.payment.domain.PaymentMethod;
+import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.wallet.application.inbound.DeductWalletCommand;
+import app.giftify.wallet.application.inbound.DeductWalletResult;
+import app.giftify.wallet.application.inbound.DeductWalletUseCase;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,9 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class CreatePaymentService implements CreatePaymentUseCase {
 	private final PaymentRepository paymentRepository;
+	private final DeductWalletUseCase deductWalletUseCase;
 
-	public CreatePaymentService(PaymentRepository paymentRepository) {
+	public CreatePaymentService(PaymentRepository paymentRepository, DeductWalletUseCase deductWalletUseCase) {
 		this.paymentRepository = paymentRepository;
+		this.deductWalletUseCase = deductWalletUseCase;
 	}
 
 	@Override
@@ -56,17 +62,55 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		// 4. 저장
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 결과 반환
+		// 5. WALLET 결제면 즉시 처리
+		if (command.method() == PaymentMethod.WALLET) {
+			return handleWalletPayment(savedPayment, command);
+		}
+
+		// 6. PG 결제는 기존 플로우
 		return new PaymentCreatedResult(
 			savedPayment.getId(),
 			savedPayment.getIdempotencyKey(),
 			savedPayment.getStatus(),
-			requiresPgApproval(savedPayment.getMethod())
+			true
 		);
 	}
 
 	private boolean requiresPgApproval(PaymentMethod method) {
 		// WALLET 결제는 PG 승인 불필요
 		return method != PaymentMethod.WALLET;
+	}
+
+	private PaymentCreatedResult handleWalletPayment(Payment payment, CreatePaymentCommand command) {
+		DeductWalletCommand deductCommand = new DeductWalletCommand(
+			command.memberId(),
+			payment.getId(),
+			command.orderId(),
+			command.expectedAmount()
+		);
+
+		DeductWalletResult result = deductWalletUseCase.deductForPayment(deductCommand);
+
+		if (!result.success()) {
+			log.warn("[Payment] 지갑 잔액 부족. paymentId={}, required={}, current={}",
+				payment.getId(), result.requiredAmount(), result.currentBalance());
+
+			return PaymentCreatedResult.insufficientWalletBalance(
+				payment.getId(),
+				command.idempotencyKey(),
+				result.requiredAmount(),
+				result.currentBalance()
+			);
+		}
+
+		log.info("[Payment] WALLET 결제 요청 완료. paymentId={}, walletId={}",
+			payment.getId(), result.walletId());
+
+		return new PaymentCreatedResult(
+			payment.getId(),
+			payment.getIdempotencyKey(),
+			PaymentStatus.PENDING,
+			false
+		);
 	}
 }

@@ -1,4 +1,4 @@
-package app.giftify.payment.application.listener;
+package app.giftify.payment.application.inbound;
 
 import java.util.List;
 
