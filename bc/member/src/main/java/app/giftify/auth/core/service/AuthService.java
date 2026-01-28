@@ -1,7 +1,7 @@
 package app.giftify.auth.core.service;
 
-import java.util.Map;
-
+import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
@@ -20,8 +20,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
 
 // 핵심 비즈니스 로직 (인증 프로세스 처리, 토큰 유효성 검증, 갱신)
 @Slf4j
@@ -70,10 +69,18 @@ public class AuthService extends OidcUserService {
     }
 
     // [JWT 검증]
-    // 외부에서 받은 토큰의 유효성을 검증하는 로직 (필요 시 추가 구현)
+    // 외부에서 받은 토큰의 유효성을 검증합니다.
     public boolean validateToken(String token) {
-        // JwtDecoder 등을 이용한 검증 로직
-        return true;
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        try {
+            jwtDecoder.decode(token);
+            return true;
+        } catch (JwtException e) {
+            log.debug("Token validation failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     // [토큰 갱신]
@@ -95,7 +102,8 @@ public class AuthService extends OidcUserService {
         try {
             return restTemplate.postForObject(url, request, Map.class); // FIXME :: ParameterizedTypeReference 로 수정 검토
         } catch (Exception e) {
-            throw new OAuth2AuthenticationException("토큰 갱신에 실패했습니다: " + e.getMessage());
+            log.error("Token refresh failed", e);
+            throw new OAuth2AuthenticationException("토큰 갱신에 실패했습니다.");
         }
     }
 
@@ -106,8 +114,8 @@ public class AuthService extends OidcUserService {
             // SecurityConfig에서 정의한 JwtDecoder를 사용하여 검증
             return jwtDecoder.decode(token);
         } catch (JwtException e) {
-            // 로그를 남기고 예외를 던짐 (AuthExceptionHandler에서 처리)
-            throw new OAuth2AuthenticationException("토큰 검증에 실패했습니다: " + e.getMessage());
+            log.error("Token validation failed", e);
+            throw new OAuth2AuthenticationException("토큰 검증에 실패했습니다.");
         }
     }
 }

@@ -1,9 +1,8 @@
 package app.giftify.auth.integration.event;
 
+import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 
 // 멤버 모듈과의 비동기 협업을 위한 이벤트 구조
 @Component

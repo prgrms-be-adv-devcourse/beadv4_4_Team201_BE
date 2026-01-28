@@ -13,7 +13,6 @@ include(
     "bc",
     "bc:shared",
     "bc:member",
-    "bc:auth",
     "bc:catalog",
     "bc:core",
     "bc:settlement",

@@ -1,7 +1,6 @@
 package app.giftify.auth.api;
 
-import java.util.Map;
-
+import app.giftify.auth.core.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import app.giftify.auth.core.service.AuthService;
+import java.util.Map;
 
 // 외부 API 접점(로그인 확인, 내 정보 조회, 토큰 갱신)
 @RestController
