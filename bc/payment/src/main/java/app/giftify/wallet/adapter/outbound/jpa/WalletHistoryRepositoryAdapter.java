@@ -1,14 +1,11 @@
 package app.giftify.wallet.adapter.outbound.jpa;
 
-import org.springframework.stereotype.Repository;
-
 import app.giftify.wallet.adapter.outbound.jpa.entity.JpaWalletHistory;
 import app.giftify.wallet.application.outbound.WalletHistoryRepository;
 import app.giftify.wallet.domain.ReferenceType;
 import app.giftify.wallet.domain.WalletHistory;
 import lombok.RequiredArgsConstructor;
 
-@Repository
 @RequiredArgsConstructor
 public class WalletHistoryRepositoryAdapter implements WalletHistoryRepository {
 

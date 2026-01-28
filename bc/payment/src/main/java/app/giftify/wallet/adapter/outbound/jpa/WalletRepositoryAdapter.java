@@ -2,8 +2,6 @@ package app.giftify.wallet.adapter.outbound.jpa;
 
 import java.util.Optional;
 
-import org.springframework.stereotype.Repository;
-
 import app.giftify.wallet.adapter.outbound.jpa.entity.JpaWallet;
 import app.giftify.wallet.application.outbound.WalletRepository;
 import app.giftify.wallet.domain.Wallet;
@@ -11,7 +9,6 @@ import app.giftify.wallet.domain.WalletErrorCode;
 import app.giftify.wallet.domain.WalletException;
 import lombok.RequiredArgsConstructor;
 
-@Repository
 @RequiredArgsConstructor
 public class WalletRepositoryAdapter implements WalletRepository {
 

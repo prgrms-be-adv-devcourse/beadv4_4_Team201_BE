@@ -115,3 +115,4 @@ docker-compose.override.yml
 # Ignore Gradle build output directory
 build
 /test-payment.html
+/docs/adr/0001-modular-monolith-architecture.md
