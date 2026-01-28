@@ -16,7 +16,6 @@ include(
     "bc:auth",
     "bc:catalog",
     "bc:core",
-    "bc:payment",
     "bc:settlement",
     "bc:notification",
 )

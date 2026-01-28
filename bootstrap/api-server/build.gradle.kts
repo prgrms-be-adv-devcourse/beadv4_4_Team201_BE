@@ -9,7 +9,9 @@ dependencies {
     // BC 모듈들
     implementation(project(":bc:shared"))
     implementation(project(":bc:member"))
-    implementation(project(":bc:payment"))
+    implementation(project(":bc:auth"))
+    implementation(project(":bc:catalog"))
+    implementation(project(":bc:core"))
 
     // Support 모듈들
     implementation(project(":support:common"))
