@@ -1,24 +1,31 @@
-  // Member 모듈 - Pragmatic Layered Architecture
+// Member 모듈
 
-  dependencies {
-      // bc:shared는 부모(bc)에서 자동 추가됨
-      implementation(project(":support:security"))
-      implementation(project(":support:common"))
-      implementation(project(":support:jpa"))
-      implementation(project(":bc:shared"))
+dependencies {
+    // BC 모듈
+    implementation(project(":bc:shared"))
 
-      implementation("org.springframework.boot:spring-boot-starter-web")
-      implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-      implementation("org.springframework.boot:spring-boot-starter-validation")
+    // Support 모듈
+    implementation(project(":support:common"))
+    implementation(project(":support:security"))
+    implementation(project(":support:jpa"))
 
-      implementation("org.springframework.boot:spring-boot-starter-security")
-      implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    // Spring Boot Starters
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.oauth2.resource.server)
+    implementation(libs.spring.boot.starter.oauth2.client)
 
-      compileOnly("org.projectlombok:lombok")
-      annotationProcessor("org.projectlombok:lombok")
-      testCompileOnly("org.projectlombok:lombok")
-      testAnnotationProcessor("org.projectlombok:lombok")
+    // Spring Modulith
+    implementation(libs.spring.modulith.core)
+    implementation(libs.spring.modulith.jdbc)
 
-      testImplementation("org.springframework.boot:spring-boot-starter-test")
-      testImplementation("org.springframework.security:spring-security-test")
-  }
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    // Test
+    testImplementation(libs.spring.modulith.test)
+    testImplementation(libs.spring.security.test)
+    testImplementation(libs.archunit)
+}

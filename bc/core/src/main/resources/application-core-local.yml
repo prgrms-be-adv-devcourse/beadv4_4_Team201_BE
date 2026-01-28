@@ -1,0 +1,4 @@
+payment:
+  encryption:
+    password: ${PAYMENT_ENCRYPTION_PASSWORD:local-dev-password-12345}
+    salt: ${PAYMENT_ENCRYPTION_SALT:deadbeef12345678deadbeef12345678}

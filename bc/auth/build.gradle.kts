@@ -2,7 +2,7 @@
 
   dependencies {
       // 1. Internal Project Dependencies
-      // (bc:shared는 부모(bc)에서 자동 추가됨)
+      implementation(project(":bc:shared"))
       implementation(project(":support:common"))
       implementation(project(":support:security"))
 
@@ -17,7 +17,7 @@
       implementation(libs.spring.boot.starter.oauth2.resource.server)
 
       // 4. Utils (JWT, Dotenv)
-      implementation(libs.dotenv.java)
+      implementation(libs.dotenv)
       implementation(libs.java.jwt)
 
       // 5. Annotation Processors & CompileOnly

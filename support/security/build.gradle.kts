@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.oauth2.resource.server)
 
-    // Test Dependencies
-    testImplementation("org.springframework.security:spring-security-test")
+    // Test
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.security.test)
 }

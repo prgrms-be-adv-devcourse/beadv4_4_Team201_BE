@@ -1,0 +1,4 @@
+payment:
+  encryption:
+    password: ${PAYMENT_ENCRYPTION_PASSWORD}  # 비밀번호
+    salt: ${PAYMENT_ENCRYPTION_SALT}          # Hex 인코딩된 솔트 (16바이트 이상)

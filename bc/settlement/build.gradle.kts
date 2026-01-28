@@ -1,39 +1,43 @@
 plugins {
-    java
-    id("org.springframework.boot") version "4.0.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    id("java")
 }
 
 group = "app.giftify"
-version = "0.0.1-SNAPSHOT"
-description = "settlement"
+version = "1.0.0-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
-    }
-}
+val springModulithVersion = "1.3.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation(project(":support:security"))
+    implementation(project(":support:jpa"))
+    // Spring Boot Starters
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+
+    // Spring Modulith (버전 명시)
+    implementation("org.springframework.modulith:spring-modulith-starter-core:$springModulithVersion")
+    implementation("org.springframework.modulith:spring-modulith-starter-jdbc:$springModulithVersion")
+
+    // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+
+    // Test
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test:$springModulithVersion")
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-tasks.withType<Test> {
+tasks.test {
     useJUnitPlatform()
 }

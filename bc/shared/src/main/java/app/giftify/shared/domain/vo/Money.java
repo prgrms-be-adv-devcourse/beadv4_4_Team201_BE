@@ -56,6 +56,10 @@ public record Money(BigDecimal amount) {
 		return new Money(this.amount.subtract(other.amount));
 	}
 
+	public Money times(int multiplier) {
+		return new Money(this.amount.multiply(BigDecimal.valueOf(multiplier)));
+	}
+
 	public Money negate() {
 		return new Money(amount.negate());
 	}
