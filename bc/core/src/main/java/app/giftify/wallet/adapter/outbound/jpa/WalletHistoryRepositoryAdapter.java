@@ -5,7 +5,9 @@ import app.giftify.wallet.application.outbound.WalletHistoryRepository;
 import app.giftify.wallet.domain.ReferenceType;
 import app.giftify.wallet.domain.WalletHistory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class WalletHistoryRepositoryAdapter implements WalletHistoryRepository {
 

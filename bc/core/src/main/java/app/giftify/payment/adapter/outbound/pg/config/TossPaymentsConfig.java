@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,7 +53,7 @@ public class TossPaymentsConfig {
 	}
 
 	@Bean
-	public TossPaymentsApi tossPaymentsApi(RestClient tossPaymentsRestClient) {
+	public TossPaymentsApi tossPaymentsApi(@Qualifier("tossPaymentsRestClient") RestClient tossPaymentsRestClient) {
 		RestClientAdapter adapter = RestClientAdapter.create(tossPaymentsRestClient);
 		HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
 

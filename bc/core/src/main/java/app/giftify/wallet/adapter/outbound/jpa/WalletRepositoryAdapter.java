@@ -8,7 +8,9 @@ import app.giftify.wallet.domain.Wallet;
 import app.giftify.wallet.domain.WalletErrorCode;
 import app.giftify.wallet.domain.WalletException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class WalletRepositoryAdapter implements WalletRepository {
 
