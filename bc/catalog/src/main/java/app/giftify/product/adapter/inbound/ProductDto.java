@@ -1,28 +1,29 @@
 package app.giftify.product.adapter.inbound;
 
-import java.time.LocalDateTime;
-
+import app.giftify.catalogmember.core.domain.CatalogMember;
 import app.giftify.product.domain.Product;
 
-public record ProductDto(
-	Long id,
-	String sellerNickName,
-	String name,
-	String description,
-	int price,
-	LocalDateTime createdAt
-) {
-	public static ProductDto from(Product product) {
-		if (product == null)
-			return null;
+import java.time.LocalDateTime;
 
-		return new ProductDto(
-			product.getId(),
-			product.getSellerNickname(),
-			product.getName(),
-			product.getDescription(),
-			product.getPrice(),
-			product.getCreatedAt()
-		);
-	}
+public record ProductDto(
+        Long id,
+        String sellerNickName,
+        String name,
+        String description,
+        int price,
+        LocalDateTime createdAt
+) {
+    public static ProductDto from(Product product, CatalogMember seller) {
+        if (product == null)
+            return null;
+
+        return new ProductDto(
+                product.getId(),
+                seller.getNickname(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getCreatedAt()
+        );
+    }
 }

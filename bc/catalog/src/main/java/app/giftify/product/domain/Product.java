@@ -23,18 +23,16 @@ import static app.giftify.product.domain.exception.ProductErrorCode.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseJpaEntity {
     private Long sellerId;
-    private String sellerNickname;
     private String name;
     private String description;
     private int price;
     private int stock;
     private ProductStatus status;
 
-    public Product(Long sellerId, String sellerNickname, String name, String description, int price, int stock) {
-        validateCreation(sellerId, sellerNickname, name, description, price, stock);
+    public Product(Long sellerId, String name, String description, int price, int stock) {
+        validateCreation(sellerId, name, description, price, stock);
 
         this.sellerId = sellerId;
-        this.sellerNickname = sellerNickname;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -44,11 +42,9 @@ public class Product extends BaseJpaEntity {
 
     // 상품 생성 검증 (Fail-Fast)
     private void validateCreation(
-            Long sellerId, String sellerNickname, String name, String description, int price, int stock
+            Long sellerId, String name, String description, int price, int stock
     ) {
         if (sellerId == null)
-            throw new ProductException(PRODUCT_SELLER_REQUIRED);
-        if (!StringUtils.hasText(sellerNickname))
             throw new ProductException(PRODUCT_SELLER_REQUIRED);
         if (!StringUtils.hasText(name))
             throw new ProductException(INVALID_PRODUCT_NAME);
@@ -71,8 +67,7 @@ public class Product extends BaseJpaEntity {
                 LocalDateTime.now(),
                 this.getId(),
                 this.getName(),
-                this.getPrice(),
-                this.getSellerNickname()
+                this.getPrice()
         ));
     }
 
