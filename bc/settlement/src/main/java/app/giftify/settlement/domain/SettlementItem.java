@@ -1,240 +1,59 @@
 package app.giftify.settlement.domain;
 
-import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.type.PaymentMethodType;
-import app.giftify.shared.domain.vo.AmountInfo;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.OrderItemInfo;
-import app.giftify.shared.domain.vo.PaymentInfo;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class SettlementItem extends BaseDomainModel {
-    private OrderItemInfo orderItemInfo;
-    private PaymentInfo paymentInfo;
-    private AmountInfo amountInfo;
+@Entity
+@Table(name = "settlement_item")
+@NoArgsConstructor
+@AllArgsConstructor
+public class SettlementItem {
+    // 식별
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private Long originId;
+    @Column(nullable = false)
+    private Long sellerId;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private SettlementItemType type;
-    private SettlementItemStatus status;
-    private LocalDateTime occurredAt;
-    private LocalDate expectedDate;
 
-    private Long settlementId;
-    private LocalDateTime settledAt;
-    private LocalDateTime cancelledAt;
+    @Column(nullable = false)
+    private Long originId;
 
-    private SettlementItem(
-            Long id, OrderItemInfo orderItemInfo,
-            PaymentInfo paymentInfo, AmountInfo amountInfo, Long originId,
-            SettlementItemType type, SettlementItemStatus status, LocalDateTime occurredAt,
-            LocalDate expectedDate, Long settlementId, LocalDateTime settledAt, LocalDateTime cancelledAt
-    ) {
-        super(id);
-        validateState(status, paymentInfo, amountInfo, expectedDate, settlementId, settledAt, cancelledAt);
+    // 스냅샷에서 복사된 근거 값
+    @Column(nullable = false)
+    private Long orderId;
 
-        this.orderItemInfo = orderItemInfo;
-        this.paymentInfo = paymentInfo;
-        this.amountInfo = amountInfo;
-        this.originId = originId;
-        this.type = type;
-        this.status = status;
-        this.occurredAt = occurredAt != null ? occurredAt : LocalDateTime.now();
-        this.expectedDate = expectedDate;
-        this.settlementId = settlementId;
-        this.settledAt = settledAt;
-        this.cancelledAt = cancelledAt;
-    }
+    @Column(nullable = false)
+    private Long orderItemId;
 
-    public Long getSellerId() {
-        return orderItemInfo.sellerId();
-    }
+    @Column(nullable = false)
+    private String paymentKey;
 
-    public Long getOrderId() {
-        return orderItemInfo.orderId();
-    }
+    @Column(nullable = false)
+    private Long fundingId;
 
-    public String getOrderNumber() {
-        return orderItemInfo.orderNumber();
-    }
+    // 회계적 증빙 / 정산 근거 관점에서 필요한 값
+    @Column(nullable = false)
+    private String orderNumber;
 
-    public Long getOrderItemId() {
-        return orderItemInfo.orderItemId();
-    }
+    @Column(nullable = false)
+    private LocalDateTime orderedAt;
 
-    public Long getQuantity() {
-        return orderItemInfo.quantity();
-    }
+    @Column(nullable = false)
+    private LocalDateTime paidAt;
 
-    public Money getTotalAmount() {
-        return orderItemInfo.totalAmount();
-    }
+    @Column(nullable = false)
+    private LocalDateTime confirmedAt;
 
-    public LocalDateTime getOrderedAt() {
-        return orderItemInfo.orderedAt();
-    }
+    @Embedded
+    private SettlementCore core;
 
-    public PaymentInfo getPaymentInfo() {
-        validatePaymentInfoAvailability();
-
-        return paymentInfo;
-    }
-
-    public String getPaymentKey() {
-        validatePaymentInfoAvailability();
-
-        return paymentInfo.paymentKey();
-    }
-
-    public String getTransactionKey() {
-        validatePaymentInfoAvailability();
-
-        return paymentInfo.transactionKey();
-    }
-
-    public PaymentMethodType getPaymentMethodType() {
-        validatePaymentInfoAvailability();
-
-        return paymentInfo.paymentMethodType();
-    }
-
-    public LocalDateTime getPaidAt() {
-        validatePaymentInfoAvailability();
-
-        return paymentInfo.paidAt();
-    }
-
-    public Money getPlatformFee() {
-        validateAmountInfoAvailability();
-
-        return amountInfo.platformFee();
-    }
-
-    public Money getPgFee() {
-        validateAmountInfoAvailability();
-
-        return amountInfo.pgFee();
-    }
-
-    public Money getSettlementAmount() {
-        validateAmountInfoAvailability();
-
-        return amountInfo.settlementAmount();
-    }
-
-    public SettlementItemType getType() {
-        return type;
-    }
-
-    public Long getOriginId() {
-        return originId;
-    }
-
-    public SettlementItemStatus getStatus() {
-        return status;
-    }
-
-    public LocalDate getExpectedDate() {
-        return expectedDate;
-    }
-
-    public Long getSettlementId() {
-        validateSettlementAvailability();
-
-        return settlementId;
-    }
-
-    public OrderItemInfo getOrderItemInfo() {
-        return orderItemInfo;
-    }
-
-    public AmountInfo getAmountInfo() {
-        validateAmountInfoAvailability();
-
-        return amountInfo;
-    }
-
-    public LocalDateTime getOccurredAt() {
-        return occurredAt;
-    }
-
-    public LocalDateTime getSettledAt() {
-        validateSettlementAvailability();
-
-        return settledAt;
-    }
-
-    public LocalDateTime getCancelledAt() {
-        if (this.status != SettlementItemStatus.CANCELLED) {
-            throw new IllegalArgumentException("결제 취소인 경우에만 취소 정보를 조회할 수 있습니다.");
-        }
-        return cancelledAt;
-    }
-
-    public static SettlementItem createPaymentItem(OrderItemInfo orderItemInfo) {
-        validateNewOrder(orderItemInfo);
-
-        return new SettlementItem(
-                null,
-                orderItemInfo,
-                null,
-                null,
-                null,
-                SettlementItemType.ITEM_PAYMENT,
-                SettlementItemStatus.PENDING,
-                LocalDateTime.now(),
-                null,
-                null,
-                null,
-                null
-        );
-    }
-
-    private static void validateNewOrder(OrderItemInfo orderItemInfo) {
-        if (orderItemInfo == null) {
-            throw new IllegalArgumentException("주문 정보는 필수입니다.");
-        }
-
-        if (orderItemInfo.sellerId() == null) {
-            throw new IllegalArgumentException("판매자 ID는 필수입니다.");
-        }
-
-        if (orderItemInfo.totalAmount().isLessThanOrEqual(Money.zero())) {
-            throw new IllegalArgumentException("정산 대상 금액은 0원보다 커야 합니다.");
-        }
-        if (orderItemInfo.quantity() < 1) {
-            throw new IllegalArgumentException("주문 수량은 1개 이상이어야 합니다.");
-        }
-    }
-
-    private void validateState(SettlementItemStatus status, PaymentInfo paymentInfo, AmountInfo amountInfo, LocalDate expectedDate, Long settlementId, LocalDateTime settledAt, LocalDateTime cancelledAt) {
-        if (status == SettlementItemStatus.PENDING) {
-            if (paymentInfo != null || amountInfo != null || expectedDate != null || settlementId != null || settledAt != null || cancelledAt != null) {
-                throw new IllegalStateException("결제 대기 상태에서는 결제/금액/정산/취소 정보가 존재할 수 없습니다.");
-            }
-        }
-    }
-
-    private void validatePaymentInfoAvailability() {
-        if (this.status == SettlementItemStatus.PENDING) {
-            throw new IllegalStateException("결제 대기 상태에서는 결제 정보를 조회할 수 없습니다.");
-        }
-    }
-
-    private void validateAmountInfoAvailability() {
-        if (this.status == SettlementItemStatus.PENDING) {
-            throw new IllegalStateException("결제 대기 상태에서는 금액 정보를 조회할 수 없습니다.");
-        }
-
-        if (this.status == SettlementItemStatus.CANCELLED && this.amountInfo == null) {
-            throw new IllegalStateException("결제 전 취소된 항목은 금액 정보가 존재하지 않습니다.");
-        }
-    }
-
-    private void validateSettlementAvailability() {
-        if (this.status != SettlementItemStatus.COMPLETED) {
-            throw new IllegalStateException("정산 완료 상태인 경우에만 정산 정보를 조회할 수 있습니다.");
-        }
-    }
+    @Embedded
+    private LifeCycleMeta lifeCycleMeta;
 }

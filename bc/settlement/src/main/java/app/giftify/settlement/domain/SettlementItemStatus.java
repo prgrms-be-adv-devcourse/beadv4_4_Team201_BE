@@ -1,10 +1,8 @@
 package app.giftify.settlement.domain;
 
 public enum SettlementItemStatus {
-    PENDING,     // 주문 생성
-    ACCUMULATED, // 결제 완료
-    READY,       // 정산 대기
-    IN_PROGRESS, // 정산 중
+    READY,
+    IN_PROGRESS,
     COMPLETED,
     CANCELLED
 }

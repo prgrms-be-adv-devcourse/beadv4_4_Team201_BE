@@ -1,6 +1,16 @@
 package app.giftify.settlement.domain;
 
 public enum SettlementItemType {
-    ITEM_PAYMENT,         // 일반 상품 판매에 대한 정산금 지급
-    DEDUCTION_REFUND      // 고객 환불로 인해 판매자로부터 회수해야 할 금액 차감
+    ITEM_PAYMENT("일반 상품 판매 정산"),
+    DEDUCTION_REFUND("환불 차감 금액");
+
+    private final String description;
+
+    SettlementItemType(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
