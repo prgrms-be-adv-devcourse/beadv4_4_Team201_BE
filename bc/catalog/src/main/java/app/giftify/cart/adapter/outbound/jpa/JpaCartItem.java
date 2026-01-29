@@ -3,10 +3,12 @@ package app.giftify.cart.adapter.outbound.jpa;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 
 @Entity
+@Getter
 @Table(name = "cart_item")
 public class JpaCartItem {
     @Id
@@ -32,7 +34,6 @@ public class JpaCartItem {
 
     public static JpaCartItem from(
             Long id,
-            Long cartId,
             TargetType targetType,
             Long targetId,
             BigDecimal amount,
@@ -40,7 +41,6 @@ public class JpaCartItem {
     ) {
         JpaCartItem item = new JpaCartItem();
         item.id = id;
-        item.cartId = cartId;
         item.targetType = targetType;
         item.targetId = targetId;
         item.amount = amount;

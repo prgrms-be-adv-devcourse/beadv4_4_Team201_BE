@@ -3,6 +3,7 @@ package app.giftify.cart.adapter.outbound.jpa;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,20 +18,27 @@ public class JpaCart extends BaseJpaEntity {
     @Column(unique = true)
     private Long memberId;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id")
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JpaCartItem> items = new ArrayList<>();
 
-    public JpaCart(Long memberId, List<JpaCartItem> items) {
-        super();
+    private JpaCart(Long memberId) {
         this.memberId = memberId;
-        this.items = items != null ? items : new ArrayList<>();
+    }
+
+    private JpaCart(Long id, Long memberId) {
+        super(id);  // BaseJpaEntity(Long id) 호출 ← 여기서 ID 설정!
+        this.memberId = memberId;
+        // items는 비어있음 (나중에 addItem()으로 추가)
+    }
+
+    public static JpaCart from(Long id, Long memberId) {
+        return new JpaCart(id, memberId);
     }
 
     // ==== 연관관계 편의 메서드 ====
     public void addItem(JpaCartItem item) {
-        items.add(item);
-        item.setCart(this);  // 양방향 연관관계 설정
+        this.items.add(item);
+        item.setCart(this);
     }
 
     public void removeItem(JpaCartItem item) {
@@ -38,11 +46,8 @@ public class JpaCart extends BaseJpaEntity {
         item.setCart(null);
     }
 
-    public static JpaCart from(Long memberId, List<JpaCartItem> items) {
-        return new JpaCart(memberId, items);
-    }
-
     // 방어적 복사
-    public List<JpaCartItem> getItems() { return new ArrayList<>(items); }
-
+    public List<JpaCartItem> getItems() {
+        return new ArrayList<>(items);
+    }
 }
