@@ -33,9 +33,6 @@ public class SettlementItem {
     private Long orderItemId;
 
     @Column(nullable = false)
-    private String paymentKey;
-
-    @Column(nullable = false)
     private Long fundingId;
 
     // 회계적 증빙 / 정산 근거 관점에서 필요한 값
