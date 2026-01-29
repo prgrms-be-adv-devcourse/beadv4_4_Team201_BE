@@ -48,7 +48,7 @@ public class Product extends BaseJpaEntity {
     ) {
         if (sellerId == null)
             throw new ProductException(PRODUCT_SELLER_REQUIRED);
-        if (sellerNickname == null || sellerNickname.isBlank())
+        if (!StringUtils.hasText(sellerNickname))
             throw new ProductException(PRODUCT_SELLER_REQUIRED);
         if (!StringUtils.hasText(name))
             throw new ProductException(INVALID_PRODUCT_NAME);
