@@ -33,6 +33,9 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
+    // Apache Commons
+    implementation("org.apache.commons:commons-lang3:3.14.0")
+
     // Test
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.security.test)
