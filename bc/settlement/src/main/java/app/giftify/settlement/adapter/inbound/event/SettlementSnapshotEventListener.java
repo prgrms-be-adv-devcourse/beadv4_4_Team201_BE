@@ -1,10 +1,8 @@
 package app.giftify.settlement.adapter.inbound.event;
 
-import app.giftify.settlement.application.FundingSnapshotService;
 import app.giftify.settlement.application.OrderItemSnapshotService;
 import app.giftify.settlement.application.OrderSnapshotService;
 import app.giftify.settlement.application.PaymentSnapshotService;
-import app.giftify.settlement.domain.FundingSnapshot;
 import app.giftify.settlement.domain.OrderItemSnapshot;
 import app.giftify.settlement.domain.OrderSnapshot;
 import app.giftify.settlement.domain.PaymentSnapshot;
@@ -21,18 +19,13 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class SettlementSnapshotEventListener {
-    private final FundingSnapshotService fundingSnapshotService;
     private final OrderSnapshotService orderSnapshotService;
     private final OrderItemSnapshotService orderItemSnapshotService;
     private final PaymentSnapshotService paymentSnapshotService;
 
     @EventListener
     public void handleFundingReceivedConfirmedEvent(FundingReceivedConfirmedEvent event) {
-        fundingSnapshotService.save(new FundingSnapshot(
-            event.fundingId(),
-            event.orderItemId(),
-            event.confirmedAt()
-        ));
+
     }
 
     @EventListener
