@@ -39,6 +39,7 @@ out/
 .LSOverride
 Icon
 ._*
+.omc/
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
@@ -103,6 +104,7 @@ docs/workthroughs/
 .cursorignore
 bc/funding/src/main/generated/
 support/jpa/src/main/generated/
+.claude
 
 ### Docker Compose override - 로컬 개인 개발 환경용
 docker-compose.override.yml
@@ -113,3 +115,4 @@ docker-compose.override.yml
 # Ignore Gradle build output directory
 build
 /test-payment.html
+/docs/adr/0001-modular-monolith-architecture.md
