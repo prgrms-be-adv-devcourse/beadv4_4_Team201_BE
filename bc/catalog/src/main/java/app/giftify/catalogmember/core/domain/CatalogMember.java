@@ -1,4 +1,4 @@
-package app.giftify;
+package app.giftify.catalogmember.core.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

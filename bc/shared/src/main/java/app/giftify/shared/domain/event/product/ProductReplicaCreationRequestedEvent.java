@@ -1,42 +1,36 @@
 package app.giftify.shared.domain.event.product;
 
-import java.time.LocalDateTime;
-
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
+import java.time.LocalDateTime;
+
 public class ProductReplicaCreationRequestedEvent extends BaseDomainEvent {
-	private final Long id;
-	private final String name;
-	private final int price;
-	private String sellerNickname;
+    private final Long id;
+    private final String name;
+    private final int price;
 
-	public ProductReplicaCreationRequestedEvent(
-		LocalDateTime occurredAt,
-		Long id,
-		String name,
-		int price,
-		String sellerNickname
-	) {
-		super(occurredAt);
-		this.id = id;
-		this.name = name;
-		this.price = price;
-		this.sellerNickname = sellerNickname;
-	}
+    public ProductReplicaCreationRequestedEvent(
+            LocalDateTime occurredAt,
+            Long id,
+            String name,
+            int price
+    ) {
+        super(occurredAt);
+        this.id = id;
+        this.name = name;
+        this.price = price;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public int getPrice() {
-		return price;
-	}
+    public int getPrice() {
+        return price;
+    }
 
-	public String getSellerNickname() {
-		return sellerNickname;
-	}
 }
