@@ -1,5 +1,7 @@
 package app.giftify.settlement.domain;
 
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.shared.domain.vo.OrderItemInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

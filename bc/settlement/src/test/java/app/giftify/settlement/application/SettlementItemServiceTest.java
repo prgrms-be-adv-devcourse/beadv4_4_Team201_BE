@@ -5,6 +5,8 @@ import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
 
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.shared.domain.vo.OrderItemInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
