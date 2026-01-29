@@ -14,8 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import app.giftify.settlement.application.inbound.CreatePaymentItemCommand;
-import app.giftify.settlement.domain.Money;
-import app.giftify.settlement.domain.OrderItemInfo;
 import app.giftify.settlement.domain.SettlementItem;
 import app.giftify.settlement.domain.SettlementItemRepository;
 

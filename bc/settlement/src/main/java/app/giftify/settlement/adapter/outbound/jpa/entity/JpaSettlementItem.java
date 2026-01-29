@@ -1,6 +1,8 @@
 package app.giftify.settlement.adapter.outbound.jpa.entity;
 
 import app.giftify.settlement.domain.*;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.vo.OrderItemInfo;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

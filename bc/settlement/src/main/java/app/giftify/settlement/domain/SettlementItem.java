@@ -1,5 +1,12 @@
 package app.giftify.settlement.domain;
 
+import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.vo.AmountInfo;
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.shared.domain.vo.OrderItemInfo;
+import app.giftify.shared.domain.vo.PaymentInfo;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 

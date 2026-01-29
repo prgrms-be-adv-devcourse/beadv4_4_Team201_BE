@@ -1,6 +1,6 @@
 package app.giftify.settlement.application.inbound;
 
-import app.giftify.settlement.domain.OrderItemInfo;
+import app.giftify.shared.domain.vo.OrderItemInfo;
 
 import java.util.Objects;
 
