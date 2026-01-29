@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":bc:member"))
     implementation(project(":bc:catalog"))
     implementation(project(":bc:core"))
+    implementation(project(":bc:settlement"))
 
     // Support 모듈들
     implementation(project(":support:common"))
