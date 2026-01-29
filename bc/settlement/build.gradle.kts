@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":support:security"))
+//    implementation(project(":support:security"))
     implementation(project(":support:jpa"))
     // Spring Boot Starters
     implementation(libs.spring.boot.starter.web)
@@ -35,6 +35,8 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
