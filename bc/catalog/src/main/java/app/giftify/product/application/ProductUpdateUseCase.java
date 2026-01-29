@@ -29,10 +29,13 @@ public class ProductUpdateUseCase {
     public ProductUpdateResponseDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
         Product product = productSupport.findByIdAndSellerId(productId, sellerId);
 
-        // todo 더티체킹해서 변경사항 있을 때만 ProductModifiedEvent 발행하기?
-        Optional.ofNullable(requestDto.name()).ifPresent(product::updateName); // 이름 수정
-        Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription); // 설명 수정
-        Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice); // 설명 수정
+        // 변경 전 값 저장 (더티체킹용)
+        String oldName = product.getName();
+        int oldPrice = product.getPrice();
+
+        Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
+        Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription);
+        Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice);
 
         // 재고 수정, 재고 이력 저장
         Integer newStock = requestDto.stock();

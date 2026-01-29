@@ -1,37 +1,36 @@
 package app.giftify.product.application;
 
-import static app.giftify.product.domain.exception.ProductErrorCode.*;
-
-import org.springframework.stereotype.Service;
-
-// TODO: Remove FundingMember dependency
-// import app.giftify.domain.FundingMember;
-import app.giftify.product.domain.Product;
-import app.giftify.product.domain.exception.ProductException;
+import app.giftify.catalogmember.adapter.outbound.jpa.CatalogMemberRepository;
+import app.giftify.catalogmember.core.domain.CatalogMember;
 import app.giftify.product.adapter.inbound.ProductCreateRequestDto;
 import app.giftify.product.adapter.inbound.ProductDto;
-// TODO: Remove FundingMember dependency
-// import app.giftify.out.FundingMemberRepository;
 import app.giftify.product.adapter.outbound.ProductRepository;
+import app.giftify.product.domain.Product;
+import app.giftify.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 public class ProductCreateUseCase {
-	private final ProductRepository productRepository;
-	// TODO: Remove FundingMember dependency
-	// private final FundingMemberRepository fundingMemberRepository;
+    private final ProductRepository productRepository;
+    private final CatalogMemberRepository catalogMemberRepository;
 
-	public ProductDto createProduct(Long sellerId, ProductCreateRequestDto requestDto) {
-		// TODO: Remove FundingMember dependency
-		// FundingMember seller = fundingMemberRepository.findById(sellerId)
-		// 	.orElseThrow(() -> new ProductException(FUNDING_MEMBER_NOT_FOUND));
-		// Product product = new Product(
-		// 	seller, requestDto.name(), requestDto.description(), requestDto.price(), requestDto.stock()
-		// );
-		// productRepository.save(product);
-		//
-		// return ProductDto.from(product);
-		throw new UnsupportedOperationException("FundingMember dependency needs to be removed");
-	}
+    public ProductDto createProduct(Long sellerId, ProductCreateRequestDto requestDto) {
+        CatalogMember seller = catalogMemberRepository.findById(sellerId)
+                .orElseThrow(() -> new ProductException(SELLER_NOT_FOUND));
+
+        Product product = Product.builder()
+                .sellerId(seller.getId())
+                .name(requestDto.name())
+                .description(requestDto.description())
+                .price(requestDto.price())
+                .stock(requestDto.stock())
+                .build();
+
+        productRepository.save(product);
+        return ProductDto.from(product, seller.getNickname());
+    }
 }

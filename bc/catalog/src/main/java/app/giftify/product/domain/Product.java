@@ -8,6 +8,7 @@ import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -29,19 +30,24 @@ public class Product extends BaseJpaEntity {
     private int stock;
     private ProductStatus status;
 
-    public Product(Long sellerId, String name, String description, int price, int stock) {
+    @Builder
+    public static Product create(
+            Long sellerId, String name, String description, int price, int stock
+    ) {
         validateCreation(sellerId, name, description, price, stock);
 
-        this.sellerId = sellerId;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.status = DRAFT;
+        Product product = new Product();
+        product.sellerId = sellerId;
+        product.name = name;
+        product.description = description;
+        product.price = price;
+        product.stock = stock;
+        product.status = ProductStatus.DRAFT; // 기본값 고정
+        return product;
     }
 
     // 상품 생성 검증 (Fail-Fast)
-    private void validateCreation(
+    private static void validateCreation(
             Long sellerId, String name, String description, int price, int stock
     ) {
         if (sellerId == null)

@@ -1,6 +1,5 @@
 package app.giftify.product.adapter.inbound;
 
-import app.giftify.catalogmember.core.domain.CatalogMember;
 import app.giftify.product.domain.Product;
 
 import java.time.LocalDateTime;
@@ -13,13 +12,13 @@ public record ProductDto(
         int price,
         LocalDateTime createdAt
 ) {
-    public static ProductDto from(Product product, CatalogMember seller) {
+    public static ProductDto from(Product product, String sellerNickname) {
         if (product == null)
             return null;
 
         return new ProductDto(
                 product.getId(),
-                seller.getNickname(),
+                sellerNickname,
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
