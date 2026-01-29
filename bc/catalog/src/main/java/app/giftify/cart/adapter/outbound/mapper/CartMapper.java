@@ -1,4 +1,4 @@
-package app.giftify.cart.adapter.outbound;
+package app.giftify.cart.adapter.outbound.mapper;
 
 import app.giftify.cart.adapter.outbound.jpa.JpaCart;
 import app.giftify.cart.adapter.outbound.jpa.JpaCartItem;
