@@ -1,13 +1,11 @@
 package app.giftify.settlement.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.vo.Money;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,5 +29,10 @@ public class PaymentSnapshot {
     private LocalDateTime paidAt;
 
     @Column(nullable = false)
-    private BigDecimal paidAmount;
+    @Embedded
+    @AttributeOverride(name = "amount", column = @Column(name = "paid_amount", nullable = false))
+    private Money paidAmount;
+
+    @Column
+    private PaymentMethodType method;
 }
