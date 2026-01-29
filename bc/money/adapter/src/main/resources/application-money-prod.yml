@@ -1,4 +1,0 @@
-
-tosspayments:
-  webhook:
-    secret-key: ${TOSSPAYMENTS_WEBHOOK_SECRET_KEY}

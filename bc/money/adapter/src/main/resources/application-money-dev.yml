@@ -1,4 +1,0 @@
-# Money module dev configuration
-tosspayments:
-  webhook:
-    secret-key: ${TOSSPAYMENTS_WEBHOOK_SECRET_KEY}
