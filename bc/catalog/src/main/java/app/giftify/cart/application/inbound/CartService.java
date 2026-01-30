@@ -36,21 +36,20 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
         TargetType targetType = command.cartItemKey().targetType();
         Long targetId = command.cartItemKey().targetId();
 
-        // 타입별 검증 및 상태 조회
-        ValidationResult validationResult = validateCartItem(targetType, targetId);
+        // 타입별 검증
+        validateCartItem(targetType, targetId);
 
         cart.addItem(
                 targetType,
                 targetId,
-                command.amount(),
-                validationResult.wishlistItemStatus()
+                command.amount()
         );
 
         return cartRepository.save(cart);
     }
 
-    private ValidationResult validateCartItem(TargetType targetType, Long targetId) {
-        return switch (targetType) {
+    private void validateCartItem(TargetType targetType, Long targetId) {
+        switch (targetType) {
             case PRODUCT -> validateDirectPurchase(targetId);
             case FUNDING -> validateFundingPurchase(targetId);
             default -> throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
@@ -58,19 +57,17 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
     }
 
     // 일반 구매 검증
-    private ValidationResult validateDirectPurchase(Long productId) {
+    private void validateDirectPurchase(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
 
         if (product.getStatus() != ProductStatus.ACTIVE) {
             throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
         }
-
-        return new ValidationResult(null);
     }
 
     // 펀딩 구매 검증 (Product + WishlistItem 둘 다 검증)
-    private ValidationResult validateFundingPurchase(Long wishlistItemId) {
+    private void validateFundingPurchase(Long wishlistItemId) {
         WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
                 .orElseThrow(() -> new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND));
 
@@ -82,10 +79,5 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
 
         // 원본 Product 상태 검증
         validateDirectPurchase(wishlistItem.getProductId());
-
-        return new ValidationResult(status);
     }
-
-    // 검증 결과 VO
-    private record ValidationResult(WishlistItemStatus wishlistItemStatus) {}
 }

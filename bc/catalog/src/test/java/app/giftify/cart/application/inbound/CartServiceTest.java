@@ -58,7 +58,6 @@ class CartServiceTest {
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         WishlistItem wishlistItem = mock(WishlistItem.class);
-        // given(wishlistItem.getId()).willReturn(wishlistItemId); // 불필요한 Stubbing 제거
         given(wishlistItem.getProductId()).willReturn(productId);
         given(wishlistItem.getWishlistItemStatus()).willReturn(WishlistItemStatus.PENDING);
         given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.of(wishlistItem));
@@ -124,7 +123,6 @@ class CartServiceTest {
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         Product product = mock(Product.class);
-        // given(product.getId()).willReturn(productId); // 불필요한 Stubbing 제거
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(productRepository.findById(productId)).willReturn(Optional.of(product));
 

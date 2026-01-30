@@ -41,14 +41,14 @@ public class Cart extends BaseDomainModel {
     /*
     장바구니에 상품 추가
      */
-    public void addItem(TargetType targetType, Long targetId, Money amount, WishlistItemStatus wishlistItemStatus) {
+    public void addItem(TargetType targetType, Long targetId, Money amount) {
         // 금액 검증은 CartItem이 함
         CartItemKey key = new CartItemKey(targetType, targetId);
 
         if (items.containsKey(key)) {
             items.get(key).changeAmount(amount);
         } else {
-            items.put(key, CartItem.create(this.getId(), targetType, targetId, amount, wishlistItemStatus));
+            items.put(key, CartItem.create(this.getId(), targetType, targetId, amount));
         }
     }
 

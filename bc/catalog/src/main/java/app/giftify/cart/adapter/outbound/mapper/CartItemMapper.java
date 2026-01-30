@@ -13,8 +13,7 @@ public class CartItemMapper {
                 cartItem.getId(),
                 cartItem.getTargetType(),
                 cartItem.getTargetId(),
-                cartItem.getAmount().amount(),
-                cartItem.getWishlistItemStatus()
+                cartItem.getAmount().amount()
         );
     }
 
@@ -24,8 +23,7 @@ public class CartItemMapper {
                 jpaCartItem.getCartId(),
                 jpaCartItem.getTargetType(),
                 jpaCartItem.getTargetId(),
-                Money.of(jpaCartItem.getAmount()),
-                jpaCartItem.getWishlistItemStatus()
+                Money.of(jpaCartItem.getAmount())
         );
     }
 }

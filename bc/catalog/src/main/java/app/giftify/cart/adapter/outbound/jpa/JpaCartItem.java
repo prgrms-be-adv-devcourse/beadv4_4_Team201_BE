@@ -36,15 +36,13 @@ public class JpaCartItem {
             Long id,
             TargetType targetType,
             Long targetId,
-            BigDecimal amount,
-            WishlistItemStatus wishlistItemStatus
+            BigDecimal amount
     ) {
         JpaCartItem item = new JpaCartItem();
         item.id = id;
         item.targetType = targetType;
         item.targetId = targetId;
         item.amount = amount;
-        item.wishlistItemStatus = wishlistItemStatus;
         return item;
     }
 
