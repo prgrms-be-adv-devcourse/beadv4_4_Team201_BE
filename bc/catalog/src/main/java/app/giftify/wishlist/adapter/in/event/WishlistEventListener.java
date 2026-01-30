@@ -3,7 +3,6 @@ package app.giftify.wishlist.adapter.in.event;
 import app.giftify.shared.domain.event.funding.*;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
-import app.giftify.wishlist.application.port.out.WishlistProductReplicaPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
@@ -22,7 +21,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class WishlistEventListener {
 
-    private final WishlistProductReplicaPort wishlistProductReplicaPort;
+    //    private final WishlistProductReplicaPort wishlistProductReplicaPort;
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
     private final WishlistRepositoryPort wishlistRepositoryPort;
 
