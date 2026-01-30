@@ -1,19 +1,5 @@
 package app.giftify.member.adapter.in.web;
 
-import java.util.Map;
-import java.util.Optional;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
@@ -29,6 +15,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
 
 // 사용자의 가입 상태 확인 및 회원가입 API
 @RestController
@@ -38,118 +30,118 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MemberController {
 
-	private final GetMemberUseCase getMemberUseCase;
-	private final RegisterMemberUseCase registerMemberUseCase;
-	private final UpdateMemberUseCase updateMemberUseCase;
-	private final WithdrawMemberUseCase withdrawMemberUseCase;
+    private final GetMemberUseCase getMemberUseCase;
+    private final RegisterMemberUseCase registerMemberUseCase;
+    private final UpdateMemberUseCase updateMemberUseCase;
+    private final WithdrawMemberUseCase withdrawMemberUseCase;
 
-	// Auth0 인증 정보(JWT)를 기반으로 가입여부 확인
-	@GetMapping("/check-registration")
-	public ResponseEntity<?> checkRegistration(
-		@AuthenticatedMember String authSub
-	) {
-		log.debug("[Controller] checkRegistration called with authSub: {}", authSub);
-		if (authSub == null) {
-			return ResponseEntity.status(401).body(Map.of("message", "인증 정보(JWT)가 누락되었습니다."));
-		}
+    // Auth0 인증 정보(JWT)를 기반으로 가입여부 확인
+    @GetMapping("/check-registration")
+    public ResponseEntity<?> checkRegistration(
+            @AuthenticatedMember String authSub
+    ) {
+        log.debug("[Controller] checkRegistration called with authSub: {}", authSub);
+        if (authSub == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "인증 정보(JWT)가 누락되었습니다."));
+        }
 
-		return getMemberUseCase.getMemberByAuthSub(authSub)
-			.map(member -> {
-				log.debug("[Controller] Member found for authSub: {}", authSub);
-				return ResponseEntity.ok().body((Object)member);
-			})
-			.orElseGet(() -> {
-				log.debug("[Controller] Member NOT found for authSub: {}", authSub);
-				return ResponseEntity.ok().body(Map.of("status", "NOT_REGISTERED"));
-			});
-	}
+        return getMemberUseCase.getMemberByAuthSub(authSub)
+                .map(member -> {
+                    log.debug("[Controller] Member found for authSub: {}", authSub);
+                    return ResponseEntity.ok().body((Object) member);
+                })
+                .orElseGet(() -> {
+                    log.debug("[Controller] Member NOT found for authSub: {}", authSub);
+                    return ResponseEntity.ok().body(Map.of("status", "NOT_REGISTERED"));
+                });
+    }
 
-	// 신규 회원 가입 (추가 정보 입력)
-	@PostMapping("/signup")
-	public ResponseEntity<Member> signup(
-		@AuthenticatedMember String authSub,
-		@RequestBody @Valid SignupRequest request
-	) {
-		if (authSub == null) {
-			return ResponseEntity.status(401).build();
-		}
+    // 신규 회원 가입 (추가 정보 입력)
+    @PostMapping("/signup")
+    public ResponseEntity<Member> signup(
+            @AuthenticatedMember String authSub,
+            @RequestBody @Valid SignupRequest request
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
-		Member member = registerMemberUseCase.signup(authSub, request);
+        Member member = registerMemberUseCase.signup(authSub, request);
 
-		return ResponseEntity.ok(member);
-	}
+        return ResponseEntity.ok(member);
+    }
 
-	// 내 정보 조회
-	@Deprecated
-	@GetMapping("/getMyInfo")
-	public ResponseEntity<?> getMyInfo(
-		@AuthenticatedMember String authSub
-	) {
-		if (authSub == null) {
-			return ResponseEntity.status(401).build();
-		}
+    // 내 정보 조회
+    @Deprecated
+    @GetMapping("/getMyInfo")
+    public ResponseEntity<?> getMyInfo(
+            @AuthenticatedMember String authSub
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
-		return getMemberUseCase.getMemberByAuthSub(authSub)
-			.map(ResponseEntity::ok)
-			.orElseThrow(() -> new MemberNotFoundException(authSub));
-	}
+        return getMemberUseCase.getMemberByAuthSub(authSub)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new MemberNotFoundException(authSub));
+    }
 
-	// 회원 정보 수정
-	@Deprecated
-	@PatchMapping("/updateMyInfo")
-	public ResponseEntity<Member> updateMyInfo(
-		@AuthenticatedMember String authSub,
-		@RequestBody @Valid MemberUpdateRequest request
-	) {
-		if (authSub == null) {
-			return ResponseEntity.status(401).build();
-		}
+    // 회원 정보 수정
+    @Deprecated
+    @PatchMapping("/updateMyInfo")
+    public ResponseEntity<Member> updateMyInfo(
+            @AuthenticatedMember String authSub,
+            @RequestBody @Valid MemberUpdateRequest request
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
-		Optional<Member> member = getMemberUseCase.getMemberByAuthSub(authSub);
-		if (member.isPresent() && member.get().getStatus() != MemberStatus.ACTIVE) {
-			return ResponseEntity.status(403).build();
-		}
+        Optional<Member> member = getMemberUseCase.getMemberByAuthSub(authSub);
+        if (member.isPresent() && member.get().getStatus() != MemberStatus.ACTIVE) {
+            return ResponseEntity.status(403).build();
+        }
 
-		UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
-			authSub,
-			request.password(),
-			request.nickname(),
-			request.address(),
-			request.phoneNum(),
-			request.name()
-		);
+        UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
+                authSub,
+                request.password(),
+                request.nickname(),
+                request.address(),
+                request.phoneNum(),
+                request.name()
+        );
 
-		Member updatedMember = updateMemberUseCase.updateMember(command);
+        Member updatedMember = updateMemberUseCase.updateMember(command);
 
-		return ResponseEntity.ok(updatedMember);
-	}
+        return ResponseEntity.ok(updatedMember);
+    }
 
-	// 회원 탈퇴
-	@DeleteMapping("/withdraw")
-	public ResponseEntity<Void> withdraw(
-		@AuthenticatedMember String authSub
-	) {
-		if (authSub == null) {
-			return ResponseEntity.status(401).build();
-		}
+    // 회원 탈퇴
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<Void> withdraw(
+            @AuthenticatedMember String authSub
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
 
-		withdrawMemberUseCase.withdrawMember(authSub);
+        withdrawMemberUseCase.withdrawMember(authSub);
 
-		return ResponseEntity.noContent().build();
-	}
+        return ResponseEntity.noContent().build();
+    }
 
-	@GetMapping("/check/nickname")
-	public ResponseEntity<?> checkNickname(
-		@RequestParam(name = "nickname") @NotBlank String nickname
-	) {
-		if (nickname.isBlank()) {
-			throw new InvalidNicknameException();
-		}
+    @GetMapping("/check/nickname")
+    public ResponseEntity<?> checkNickname(
+            @RequestParam(name = "nickname") @NotBlank String nickname
+    ) {
+        if (nickname.isBlank()) {
+            throw new InvalidNicknameException();
+        }
 
-		boolean duplicated = getMemberUseCase.isNicknameDuplicated(nickname);
+        boolean duplicated = getMemberUseCase.isNicknameDuplicated(nickname);
 
-		return ResponseEntity.ok(
-			Map.of("status", duplicated ? "DUPLICATED" : "AVAILABLE")
-		);
-	}
+        return ResponseEntity.ok(
+                Map.of("status", duplicated ? "DUPLICATED" : "AVAILABLE")
+        );
+    }
 }

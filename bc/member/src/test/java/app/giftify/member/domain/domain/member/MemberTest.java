@@ -1,14 +1,14 @@
 package app.giftify.member.domain.domain.member;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.time.LocalDate;
-
+import app.giftify.member.domain.exception.MemberStatusException;
+import app.giftify.member.domain.member.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.member.domain.exception.MemberStatusException;
-import app.giftify.member.domain.member.Member;
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MemberTest {
 
@@ -35,14 +35,14 @@ class MemberTest {
     void createMemberFail() {
         // email null → 예외
         assertThatThrownBy(() -> Member.create(null, "nick", LocalDate.now(), "addr", "phone", "name", "sub"))
-            .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class);
 
         // nickname null → 이제 허용됨, 테스트 제거
         // assertThatThrownBy(() -> Member.create("email", null, ...))
 
         // authSub null → 예외
         assertThatThrownBy(() -> Member.create("email", "nick", LocalDate.now(), "addr", "phone", "name", null))
-            .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
  * Auth0 SPA SDK에서 발급받은 idToken을 전달합니다.
  */
 public record LoginRequest(
-	@NotBlank(message = "idToken은 필수입니다.")
-	String idToken
+        @NotBlank(message = "idToken은 필수입니다.")
+        String idToken
 ) {
 }
