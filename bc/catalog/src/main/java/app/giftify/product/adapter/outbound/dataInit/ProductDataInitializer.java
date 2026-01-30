@@ -38,7 +38,7 @@ public class ProductDataInitializer implements ApplicationRunner {
             ProductData data = products.get(i);
 
             Product product = Product.builder()
-                    .sellerId(2L)
+                    .sellerId(3L)
                     .name(data.name)
                     .description(data.description)
                     .price(data.price)
