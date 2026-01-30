@@ -1,4 +1,4 @@
-package app.giftify.auth.client;
+package app.giftify.auth.adapter.outbound.client;
 
 import java.util.Optional;
 
