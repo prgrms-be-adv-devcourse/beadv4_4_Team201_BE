@@ -1,16 +1,17 @@
 package app.giftify.settlement.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum SettlementItemType {
-    ITEM_PAYMENT("일반 상품 판매 정산"),
-    DEDUCTION_REFUND("환불 차감 금액");
+    ITEM_PAYMENT(false),
+    DEDUCTION_REFUND(true);
 
-    private final String description;
+    private final boolean requiresOriginId;
 
-    SettlementItemType(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
+    public boolean requiresOriginId() {
+        return requiresOriginId;
     }
 }

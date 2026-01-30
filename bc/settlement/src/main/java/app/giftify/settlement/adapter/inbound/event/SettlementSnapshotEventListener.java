@@ -1,53 +1,67 @@
 package app.giftify.settlement.adapter.inbound.event;
 
-import app.giftify.settlement.application.OrderItemSnapshotService;
-import app.giftify.settlement.application.OrderSnapshotService;
-import app.giftify.settlement.application.PaymentSnapshotService;
 import app.giftify.settlement.application.SettlementItemService;
 import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
+import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
 import app.giftify.settlement.domain.OrderItemSnapshot;
 import app.giftify.settlement.domain.OrderSnapshot;
 import app.giftify.settlement.domain.PaymentSnapshot;
+import app.giftify.settlement.domain.exception.SettlementException;
 import app.giftify.shared.domain.event.funding.FundingReceivedConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCompleteEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class SettlementSnapshotEventListener {
-    private final OrderSnapshotService orderSnapshotService;
-    private final OrderItemSnapshotService orderItemSnapshotService;
-    private final PaymentSnapshotService paymentSnapshotService;
+    private final OrderSnapshotRepository orderSnapshotRepository;
+    private final OrderItemSnapshotRepository orderItemSnapshotRepository;
+    private final PaymentSnapshotRepository paymentSnapshotRepository;
     private final SettlementItemService settlementItemService;
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleFundingReceivedConfirmedEvent(FundingReceivedConfirmedEvent event) {
+
         InitializeSettlementItemCommand command = new InitializeSettlementItemCommand(
                 event.fundingId(),
                 event.confirmedAt()
         );
 
-        settlementItemService.initializeSettlementItem(command);
+        try {
+            settlementItemService.initializeSettlementItem(command);
+        } catch (SettlementException e) {
+            if (e.isRetryable()) {
+                log.warn("[SettlementEventHandler] 재시도 대상 예외 발생, fundingId={}, message={}", event.fundingId(), e.getMessage(), e);
+            } else {
+                log.info("[SettlementEventHandler] 처리 불가 도메인/비즈니스 예외 발생, fundingId={}, message={}", event.fundingId(), e.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("[SettlementEventHandler] 예상치 못한 예외 발생, fundingId={}", event.fundingId(), e);
+            throw e; // 필요시 재시도 가능하도록 상위로 던짐
+        }
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
-        orderSnapshotService.save(new OrderSnapshot(
+        orderSnapshotRepository.save(new OrderSnapshot(
             event.orderId(),
             event.orderNumber(),
             event.orderedAt()
         ));
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderItemCreatedEvent(OrderItemCreatedEvent event) {
-        orderItemSnapshotService.save(new OrderItemSnapshot(
+        orderItemSnapshotRepository.save(new OrderItemSnapshot(
             event.orderItemId(),
             event.orderId(),
             event.fundingId(),
@@ -58,9 +72,9 @@ public class SettlementSnapshotEventListener {
         ));
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentCompleteEvent(PaymentCompleteEvent event) {
-        paymentSnapshotService.save(new PaymentSnapshot(
+        paymentSnapshotRepository.save(new PaymentSnapshot(
                 event.paymentId(),
                 event.orderNumber(),
                 event.paymentKey(),

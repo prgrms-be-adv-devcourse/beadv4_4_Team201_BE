@@ -78,4 +78,8 @@ public record Money(BigDecimal amount) {
 			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
 		}
 	}
+
+    public boolean isNegative() {
+		return this.amount.compareTo(BigDecimal.ZERO) < 0;
+    }
 }
