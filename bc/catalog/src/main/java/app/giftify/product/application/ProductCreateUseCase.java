@@ -1,12 +1,12 @@
 package app.giftify.product.application;
 
-import app.giftify.catalogmember.adapter.outbound.jpa.CatalogMemberRepository;
-import app.giftify.catalogmember.core.domain.CatalogMember;
 import app.giftify.product.adapter.inbound.ProductCreateRequestDto;
 import app.giftify.product.adapter.inbound.ProductDto;
 import app.giftify.product.adapter.outbound.ProductRepository;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.exception.ProductException;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +16,10 @@ import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_F
 @RequiredArgsConstructor
 public class ProductCreateUseCase {
     private final ProductRepository productRepository;
-    private final CatalogMemberRepository catalogMemberRepository;
+    private final MemberRepository memberRepository;
 
     public ProductDto createProduct(Long sellerId, ProductCreateRequestDto requestDto) {
-        CatalogMember seller = catalogMemberRepository.findById(sellerId)
+        Member seller = memberRepository.findById(sellerId)
                 .orElseThrow(() -> new ProductException(SELLER_NOT_FOUND));
 
         Product product = Product.builder()

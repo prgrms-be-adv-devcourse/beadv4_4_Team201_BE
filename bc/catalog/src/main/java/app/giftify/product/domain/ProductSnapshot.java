@@ -1,6 +1,6 @@
 package app.giftify.product.domain;
 
-import app.giftify.catalogmember.core.domain.CatalogMember;
+import app.giftify.replica.member.Member;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,7 +57,7 @@ public class ProductSnapshot extends BaseJpaEntity {
         this.onSale = onSale;
     }
 
-    public static ProductSnapshot from(Product product, CatalogMember seller) {
+    public static ProductSnapshot from(Product product, Member seller) {
         return ProductSnapshot.builder()
                 .originalProductId(product.getId())
                 .sellerId(product.getSellerId())

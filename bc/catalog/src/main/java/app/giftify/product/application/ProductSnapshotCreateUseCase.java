@@ -1,13 +1,13 @@
 package app.giftify.product.application;
 
-import app.giftify.catalogmember.adapter.outbound.jpa.CatalogMemberRepository;
-import app.giftify.catalogmember.core.domain.CatalogMember;
 import app.giftify.product.adapter.inbound.ProductSnapshotDto;
 import app.giftify.product.adapter.inbound.ProductSnapshotRequestDto;
 import app.giftify.product.adapter.outbound.ProductSnapshotRepository;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductSnapshot;
 import app.giftify.product.domain.exception.ProductException;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_F
 public class ProductSnapshotCreateUseCase {
     private final ProductSupport productSupport;
     private final ProductSnapshotRepository productSnapshotRepository;
-    private final CatalogMemberRepository catalogMemberRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 장바구니에 담긴 상품들을 결제할 때, 상품들을 스냅샷으로 저장하여 전달
@@ -49,14 +49,14 @@ public class ProductSnapshotCreateUseCase {
         Set<Long> sellerIds = products.stream()
                 .map(Product::getSellerId)
                 .collect(Collectors.toSet());
-        Map<Long, CatalogMember> sellerMap = catalogMemberRepository.findAllById(sellerIds).stream()
-                .collect(Collectors.toMap(CatalogMember::getId, Function.identity()));
+        Map<Long, Member> sellerMap = memberRepository.findAllById(sellerIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
 
         // 요청된 productIds 순서대로 스냅샷 생성
         return productIds.stream()
                 .map(productId -> {
                     Product product = productMap.get(productId);
-                    CatalogMember seller = sellerMap.get(product.getSellerId());
+                    Member seller = sellerMap.get(product.getSellerId());
                     if (seller == null) {
                         throw new ProductException(SELLER_NOT_FOUND);
                     }

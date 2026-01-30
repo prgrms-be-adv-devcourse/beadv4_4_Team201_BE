@@ -75,14 +75,16 @@ public class ProductUpdateUseCase {
          */
         product.pullEvents().forEach(eventPublisher::publish);
 
-        /** 어플리케이션 이벤트 발행
+        /** 어플리케이션 이벤트 발행 (변경된 경우에만)
          */
-        eventPublisher.publish(new ProductReplicaUpdatedEvent(
-                LocalDateTime.now(),
-                product.getId(),
-                product.getName(),
-                product.getPrice()
-        ));
+        if (!oldName.equals(product.getName()) || oldPrice != product.getPrice()) {
+            eventPublisher.publish(new ProductReplicaUpdatedEvent(
+                    LocalDateTime.now(),
+                    product.getId(),
+                    product.getName(),
+                    product.getPrice()
+            ));
+        }
 
         return ProductUpdateResponseDto.from(product);
     }
