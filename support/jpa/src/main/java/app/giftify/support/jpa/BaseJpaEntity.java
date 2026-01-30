@@ -57,4 +57,13 @@ public abstract class BaseJpaEntity extends BaseAggregateRoot {
 	@LastModifiedBy
 	@Column(name = "updated_by")
 	private String updatedBy;
+
+	// === 생성자 ===
+
+	protected BaseJpaEntity() {
+	}
+
+	protected BaseJpaEntity(Long id) {
+		this.id = id;
+	}
 }
