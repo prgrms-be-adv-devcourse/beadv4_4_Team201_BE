@@ -1,10 +1,10 @@
 package app.giftify.member.domain.member;
 
+import java.time.LocalDate;
+
 import app.giftify.member.domain.exception.MemberStatusException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.type.MemberRole;
-
-import java.time.LocalDate;
 
 public class Member extends BaseDomainModel {
 	private final String email;
@@ -48,7 +48,7 @@ public class Member extends BaseDomainModel {
 		String name,
 		String authSub
 	) {
-		validate(email, nickname, authSub);
+		validate(email, authSub);
 
 		return Member.builder()
 			.email(email)
@@ -61,6 +61,28 @@ public class Member extends BaseDomainModel {
 			.role(MemberRole.BUYER)
 			.status(MemberStatus.ACTIVE)
 			.build();
+	}
+
+	@Deprecated
+	private static void validate(String email, String nickname, String authSub) {
+		if (email == null || email.isBlank()) {
+			throw new IllegalArgumentException("email은 필수입니다.");
+		}
+		if (nickname == null || nickname.isBlank()) {
+			throw new IllegalArgumentException("nickname은 필수입니다.");
+		}
+		if (authSub == null || authSub.isBlank()) {
+			throw new IllegalArgumentException("authSub는 필수입니다.");
+		}
+	}
+
+	private static void validate(String email, String authSub) {
+		if (email == null || email.isBlank()) {
+			throw new IllegalArgumentException("email은 필수입니다.");
+		}
+		if (authSub == null || authSub.isBlank()) {
+			throw new IllegalArgumentException("authSub는 필수입니다.");
+		}
 	}
 
 	public void updateInfo(String nickname, String password, String address, String phoneNum, String name) {
@@ -83,18 +105,6 @@ public class Member extends BaseDomainModel {
 
 	public void withdraw() {
 		this.status = MemberStatus.WITHDRAWN;
-	}
-
-	private static void validate(String email, String nickname, String authSub) {
-		if (email == null || email.isBlank()) {
-			throw new IllegalArgumentException("email은 필수입니다.");
-		}
-		if (nickname == null || nickname.isBlank()) {
-			throw new IllegalArgumentException("nickname은 필수입니다.");
-		}
-		if (authSub == null || authSub.isBlank()) {
-			throw new IllegalArgumentException("authSub는 필수입니다.");
-		}
 	}
 
 	// 회원이 활성 상태가 아닐 경우 예외를 던집니다. (검증 및 흐름 제어용)
