@@ -1,17 +1,20 @@
 package app.giftify.wishlist.application.service;
 
-import app.giftify.product.adapter.outbound.ProductRepository;
+import app.giftify.product.application.ProductSupport;
+import app.giftify.product.domain.Product;
+import app.giftify.product.domain.ProductStatus;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
+import app.giftify.wishlist.application.support.WishlistSupport;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import app.giftify.wishlist.core.domain.exception.DuplicateWishlistItemException;
+import app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException;
 import app.giftify.wishlist.core.domain.exception.WishlistItemNotRemovableException;
-import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,19 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static app.giftify.wishlist.core.domain.WishlistItemStatus.NO_THANKS;
+import static app.giftify.wishlist.core.domain.WishlistItemStatus.PENDING;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistItemUseCase, RemoveWishlistItemUseCase {
 
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
-    //	private final WishlistProductReplicaPort wishlistProductReplicaPort;
-//    private final WishlistProductQueryPort wishlistProductQueryPort;
     private final WishlistRepositoryPort wishlistRepositoryPort;
 
-    private final ProductRepository productRepository;
-
-//	private static final Duration REPLICA_TTL = Duration.ofHours(1);
+    private final ProductSupport productSupport;
+    private final WishlistSupport wishlistSupport;
 
     /**
      * 위시리스트아이템 개수 카운팅
@@ -76,61 +79,32 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     @Override
     @Transactional
     public WishlistItem addWishlistItem(Long memberId, WishlistItemAddCommand command) {
+        // 위시리스트 확인, 없으면 생성
         Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
 
+        // 상품 확인 (Active인 상품만 위시리스트아이템 추가 가능)
+        Product product = productSupport.findById(command.productId());
+        if (!product.getStatus().equals(ProductStatus.ACTIVE))
+            throw new ProductNotOnSaleException(command.productId());
+
         // 위시리스트 DB에 상품 id가 있는지 조회 (중복 확인)
-        if (wishlistItemRepositoryPort.findByWishlistIdAndProductId(wishlist.getId(), command.productId())
+        if (wishlistItemRepositoryPort.findByWishlistIdAndProductId(wishlist.getId(), product.getId())
                 .isPresent()) {
             throw new DuplicateWishlistItemException(wishlist.getId(), command.productId());
         }
 
-        // 상품 레플리카 조회 (없으면 생성) 및 상태 검증
-//        validateProductActive(command.productId());
-
-        // 3. 위시리스트 item에 등록
+        // 위시리스트 item에 등록
         WishlistItem wishlistItem = WishlistItem.builder()
                 .wishlistId(wishlist.getId())
-                .productId(command.productId())
-                .wishlistItemStatus(command.wishListItemStatus())
+                .productId(product.getId())
+                .wishlistItemStatus(PENDING)
                 .build();
 
-        // // 4. 이벤트 발행 (현재 구현 생략)
-
-        // 5. 새롭게 생성된 WishlistItem 반환
+        // 새롭게 생성된 WishlistItem 반환
         return wishlistItemRepositoryPort.save(wishlistItem);
-    }
 
-//    // 상품이 판매 중인지 검증
-//    private void validateProductActive(Long productId) {
-//        Optional<WishlistProductReplica> replica = wishlistProductReplicaPort.findByProductId(productId);
-//
-//        // 레플리카가 있고 신선한(Fresh) 상태라면 바로 사용
-//        if (replica.isPresent() && replica.get().isFresh(REPLICA_TTL)) {
-//            if (!replica.get().isWishlistAllowed()) { // 판매중이 아닌 상품
-//                throw new ProductNotOnSaleException(productId);
-//            }
-//            return;
-//        }
-//
-//        // 레플리카가 없거나 만료된 경우 Fallback (직접 조회)
-//        // 요구사항: /api/product/{id}로 API 호출해서 가져온 후 db에 저장/갱신
-//        WishlistProductQueryPort.ProductStatus status = wishlistProductQueryPort.getProductStatus(productId, replica);
-//
-//        // 조회된 정보로 레플리카 갱신 (Upsert)
-//        WishlistProductReplica newReplica = WishlistProductReplica.builder()
-//                .productId(productId)
-//                .wishlistAllowed(status.onSale())
-//                .name(status.name())
-//                .price(status.price())
-//                .sellerNickname(status.sellerNickName())
-//                .build();
-//
-//        wishlistProductReplicaPort.upsert(newReplica);
-//
-//        if (!status.onSale()) { // 판매중이 아닌 상품
-//            throw new ProductNotOnSaleException(productId);
-//        }
-//    }
+        // todo 알림 이벤트
+    }
 
     /**
      * # 위시리스트아이템 수동 삭제
@@ -139,16 +113,13 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     @Override
     @Transactional
     public void removeWishlistItem(WishlistItemRemoveCommand command) {
-        Wishlist wishlist = getOrCreateWishlistByMemberId(command.memberId());
-
-        WishlistItem wishlistItem = wishlistItemRepositoryPort
-                .findByWishlistIdAndProductId(wishlist.getId(), command.productId())
-                .orElseThrow(() -> new WishlistNotFoundException(command.memberId()));
+        Wishlist wishlist = wishlistSupport.getByMemberId(command.memberId());
+        WishlistItem wishlistItem = wishlistSupport.getByWishlistIdAndProductId(wishlist.getId(), command.productId());
 
         validateManualRemovable(wishlistItem); // 상태 확인
         wishlistItemRepositoryPort.delete(wishlistItem);
 
-        // todo 위시리스트 아이템 삭제 이벤트 발행 (장바구니)
+        // todo 장바구니아이템 상태 변경
     }
 
     // memberId로 Wishlist 조회 없으면 생성
@@ -166,10 +137,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     private void validateManualRemovable(WishlistItem item) {
         WishlistItemStatus status = item.getWishlistItemStatus();
 
-        boolean removable = status == WishlistItemStatus.PENDING
-                || status == WishlistItemStatus.NO_THANKS;
-
-        if (!removable) {
+        if (status != PENDING && status != NO_THANKS) {
             throw new WishlistItemNotRemovableException(status);
         }
     }
