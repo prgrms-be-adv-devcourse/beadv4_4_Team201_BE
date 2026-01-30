@@ -9,8 +9,7 @@ public record CartItemResponse(
         Long targetId,
         String productName,
         int productPrice,          // 상품 원래 가격
-        long contributionAmount,    // 사용자가 담은 펀딩 금액
-        boolean saleStatus          // FIXME : 판매 가능 여부 -> 이제 필요 없는거 아닌가?
+        long contributionAmount   // 사용자가 담은 펀딩 금액
 ) {
     public static CartItemResponse from(CartItem item, Product product) {
         return new CartItemResponse(
@@ -18,8 +17,7 @@ public record CartItemResponse(
                 item.getTargetId(),
                 product.getName(),
                 product.getPrice(),
-                item.getAmount().amount().longValue(),
-                product.isSale()
+                item.getAmount().amount().longValue()
         );
     }
 }

@@ -7,6 +7,7 @@ import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.adapter.outbound.ProductRepository;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
@@ -17,41 +18,74 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CartService implements AddCartItemUseCase {
+public class CartService implements AddCartItemUseCase, CartCreateUseCase {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
 
+    @Override
+    public Cart createCart(Long memberId) {
+        return cartRepository.save(Cart.create(memberId));
+    }
 
     @Override
     public Cart addItem(Long memberId, AddCartItemCommand command) {
         Cart cart = cartRepository.findByMemberId(memberId)
-                .orElseThrow(()-> new CartException(CartErrorCode.CART_NOT_FOUND));
+                .orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
-        // 상품 상태는 ACTIVE 상태 && 위시리스트아이템 상태는 PENDING, IN_PROGRESS 상태만 담을 수 있음
-        Product product = productRepository.findById(command.cartItemKey().targetId())
-                .orElseThrow(() -> new CartException(CartErrorCode.INVALID_ITEM_STATUS));
-        if (product.getStatus() != ProductStatus.ACTIVE) {
-            throw new CartException(CartErrorCode.CANNOT_ADD_ITEM);
-        }
+        TargetType targetType = command.cartItemKey().targetType();
+        Long targetId = command.cartItemKey().targetId();
 
-        WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(command.cartItemKey().targetId())
-                .orElseThrow(() -> new CartException(CartErrorCode.INVALID_ITEM_STATUS));
-        if (wishlistItem.getWishlistItemStatus() != WishlistItemStatus.PENDING && wishlistItem.getWishlistItemStatus() != WishlistItemStatus.IN_PROGRESS) {
-            throw new CartException(CartErrorCode.CANNOT_ADD_ITEM);
-        }
+        // 타입별 검증 및 상태 조회
+        ValidationResult validationResult = validateCartItem(targetType, targetId);
 
-        /**
-         * 아이템 추가
-         * 이미 담긴 상품이면 가격 변경 / 카트에 없는 상품이면 추가 -> 도메인에 로직 있음
-         */
         cart.addItem(
-                command.cartItemKey().targetType(),
-                command.cartItemKey().targetId(),
+                targetType,
+                targetId,
                 command.amount(),
-                wishlistItem.getWishlistItemStatus()
+                validationResult.wishlistItemStatus()
         );
 
         return cartRepository.save(cart);
     }
+
+    private ValidationResult validateCartItem(TargetType targetType, Long targetId) {
+        return switch (targetType) {
+            case PRODUCT -> validateDirectPurchase(targetId);
+            case FUNDING -> validateFundingPurchase(targetId);
+            default -> throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
+        };
+    }
+
+    // 일반 구매 검증
+    private ValidationResult validateDirectPurchase(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
+        }
+
+        return new ValidationResult(null);
+    }
+
+    // 펀딩 구매 검증 (Product + WishlistItem 둘 다 검증)
+    private ValidationResult validateFundingPurchase(Long wishlistItemId) {
+        WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
+                .orElseThrow(() -> new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND));
+
+        // WishlistItem 상태 검증
+        WishlistItemStatus status = wishlistItem.getWishlistItemStatus();
+        if (status != WishlistItemStatus.PENDING && status != WishlistItemStatus.IN_PROGRESS) {
+            throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
+        }
+
+        // 원본 Product 상태 검증
+        validateDirectPurchase(wishlistItem.getProductId());
+
+        return new ValidationResult(status);
+    }
+
+    // 검증 결과 VO
+    private record ValidationResult(WishlistItemStatus wishlistItemStatus) {}
 }
