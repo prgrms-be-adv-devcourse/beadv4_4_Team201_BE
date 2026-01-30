@@ -8,6 +8,7 @@ import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -23,32 +24,33 @@ import static app.giftify.product.domain.exception.ProductErrorCode.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseJpaEntity {
     private Long sellerId;
-    private String sellerNickname;
     private String name;
     private String description;
     private int price;
     private int stock;
     private ProductStatus status;
 
-    public Product(Long sellerId, String sellerNickname, String name, String description, int price, int stock) {
-        validateCreation(sellerId, sellerNickname, name, description, price, stock);
+    @Builder
+    public static Product create(
+            Long sellerId, String name, String description, int price, int stock
+    ) {
+        validateCreation(sellerId, name, description, price, stock);
 
-        this.sellerId = sellerId;
-        this.sellerNickname = sellerNickname;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.status = DRAFT;
+        Product product = new Product();
+        product.sellerId = sellerId;
+        product.name = name;
+        product.description = description;
+        product.price = price;
+        product.stock = stock;
+        product.status = ProductStatus.DRAFT; // 기본값 고정
+        return product;
     }
 
     // 상품 생성 검증 (Fail-Fast)
-    private void validateCreation(
-            Long sellerId, String sellerNickname, String name, String description, int price, int stock
+    private static void validateCreation(
+            Long sellerId, String name, String description, int price, int stock
     ) {
         if (sellerId == null)
-            throw new ProductException(PRODUCT_SELLER_REQUIRED);
-        if (!StringUtils.hasText(sellerNickname))
             throw new ProductException(PRODUCT_SELLER_REQUIRED);
         if (!StringUtils.hasText(name))
             throw new ProductException(INVALID_PRODUCT_NAME);
@@ -71,8 +73,7 @@ public class Product extends BaseJpaEntity {
                 LocalDateTime.now(),
                 this.getId(),
                 this.getName(),
-                this.getPrice(),
-                this.getSellerNickname()
+                this.getPrice()
         ));
     }
 
