@@ -27,8 +27,8 @@ public class Cart extends BaseDomainModel {
         this.items = items != null ? new HashMap<>(items) : new HashMap<>(); // 방어적 복사
     }
 
-    public static Cart create(Long id, Long memberId) {
-        return new Cart(id, memberId, new HashMap<>());
+    public static Cart create(Long memberId) {
+        return new Cart(null, memberId, new HashMap<>());
     }
 
     /*
