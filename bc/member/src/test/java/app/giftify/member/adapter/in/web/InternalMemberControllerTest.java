@@ -1,6 +1,5 @@
 package app.giftify.member.adapter.in.web;
 
-import app.giftify.member.adapter.in.web.controller.InternalMemberController;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;

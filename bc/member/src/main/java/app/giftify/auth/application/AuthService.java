@@ -1,4 +1,4 @@
-package app.giftify.auth.core.service;
+package app.giftify.auth.application;
 
 import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import lombok.extern.slf4j.Slf4j;

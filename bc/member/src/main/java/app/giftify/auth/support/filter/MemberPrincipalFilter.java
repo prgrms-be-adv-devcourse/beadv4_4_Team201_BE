@@ -1,6 +1,6 @@
 package app.giftify.auth.support.filter;
 
-import app.giftify.auth.client.MemberApiClient;
+import app.giftify.auth.adapter.outbound.client.MemberApiClient;
 import app.giftify.security.common.MemberAuthenticationToken;
 import app.giftify.security.common.MemberPrincipal;
 import app.giftify.shared.domain.vo.MemberInfo;
