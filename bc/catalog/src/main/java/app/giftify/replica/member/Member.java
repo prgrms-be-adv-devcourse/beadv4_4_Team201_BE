@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "CATALOG_MEMBER")
+@Table(name = "MEMBER_REPLICA")
 @Getter
 @NoArgsConstructor
 public class Member {
