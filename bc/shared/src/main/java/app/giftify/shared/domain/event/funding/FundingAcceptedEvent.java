@@ -23,10 +23,14 @@ public class FundingAcceptedEvent extends BaseDomainEvent {
     public Long getFundingId() {
         return fundingId;
     }
+
     public Long getWishlistItemId() {
         return wishlistItemId;
     }
-    public LocalDateTime getConfirmedAt() { return confirmedAt;}
+
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
 
     @Override
     public String toString() {

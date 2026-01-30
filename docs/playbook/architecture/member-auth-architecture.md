@@ -5,6 +5,7 @@
 Giftify의 인증(Authentication) 및 인가(Authorization) 아키텍처에 대한 기술 명세서입니다.
 
 **관련 문서:**
+
 - [Auth API Catalog](../api/auth-api-catalog.md)
 - [Member API Catalog](../api/member-api-catalog.md)
 - [Member & Auth Event Catalog](../api/member-auth-event-catalog.md)
@@ -23,11 +24,11 @@ Giftify의 인증(Authentication) 및 인가(Authorization) 아키텍처에 대�
 +-------------------+     +-------------------+     +-------------------+
 ```
 
-| 책임 영역 | 담당 시스템 | 설명 |
-|----------|------------|------|
-| **Authentication (인증)** | Auth0 | 사용자 신원 확인, JWT 발급 |
-| **Authorization (인가)** | Giftify BE + DB | 역할(Role) 기반 권한 관리 |
-| **Session Management** | Auth0 | 토큰 갱신, 만료 관리 |
+| 책임 영역                   | 담당 시스템          | 설명                |
+|-------------------------|-----------------|-------------------|
+| **Authentication (인증)** | Auth0           | 사용자 신원 확인, JWT 발급 |
+| **Authorization (인가)**  | Giftify BE + DB | 역할(Role) 기반 권한 관리 |
+| **Session Management**  | Auth0           | 토큰 갱신, 만료 관리      |
 
 ---
 
@@ -69,12 +70,13 @@ Giftify는 **자체 JWT를 발급하지 않고** Auth0가 발급한 토큰을 �
 
 ### 2.2 Why Not Issue Custom JWT?
 
-| 방식 | 장점 | 단점 |
-|------|------|------|
-| **Auth0 토큰 직접 사용 (현재)** | 구현 단순, 토큰 관리 위임 | 매 요청시 DB에서 role 조회 필요 |
-| Giftify 자체 JWT 발급 | role을 토큰에 포함, DB 조회 감소 | 토큰 관리 복잡도 증가 |
+| 방식                      | 장점                     | 단점                    |
+|-------------------------|------------------------|-----------------------|
+| **Auth0 토큰 직접 사용 (현재)** | 구현 단순, 토큰 관리 위임        | 매 요청시 DB에서 role 조회 필요 |
+| Giftify 자체 JWT 발급       | role을 토큰에 포함, DB 조회 감소 | 토큰 관리 복잡도 증가          |
 
 **현재 선택 이유:**
+
 1. Auth0에 토큰 생명주기 관리 위임으로 보안 강화
 2. 구현 복잡도 감소
 3. 추후 캐싱으로 DB 조회 부하 해결 가능
@@ -125,6 +127,7 @@ public enum MemberRole {
 ### 3.3 Per-Request DB Query
 
 **현재 구현:**
+
 - 매 API 요청마다 `authSub`로 Member 테이블 조회
 - `@AuthenticatedMember` 어노테이션으로 authSub 주입
 
@@ -141,13 +144,14 @@ public ResponseEntity<MemberResponse> getMe(
 
 ### 3.4 Performance Considerations
 
-| 현재 상태 | 최적화 방안 |
-|----------|------------|
+| 현재 상태       | 최적화 방안                                |
+|-------------|---------------------------------------|
 | 매 요청시 DB 조회 | 1. Redis 캐싱 (`authSub -> MemberInfo`) |
-|  | 2. Spring Cache 적용 |
-|  | 3. 자체 JWT 발급으로 전환 (role 클레임 포함) |
+|             | 2. Spring Cache 적용                    |
+|             | 3. 자체 JWT 발급으로 전환 (role 클레임 포함)       |
 
 **권장 캐시 전략 (추후 적용 시):**
+
 ```
 Cache Key: "member:authSub:{authSub}"
 TTL: 5분 (role 변경 반영 지연 허용 범위)
@@ -198,13 +202,13 @@ bc/member/  (auth 서브모듈)
 
 ### 4.2 Key Components
 
-| 컴포넌트 | 책임 |
-|---------|------|
-| `AuthService` | Auth0 토큰 검증/갱신, OIDC 사용자 로드 |
-| `LoginService` | 로그인 처리, 신규/기존 사용자 판별 |
-| `MemberService` | 회원 CRUD, 닉네임 자동생성 |
-| `SecurityConfig` | Spring Security 설정, JWT 디코더 구성 |
-| `@AuthenticatedMember` | 커스텀 어노테이션, JWT에서 authSub 추출 |
+| 컴포넌트                   | 책임                             |
+|------------------------|--------------------------------|
+| `AuthService`          | Auth0 토큰 검증/갱신, OIDC 사용자 로드    |
+| `LoginService`         | 로그인 처리, 신규/기존 사용자 판별           |
+| `MemberService`        | 회원 CRUD, 닉네임 자동생성              |
+| `SecurityConfig`       | Spring Security 설정, JWT 디코더 구성 |
+| `@AuthenticatedMember` | 커스텀 어노테이션, JWT에서 authSub 추출    |
 
 ---
 
@@ -353,12 +357,12 @@ public class SecurityConfig {
 
 ### 6.2 JWT Validation
 
-| 검증 항목 | 설명 |
-|----------|------|
-| Signature | Auth0 JWKS로 서명 검증 |
-| Issuer | `https://{tenant}.auth0.com/` 일치 확인 |
-| Audience | API identifier 일치 확인 |
-| Expiration | 토큰 만료 시간 확인 |
+| 검증 항목      | 설명                                  |
+|------------|-------------------------------------|
+| Signature  | Auth0 JWKS로 서명 검증                   |
+| Issuer     | `https://{tenant}.auth0.com/` 일치 확인 |
+| Audience   | API identifier 일치 확인                |
+| Expiration | 토큰 만료 시간 확인                         |
 
 ---
 
@@ -407,19 +411,19 @@ Auth0 User                          Giftify Member
 
 ### 8.1 Authentication Errors
 
-| HTTP Status | Error Code | 상황 |
-|-------------|------------|------|
-| 401 | INVALID_TOKEN | JWT 검증 실패 (서명, 만료 등) |
-| 401 | TOKEN_EXPIRED | 토큰 만료 |
-| 401 | MISSING_TOKEN | Authorization 헤더 없음 |
+| HTTP Status | Error Code    | 상황                   |
+|-------------|---------------|----------------------|
+| 401         | INVALID_TOKEN | JWT 검증 실패 (서명, 만료 등) |
+| 401         | TOKEN_EXPIRED | 토큰 만료                |
+| 401         | MISSING_TOKEN | Authorization 헤더 없음  |
 
 ### 8.2 Member Errors
 
-| HTTP Status | Error Code | 상황 |
-|-------------|------------|------|
-| 404 | MEMBER_NOT_FOUND | authSub에 해당하는 회원 없음 |
-| 403 | MEMBER_WITHDRAWN | 탈퇴한 회원의 수정 요청 |
-| 409 | MEMBER_ALREADY_EXISTS | 이미 가입된 사용자 |
+| HTTP Status | Error Code            | 상황                  |
+|-------------|-----------------------|---------------------|
+| 404         | MEMBER_NOT_FOUND      | authSub에 해당하는 회원 없음 |
+| 403         | MEMBER_WITHDRAWN      | 탈퇴한 회원의 수정 요청       |
+| 409         | MEMBER_ALREADY_EXISTS | 이미 가입된 사용자          |
 
 ---
 
@@ -470,11 +474,11 @@ Auth0 User                          Giftify Member
 
 ## 10. Related Documents
 
-| 문서 | 설명 |
-|------|------|
-| [Auth API Catalog](../api/auth-api-catalog.md) | Auth 모듈 API 상세 명세 |
-| [Member API Catalog](../api/member-api-catalog.md) | Member 모듈 API 상세 명세 |
-| [Event Catalog](../api/member-auth-event-catalog.md) | 도메인 이벤트 명세 |
+| 문서                                                   | 설명                  |
+|------------------------------------------------------|---------------------|
+| [Auth API Catalog](../api/auth-api-catalog.md)       | Auth 모듈 API 상세 명세   |
+| [Member API Catalog](../api/member-api-catalog.md)   | Member 모듈 API 상세 명세 |
+| [Event Catalog](../api/member-auth-event-catalog.md) | 도메인 이벤트 명세          |
 
 ---
 

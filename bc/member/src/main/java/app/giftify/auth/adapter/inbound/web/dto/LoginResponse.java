@@ -12,29 +12,29 @@ import app.giftify.shared.domain.vo.MemberInfo;
  * @param member    회원 정보 (신규 사용자면 null)
  */
 public record LoginResponse(
-	boolean isNewUser,
-	String authSub,
-	String email,
-	String name,
-	MemberInfo member
+        boolean isNewUser,
+        String authSub,
+        String email,
+        String name,
+        MemberInfo member
 ) {
-	/**
-	 * 신규 사용자용 응답 생성
-	 */
-	public static LoginResponse newUser(String authSub, String email, String name) {
-		return new LoginResponse(true, authSub, email, name, null);
-	}
+    /**
+     * 신규 사용자용 응답 생성
+     */
+    public static LoginResponse newUser(String authSub, String email, String name) {
+        return new LoginResponse(true, authSub, email, name, null);
+    }
 
-	/**
-	 * 기존 회원용 응답 생성
-	 */
-	public static LoginResponse existingMember(MemberInfo member) {
-		return new LoginResponse(
-			false,
-			member.authSub(),
-			member.email(),
-			member.nickname(),  // MemberInfo에 name이 없어 nickname 사용
-			member
-		);
-	}
+    /**
+     * 기존 회원용 응답 생성
+     */
+    public static LoginResponse existingMember(MemberInfo member) {
+        return new LoginResponse(
+                false,
+                member.authSub(),
+                member.email(),
+                member.nickname(),  // MemberInfo에 name이 없어 nickname 사용
+                member
+        );
+    }
 }
