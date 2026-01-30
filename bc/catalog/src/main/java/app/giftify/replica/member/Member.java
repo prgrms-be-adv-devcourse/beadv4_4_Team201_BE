@@ -1,4 +1,4 @@
-package app.giftify.catalogmember.core.domain;
+package app.giftify.replica.member;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "CATALOG_MEMBER")
 @Getter
 @NoArgsConstructor
-public class CatalogMember {
+public class Member {
     @Id
     private Long id;
     private String nickname;
 
-    public CatalogMember(Long id, String nickname) {
+    public Member(Long id, String nickname) {
         this.id = id;
         this.nickname = nickname;
     }
