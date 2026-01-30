@@ -3,6 +3,7 @@ dependencies {
     implementation(project(":support:common"))
 //    implementation(project(":support:security"))
     implementation(project(":support:jpa"))
+    implementation(project(":bc:shared"))
 
     // Spring Boot Starters
     implementation(libs.spring.boot.starter.web)
@@ -15,6 +16,10 @@ dependencies {
     // Lombok
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+
+    // Retry
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
 
     // Test
     testImplementation(libs.spring.boot.starter.test)

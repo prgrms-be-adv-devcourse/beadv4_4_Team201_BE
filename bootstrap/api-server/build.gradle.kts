@@ -29,6 +29,10 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.actuator)
 
+    // Retry
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+
     // Database
     runtimeOnly(libs.h2)
     runtimeOnly(libs.postgresql)
