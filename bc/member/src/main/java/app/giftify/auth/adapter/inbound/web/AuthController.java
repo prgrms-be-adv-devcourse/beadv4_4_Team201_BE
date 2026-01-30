@@ -1,6 +1,7 @@
-package app.giftify.auth.api;
+package app.giftify.auth.adapter.inbound.web;
 
-import app.giftify.auth.core.service.AuthService;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -8,31 +9,62 @@ import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2Aut
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import app.giftify.auth.adapter.inbound.web.dto.LoginRequest;
+import app.giftify.auth.adapter.inbound.web.dto.LoginResponse;
+import app.giftify.auth.application.AuthService;
+import app.giftify.auth.application.inbound.LoginUseCase;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
-// 외부 API 접점(로그인 확인, 내 정보 조회, 토큰 갱신)
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final LoginUseCase loginUseCase;
 
     @GetMapping("/")
     public String publicPage() {
         return "아무나 접근 가능한 페이지 입니다.";
     }
 
-    // Auth0 로그인 페이지로 리다이렉트
+    // 기존 레거시 코드: OAuth2 리다이렉트용, Auth0 로그인 페이지로 리다이렉트
     @GetMapping("/login")
     public void login(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         response.sendRedirect("/oauth2/authorization/auth0");
+    }
+
+    /**
+     * SPA SDK용 로그인 엔드포인트.
+     * idToken을 검증하고 회원 정보와 가입 여부를 반환합니다.
+     *
+     * @param request idToken이 담긴 요청
+     * @return 회원 정보와 isNewUser 플래그
+     */
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @RequestBody @Valid LoginRequest request
+    ) {
+        LoginUseCase.LoginResult result = loginUseCase.login(new LoginUseCase.LoginCommand(request.idToken()));
+
+        LoginResponse response;
+        if (result.isNewUser()) {
+            response = LoginResponse.newUser(
+                    result.authSub(),
+                    result.email(),
+                    result.nickname()
+            );
+        } else {
+            response = LoginResponse.existingMember(result.member().orElseThrow());
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     // [로그인 확인 및 토큰 반환]
@@ -42,7 +74,8 @@ public class AuthController {
             @AuthenticationPrincipal OidcUser principal,
             @RegisteredOAuth2AuthorizedClient("auth0") OAuth2AuthorizedClient authorizedClient
     ) {
-        if (principal == null) return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
 
         String accessToken = authorizedClient.getAccessToken().getTokenValue();
 

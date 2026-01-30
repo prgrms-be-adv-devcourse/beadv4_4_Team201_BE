@@ -33,12 +33,27 @@ class MemberTest {
     @Test
     @DisplayName("[도메인] Member 생성 실패 - 필수값 누락")
     void createMemberFail() {
+        // email null → 예외
         assertThatThrownBy(() -> Member.create(null, "nick", LocalDate.now(), "addr", "phone", "name", "sub"))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Member.create("email", null, LocalDate.now(), "addr", "phone", "name", "sub"))
-                .isInstanceOf(IllegalArgumentException.class);
+
+        // nickname null → 이제 허용됨, 테스트 제거
+        // assertThatThrownBy(() -> Member.create("email", null, ...))
+
+        // authSub null → 예외
         assertThatThrownBy(() -> Member.create("email", "nick", LocalDate.now(), "addr", "phone", "name", null))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("[도메인] Member 생성 - nickname null 허용")
+    void createMemberWithNullNickname() {
+        // given & when
+        Member member = Member.create("email@test.com", null, LocalDate.now(), "addr", "phone", "name", "auth0|sub");
+
+        // then
+        assertThat(member.getEmail()).isEqualTo("email@test.com");
+        assertThat(member.getNickname()).isNull();  // null 허용
     }
 
     @Test

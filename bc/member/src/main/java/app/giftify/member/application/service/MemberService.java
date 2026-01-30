@@ -1,6 +1,6 @@
 package app.giftify.member.application.service;
 
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.adapter.out.jpa.entity.PreSignup;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
@@ -11,6 +11,7 @@ import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.domain.exception.DuplicateMemberException;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
+import app.giftify.member.domain.member.NicknameGenerator;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
@@ -25,11 +26,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
+public class MemberService
+        implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
 
     private final PreSignupPort preSignupPort;
     private final MemberRepositoryPort memberRepositoryPort;
     private final EventPublisher eventPublisher;
+    private final NicknameGenerator nicknameGenerator;
 
     @Override
     public Optional<Member> getMemberByAuthSub(String authSub) {
@@ -49,10 +52,17 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                     throw new DuplicateMemberException(command.authSub());
                 });
 
+        // 닉네임이 없으면 자동 생성
+        String nickname = command.nickname();
+        if (nickname == null || nickname.isBlank()) {
+            nickname = nicknameGenerator.generate();
+            log.info("[Member] 닉네임 자동 생성: {}", nickname);
+        }
+
         Member member = Member.builder()
                 .authSub(command.authSub())
                 .email(command.email())
-                .nickname(command.nickname())
+                .nickname(nickname)
                 .birthday(command.birthday())
                 .address(command.address())
                 .phoneNum(command.phoneNum())
@@ -66,7 +76,6 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
                         savedMember.getId(),
                         savedMember.getAuthSub(),
                         savedMember.getNickname()
-
                 )
         );
 
@@ -104,7 +113,8 @@ public class MemberService implements GetMemberUseCase, RegisterMemberUseCase, U
 
         member.validateActiveStatus();
 
-        member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(), command.name());
+        member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(),
+                command.name());
 
         Member updatedMember = memberRepositoryPort.save(member);
 

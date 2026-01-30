@@ -1,6 +1,6 @@
 package app.giftify.member.application.port.in;
 
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.domain.member.Member;
 import jakarta.validation.Valid;
 

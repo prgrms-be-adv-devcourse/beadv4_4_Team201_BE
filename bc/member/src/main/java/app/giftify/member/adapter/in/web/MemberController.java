@@ -1,7 +1,7 @@
-package app.giftify.member.adapter.in.web.controller;
+package app.giftify.member.adapter.in.web;
 
-import app.giftify.member.adapter.in.web.requestDto.MemberUpdateRequest;
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
+import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
@@ -72,6 +72,7 @@ public class MemberController {
     }
 
     // 내 정보 조회
+    @Deprecated
     @GetMapping("/getMyInfo")
     public ResponseEntity<?> getMyInfo(
             @AuthenticatedMember String authSub
@@ -86,6 +87,7 @@ public class MemberController {
     }
 
     // 회원 정보 수정
+    @Deprecated
     @PatchMapping("/updateMyInfo")
     public ResponseEntity<Member> updateMyInfo(
             @AuthenticatedMember String authSub,

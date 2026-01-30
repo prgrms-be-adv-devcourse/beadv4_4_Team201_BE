@@ -1,9 +1,7 @@
 package app.giftify.member.adapter.in.web;
 
-import app.giftify.member.adapter.in.web.controller.MemberController;
-import app.giftify.member.adapter.in.web.exceptionHandler.MemberExceptionHandler;
-import app.giftify.member.adapter.in.web.requestDto.MemberUpdateRequest;
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
+import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
@@ -19,9 +17,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -151,20 +149,25 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("[회원 가입] 필수 값 누락 시 400 에러")
-    void signup_ValidationFailed() throws Exception {
+    @DisplayName("[회원 가입] 모든 필드가 Optional이므로 빈 값으로도 가입 성공")
+    void signupWithEmptyFields() throws Exception {
         // given
-        SignupRequest request = new SignupRequest(
-                null, // birthday null
-                "", // address blank
-                null // phoneNum null
-        );
+        SignupRequest request = new SignupRequest(null, null, null);
+        Member mockMember = Member.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickname("행복한고양이1234")
+                .authSub("auth0|test")
+                .build();
+
+        given(registerMemberUseCase.signup(any(), any())).willReturn(mockMember);
 
         // when & then
         mockMvc.perform(post("/api/members/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk())  // 200 성공
+                .andExpect(jsonPath("$.nickname").exists());
     }
 
     @Test
