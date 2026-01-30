@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.MethodParameter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -34,13 +34,13 @@ class WishlistItemControllerTest {
 
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private AddWishlistItemUseCase addWishlistItemUseCase;
 
-	@MockBean
+	@MockitoBean
 	private GetWishlistItemUseCase getWishlistItemUseCase;
 
-	@MockBean
+	@MockitoBean
 	private RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
 	private static final Long MEMBER_ID = 10L;
