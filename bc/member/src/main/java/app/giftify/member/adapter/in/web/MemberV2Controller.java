@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v2/members")
 @RequiredArgsConstructor
 @Validated
-public class MemberV2Controller {
+public class MemberV2Controller implements MemberV2Api {
 
 	private final GetMemberUseCase getMemberUseCase;
 	private final UpdateMemberUseCase updateMemberUseCase;
