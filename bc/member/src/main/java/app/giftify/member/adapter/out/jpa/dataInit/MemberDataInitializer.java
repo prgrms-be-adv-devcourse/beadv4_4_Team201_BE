@@ -40,7 +40,7 @@ public class MemberDataInitializer implements ApplicationRunner {
                 .password("@5675995dc43786719eb76Cd455d3b368")
                 .nickname("나른한고양이0013")
                 .birthday(LocalDate.of(1970, 11, 8))
-                .role(MemberRole.BUYER)
+                .role(MemberRole.SELLER)
                 .address("서울시 송파구")
                 .phoneNum("010-1234-5678")
                 .name("김영주")
