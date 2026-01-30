@@ -15,11 +15,11 @@ Auth0 기반 OAuth2/OIDC 인증 플로우와 SPA SDK 기반 인증을 모두 지
 
 ## 인증 방식
 
-| 방식 | 사용 시나리오 | 관련 API |
-|------|--------------|----------|
-| **SPA SDK (BFF 패턴)** | 프론트엔드 SPA 앱 | `POST /api/auth/login` |
-| **OAuth2 Redirect** | 서버 사이드 렌더링 앱 | `GET /api/auth/login` → OAuth2 Flow |
-| **JWT Bearer** | API 호출 시 인증 | Header: `Authorization: Bearer {token}` |
+| 방식                   | 사용 시나리오      | 관련 API                                  |
+|----------------------|--------------|-----------------------------------------|
+| **SPA SDK (BFF 패턴)** | 프론트엔드 SPA 앱  | `POST /api/auth/login`                  |
+| **OAuth2 Redirect**  | 서버 사이드 렌더링 앱 | `GET /api/auth/login` → OAuth2 Flow     |
+| **JWT Bearer**       | API 호출 시 인증  | Header: `Authorization: Bearer {token}` |
 
 ---
 
@@ -29,19 +29,19 @@ Auth0 기반 OAuth2/OIDC 인증 플로우와 SPA SDK 기반 인증을 모두 지
 
 Auth0 SPA SDK에서 발급받은 idToken을 검증하고, 회원 정보와 가입 여부를 반환합니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `POST` |
-| **Path** | `/api/auth/login` |
-| **Auth** | Not Required (idToken으로 인증) |
-| **Content-Type** | `application/json` |
-| **Version** | v2 (신규) |
+| 항목               | 값                           |
+|------------------|-----------------------------|
+| **Method**       | `POST`                      |
+| **Path**         | `/api/auth/login`           |
+| **Auth**         | Not Required (idToken으로 인증) |
+| **Content-Type** | `application/json`          |
+| **Version**      | v2 (신규)                     |
 
 #### Request Body
 
-| Field | Type | Required | Description |
-|-------|------|:--------:|-------------|
-| `idToken` | `string` | ✅ | Auth0 SPA SDK에서 발급받은 ID Token |
+| Field     | Type     | Required | Description                   |
+|-----------|----------|:--------:|-------------------------------|
+| `idToken` | `string` |    ✅     | Auth0 SPA SDK에서 발급받은 ID Token |
 
 #### Request Example
 
@@ -53,13 +53,13 @@ Auth0 SPA SDK에서 발급받은 idToken을 검증하고, 회원 정보와 가�
 
 #### Response DTO: `LoginResponse`
 
-| Field | Type | Nullable | Description |
-|-------|------|:--------:|-------------|
-| `isNewUser` | `boolean` | ❌ | 신규 사용자 여부 (`true`: 온보딩 필요) |
-| `authSub` | `string` | ❌ | Auth0 고유 식별자 |
-| `email` | `string` | ❌ | 사용자 이메일 (JWT 클레임에서 추출) |
-| `name` | `string` | ❌ | 사용자 이름/닉네임 |
-| `member` | `MemberInfo` | ✅ | 기존 회원인 경우 회원 정보, 신규면 `null` |
+| Field       | Type         | Nullable | Description                 |
+|-------------|--------------|:--------:|-----------------------------|
+| `isNewUser` | `boolean`    |    ❌     | 신규 사용자 여부 (`true`: 온보딩 필요)  |
+| `authSub`   | `string`     |    ❌     | Auth0 고유 식별자                |
+| `email`     | `string`     |    ❌     | 사용자 이메일 (JWT 클레임에서 추출)      |
+| `name`      | `string`     |    ❌     | 사용자 이름/닉네임                  |
+| `member`    | `MemberInfo` |    ✅     | 기존 회원인 경우 회원 정보, 신규면 `null` |
 
 #### Response - 기존 회원
 
@@ -93,20 +93,20 @@ Auth0 SPA SDK에서 발급받은 idToken을 검증하고, 회원 정보와 가�
 
 #### member 객체 구조 (MemberInfo)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `memberId` | `number` | 내부 회원 ID (DB PK) |
-| `authSub` | `string` | Auth0 고유 식별자 |
-| `role` | `string` | 회원 역할: `BUYER`, `SELLER`, `ADMIN` |
-| `email` | `string` | 회원 이메일 |
-| `nickname` | `string` | 회원 닉네임 |
+| Field      | Type     | Description                       |
+|------------|----------|-----------------------------------|
+| `memberId` | `number` | 내부 회원 ID (DB PK)                  |
+| `authSub`  | `string` | Auth0 고유 식별자                      |
+| `role`     | `string` | 회원 역할: `BUYER`, `SELLER`, `ADMIN` |
+| `email`    | `string` | 회원 이메일                            |
+| `nickname` | `string` | 회원 닉네임                            |
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `400` | idToken 누락 (Validation Error) |
-| `401` | 유효하지 않은 idToken (만료, 서명 불일치 등) |
+| Status | Condition                      |
+|--------|--------------------------------|
+| `400`  | idToken 누락 (Validation Error)  |
+| `401`  | 유효하지 않은 idToken (만료, 서명 불일치 등) |
 
 #### Domain Events Published
 
@@ -118,11 +118,11 @@ Auth0 SPA SDK에서 발급받은 idToken을 검증하고, 회원 정보와 가�
 
 Auth0 로그인 페이지로 리다이렉트합니다. 서버 사이드 렌더링 애플리케이션용입니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/auth/login` |
-| **Auth** | Not Required |
+| 항목           | 값                                             |
+|--------------|-----------------------------------------------|
+| **Method**   | `GET`                                         |
+| **Path**     | `/api/auth/login`                             |
+| **Auth**     | Not Required                                  |
 | **Response** | 302 Redirect to `/oauth2/authorization/auth0` |
 
 #### Flow
@@ -150,11 +150,11 @@ Client                    Server                     Auth0
 
 OAuth2 로그인 성공 후 호출되는 엔드포인트입니다. Access Token을 반환합니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/auth/login-success` |
-| **Auth** | OAuth2 Session Required |
+| 항목         | 값                         |
+|------------|---------------------------|
+| **Method** | `GET`                     |
+| **Path**   | `/api/auth/login-success` |
+| **Auth**   | OAuth2 Session Required   |
 
 #### Response - 200 OK
 
@@ -174,9 +174,9 @@ OAuth2 로그인 성공 후 호출되는 엔드포인트입니다. Access Token�
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 로그인이 필요합니다 (세션 없음) |
+| Status | Condition          |
+|--------|--------------------|
+| `401`  | 로그인이 필요합니다 (세션 없음) |
 
 ---
 
@@ -184,11 +184,11 @@ OAuth2 로그인 성공 후 호출되는 엔드포인트입니다. Access Token�
 
 JWT 토큰의 유효성을 검증하고 클레임 정보를 반환합니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/auth/me` |
-| **Auth** | Required (Bearer Token) |
+| 항목         | 값                       |
+|------------|-------------------------|
+| **Method** | `GET`                   |
+| **Path**   | `/api/auth/me`          |
+| **Auth**   | Required (Bearer Token) |
 
 #### Response - 200 OK
 
@@ -206,9 +206,9 @@ JWT 토큰의 유효성을 검증하고 클레임 정보를 반환합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 유효하지 않은 토큰입니다 |
+| Status | Condition     |
+|--------|---------------|
+| `401`  | 유효하지 않은 토큰입니다 |
 
 ---
 
@@ -216,17 +216,17 @@ JWT 토큰의 유효성을 검증하고 클레임 정보를 반환합니다.
 
 Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/auth/refresh` |
-| **Auth** | Not Required |
+| 항목         | 값                   |
+|------------|---------------------|
+| **Method** | `GET`               |
+| **Path**   | `/api/auth/refresh` |
+| **Auth**   | Not Required        |
 
 #### Query Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|:--------:|-------------|
-| `token` | `string` | ✅ | Refresh Token |
+| Parameter | Type     | Required | Description   |
+|-----------|----------|:--------:|---------------|
+| `token`   | `string` |    ✅     | Refresh Token |
 
 #### Response - 200 OK
 
@@ -244,12 +244,12 @@ Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
 
 > **참고**: 로그아웃은 Spring Security 설정에서 처리됩니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `POST` / `GET` |
-| **Path** | `/api/auth/logout` |
-| **Auth** | Required (Session or Bearer Token) |
-| **Handler** | Spring Security (SecurityConfig) |
+| 항목          | 값                                  |
+|-------------|------------------------------------|
+| **Method**  | `POST` / `GET`                     |
+| **Path**    | `/api/auth/logout`                 |
+| **Auth**    | Required (Session or Bearer Token) |
+| **Handler** | Spring Security (SecurityConfig)   |
 
 ---
 
@@ -257,11 +257,11 @@ Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
 
 인증 없이 접근 가능한 테스트 엔드포인트입니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/auth/` |
-| **Auth** | Not Required |
+| 항목         | 값            |
+|------------|--------------|
+| **Method** | `GET`        |
+| **Path**   | `/api/auth/` |
+| **Auth**   | Not Required |
 
 #### Response - 200 OK
 
@@ -353,15 +353,15 @@ Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
 
 ### ID Token Claims (Auth0)
 
-| Claim | Description |
-|-------|-------------|
-| `sub` | Auth0 고유 식별자 (authSub) |
-| `email` | 사용자 이메일 |
-| `name` | 사용자 이름 |
-| `nickname` | 사용자 닉네임 |
-| `picture` | 프로필 이미지 URL |
-| `iat` | 토큰 발급 시간 |
-| `exp` | 토큰 만료 시간 |
+| Claim      | Description            |
+|------------|------------------------|
+| `sub`      | Auth0 고유 식별자 (authSub) |
+| `email`    | 사용자 이메일                |
+| `name`     | 사용자 이름                 |
+| `nickname` | 사용자 닉네임                |
+| `picture`  | 프로필 이미지 URL            |
+| `iat`      | 토큰 발급 시간               |
+| `exp`      | 토큰 만료 시간               |
 
 ### Access Token Usage
 
@@ -374,16 +374,16 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## Error Handling
 
-| Status | Description | Action |
-|--------|-------------|--------|
+| Status             | Description      | Action         |
+|--------------------|------------------|----------------|
 | `401 Unauthorized` | 토큰 없음 또는 유효하지 않음 | 로그인 페이지로 리다이렉트 |
-| `403 Forbidden` | 권한 부족 | 권한 요청 또는 에러 표시 |
+| `403 Forbidden`    | 권한 부족            | 권한 요청 또는 에러 표시 |
 
 ---
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 2.0 | 2026-01-30 | SPA SDK 로그인 API 추가 (`POST /api/auth/login`) |
-| 1.0 | 2025-12-01 | 초기 버전 (OAuth2 Redirect 방식) |
+| Version | Date       | Changes                                     |
+|---------|------------|---------------------------------------------|
+| 2.0     | 2026-01-30 | SPA SDK 로그인 API 추가 (`POST /api/auth/login`) |
+| 1.0     | 2025-12-01 | 초기 버전 (OAuth2 Redirect 방식)                  |

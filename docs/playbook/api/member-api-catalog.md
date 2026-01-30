@@ -15,11 +15,11 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 ## API 분류
 
-| 분류 | Base Path | 설명 |
-|------|-----------|------|
-| Public API v1 | `/api/members` | 외부 클라이언트용 레거시 API |
-| Public API v2 | `/api/v2/members` | 외부 클라이언트용 RESTful API (신규) |
-| Internal API | `/api/internal/members` | 내부 서비스 간 통신용 API |
+| 분류            | Base Path               | 설명                         |
+|---------------|-------------------------|----------------------------|
+| Public API v1 | `/api/members`          | 외부 클라이언트용 레거시 API          |
+| Public API v2 | `/api/v2/members`       | 외부 클라이언트용 RESTful API (신규) |
+| Internal API  | `/api/internal/members` | 내부 서비스 간 통신용 API           |
 
 ---
 
@@ -29,18 +29,18 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 회원의 가입 여부를 확인합니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/members/check-registration` |
-| **Auth** | Required (Bearer Token) |
-| **Deprecated** | No (유지) |
+| 항목             | 값                                 |
+|----------------|-----------------------------------|
+| **Method**     | `GET`                             |
+| **Path**       | `/api/members/check-registration` |
+| **Auth**       | Required (Bearer Token)           |
+| **Deprecated** | No (유지)                           |
 
 #### Request Headers
 
-| Header | Required | Description |
-|--------|:--------:|-------------|
-| `Authorization` | ✅ | `Bearer {accessToken}` |
+| Header          | Required | Description            |
+|-----------------|:--------:|------------------------|
+| `Authorization` |    ✅     | `Bearer {accessToken}` |
 
 #### Response - 가입된 회원
 
@@ -69,9 +69,9 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 인증 토큰 누락/유효하지 않음 |
+| Status | Condition        |
+|--------|------------------|
+| `401`  | 인증 토큰 누락/유효하지 않음 |
 
 ---
 
@@ -79,20 +79,20 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 신규 회원을 등록합니다. PreSignup 임시 정보를 기반으로 회원을 생성합니다.
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `POST` |
-| **Path** | `/api/members/signup` |
-| **Auth** | Required (Bearer Token) |
-| **Content-Type** | `application/json` |
+| 항목               | 값                       |
+|------------------|-------------------------|
+| **Method**       | `POST`                  |
+| **Path**         | `/api/members/signup`   |
+| **Auth**         | Required (Bearer Token) |
+| **Content-Type** | `application/json`      |
 
 #### Request Body
 
-| Field | Type | Required | Description |
-|-------|------|:--------:|-------------|
-| `birthday` | `string` (ISO 8601) | ❌ | 생년월일 (예: "1990-01-15") |
-| `address` | `string` | ❌ | 배송 주소 |
-| `phoneNum` | `string` | ❌ | 전화번호 |
+| Field      | Type                | Required | Description            |
+|------------|---------------------|:--------:|------------------------|
+| `birthday` | `string` (ISO 8601) |    ❌     | 생년월일 (예: "1990-01-15") |
+| `address`  | `string`            |    ❌     | 배송 주소                  |
+| `phoneNum` | `string`            |    ❌     | 전화번호                   |
 
 > **참고**: 모든 필드가 Optional입니다. 빈 body `{}`로도 가입 가능합니다.
 > 닉네임은 서버에서 "형용사+동물+숫자" 형식으로 자동 생성됩니다.
@@ -126,10 +126,10 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Code | Condition |
-|--------|------|-----------|
-| `400` | `M201` | 이미 가입된 회원 (DuplicateMemberException) |
-| `401` | - | 인증 토큰 누락/유효하지 않음 |
+| Status | Code   | Condition                            |
+|--------|--------|--------------------------------------|
+| `400`  | `M201` | 이미 가입된 회원 (DuplicateMemberException) |
+| `401`  | -      | 인증 토큰 누락/유효하지 않음                     |
 
 #### Domain Events Published
 
@@ -139,11 +139,11 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 ### 3. 내 정보 조회 (Deprecated)
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/members/getMyInfo` |
-| **Auth** | Required (Bearer Token) |
+| 항목             | 값                                             |
+|----------------|-----------------------------------------------|
+| **Method**     | `GET`                                         |
+| **Path**       | `/api/members/getMyInfo`                      |
+| **Auth**       | Required (Bearer Token)                       |
 | **Deprecated** | ⚠️ Yes - Use `GET /api/v2/members/me` instead |
 
 #### Response - 200 OK
@@ -165,32 +165,32 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 인증 토큰 누락/유효하지 않음 |
-| `404` | 회원을 찾을 수 없음 |
+| Status | Condition        |
+|--------|------------------|
+| `401`  | 인증 토큰 누락/유효하지 않음 |
+| `404`  | 회원을 찾을 수 없음      |
 
 ---
 
 ### 4. 회원 정보 수정 (Deprecated)
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `PATCH` |
-| **Path** | `/api/members/updateMyInfo` |
-| **Auth** | Required (Bearer Token) |
-| **Content-Type** | `application/json` |
-| **Deprecated** | ⚠️ Yes - Use `PATCH /api/v2/members/me` instead |
+| 항목               | 값                                               |
+|------------------|-------------------------------------------------|
+| **Method**       | `PATCH`                                         |
+| **Path**         | `/api/members/updateMyInfo`                     |
+| **Auth**         | Required (Bearer Token)                         |
+| **Content-Type** | `application/json`                              |
+| **Deprecated**   | ⚠️ Yes - Use `PATCH /api/v2/members/me` instead |
 
 #### Request Body
 
-| Field | Type | Required | Description |
-|-------|------|:--------:|-------------|
-| `password` | `string` | ❌ | 비밀번호 |
-| `nickname` | `string` | ❌ | 닉네임 |
-| `address` | `string` | ❌ | 주소 |
-| `phoneNum` | `string` | ❌ | 전화번호 |
-| `name` | `string` | ❌ | 이름 |
+| Field      | Type     | Required | Description |
+|------------|----------|:--------:|-------------|
+| `password` | `string` |    ❌     | 비밀번호        |
+| `nickname` | `string` |    ❌     | 닉네임         |
+| `address`  | `string` |    ❌     | 주소          |
+| `phoneNum` | `string` |    ❌     | 전화번호        |
+| `name`     | `string` |    ❌     | 이름          |
 
 #### Domain Events Published
 
@@ -200,11 +200,11 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 ### 5. 회원 탈퇴
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `DELETE` |
-| **Path** | `/api/members/withdraw` |
-| **Auth** | Required (Bearer Token) |
+| 항목         | 값                       |
+|------------|-------------------------|
+| **Method** | `DELETE`                |
+| **Path**   | `/api/members/withdraw` |
+| **Auth**   | Required (Bearer Token) |
 
 #### Response - 204 No Content
 
@@ -212,25 +212,25 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 인증 토큰 누락/유효하지 않음 |
+| Status | Condition        |
+|--------|------------------|
+| `401`  | 인증 토큰 누락/유효하지 않음 |
 
 ---
 
 ### 6. 닉네임 중복 확인
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/members/check/nickname` |
-| **Auth** | Not Required |
+| 항목         | 값                             |
+|------------|-------------------------------|
+| **Method** | `GET`                         |
+| **Path**   | `/api/members/check/nickname` |
+| **Auth**   | Not Required                  |
 
 #### Query Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|:--------:|-------------|
-| `nickname` | `string` | ✅ | 확인할 닉네임 |
+| Parameter  | Type     | Required | Description |
+|------------|----------|:--------:|-------------|
+| `nickname` | `string` |    ✅     | 확인할 닉네임     |
 
 #### Response - 200 OK
 
@@ -250,9 +250,9 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `400` | 닉네임이 빈 문자열인 경우 |
+| Status | Condition      |
+|--------|----------------|
+| `400`  | 닉네임이 빈 문자열인 경우 |
 
 ---
 
@@ -260,25 +260,25 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 ### 1. 내 정보 조회
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/v2/members/me` |
-| **Auth** | Required (Bearer Token) |
-| **Version** | v2 (신규) |
+| 항목          | 값                       |
+|-------------|-------------------------|
+| **Method**  | `GET`                   |
+| **Path**    | `/api/v2/members/me`    |
+| **Auth**    | Required (Bearer Token) |
+| **Version** | v2 (신규)                 |
 
 #### Response DTO: `MemberResponse`
 
-| Field | Type | Nullable | Description |
-|-------|------|:--------:|-------------|
-| `id` | `number` | ❌ | 회원 ID |
-| `email` | `string` | ❌ | 이메일 |
-| `nickname` | `string` | ❌ | 닉네임 |
-| `birthday` | `string` | ✅ | 생년월일 (ISO 8601) |
-| `address` | `string` | ✅ | 주소 |
-| `phoneNum` | `string` | ✅ | 전화번호 |
-| `name` | `string` | ✅ | 이름 |
-| `status` | `string` | ❌ | 회원 상태 |
+| Field      | Type     | Nullable | Description     |
+|------------|----------|:--------:|-----------------|
+| `id`       | `number` |    ❌     | 회원 ID           |
+| `email`    | `string` |    ❌     | 이메일             |
+| `nickname` | `string` |    ❌     | 닉네임             |
+| `birthday` | `string` |    ✅     | 생년월일 (ISO 8601) |
+| `address`  | `string` |    ✅     | 주소              |
+| `phoneNum` | `string` |    ✅     | 전화번호            |
+| `name`     | `string` |    ✅     | 이름              |
+| `status`   | `string` |    ❌     | 회원 상태           |
 
 > **참고**: v1 API와 달리 `authSub`, `role` 필드가 응답에 포함되지 않습니다.
 
@@ -299,32 +299,32 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 인증 토큰 누락/유효하지 않음 |
-| `404` | 회원을 찾을 수 없음 |
+| Status | Condition        |
+|--------|------------------|
+| `401`  | 인증 토큰 누락/유효하지 않음 |
+| `404`  | 회원을 찾을 수 없음      |
 
 ---
 
 ### 2. 회원 정보 수정
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `PATCH` |
-| **Path** | `/api/v2/members/me` |
-| **Auth** | Required (Bearer Token) |
-| **Content-Type** | `application/json` |
-| **Version** | v2 (신규) |
+| 항목               | 값                       |
+|------------------|-------------------------|
+| **Method**       | `PATCH`                 |
+| **Path**         | `/api/v2/members/me`    |
+| **Auth**         | Required (Bearer Token) |
+| **Content-Type** | `application/json`      |
+| **Version**      | v2 (신규)                 |
 
 #### Request Body
 
-| Field | Type | Required | Description |
-|-------|------|:--------:|-------------|
-| `password` | `string` | ❌ | 비밀번호 |
-| `nickname` | `string` | ❌ | 닉네임 |
-| `address` | `string` | ❌ | 주소 |
-| `phoneNum` | `string` | ❌ | 전화번호 |
-| `name` | `string` | ❌ | 이름 |
+| Field      | Type     | Required | Description |
+|------------|----------|:--------:|-------------|
+| `password` | `string` |    ❌     | 비밀번호        |
+| `nickname` | `string` |    ❌     | 닉네임         |
+| `address`  | `string` |    ❌     | 주소          |
+| `phoneNum` | `string` |    ❌     | 전화번호        |
+| `name`     | `string` |    ❌     | 이름          |
 
 > **참고**: Partial Update를 지원합니다. 전송된 필드만 수정됩니다.
 
@@ -354,11 +354,11 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `401` | 인증 토큰 누락/유효하지 않음 |
-| `403` | 탈퇴한 회원이 수정 시도 (status = WITHDRAWN) |
-| `404` | 회원을 찾을 수 없음 |
+| Status | Condition                          |
+|--------|------------------------------------|
+| `401`  | 인증 토큰 누락/유효하지 않음                   |
+| `403`  | 탈퇴한 회원이 수정 시도 (status = WITHDRAWN) |
+| `404`  | 회원을 찾을 수 없음                        |
 
 #### Domain Events Published
 
@@ -372,28 +372,28 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 ### 1. AuthSub으로 회원 조회
 
-| 항목 | 값 |
-|------|---|
-| **Method** | `GET` |
-| **Path** | `/api/internal/members/by-auth-sub/{authSub}` |
-| **Auth** | Internal Service Only |
-| **Consumer** | Auth Module, Order Module |
+| 항목           | 값                                             |
+|--------------|-----------------------------------------------|
+| **Method**   | `GET`                                         |
+| **Path**     | `/api/internal/members/by-auth-sub/{authSub}` |
+| **Auth**     | Internal Service Only                         |
+| **Consumer** | Auth Module, Order Module                     |
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter | Type     | Description               |
+|-----------|----------|---------------------------|
 | `authSub` | `string` | Auth0 고유 식별자 (URL 인코딩 필요) |
 
 #### Response DTO: `MemberInfo`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `memberId` | `number` | 내부 회원 ID |
-| `authSub` | `string` | Auth0 고유 식별자 |
-| `role` | `string` | 회원 역할 (BUYER, SELLER, ADMIN) |
-| `email` | `string` | 회원 이메일 |
-| `nickname` | `string` | 회원 닉네임 |
+| Field      | Type     | Description                  |
+|------------|----------|------------------------------|
+| `memberId` | `number` | 내부 회원 ID                     |
+| `authSub`  | `string` | Auth0 고유 식별자                 |
+| `role`     | `string` | 회원 역할 (BUYER, SELLER, ADMIN) |
+| `email`    | `string` | 회원 이메일                       |
+| `nickname` | `string` | 회원 닉네임                       |
 
 #### Response Example
 
@@ -409,9 +409,9 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 #### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| `404` | 회원을 찾을 수 없음 |
+| Status | Condition   |
+|--------|-------------|
+| `404`  | 회원을 찾을 수 없음 |
 
 ---
 
@@ -419,36 +419,36 @@ Member 도메인의 모든 REST API 엔드포인트를 정의합니다.
 
 ### MemberStatus
 
-| Value | Description |
-|-------|-------------|
-| `ACTIVE` | 정상적으로 서비스를 이용 중인 상태 |
-| `INACTIVE` | 임시로 서비스 이용이 제한된 상태 |
-| `DORMANT` | 장기간 미접속으로 인해 휴면 전환된 상태 |
-| `WITHDRAWN` | 회원 탈퇴가 완료된 상태 |
+| Value       | Description            |
+|-------------|------------------------|
+| `ACTIVE`    | 정상적으로 서비스를 이용 중인 상태    |
+| `INACTIVE`  | 임시로 서비스 이용이 제한된 상태     |
+| `DORMANT`   | 장기간 미접속으로 인해 휴면 전환된 상태 |
+| `WITHDRAWN` | 회원 탈퇴가 완료된 상태          |
 
 ### MemberRole
 
-| Value | Description |
-|-------|-------------|
-| `BUYER` | 구매자 |
-| `SELLER` | 판매자 |
-| `ADMIN` | 관리자 |
+| Value    | Description |
+|----------|-------------|
+| `BUYER`  | 구매자         |
+| `SELLER` | 판매자         |
+| `ADMIN`  | 관리자         |
 
 ---
 
 ## Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `M201` | 400 | 이미 가입된 이메일입니다 (DuplicateMemberException) |
-| `M404` | 404 | 회원을 찾을 수 없습니다 (MemberNotFoundException) |
-| `VALIDATION_ERROR` | 400 | 요청 값 유효성 검사 실패 |
+| Code               | HTTP Status | Description                              |
+|--------------------|-------------|------------------------------------------|
+| `M201`             | 400         | 이미 가입된 이메일입니다 (DuplicateMemberException) |
+| `M404`             | 404         | 회원을 찾을 수 없습니다 (MemberNotFoundException)  |
+| `VALIDATION_ERROR` | 400         | 요청 값 유효성 검사 실패                           |
 
 ---
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 2.0 | 2026-01-30 | v2 API 추가 (GET/PATCH /api/v2/members/me), SignupRequest 필드 Optional화, 닉네임 자동생성 |
-| 1.0 | 2025-12-01 | 초기 버전 |
+| Version | Date       | Changes                                                                        |
+|---------|------------|--------------------------------------------------------------------------------|
+| 2.0     | 2026-01-30 | v2 API 추가 (GET/PATCH /api/v2/members/me), SignupRequest 필드 Optional화, 닉네임 자동생성 |
+| 1.0     | 2025-12-01 | 초기 버전                                                                          |

@@ -6,6 +6,8 @@ import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -28,6 +30,7 @@ public class Product extends BaseJpaEntity {
     private String description;
     private int price;
     private int stock;
+    @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
     @Builder
