@@ -15,4 +15,10 @@ public class OrderItemSnapshotService {
     public OrderItemSnapshot save(OrderItemSnapshot snapshot) {
         return orderItemSnapshotRepository.save(snapshot);
     }
+
+    @Transactional(readOnly = true)
+    public OrderItemSnapshot findByIdFundingId(Long fundingId) {
+        return orderItemSnapshotRepository.findById(fundingId)
+                .orElseThrow(RuntimeException::new);    // todo: 비즈니스 예외 처리
+    }
 }

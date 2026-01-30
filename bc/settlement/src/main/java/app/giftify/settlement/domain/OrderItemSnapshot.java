@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -13,9 +14,16 @@ import java.math.BigDecimal;
 @Table(name = "order_item_snapshot")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class OrderItemSnapshot {
     @Id
     private Long orderItemId;
+
+    @Column
+    private Long orderId;
+
+    @Column(nullable = false, unique = true)
+    private Long fundingId;
 
     @Column(nullable = false)
     private Long sellerId;

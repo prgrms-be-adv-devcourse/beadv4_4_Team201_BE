@@ -4,6 +4,7 @@ import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -12,12 +13,13 @@ import java.time.LocalDateTime;
 @Table(name = "payment_snapshot")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class PaymentSnapshot {
     @Id
     private Long paymentId;
 
-    @Column(nullable = false)
-    private Long orderId;
+    @Column(nullable = false, unique = true)
+    private String orderNumber;
 
     @Column(nullable = false, unique = true)
     private String paymentKey;

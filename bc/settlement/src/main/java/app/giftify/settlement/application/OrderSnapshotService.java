@@ -15,4 +15,9 @@ public class OrderSnapshotService {
     public OrderSnapshot save(OrderSnapshot snapshot) {
         return orderSnapshotRepository.save(snapshot);
     }
+
+    public OrderSnapshot findById(Long orderId) {
+        return orderSnapshotRepository.findById(orderId)
+                .orElseThrow(RuntimeException::new);
+    }
 }

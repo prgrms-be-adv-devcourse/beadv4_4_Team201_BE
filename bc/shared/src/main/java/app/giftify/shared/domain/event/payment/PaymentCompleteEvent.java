@@ -6,7 +6,7 @@ import app.giftify.shared.domain.vo.Money;
 import java.time.LocalDateTime;
 
 public record PaymentCompleteEvent(
-        Long orderId,
+        String orderNumber,
         Long paymentId,
         String paymentKey,
         String transactionKey,

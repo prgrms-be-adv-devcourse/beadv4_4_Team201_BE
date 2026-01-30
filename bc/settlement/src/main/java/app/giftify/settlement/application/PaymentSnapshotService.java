@@ -15,4 +15,9 @@ public class PaymentSnapshotService {
     public PaymentSnapshot save(PaymentSnapshot snapshot) {
         return paymentSnapshotRepository.save(snapshot);
     }
+
+    public PaymentSnapshot findByOrderNumber(String orderNumber) {
+        return paymentSnapshotRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(RuntimeException::new);
+    }
 }

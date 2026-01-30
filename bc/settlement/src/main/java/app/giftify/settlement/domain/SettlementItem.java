@@ -1,8 +1,13 @@
 package app.giftify.settlement.domain;
 
+import app.giftify.settlement.application.SettlementSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +15,8 @@ import java.time.LocalDateTime;
 @Table(name = "settlement_item")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@EntityListeners(AuditingEntityListener.class)
 public class SettlementItem {
     // 식별
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,4 +60,40 @@ public class SettlementItem {
 
     @Embedded
     private LifeCycleMeta lifeCycleMeta;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    public SettlementItem(Long sellerId, SettlementItemType type, Long orderId, Long orderItemId, Long fundingId, String orderNumber, LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt, SettlementCore core, LifeCycleMeta lifeCycleMeta) {
+        this.sellerId = sellerId;
+        this.type = type;
+        this.orderId = orderId;
+        this.orderItemId = orderItemId;
+        this.fundingId = fundingId;
+        this.orderNumber = orderNumber;
+        this.orderedAt = orderedAt;
+        this.paidAt = paidAt;
+        this.confirmedAt = confirmedAt;
+        this.core = core;
+        this.lifeCycleMeta = lifeCycleMeta;
+    }
+
+    public static SettlementItem createPaymentItem(SettlementSource source, SettlementCore core, LocalDateTime confirmedAt) {
+        return new SettlementItem(
+                source.getSellerId(),
+                SettlementItemType.ITEM_PAYMENT,
+                source.getOrderId(),
+                source.getOrderItemId(),
+                source.getFunding(),
+                source.getOrderNumber(),
+                source.getOrderedAt(),
+                source.getPaidAt(),
+                confirmedAt,
+                core,
+                LifeCycleMeta.of(confirmedAt)
+        );
+    }
 }
