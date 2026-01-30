@@ -1,17 +1,16 @@
 package app.giftify.member.adapter.out.jpa.dataInit;
 
-import java.time.LocalDate;
-
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
-
 import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
 import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.shared.domain.type.MemberRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 @Slf4j
 @Component
@@ -41,7 +40,7 @@ public class MemberDataInitializer implements ApplicationRunner {
 			.password("@5675995dc43786719eb76Cd455d3b368")
 			.nickname("나른한고양이0013")
 			.birthday(LocalDate.of(1970, 11, 8))
-			.role(MemberRole.BUYER)
+			.role(MemberRole.SELLER)
 			.address("서울시 송파구")
 			.phoneNum("010-1234-5678")
 			.name("김영주")
