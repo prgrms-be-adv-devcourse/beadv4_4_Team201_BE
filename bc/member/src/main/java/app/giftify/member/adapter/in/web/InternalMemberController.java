@@ -1,4 +1,4 @@
-package app.giftify.member.adapter.in.web.controller;
+package app.giftify.member.adapter.in.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,6 +1,6 @@
 package app.giftify.member.application.service;
 
-import app.giftify.member.adapter.in.web.requestDto.SignupRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.adapter.out.jpa.entity.PreSignup;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
@@ -9,10 +9,12 @@ import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.domain.exception.DuplicateMemberException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.member.domain.member.NicknameGenerator;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +42,9 @@ class MemberServiceTest {
 
     @Mock
     private EventPublisher eventPublisher;
+
+    @Mock
+    private NicknameGenerator nicknameGenerator;
 
     @InjectMocks
     private MemberService memberService;
@@ -257,5 +263,129 @@ class MemberServiceTest {
         // then
         assertThat(member.getStatus()).isEqualTo(MemberStatus.WITHDRAWN);
         verify(memberRepositoryPort).save(member);
+    }
+
+    @Nested
+    @DisplayName("Given 닉네임 자동생성 기능")
+    class Given_NicknameAutoGeneration {
+
+        @Nested
+        @DisplayName("When 닉네임이 null인 경우")
+        class When_NicknameIsNull {
+
+            @Test
+            @DisplayName("Then 자동 생성된 닉네임으로 회원 등록")
+            void Then_RegistersWithGeneratedNickname() {
+                // given
+                String generatedNickname = "행복한고양이1234";
+                RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
+                        "test@example.com",
+                        null,  // nickname is null
+                        LocalDate.of(1990, 1, 1),
+                        "Seoul",
+                        "01012345678",
+                        "Hong",
+                        "auth0|12345"
+                );
+
+                given(memberRepositoryPort.findByAuthSub(command.authSub())).willReturn(Optional.empty());
+                given(nicknameGenerator.generate()).willReturn(generatedNickname);
+                given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> {
+                    Member m = invocation.getArgument(0);
+                    return Member.builder()
+                            .id(1L)
+                            .email(m.getEmail())
+                            .nickname(m.getNickname())
+                            .authSub(m.getAuthSub())
+                            .build();
+                });
+
+                // when
+                Member result = memberService.registerMember(command);
+
+                // then
+                assertThat(result.getNickname()).isEqualTo(generatedNickname);
+                verify(nicknameGenerator).generate();
+            }
+        }
+
+        @Nested
+        @DisplayName("When 닉네임이 빈 문자열인 경우")
+        class When_NicknameIsBlank {
+
+            @Test
+            @DisplayName("Then 자동 생성된 닉네임으로 회원 등록")
+            void Then_RegistersWithGeneratedNickname() {
+                // given
+                String generatedNickname = "귀여운토끼5678";
+                RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
+                        "test@example.com",
+                        "   ",  // nickname is blank
+                        LocalDate.of(1990, 1, 1),
+                        "Seoul",
+                        "01012345678",
+                        "Hong",
+                        "auth0|12345"
+                );
+
+                given(memberRepositoryPort.findByAuthSub(command.authSub())).willReturn(Optional.empty());
+                given(nicknameGenerator.generate()).willReturn(generatedNickname);
+                given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> {
+                    Member m = invocation.getArgument(0);
+                    return Member.builder()
+                            .id(1L)
+                            .email(m.getEmail())
+                            .nickname(m.getNickname())
+                            .authSub(m.getAuthSub())
+                            .build();
+                });
+
+                // when
+                Member result = memberService.registerMember(command);
+
+                // then
+                assertThat(result.getNickname()).isEqualTo(generatedNickname);
+                verify(nicknameGenerator).generate();
+            }
+        }
+
+        @Nested
+        @DisplayName("When 닉네임이 제공된 경우")
+        class When_NicknameIsProvided {
+
+            @Test
+            @DisplayName("Then 제공된 닉네임으로 회원 등록 (자동생성 호출 안함)")
+            void Then_RegistersWithProvidedNickname() {
+                // given
+                String providedNickname = "사용자지정닉네임";
+                RegisterMemberUseCase.RegisterCommand command = new RegisterMemberUseCase.RegisterCommand(
+                        "test@example.com",
+                        providedNickname,
+                        LocalDate.of(1990, 1, 1),
+                        "Seoul",
+                        "01012345678",
+                        "Hong",
+                        "auth0|12345"
+                );
+
+                given(memberRepositoryPort.findByAuthSub(command.authSub())).willReturn(Optional.empty());
+                given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> {
+                    Member m = invocation.getArgument(0);
+                    return Member.builder()
+                            .id(1L)
+                            .email(m.getEmail())
+                            .nickname(m.getNickname())
+                            .authSub(m.getAuthSub())
+                            .build();
+                });
+
+                // when
+                Member result = memberService.registerMember(command);
+
+                // then
+                assertThat(result.getNickname()).isEqualTo(providedNickname);
+                verify(nicknameGenerator, never()).generate();
+            }
+        }
     }
 }
