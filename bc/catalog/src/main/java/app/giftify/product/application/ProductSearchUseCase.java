@@ -1,12 +1,12 @@
 package app.giftify.product.application;
 
-import app.giftify.catalogmember.adapter.outbound.jpa.CatalogMemberRepository;
-import app.giftify.catalogmember.core.domain.CatalogMember;
 import app.giftify.product.adapter.inbound.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.ProductDto;
 import app.giftify.product.adapter.inbound.ProductSearchDto;
 import app.giftify.product.adapter.outbound.ProductRepository;
 import app.giftify.product.domain.Product;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class ProductSearchUseCase {
 
     private final ProductRepository productRepository;
-    private final CatalogMemberRepository catalogMemberRepository;
+    private final MemberRepository memberRepository;
 
     // 일반 상품 검색
     public PageResponse<ProductDto> searchProducts(ProductSearchDto searchDto) {
@@ -66,10 +66,10 @@ public class ProductSearchUseCase {
                 .distinct()
                 .toList();
 
-        return catalogMemberRepository.findAllById(sellerIds).stream()
+        return memberRepository.findAllById(sellerIds).stream()
                 .collect(Collectors.toMap(
-                        CatalogMember::getId,
-                        CatalogMember::getNickname
+                        Member::getId,
+                        Member::getNickname
                 ));
     }
 }
