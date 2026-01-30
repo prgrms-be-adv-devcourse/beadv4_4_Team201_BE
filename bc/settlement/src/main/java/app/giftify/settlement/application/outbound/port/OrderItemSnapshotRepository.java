@@ -1,0 +1,9 @@
+package app.giftify.settlement.application.outbound.port;
+
+import app.giftify.settlement.domain.OrderItemSnapshot;
+
+public interface OrderItemSnapshotRepository {
+    OrderItemSnapshot save(OrderItemSnapshot snapshot);
+
+    OrderItemSnapshot getByFundingId(Long fundingId);
+}
