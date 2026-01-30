@@ -11,6 +11,8 @@ import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class FundingAcceptUseCase {
@@ -34,7 +36,8 @@ public class FundingAcceptUseCase {
         // 이벤트 발행
         eventPublisher.publish(new FundingAcceptedEvent(
                 funding.getId(),
-                wishlistItem.getWishlistId()
+                wishlistItem.getWishlistId(),
+                LocalDateTime.now()
         ));
 
         return FundingCompleteResponseDto.fromEntity(funding);
