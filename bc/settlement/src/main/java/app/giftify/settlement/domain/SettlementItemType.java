@@ -1,6 +1,17 @@
 package app.giftify.settlement.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum SettlementItemType {
-    ITEM_PAYMENT,         // 일반 상품 판매에 대한 정산금 지급
-    DEDUCTION_REFUND      // 고객 환불로 인해 판매자로부터 회수해야 할 금액 차감
+    ITEM_PAYMENT(false),
+    DEDUCTION_REFUND(true);
+
+    private final boolean requiresOriginId;
+
+    public boolean requiresOriginId() {
+        return requiresOriginId;
+    }
 }

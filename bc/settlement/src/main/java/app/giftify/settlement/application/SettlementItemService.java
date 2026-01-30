@@ -1,45 +1,66 @@
 package app.giftify.settlement.application;
 
-import app.giftify.settlement.application.inbound.CreatePaymentItemCommand;
-import app.giftify.settlement.application.inbound.SettlementItemCreateUseCase;
-import app.giftify.settlement.domain.SettlementItem;
-import app.giftify.settlement.domain.SettlementItemRepository;
+import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
+import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
+import app.giftify.settlement.domain.*;
+import app.giftify.settlement.domain.exception.InfraException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SettlementItemService implements SettlementItemCreateUseCase {
+public class SettlementItemService {
 
     private final SettlementItemRepository settlementItemRepository;
+    private final OrderSnapshotRepository orderSnapshotRepository;
+    private final OrderItemSnapshotRepository orderItemSnapshotRepository;
+    private final PaymentSnapshotRepository paymentSnapshotRepository;
+    private final FeePolicyService feePolicyService;
 
-    @Override
+    @Retryable(
+            value = { InfraException.class }, // 재시도 대상 예외
+            maxAttempts = 3,                  // 최대 3회
+            backoff = @Backoff(delay = 10000, multiplier = 2)// 10초 딜레이
+    )
     @Transactional
-    public void createPaymentItem(CreatePaymentItemCommand command) {
-        Long orderItemId = command.orderItemInfo().orderItemId();
+    public void initializeSettlementItem(InitializeSettlementItemCommand command) {
+        SettlementSource source = fetchSettlementSource(command);
 
-        if (settlementItemRepository.existsByOrderItemId(orderItemId)) {
-            log.info("[SETTLEMENT] 중복 요청 - 이미 존재함. orderItemId: {}", orderItemId);
-            return;
-        }
+        SettlementCore core = SettlementCalculator.calculate(
+                source.getPaidAmount(),
+                feePolicyService.getPlatformFeeRate(),
+                feePolicyService.getPgFeeRate()
+        );
 
-        try {
-            SettlementItem settlementItem = SettlementItem.createPaymentItem(command.orderItemInfo());
+        SettlementItem paymentItem = SettlementItem.createPaymentItem(
+                source,
+                core,
+                command.confirmedAt()
+        );
 
-            // 중복이 있다면 이 자리에서 예외가 발생하도록 saveAndFlush 호출
-            settlementItemRepository.saveAndFlush(settlementItem);
+        settlementItemRepository.save(paymentItem);
+    }
 
-            log.info("[SETTLEMENT] 정산 아이템 생성 완료: orderItemId={}, status={}",
-                    orderItemId, settlementItem.getStatus());
+    @Recover
+    public void recover(InfraException e, InitializeSettlementItemCommand command) {
+        log.error("[SettlementItemService] 재시도 실패, fundingId={}, message={}",
+                command.fundingId(), e.getMessage(), e);
+    }
 
-        } catch (DataIntegrityViolationException e) {
-            // 동시성 이슈로 인해 유니크 제약 조건 위반 시 로그만 남기고 정상 진행(멱등성 보장)
-            log.warn("[SETTLEMENT] 동시성 이슈 - 이미 처리 중인 정산 아이템입니다. orderItemId: {}", orderItemId);
-        }
-        // DB 연결 끊김 등의 다른 RuntimeException은 그대로 밖으로 던져짐 -> 리스너 전체 롤백
+    private SettlementSource fetchSettlementSource(InitializeSettlementItemCommand command) {
+        OrderItemSnapshot item = orderItemSnapshotRepository.getByFundingId(command.fundingId());
+        OrderSnapshot order = orderSnapshotRepository.getById(item.getOrderId());
+        PaymentSnapshot payment = paymentSnapshotRepository.getByOrderNumber(order.getOrderNumber());
+
+        return new SettlementSource(item, order, payment);
     }
 }

@@ -1,6 +1,7 @@
 package app.giftify.shared.domain.vo;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * 금액은 수정되어선 안된다.
@@ -60,6 +61,14 @@ public record Money(BigDecimal amount) {
 		return new Money(this.amount.multiply(BigDecimal.valueOf(multiplier)));
 	}
 
+	public Money multiply(BigDecimal multiplier) {
+		return new Money(this.amount.multiply(multiplier));
+	}
+
+	public BigDecimal toBigDecimalValue() {
+		return this.amount.setScale(0, RoundingMode.HALF_UP);
+	}
+
 	public Money negate() {
 		return new Money(amount.negate());
 	}
@@ -69,4 +78,8 @@ public record Money(BigDecimal amount) {
 			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
 		}
 	}
+
+    public boolean isNegative() {
+		return this.amount.compareTo(BigDecimal.ZERO) < 0;
+    }
 }
