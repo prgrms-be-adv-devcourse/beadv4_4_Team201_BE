@@ -30,7 +30,6 @@ public class SettlementSnapshotEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleFundingReceivedConfirmedEvent(FundingReceivedConfirmedEvent event) {
-
         InitializeSettlementItemCommand command = new InitializeSettlementItemCommand(
                 event.fundingId(),
                 event.confirmedAt()

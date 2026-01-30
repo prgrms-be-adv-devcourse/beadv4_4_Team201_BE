@@ -18,6 +18,7 @@ public enum SettlementErrorCode implements ErrorCode {
     INVALID_STATUS_TRANSITION("SETTLEMENT-106", "허용되지 않는 정산 상태 변경입니다.", false),
     INVALID_ORIGIN_ID("SETTLEMENT-107", "정산 원천 ID가 올바르지 않습니다.", false),
     INVALID_ORDER_NUMBER("SETTLEMENT-108", "주문 번호가 올바르지 않습니다.", false),
+    DUPLICATE_SETTLEMENT_ITEM("SETTLEMENT-109", "이미 존재하는 정산 아이템입니다", false),
 
     PAYMENT_NOT_COMPLETED("SETTLEMENT-201", "결제가 완료되지 않아 정산을 생성할 수 없습니다.", false),
     CONFIRMED_AT_REQUIRED("SETTLEMENT-202", "구매 확정 시점은 필수입니다.", false),
