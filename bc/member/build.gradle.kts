@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":support:common"))
     implementation(project(":support:security"))
     implementation(project(":support:jpa"))
+    implementation(project(":support:web"))
 
     // Spring Boot Starters
     implementation(libs.spring.boot.starter.web)
