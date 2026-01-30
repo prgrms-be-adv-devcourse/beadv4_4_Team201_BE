@@ -37,19 +37,32 @@ public class MemberDataInitializer implements ApplicationRunner {
                 .build();
         MemberJpaEntity member2 = MemberJpaEntity.builder()
                 .email("qa-giftify-test-mock@giftify.app")
-                .password("@5675995dc43786719eb76Cd455d3b368")
+                .password("1Q2w3e@4r")
                 .nickname("나른한고양이0013")
                 .birthday(LocalDate.of(1970, 11, 8))
-                .role(MemberRole.SELLER)
+                .role(MemberRole.BUYER)
                 .address("서울시 송파구")
                 .phoneNum("010-1234-5678")
                 .name("김영주")
                 .status(MemberStatus.ACTIVE)
                 .authSub("auth0|697c550a745dc4abd34fea91")
                 .build();
+        MemberJpaEntity member3 = MemberJpaEntity.builder()
+                .email("qa-giftify-test-mock-seller@giftify.app")
+                .password("5@675995dC43786719eb76Cd455d3b368")
+                .nickname("멍청한고양이2013")
+                .birthday(LocalDate.of(1970, 11, 8))
+                .role(MemberRole.SELLER)
+                .address("서울시 송파구")
+                .phoneNum("010-1234-5678")
+                .name("김영주")
+                .status(MemberStatus.ACTIVE)
+                .authSub("auth0|697c89c469f1c3cf7fe72715")
+                .build();
 
         saveIfNotExists(member1);
         saveIfNotExists(member2);
+        saveIfNotExists(member3);
 
         log.info("===== MemberDataInitializer 완료 =====");
     }
