@@ -24,7 +24,7 @@ public class OrderService {
                 command.targetType(),
                 command.sellerId(),
                 command.receiverId(),
-                command.unitPrice(),
+                command.price(),
                 command.amount()
         );
 

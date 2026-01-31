@@ -16,6 +16,6 @@ public record PlaceOrderForItemCommand(
 
         // wishlistItem snapshot
         Long sellerId,
-        Money unitPrice
+        Money price
 ) {
 }
