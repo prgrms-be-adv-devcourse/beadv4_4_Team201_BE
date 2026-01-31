@@ -11,7 +11,7 @@ public record OrderItemSnapshot(
         TargetType targetType,
         Long sellerId,
         Long receiverId,
-        Money unitPrice,
+        Money price,
         Money amount,
         OrderItemStatus status
 ) {

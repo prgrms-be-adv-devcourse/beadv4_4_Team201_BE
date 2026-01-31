@@ -1,5 +1,7 @@
 package app.giftify.orderDemo.domain;
 
+import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
+import app.giftify.orderDemo.domain.exception.DomainException;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
@@ -40,7 +42,7 @@ public class OrderItem {
 
     @Convert(converter = MoneyConverter.class)
     @Column(nullable = false, precision = 19, scale = 2)
-    private Money unitPrice;
+    private Money price;
 
     @Convert(converter = MoneyConverter.class)
     @Column(nullable = false, precision = 19, scale = 2)
@@ -63,15 +65,24 @@ public class OrderItem {
             TargetType targetType,
             Long sellerId,
             Long receiverId,
-            Money unitPrice,
+            Money price,
             Money amount
     ) {
+        if (targetId == null) throw new DomainException(OrderErrorCode.INVALID_TARGET_ID);
+        if (targetType == null) throw new DomainException(OrderErrorCode.INVALID_TARGET_TYPE);
+        if (sellerId == null) throw new DomainException(OrderErrorCode.INVALID_SELLER_ID);
+        if (receiverId == null) throw new DomainException(OrderErrorCode.INVALID_RECEIVER_ID);
+        if (price == null || price.isLessThanOrEqual(Money.zero())) throw new DomainException(OrderErrorCode.INVALID_PRICE);
+        if (amount == null) throw new DomainException(OrderErrorCode.INVALID_AMOUNT);
+
+        if (amount.isGreaterThan(price)) throw new DomainException(OrderErrorCode.AMOUNT_EXCEEDS_PRICE);
+
         return OrderItem.builder()
                 .targetId(targetId)
                 .targetType(targetType)
                 .sellerId(sellerId)
                 .receiverId(receiverId)
-                .unitPrice(unitPrice)
+                .price(price)
                 .amount(amount)
                 .status(OrderItemStatus.CREATED)
                 .build();
@@ -88,7 +99,7 @@ public class OrderItem {
                 .targetType(targetType)
                 .sellerId(sellerId)
                 .receiverId(receiverId)
-                .unitPrice(unitPrice)
+                .price(price)
                 .amount(amount)
                 .status(status)
                 .build();

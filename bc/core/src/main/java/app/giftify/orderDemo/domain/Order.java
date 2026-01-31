@@ -1,5 +1,7 @@
 package app.giftify.orderDemo.domain;
 
+import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
+import app.giftify.orderDemo.domain.exception.DomainException;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
@@ -72,6 +74,10 @@ public class Order {
             List<OrderItem> items,
             PaymentMethodType paymentMethod
     ) {
+        if (buyerId == null) throw new DomainException(OrderErrorCode.INVALID_BUYER_ID);
+        if (items == null || items.isEmpty()) throw new DomainException(OrderErrorCode.INVALID_ORDER_ITEM);
+        if (paymentMethod == null) throw new DomainException(OrderErrorCode.INVALID_PAYMENT_METHOD);
+
         Order order = Order.builder()
                 .orderNumber(generateOrderNumber())
                 .buyerId(buyerId)
@@ -81,6 +87,9 @@ public class Order {
 
         items.forEach(order::addItem);
         order.setTotalAmount();
+
+        if (order.getTotalAmount().isLessThan(Money.of(1000L)))
+        throw new DomainException(OrderErrorCode.INVALID_TOTAL_AMOUNT);
 
         return order;
     }
