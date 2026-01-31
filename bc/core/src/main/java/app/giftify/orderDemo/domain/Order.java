@@ -1,21 +1,24 @@
 package app.giftify.orderDemo.domain;
 
-import app.giftify.order.domain.OrderStatus;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "order")
 @NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 public class Order {
@@ -34,10 +37,14 @@ public class Order {
     private Money totalAmount;
 
     @Column(nullable = false)
-    private PaymentMethodType paymentMethod;
+    private OrderStatus status;
 
     @Column(nullable = false)
-    private OrderStatus status;
+    private PaymentMethodType paymentMethod;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
 
     @Column(unique = true)
     private String paymentKey;
@@ -60,16 +67,55 @@ public class Order {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @Builder
-    public Order(String orderNumber,
-                 Long buyerId,
-                 Money totalAmount,
-                 OrderStatus status,
-                 PaymentMethodType paymentMethod) {
-        this.orderNumber = orderNumber;
-        this.buyerId = buyerId;
-        this.totalAmount = totalAmount;
-        this.status = status;
-        this.paymentMethod = paymentMethod;
+    public static Order create(
+            Long buyerId,
+            List<OrderItem> items,
+            PaymentMethodType paymentMethod
+    ) {
+        Order order = Order.builder()
+                .orderNumber(generateOrderNumber())
+                .buyerId(buyerId)
+                .paymentMethod(paymentMethod)
+                .status(OrderStatus.CREATED)
+                .build();
+
+        items.forEach(order::addItem);
+        order.setTotalAmount();
+
+        return order;
+    }
+
+    private static String generateOrderNumber() {
+        return "ORD-"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase()
+                + "-"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+    }
+
+    private void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+
+    private void setTotalAmount() {
+        this.totalAmount = items.stream()
+                .map(OrderItem::getAmount)
+                .reduce(Money.zero(), Money::plus);
+    }
+
+    public OrderSnapshot toSnapshot() {
+        List<OrderItemSnapshot> itemSnapshots = items.stream()
+                .map(OrderItem::toSnapshot)
+                .toList();
+
+        return OrderSnapshot.builder()
+                .orderNumber(orderNumber)
+                .buyerId(buyerId)
+                .paymentMethod(paymentMethod)
+                .status(status)
+                .totalAmount(totalAmount)
+                .createdAt(createdAt)
+                .orderItemSnapshots(itemSnapshots)
+                .build();
     }
 }
