@@ -40,11 +40,6 @@ public class AuthController implements AuthV2Api {
 		return "아무나 접근 가능한 페이지 입니다.";
 	}
 
-	/**
-	 * @deprecated OAuth2 리다이렉트 방식은 더 이상 사용하지 않습니다.
-	 *             SPA SDK를 사용하여 프론트엔드에서 직접 Auth0 로그인 후
-	 *             POST /api/v2/auth/login을 호출하세요.
-	 */
 	@Deprecated(since = "v2", forRemoval = true)
 	@Hidden
 	@GetMapping("/login")
@@ -73,10 +68,6 @@ public class AuthController implements AuthV2Api {
 		return ResponseEntity.ok(response);
 	}
 
-	/**
-	 * @deprecated OAuth2 리다이렉트 콜백용 엔드포인트입니다.
-	 *             SPA SDK 방식에서는 사용하지 않습니다.
-	 */
 	@Deprecated(since = "v2", forRemoval = true)
 	@Hidden
 	@GetMapping("/login-success")
