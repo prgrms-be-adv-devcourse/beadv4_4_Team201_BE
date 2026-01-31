@@ -1,12 +1,11 @@
 package app.giftify.auth.support.config;
 
-import app.giftify.auth.application.AuthService;
-import app.giftify.auth.support.filter.MemberPrincipalFilter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -22,7 +21,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.Arrays;
+import app.giftify.auth.application.AuthService;
+import app.giftify.auth.support.filter.MemberPrincipalFilter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
@@ -38,8 +40,20 @@ public class SecurityConfig {
 
     @Value("${auth0.audience}")
     private String audience;
+    
+    @Bean
+    @Order(1)
+    public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/v2/auth/login", "/api/auth/login", "/actuator/health", "/actuator/health/**", "/error")
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+        return http.build();
+    }
 
     @Bean
+    @Order(2)
     public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
         boolean isLocal = isH2ConsoleAllowed();
 
@@ -63,11 +77,8 @@ public class SecurityConfig {
 
                 // 경로별 접근 권한 설정
                 .authorizeHttpRequests(auth -> {
-                    // 공개 엔드포인트
-                    auth.requestMatchers("/", "/api/auth/login").permitAll();
-
-                    // Actuator 헬스체크 (Docker, K8s, 로드밸런서용)
-                    auth.requestMatchers("/actuator/health", "/actuator/health/**").permitAll();
+                    // 루트 경로는 허용
+                    auth.requestMatchers("/").permitAll();
 
                     // H2 콘솔: 로컬 환경에서만 허용
                     if (isLocal) {
@@ -75,7 +86,7 @@ public class SecurityConfig {
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
 
-                    // 나머지 모든 요청은 인증 필요
+                    // 나머지 모든 요청은 인증 필요 (공개 엔드포인트는 publicSecurityFilterChain에서 처리)
                     auth.anyRequest().authenticated();
                 })
 
