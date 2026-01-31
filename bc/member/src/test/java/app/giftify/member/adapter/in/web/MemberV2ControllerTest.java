@@ -1,6 +1,7 @@
 package app.giftify.member.adapter.in.web;
 
 import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
@@ -59,6 +60,9 @@ class MemberV2ControllerTest {
     private GetMemberUseCase getMemberUseCase;
 
     @MockitoBean
+    private RegisterMemberUseCase registerMemberUseCase;
+
+    @MockitoBean
     private UpdateMemberUseCase updateMemberUseCase;
 
     private static final String AUTH_SUB = "auth0|12345";
@@ -70,7 +74,7 @@ class MemberV2ControllerTest {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new MemberV2Controller(getMemberUseCase, updateMemberUseCase))
+                .standaloneSetup(new MemberV2Controller(getMemberUseCase, registerMemberUseCase, updateMemberUseCase))
                 .setControllerAdvice(new TestExceptionHandler())
                 .setMessageConverters(new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(mapper))
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {

@@ -1,8 +1,21 @@
 package app.giftify.member.adapter.in.web;
 
+import java.util.Optional;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.giftify.member.adapter.in.web.dto.MemberResponse;
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
@@ -11,11 +24,6 @@ import app.giftify.security.common.context.AuthenticatedMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 /**
  * Member API v2.
@@ -29,6 +37,7 @@ import java.util.Optional;
 public class MemberV2Controller implements MemberV2Api {
 
     private final GetMemberUseCase getMemberUseCase;
+    private final RegisterMemberUseCase registerMemberUseCase;
     private final UpdateMemberUseCase updateMemberUseCase;
 
     /**
@@ -75,5 +84,27 @@ public class MemberV2Controller implements MemberV2Api {
 
         Member updatedMember = updateMemberUseCase.updateMember(command);
         return ResponseEntity.ok(MemberResponse.from(updatedMember));
+    }
+
+    /**
+     * 회원가입 (추가 정보 입력).
+     */
+    @Override
+    @PostMapping("/signup")
+    public ResponseEntity<MemberResponse> signup(
+            @AuthenticatedMember String authSub,
+            @RequestBody @Valid SignupRequest request
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        // 이미 가입된 회원인지 확인
+        if (getMemberUseCase.getMemberByAuthSub(authSub).isPresent()) {
+            return ResponseEntity.status(409).build();
+        }
+
+        Member member = registerMemberUseCase.signup(authSub, request);
+        return ResponseEntity.ok(MemberResponse.from(member));
     }
 }
