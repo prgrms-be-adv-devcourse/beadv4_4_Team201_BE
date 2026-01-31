@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Member API v2.
- * RESTful 경로와 DTO 응답을 사용합니다.
  */
 @Slf4j
 @RestController
@@ -43,6 +42,7 @@ public class MemberV2Controller implements MemberV2Api {
     /**
      * 내 정보 조회.
      */
+    @Override
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMe(
             @AuthenticatedMember String authSub
@@ -59,6 +59,7 @@ public class MemberV2Controller implements MemberV2Api {
     /**
      * 회원 정보 수정.
      */
+    @Override
     @PatchMapping("/me")
     public ResponseEntity<MemberResponse> updateMe(
             @AuthenticatedMember String authSub,
