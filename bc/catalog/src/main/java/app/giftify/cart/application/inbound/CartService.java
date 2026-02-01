@@ -50,8 +50,8 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
 
     private void validateCartItem(TargetType targetType, Long targetId) {
         switch (targetType) {
-            case PRODUCT -> validateDirectPurchase(targetId);
-            case FUNDING -> validateFundingPurchase(targetId);
+            case GENERAL_PRODUCT -> validateDirectPurchase(targetId);
+            case FUNDING_PENDING -> validateFundingPurchase(targetId);
             default -> throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
         };
     }

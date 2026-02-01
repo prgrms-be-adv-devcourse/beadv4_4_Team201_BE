@@ -4,6 +4,7 @@ import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.orderDemo.domain.exception.DomainException;
 import app.giftify.orderDemo.domain.exception.PolicyException;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
+import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
@@ -34,7 +35,12 @@ public class OrderItem {
     private Long targetId;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TargetType targetType;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderItemType orderItemType;
 
     @Column(nullable = false)
     private Long sellerId;
@@ -65,6 +71,7 @@ public class OrderItem {
     public static OrderItem create(
             Long targetId,
             TargetType targetType,
+            OrderItemType orderItemType,
             Long sellerId,
             Long receiverId,
             Money price,
@@ -72,6 +79,7 @@ public class OrderItem {
     ) {
         if (targetId == null) throw new DomainException(OrderErrorCode.INVALID_TARGET_ID);
         if (targetType == null) throw new DomainException(OrderErrorCode.INVALID_TARGET_TYPE);
+        if (orderItemType == null) throw new DomainException(OrderErrorCode.INVALID_ORDER_TYPE);
         if (sellerId == null) throw new DomainException(OrderErrorCode.INVALID_SELLER_ID);
         if (receiverId == null) throw new DomainException(OrderErrorCode.INVALID_RECEIVER_ID);
         if (price == null || price.isLessThanOrEqual(Money.zero())) throw new DomainException(OrderErrorCode.INVALID_PRICE);
@@ -82,6 +90,7 @@ public class OrderItem {
         return OrderItem.builder()
                 .targetId(targetId)
                 .targetType(targetType)
+                .orderItemType(orderItemType)
                 .sellerId(sellerId)
                 .receiverId(receiverId)
                 .price(price)
@@ -99,6 +108,7 @@ public class OrderItem {
                 .orderItemId(id)
                 .targetId(targetId)
                 .targetType(targetType)
+                .orderItemType(orderItemType)
                 .sellerId(sellerId)
                 .receiverId(receiverId)
                 .price(price)
@@ -109,17 +119,19 @@ public class OrderItem {
 
     public void updateTargetToFunding(Long fundingId) {
         this.targetId = fundingId;
-        this.targetType = TargetType.FUNDING;
+        this.targetType = TargetType.FUNDING_PENDING;
 
         if (order == null) throw new PolicyException(OrderErrorCode.ORDER_ITEM_NOT_ASSOCIATED);
 
         OrderItemCreatedEvent event = new OrderItemCreatedEvent(
                 id,
                 targetId,
+                targetType,
+                orderItemType,
                 order.getId(),
                 sellerId,
-                price.amount(),
-                amount.amount()
+                price,
+                amount
         );
 
         order.registerEvent(event);
@@ -133,6 +145,7 @@ public class OrderItem {
                 ", orderId=" + orderId +
                 ", targetId=" + targetId +
                 ", targetType=" + targetType +
+                ", orderItemType=" + orderItemType +
                 ", sellerId=" + sellerId +
                 ", receiverId=" + receiverId +
                 ", price=" + price +

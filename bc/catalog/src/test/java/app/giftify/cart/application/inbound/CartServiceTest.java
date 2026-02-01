@@ -67,7 +67,7 @@ class CartServiceTest {
         given(productRepository.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.FUNDING, wishlistItemId),
+                new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
                 amount
         );
 
@@ -101,7 +101,7 @@ class CartServiceTest {
         given(productRepository.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.FUNDING, wishlistItemId),
+                new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
                 amount
         );
 
@@ -127,7 +127,7 @@ class CartServiceTest {
         given(productRepository.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.PRODUCT, productId),
+                new CartItemKey(TargetType.GENERAL_PRODUCT, productId),
                 amount
         );
 
@@ -155,7 +155,7 @@ class CartServiceTest {
         given(productRepository.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.PRODUCT, productId),
+                new CartItemKey(TargetType.GENERAL_PRODUCT, productId),
                 amount
         );
 

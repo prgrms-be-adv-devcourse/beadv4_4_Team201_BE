@@ -1,21 +1,21 @@
 package app.giftify.orderDemo.application.inbound.command;
 
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 
-public record PlaceOrderForItemCommand(
+public record CreateOrderItemCommand (
         Long targetId,
-        TargetType targetType,
-
-        // ParticipateInFundingCommand
-        Long buyerId,
         Long receiverId,
         Money amount,
-        PaymentMethodType method,
+        OrderItemType orderItemType,
 
-        // wishlistItem snapshot
+        // funding 유무
+        TargetType targetType,
+
+        // WishlistItemSnapshot
         Long sellerId,
         Money price
-) {
+){
 }
+

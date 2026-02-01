@@ -1,7 +1,7 @@
 package app.giftify.facade;
 
-import app.giftify.facade.command.ParticipateInFundingCommand;
-import app.giftify.facade.vo.ParticipateInFundingResult;
+import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.vo.PlaceOrderResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ public class CoreFacade {
      * 그래도 실패하면 전체 롤백
      */
     @Transactional
-    public ParticipateInFundingResult participateInFunding(ParticipateInFundingCommand command) {
+    public PlaceOrderResult placeOrder(PlaceOrderCommand command) {
         // 위시리스트아이템 스냅샷 확보
         // todo: api 요청을 통해 위시리스트 아이템 id로 스냅샷 반환
 

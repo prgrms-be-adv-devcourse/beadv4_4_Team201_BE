@@ -1,6 +1,7 @@
 package app.giftify.orderDemo.application;
 
-import app.giftify.orderDemo.application.inbound.command.PlaceOrderForItemCommand;
+import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -11,6 +12,7 @@ import app.giftify.orderDemo.domain.exception.DomainException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
+import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
@@ -46,43 +48,50 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private PlaceOrderForItemCommand validCommand;
+    private CreateOrderCommand validCommand;
 
     @BeforeEach
     void setUp() {
-        validCommand = new PlaceOrderForItemCommand(
+        validCommand = new CreateOrderCommand(
                 1L,
-                TargetType.FUNDING,
-                2L,
-                3L,
-                Money.of(1000L),
                 PaymentMethodType.WALLET,
-                1L,
-                Money.of(10000L)
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.of("1000"),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.of("10000")
+                ))
         );
     }
 
     @Test
     @DisplayName("주문 생성 성공")
     void placeOrder_success() {
-        OrderItem item = OrderItem.create(
-                validCommand.targetId(),
-                validCommand.targetType(),
-                validCommand.sellerId(),
-                validCommand.receiverId(),
-                validCommand.price(),
-                validCommand.amount()
-        );
+        List<OrderItem> orderItems = validCommand.items().stream()
+                .map(item -> OrderItem.create(
+                        item.targetId(),
+                        item.targetType(),
+                        item.orderItemType(),
+                        item.sellerId(),
+                        item.receiverId(),
+                        item.price(),
+                        item.amount()
+                ))
+                .toList();
+
 
         Order order = Order.create(
                 validCommand.buyerId(),
-                List.of(item),
+                orderItems,
                 validCommand.method()
         );
 
         given(orderRepository.save(any(Order.class))).willReturn(order);
 
-        OrderSnapshot snapshot = orderService.placeOrderForItem(validCommand);
+        OrderSnapshot snapshot = orderService.createOrder(validCommand);
 
         assertNotNull(snapshot);
         assertEquals(1, snapshot.orderItemSnapshots().size());
@@ -98,55 +107,64 @@ class OrderServiceTest {
     @Test
     @DisplayName("주문 생성 실패 - price 0")
     void placeOrder_fail_zeroPrice() {
-        PlaceOrderForItemCommand command = new PlaceOrderForItemCommand(
+        CreateOrderCommand command = new CreateOrderCommand(
                 1L,
-                TargetType.PRODUCT,
-                2L,
-                3L,
-                Money.zero(),
                 PaymentMethodType.WALLET,
-                1L,
-                Money.of(10000L)
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.of("1000"),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.zero()
+                ))
         );
 
         assertThrows(DomainException.class,
-                () -> orderService.placeOrderForItem(command));
+                () -> orderService.createOrder(command));
     }
 
     @Test
     @DisplayName("주문 생성 실패 - amount 0")
     void placeOrder_fail_zeroAmount() {
-        PlaceOrderForItemCommand command = new PlaceOrderForItemCommand(
+        CreateOrderCommand command = new CreateOrderCommand(
                 1L,
-                TargetType.PRODUCT,
-                2L,
-                3L,
-                Money.of(1000L),
                 PaymentMethodType.WALLET,
-                1L,
-                Money.zero()
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.zero(),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.of("1000")
+                ))
         );
 
         assertThrows(DomainException.class,
-                () -> orderService.placeOrderForItem(command));
+                () -> orderService.createOrder(command));
     }
 
     @Test
     @DisplayName("주문 생성 실패 - null buyerId")
     void placeOrder_fail_nullBuyer() {
-        PlaceOrderForItemCommand command = new PlaceOrderForItemCommand(
-                1L,
-                TargetType.PRODUCT,
+        CreateOrderCommand command = new CreateOrderCommand(
                 null,
-                3L,
-                Money.of(1000L),
                 PaymentMethodType.WALLET,
-                1L,
-                Money.zero()
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.of("1000"),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.of("10000")
+                ))
         );
 
         assertThrows(DomainException.class,
-                () -> orderService.placeOrderForItem(command));
+                () -> orderService.createOrder(command));
     }
 
     @Test
@@ -155,7 +173,7 @@ class OrderServiceTest {
         given(orderRepository.save(any(Order.class))).willThrow(new RuntimeException("DB Error"));
 
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> orderService.placeOrderForItem(validCommand));
+                () -> orderService.createOrder(validCommand));
 
         assertEquals("DB Error", ex.getMessage());
     }
