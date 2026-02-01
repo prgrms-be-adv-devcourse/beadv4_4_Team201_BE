@@ -2,7 +2,7 @@ package app.giftify.member.adapter.in.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +22,8 @@ public class InternalMemberController {
 	private final GetMemberUseCase getMemberUseCase;
 	private final RegisterMemberUseCase registerMemberUseCase;
 
-	@GetMapping("/by-auth-sub/{authSub}")
-	public ResponseEntity<MemberInfo> getByAuthSub(@PathVariable String authSub) {
+	@GetMapping("/by-auth-sub")
+	public ResponseEntity<MemberInfo> getByAuthSub(@RequestParam("authSub") String authSub) {
 		return getMemberUseCase.getMemberByAuthSub(authSub)
 			.map(member -> MemberInfo.of(
 				member.getId(),
