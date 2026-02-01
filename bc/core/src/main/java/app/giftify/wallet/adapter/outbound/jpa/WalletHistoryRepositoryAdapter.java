@@ -3,7 +3,10 @@ package app.giftify.wallet.adapter.outbound.jpa;
 import app.giftify.wallet.adapter.outbound.jpa.entity.JpaWalletHistory;
 import app.giftify.wallet.application.outbound.WalletHistoryRepository;
 import app.giftify.wallet.domain.ReferenceType;
+import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.domain.WalletHistory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -23,5 +26,16 @@ public class WalletHistoryRepositoryAdapter implements WalletHistoryRepository {
 	public boolean existsByReferenceIdAndReferenceType(String referenceId, ReferenceType type) {
 		return jpaWalletHistoryRepository.existsByReferenceIdAndReferenceType(
 			referenceId, type.name());
+	}
+
+	@Override
+	public Page<WalletHistory> findByWalletId(Long walletId, TransactionType type, Pageable pageable) {
+		Page<JpaWalletHistory> jpaPage;
+		if (type == null) {
+			jpaPage = jpaWalletHistoryRepository.findByWalletId(walletId, pageable);
+		} else {
+			jpaPage = jpaWalletHistoryRepository.findByWalletIdAndTransactionType(walletId, type.name(), pageable);
+		}
+		return jpaPage.map(JpaWalletHistory::toDomain);
 	}
 }
