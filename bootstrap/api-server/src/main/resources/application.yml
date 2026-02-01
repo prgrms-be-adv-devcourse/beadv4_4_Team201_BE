@@ -5,6 +5,12 @@ spring:
   application:
     name: giftify-be
 
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: true
+
   profiles:
     # ⚠️ active 프로파일을 여기서 고정 X
     #

@@ -1,13 +1,15 @@
 package app.giftify.auth.adapter.inbound.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-/**
- * POST /api/auth/login 요청 DTO.
- * Auth0 SPA SDK에서 발급받은 idToken을 전달합니다.
- */
+@Schema(description = "로그인 요청")
 public record LoginRequest(
-        @NotBlank(message = "idToken은 필수입니다.")
-        String idToken
+	@Schema(
+		description = "Auth0 SPA SDK에서 발급받은 ID Token",
+		example = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+	)
+	@NotBlank(message = "idToken은 필수입니다.")
+	String idToken
 ) {
 }

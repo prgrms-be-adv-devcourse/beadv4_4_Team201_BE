@@ -8,7 +8,7 @@ Giftify의 인증(Authentication) 및 인가(Authorization) 아키텍처에 대�
 
 - [Auth API Catalog](../api/auth-api-catalog.md)
 - [Member API Catalog](../api/member-api-catalog.md)
-- [Member & Auth Event Catalog](../api/member-auth-event-catalog.md)
+- [Member & Auth Event Catalog](../event/member-auth-event-catalog.md)
 
 ---
 
@@ -255,36 +255,41 @@ bc/member/  (auth 서브모듈)
       │                  │                  │                  │
 ```
 
-### 5.2 Signup Flow (Minimal Fields)
+### 5.2 Member Auto-Creation Flow (via Event)
+
+로그인 시 `UserAuthenticatedEvent`를 통해 회원이 자동 생성됩니다.
 
 ```
-┌────────────┐                           ┌────────────┐     ┌────────────┐
-│  Frontend  │                           │ Giftify BE │     │  Database  │
-└─────┬──────┘                           └─────┬──────┘     └─────┬──────┘
-      │                                        │                  │
-      │  1. POST /api/members/signup           │                  │
-      │     { }  (빈 body도 가능)              │                  │
-      │     Authorization: Bearer {token}      │                  │
-      │ ──────────────────────────────────────▶│                  │
-      │                                        │                  │
-      │                   2. Extract authSub from JWT             │
-      │                   3. Find PreSignup by authSub            │
-      │                                        │ ────────────────▶│
-      │                                        │ ◀────────────────│
-      │                                        │                  │
-      │                   4. Generate nickname │                  │
-      │                      if not provided   │                  │
-      │                      "User_XXXX"       │                  │
-      │                                        │                  │
-      │                   5. Create Member     │                  │
-      │                                        │ ────────────────▶│
-      │                                        │ ◀────────────────│
-      │                                        │                  │
-      │  6. 201 Created                        │                  │
-      │     { id, email, nickname, ... }       │                  │
-      │ ◀──────────────────────────────────────│                  │
-      │                                        │                  │
+┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐
+│  Frontend  │     │LoginService│     │ Event Bus  │     │EventListener│
+└─────┬──────┘     └─────┬──────┘     └─────┬──────┘     └─────┬──────┘
+      │                  │                  │                  │
+      │ POST /login      │                  │                  │
+      │ {idToken}        │                  │                  │
+      │─────────────────▶│                  │                  │
+      │                  │                  │                  │
+      │                  │ (신규 사용자일 때)│                  │
+      │                  │ UserAuthenticated│                  │
+      │                  │ Event 발행       │                  │
+      │                  │─────────────────▶│                  │
+      │                  │                  │                  │
+      │                  │                  │ Event 전달       │
+      │                  │                  │─────────────────▶│
+      │                  │                  │                  │
+      │                  │                  │     ┌────────────┴───────────┐
+      │                  │                  │     │ 1. existsByEmail 체크  │
+      │                  │                  │     │ 2. Member 자동 생성     │
+      │                  │                  │     │    (닉네임 자동생성)     │
+      │                  │                  │     └────────────┬───────────┘
+      │                  │                  │                  │
+      │ {isNewUser:true} │                  │                  │
+      │◀─────────────────│                  │                  │
+      │                  │                  │                  │
 ```
+
+> **참고**: 기존 PreSignup 기반 가입 플로우는 제거되었습니다.
+> 회원은 로그인 시 이벤트를 통해 자동 생성되며, `/api/members/signup` 호출 시
+> 이미 회원이 존재하면 409 Conflict가 반환됩니다.
 
 ### 5.3 API Request Authentication
 
@@ -325,43 +330,94 @@ bc/member/  (auth 서브모듈)
 
 ## 6. Security Configuration
 
-### 6.1 Spring Security Setup
+### 6.1 Dual SecurityFilterChain
+
+공개 엔드포인트와 인증 필요 엔드포인트를 분리하여 처리합니다.
 
 ```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // 공개 엔드포인트용 필터 체인 (JWT 검증 없음)
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    @Order(1)
+    public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/members/signup").authenticated()
-                .requestMatchers("/api/**").authenticated()
+            .securityMatcher(
+                "/api/v2/auth/login",   // 로그인 엔드포인트
+                "/api/v2/home",          // 홈 API (공개)
+                "/actuator/health"       // 헬스체크
             )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.decoder(jwtDecoder()))
-            );
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
 
+    // 인증 필요 엔드포인트용 필터 체인 (JWT 검증)
     @Bean
-    public JwtDecoder jwtDecoder() {
-        // Auth0 issuer URI로 JWT 검증
-        return JwtDecoders.fromIssuerLocation(issuerUri);
+    @Order(2)
+    public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+            .addFilterAfter(memberPrincipalFilter, BearerTokenAuthenticationFilter.class);
+        return http.build();
     }
 }
 ```
 
-### 6.2 JWT Validation
+### 6.2 Dual JwtDecoder
+
+id_token과 access_token의 audience가 다르므로 별도의 JwtDecoder를 사용합니다.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Token Type & Decoder Mapping                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Token Type      Audience                   Decoder        Usage         │
+│  ──────────────────────────────────────────────────────────────────────  │
+│  id_token        Auth0 Client ID            idTokenDecoder  /login       │
+│                  (예: qpuevxs5...)                                       │
+│                                                                          │
+│  access_token    API Identifier             jwtDecoder      /api/*       │
+│                  (예: https://api.giftify.app)              (Primary)    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+```java
+@AutoConfiguration
+public class SharedSecurityAutoConfiguration {
+
+    // Access Token용 (API 호출 인가)
+    @Bean
+    @Primary
+    public JwtDecoder jwtDecoder() {
+        NimbusJwtDecoder decoder = JwtDecoders.fromIssuerLocation(issuer);
+        decoder.setJwtValidator(new AudienceValidator(apiAudience));  // API identifier
+        return decoder;
+    }
+
+    // ID Token용 (로그인 검증)
+    @Bean
+    public JwtDecoder idTokenDecoder() {
+        NimbusJwtDecoder decoder = JwtDecoders.fromIssuerLocation(issuer);
+        decoder.setJwtValidator(new AudienceValidator(clientId));  // Auth0 Client ID
+        return decoder;
+    }
+}
+```
+
+### 6.3 JWT Validation
 
 | 검증 항목      | 설명                                  |
 |------------|-------------------------------------|
 | Signature  | Auth0 JWKS로 서명 검증                   |
 | Issuer     | `https://{tenant}.auth0.com/` 일치 확인 |
-| Audience   | API identifier 일치 확인                |
+| Audience   | Token 타입에 따라 다름 (위 표 참조)           |
 | Expiration | 토큰 만료 시간 확인                         |
 
 ---
@@ -478,10 +534,10 @@ Auth0 User                          Giftify Member
 |------------------------------------------------------|---------------------|
 | [Auth API Catalog](../api/auth-api-catalog.md)       | Auth 모듈 API 상세 명세   |
 | [Member API Catalog](../api/member-api-catalog.md)   | Member 모듈 API 상세 명세 |
-| [Event Catalog](../api/member-auth-event-catalog.md) | 도메인 이벤트 명세          |
+| [Event Catalog](../event/member-auth-event-catalog.md) | 도메인 이벤트 명세          |
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2026-01-30
+**Document Version:** 2.0
+**Last Updated:** 2026-01-31
 **Author:** Giftify Backend Team

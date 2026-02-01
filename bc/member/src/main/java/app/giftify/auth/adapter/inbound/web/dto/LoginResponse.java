@@ -1,22 +1,24 @@
 package app.giftify.auth.adapter.inbound.web.dto;
 
 import app.giftify.shared.domain.vo.MemberInfo;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * POST /api/auth/login 응답 DTO.
- *
- * @param isNewUser 신규 사용자 여부 (true면 온보딩 필요)
- * @param authSub   Auth0 고유 식별자
- * @param email     사용자 이메일
- * @param name      사용자 이름
- * @param member    회원 정보 (신규 사용자면 null)
- */
+@Schema(description = "로그인 응답")
 public record LoginResponse(
-        boolean isNewUser,
-        String authSub,
-        String email,
-        String name,
-        MemberInfo member
+	@Schema(description = "신규 사용자 여부 (true면 온보딩 필요)", example = "true")
+	boolean isNewUser,
+
+	@Schema(description = "Auth0 고유 식별자", example = "auth0|abc123")
+	String authSub,
+
+	@Schema(description = "사용자 이메일", example = "user@example.com")
+	String email,
+
+	@Schema(description = "사용자 이름 (Auth0에서 제공)", example = "홍길동")
+	String name,
+
+	@Schema(description = "회원 정보 (신규 사용자면 null)", nullable = true)
+	MemberInfo member
 ) {
     /**
      * 신규 사용자용 응답 생성

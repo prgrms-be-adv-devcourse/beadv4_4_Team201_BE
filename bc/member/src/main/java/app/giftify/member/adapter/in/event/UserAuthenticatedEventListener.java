@@ -1,38 +1,41 @@
 package app.giftify.member.adapter.in.event;
 
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
+import org.springframework.modulith.events.ApplicationModuleListener;
+import org.springframework.stereotype.Component;
+
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.out.PreSignupPort;
+import app.giftify.member.application.port.in.RegisterMemberUseCase.RegisterCommand;
+import app.giftify.member.domain.member.Member;
 import app.giftify.support.common.event.auth.UserAuthenticatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserAuthenticatedEventListener {
-    private final RegisterMemberUseCase registerMemberUseCase;
-    private final PreSignupPort preSignupPort;
+	private final RegisterMemberUseCase registerMemberUseCase;
 
-    @EventListener
-    public void handleUserAuthenticatedEvent(UserAuthenticatedEvent event) {
-        log.info("[Event] 사용 인증 성공 이벤트 수신: {}", event.getEmail());
+	@ApplicationModuleListener
+	public void handleUserAuthenticatedEvent(UserAuthenticatedEvent event) {
+		log.info("[UserAuthenticatedEventListener] 사용자 인증 성공 이벤트 수신: authSub={}, email={}", event.getAuthSub(), event.getEmail());
 
-        if (registerMemberUseCase.existsByEmail(event.getEmail())) {
-            log.info("[Event] 이미 가입된 회원입니다. 임시 정보를 생성하지 않습니다. 이메일: {}", event.getEmail());
-            return;
-        }
+		if (registerMemberUseCase.existsByEmail(event.getEmail())) {
+			log.info("[UserAuthenticatedEventListener] 이미 가입된 회원입니다. email={}", event.getEmail());
+			return;
+		}
 
-        PreSignup preSignup = new PreSignup(
-                event.getAuthSub(),
-                event.getEmail(),
-                event.getName(),
-                event.getNickname()
-        );
+		RegisterCommand command = new RegisterCommand(
+			event.getEmail(),
+			null,  // nickname: null이면 자동 생성
+			null,
+			null,
+			null,
+			event.getName(),
+			event.getAuthSub()
+		);
 
-        preSignupPort.save(preSignup);
-        log.info("[Event] 임시 회원 정보(PreSignup) 저장 완료: {}", event.getEmail());
-    }
+		Member member = registerMemberUseCase.registerMember(command);
+		log.info("[UserAuthenticatedEventListener] 신규 회원 자동 생성 완료: memberId={}, email={}", member.getId(), member.getEmail());
+	}
 }
