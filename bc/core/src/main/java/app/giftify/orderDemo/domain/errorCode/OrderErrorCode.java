@@ -1,10 +1,5 @@
 package app.giftify.orderDemo.domain.errorCode;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@AllArgsConstructor
-@Getter
 public enum OrderErrorCode implements ErrorCode {
 
     INVALID_TARGET_ID("ORDER-100", "유효하지 않은 상품 아이디입니다.", false),
@@ -28,4 +23,25 @@ public enum OrderErrorCode implements ErrorCode {
     private final String code;
     private final String message;
     private final boolean retryable;
+
+    OrderErrorCode(String code, String message, boolean retryable) {
+        this.code = code;
+        this.message = message;
+        this.retryable = retryable;
+    }
+
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public boolean isRetryable() {
+        return retryable;
+    }
 }
