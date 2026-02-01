@@ -33,14 +33,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v2/wallet")
 @RequiredArgsConstructor
 @Validated
-public class WalletController {
+public class WalletController implements WalletV2Api {
 	private final ChargeWalletUseCase chargeWalletUseCase;
 	private final WithdrawWalletUseCase withdrawWalletUseCase;
 	private final QueryWalletUseCase queryWalletUseCase;
 
-	/**
-	 * 지갑 충전 (Toss PG 결제 완료 후 호출)
-	 */
+	@Override
 	@Deprecated
 	@PostMapping("/charge")
 	public ResponseEntity<CommonResponse<ChargeWalletResponse>> charge(
@@ -59,9 +57,7 @@ public class WalletController {
 		return ResponseEntity.ok(CommonResponse.success(ChargeWalletResponse.from(result)));
 	}
 
-	/**
-	 * 지갑 출금
-	 */
+	@Override
 	@PostMapping("/withdraw")
 	public ResponseEntity<CommonResponse<WithdrawWalletResponse>> withdraw(
 		@CurrentMemberId Long memberId,
@@ -80,9 +76,7 @@ public class WalletController {
 		return ResponseEntity.ok(CommonResponse.success(WithdrawWalletResponse.from(result)));
 	}
 
-	/**
-	 * 잔액 조회
-	 */
+	@Override
 	@GetMapping("/balance")
 	public ResponseEntity<CommonResponse<WalletBalanceResponse>> getBalance(
 		@CurrentMemberId Long memberId

@@ -39,13 +39,14 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/v2/payments")
 @RequiredArgsConstructor
-public class PaymentController {
+public class PaymentController implements PaymentV2Api {
 	private final CreatePaymentUseCase createPaymentUseCase;
 	private final ConfirmPaymentUseCase confirmPaymentUseCase;
 	private final QueryPaymentUseCase queryPaymentUseCase;
 	private final PaymentGateway paymentGateway;
 	private final PaymentRepository paymentRepository;  // 추가
 
+	@Override
 	@PostMapping("/charge")
 	public ResponseEntity<CommonResponse<PaymentChargeResponse>> charge(
 		@CurrentMemberId Long memberId,
@@ -74,6 +75,7 @@ public class PaymentController {
 		);
 	}
 
+	@Override
 	@PostMapping("/confirm")
 	public ResponseEntity<CommonResponse<PaymentConfirmResponse>> confirm(
 		@CurrentMemberId Long memberId,
