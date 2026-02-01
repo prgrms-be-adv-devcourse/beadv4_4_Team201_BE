@@ -124,4 +124,19 @@ public class OrderItem {
 
         order.registerEvent(event);
     }
+
+    @Override
+    public String toString() {
+        Long orderId = (order != null ? order.getId() : null);
+        return "OrderItem{" +
+                "id=" + id +
+                ", orderId=" + orderId +
+                ", targetId=" + targetId +
+                ", targetType=" + targetType +
+                ", sellerId=" + sellerId +
+                ", receiverId=" + receiverId +
+                ", price=" + price +
+                ", amount=" + amount +
+                '}';
+    }
 }

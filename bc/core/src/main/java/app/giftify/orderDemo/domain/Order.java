@@ -24,6 +24,7 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @EntityListeners(AuditingEntityListener.class)
+@ToString
 public class Order extends BaseAggregateRoot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +48,7 @@ public class Order extends BaseAggregateRoot {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @ToString.Exclude
     private List<OrderItem> items = new ArrayList<>();
 
     @Column(unique = true)
@@ -90,7 +92,7 @@ public class Order extends BaseAggregateRoot {
         order.setTotalAmount();
 
         if (order.getTotalAmount().isLessThan(Money.of(1000L)))
-        throw new DomainException(OrderErrorCode.INVALID_TOTAL_AMOUNT);
+            throw new DomainException(OrderErrorCode.INVALID_TOTAL_AMOUNT);
 
         return order;
     }
