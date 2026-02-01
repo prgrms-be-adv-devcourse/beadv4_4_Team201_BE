@@ -5,23 +5,28 @@ import app.giftify.shared.domain.vo.Money;
 
 public record PaymentCreatedResult(
 	Long paymentId,
+	String orderId,           // 프론트엔드 Toss SDK 호출 시 필수!!
 	String idempotencyKey,
 	PaymentStatus status,
 	boolean requiresPgApproval,
 	WalletInfo walletInfo
 ) {
-	public PaymentCreatedResult(Long paymentId, String idempotencyKey, PaymentStatus status, boolean requiresPgApproval) {
-		this(paymentId, idempotencyKey, status, requiresPgApproval, null);
+	// walletInfo 없이 생성
+	public PaymentCreatedResult(Long paymentId, String orderId, String idempotencyKey, PaymentStatus status, boolean requiresPgApproval) {
+		this(paymentId, orderId, idempotencyKey, status, requiresPgApproval, null);
 	}
 
+	// 잔액 부족 시 사용
 	public static PaymentCreatedResult insufficientWalletBalance(
 		Long paymentId,
+		String orderId,           // 추가
 		String idempotencyKey,
 		Money requiredAmount,
 		Money currentBalance
 	) {
 		return new PaymentCreatedResult(
 			paymentId,
+			orderId,                  // 추가
 			idempotencyKey,
 			PaymentStatus.PENDING,
 			false,

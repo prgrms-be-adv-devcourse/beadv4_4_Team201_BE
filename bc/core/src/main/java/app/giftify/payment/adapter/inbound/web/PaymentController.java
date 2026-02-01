@@ -1,5 +1,15 @@
 package app.giftify.payment.adapter.inbound.web;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeResponse;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
@@ -20,15 +30,6 @@ import app.giftify.shared.domain.vo.Money;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -49,6 +50,7 @@ public class PaymentController {
 
 		String orderId = request.orderId() != null ? request.orderId() : "CHG-" + UUID.randomUUID();
 		String idempotencyKey = UUID.randomUUID().toString();
+		var requestedAmount = Money.of(request.amount());
 
 		CreatePaymentCommand command = new CreatePaymentCommand(
 			idempotencyKey,
@@ -56,13 +58,15 @@ public class PaymentController {
 			orderId,
 			PaymentType.POINT_CHARGE,
 			PaymentMethod.CARD,
-			Money.of(request.amount()),
+			requestedAmount,
 			Collections.emptyList()
 		);
 
 		PaymentCreatedResult result = createPaymentUseCase.create(command);
 
-		return ResponseEntity.ok(CommonResponse.success(PaymentChargeResponse.from(result)));
+		return ResponseEntity.ok(CommonResponse.success(
+			PaymentChargeResponse.from(result, requestedAmount))
+		);
 	}
 
 	@PostMapping("/confirm")
