@@ -5,12 +5,7 @@ import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductSnapshotDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
-import app.giftify.product.application.port.in.ProductCreateCommand;
-import app.giftify.product.application.port.in.ProductResult;
-import app.giftify.product.application.port.in.ProductUpdateResult;
-import app.giftify.product.application.service.ProductService;
-import app.giftify.product.application.service.ProductSnapshotService;
-import app.giftify.product.application.service.ProductStockHistoryService;
+import app.giftify.product.application.port.in.*;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.paging.PageResponse;
@@ -33,9 +28,14 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping("/api/products")
 @Slf4j
 public class ProductController {
-    private final ProductService productService;
-    private final ProductSnapshotService productSnapshotService;
-    private final ProductStockHistoryService productStockHistoryService;
+    private final ProductCreateUseCase productCreateUseCase;
+    private final ProductGetUseCase productGetUseCase;
+    private final ProductSearchUseCase productSearchUseCase;
+    private final ProductApproveUseCase productApproveUseCase;
+    private final ProductRejectUseCase productRejectUseCase;
+    private final ProductUpdateUseCase productUpdateUseCase;
+    private final ProductStockHistoryUseCase productStockHistoryUseCase;
+    private final ProductSnapshotCreateUseCase productSnapshotCreateUseCase;
 
     // 상품 등록
     @PostMapping
@@ -50,7 +50,7 @@ public class ProductController {
                 requestDto.price(),
                 requestDto.stock()
         );
-        ProductResult result = productService.createProduct(sellerId, command);
+        ProductResult result = productCreateUseCase.createProduct(sellerId, command);
         ProductDto responseDto = ProductDto.from(result);
         return ResponseEntity.status(CREATED).body(responseDto);
     }
@@ -64,11 +64,11 @@ public class ProductController {
     ) {
         switch (action) {
             case "approve" -> {
-                productService.approveProduct(id);
+                productApproveUseCase.approveProduct(id);
                 return ResponseEntity.status(OK).body("상품 등록 승인, 상품 ID: " + id);
             }
             case "reject" -> {
-                productService.rejectProduct(id);
+                productRejectUseCase.rejectProduct(id);
                 return ResponseEntity.status(OK).body("상품 등록 거절, 상품 ID: " + id);
             }
             default -> throw new ProductException(INVALID_APPROVAL_ACTION);
@@ -83,7 +83,7 @@ public class ProductController {
             @CurrentMemberId Long sellerId,
             @RequestBody ProductUpdateRequestDto requestDto
     ) {
-        ProductUpdateResult result = productService.updateProduct(productId, sellerId, requestDto);
+        ProductUpdateResult result = productUpdateUseCase.updateProduct(productId, sellerId, requestDto);
         ProductUpdateResponseDto responseDto = ProductUpdateResponseDto.from(result);
         return ResponseEntity.status(OK).body(responseDto);
     }
@@ -93,7 +93,7 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProduct(
             @PathVariable("id") Long id
     ) {
-        ProductResult result = productService.getProduct(id);
+        ProductResult result = productGetUseCase.getProduct(id);
         ProductDto responseDto = ProductDto.from(result);
         return ResponseEntity.status(OK).body(responseDto);
     }
@@ -103,7 +103,7 @@ public class ProductController {
     public ResponseEntity<PageResponse<ProductDto>> searchProducts(
             @ModelAttribute ProductSearchDto searchDto
     ) {
-        PageResponse<ProductResult> resultPage = productService.searchProducts(searchDto);
+        PageResponse<ProductResult> resultPage = productSearchUseCase.searchProducts(searchDto);
         List<ProductDto> dtoList = resultPage.content().stream()
                 .map(ProductDto::from)
                 .collect(Collectors.toList());
@@ -118,7 +118,7 @@ public class ProductController {
             @CurrentMemberId Long sellerId,
             @ModelAttribute MyProductSearchDto searchDto
     ) {
-        PageResponse<ProductResult> resultPage = productService.searchMyProducts(sellerId, searchDto);
+        PageResponse<ProductResult> resultPage = productSearchUseCase.searchMyProducts(sellerId, searchDto);
         List<ProductDto> dtoList = resultPage.content().stream()
                 .map(ProductDto::from)
                 .collect(Collectors.toList());
@@ -133,7 +133,7 @@ public class ProductController {
             @CurrentMemberId Long sellerId,
             @ModelAttribute StockHistorySearchDto searchDto
     ) {
-        PageResponse<StockHistoryDto> stockHistories = productStockHistoryService.searchStockHistories(sellerId, searchDto);
+        PageResponse<StockHistoryDto> stockHistories = productStockHistoryUseCase.searchStockHistories(sellerId, searchDto);
         return ResponseEntity.status(OK).body(stockHistories);
     }
 
@@ -146,7 +146,7 @@ public class ProductController {
     public ResponseEntity<List<ProductSnapshotDto>> createProductSnapshots(
             @RequestBody ProductSnapshotRequestDto requestDto
     ) {
-        List<ProductSnapshotDto> snapshotDtos = productSnapshotService.createProductSnapshots(requestDto);
+        List<ProductSnapshotDto> snapshotDtos = productSnapshotCreateUseCase.createProductSnapshots(requestDto);
         return ResponseEntity.status(CREATED).body(snapshotDtos);
     }
 }
