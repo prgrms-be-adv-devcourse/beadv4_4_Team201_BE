@@ -1,13 +1,11 @@
 package app.giftify.member.application.service;
 
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.domain.exception.DuplicateMemberException;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
@@ -29,7 +27,6 @@ import java.util.Optional;
 public class MemberService
         implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
 
-    private final PreSignupPort preSignupPort;
     private final MemberRepositoryPort memberRepositoryPort;
     private final EventPublisher eventPublisher;
     private final NicknameGenerator nicknameGenerator;
@@ -85,24 +82,16 @@ public class MemberService
     @Override
     @Transactional
     public Member signup(String authSub, SignupRequest request) {
-        PreSignup preSignup = preSignupPort.findByAuthSub(authSub)
-                .orElseThrow(() -> new RuntimeException("임시 회원 정보가 없습니다."));
+        Member member = memberRepositoryPort.findByAuthSub(authSub)
+                .orElseThrow(() -> new MemberNotFoundException(authSub));
 
-        RegisterCommand command = new RegisterCommand(
-                preSignup.getEmail(),
-                preSignup.getNickname(),
-                request.birthday(),
-                request.address(),
-                request.phoneNum(),
-                preSignup.getName(),
-                authSub
-        );
+        member.updateProfile(request.birthday(), request.address(), request.phoneNum());
 
-        Member member = registerMember(command);
+        Member updatedMember = memberRepositoryPort.save(member);
 
-        preSignupPort.deleteByAuthSub(authSub);
+        log.info("[Member] 프로필 정보 업데이트 완료: memberId={}", updatedMember.getId());
 
-        return member;
+        return updatedMember;
     }
 
     @Override
