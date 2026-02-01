@@ -36,6 +36,9 @@ public class Order extends BaseAggregateRoot {
     @Column(nullable = false)
     private Long buyerId;
 
+    @Column(nullable = false)
+    private Long quantity;
+
     @Convert(converter = MoneyConverter.class)
     @Column(nullable = false, precision = 19, scale = 2)
     private Money totalAmount;
@@ -90,6 +93,7 @@ public class Order extends BaseAggregateRoot {
 
         items.forEach(order::addItem);
         order.setTotalAmount();
+        order.setQuantity(items.size());
 
         if (order.getTotalAmount().isLessThan(Money.of(1000L)))
             throw new DomainException(OrderErrorCode.INVALID_TOTAL_AMOUNT);
@@ -113,6 +117,10 @@ public class Order extends BaseAggregateRoot {
         this.totalAmount = items.stream()
                 .map(OrderItem::getAmount)
                 .reduce(Money.zero(), Money::plus);
+    }
+
+    private void setQuantity(long quantity) {
+        this.quantity = quantity;
     }
 
     public OrderSnapshot toSnapshot() {
