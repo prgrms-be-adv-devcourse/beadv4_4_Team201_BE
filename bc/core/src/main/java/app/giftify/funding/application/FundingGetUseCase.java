@@ -65,13 +65,13 @@ public class FundingGetUseCase {
      */
     public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
         Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
-                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + fundingId)
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + fundingId)
         );
 
         // 참여 여부 확인
         boolean isParticipated = participantMemberRepository.existsByFundingIdAndFundingMemberId(fundingId, memberId);
         if (!isParticipated) {
-            throw new FundingException(FundingErrorCode.FORBIDDEN, "해당 펀딩에 참여한 기록이 없습니다.");
+            throw new FundingException(FundingErrorCode.FORBIDDEN);
         }
 
         // 참여 금액 조회
