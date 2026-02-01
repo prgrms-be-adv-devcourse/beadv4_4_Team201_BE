@@ -37,7 +37,8 @@ public class Funding extends BaseJpaEntity {
     @Column
     private LocalDateTime closedAt;     // 펀딩이 실제 종료된 시점
 
-    // todo : 펀딩 달성 시간도 필요할 것 같음 -> 달성 후 2주내 미수락 시 종료되어야 하니까
+    @Column
+    private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
 
     private Funding(FundingWishlistItem item, Integer currentAmount) {
@@ -77,7 +78,7 @@ public class Funding extends BaseJpaEntity {
 
         validateLeastAmount(amount);
 
-        int remainingAmount = this.targetAmount - this.currentAmount;
+        Integer remainingAmount = this.targetAmount - this.currentAmount;
 
         // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
         // 잔여 금액 초과 검증
@@ -94,6 +95,7 @@ public class Funding extends BaseJpaEntity {
         // Integer 타입은 == 비교 시 캐싱 범위(-128~127) 밖에서는 false가 될 수 있음
         if (this.currentAmount.equals(this.targetAmount)) {
             this.status = FundingStatus.ACHIEVED;
+            this.achievedAt = LocalDateTime.now();
         }
     }
 
