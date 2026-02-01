@@ -1,6 +1,6 @@
 package app.giftify.product.adapter.inbound.web.responseDto;
 
-import app.giftify.product.adapter.outbound.jpa.entity.Product;
+import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 
 import java.time.LocalDateTime;
