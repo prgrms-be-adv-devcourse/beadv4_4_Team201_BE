@@ -4,8 +4,8 @@ import app.giftify.cart.application.outbound.CartRepository;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
-import app.giftify.product.adapter.outbound.jpa.entity.Product;
-import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
+import app.giftify.product.application.port.out.ProductRepositoryPort;
+import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CartService implements AddCartItemUseCase, CartCreateUseCase {
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
+    private final ProductRepositoryPort productRepositoryPort;
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
 
     @Override
@@ -59,7 +59,7 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
 
     // 일반 구매 검증
     private void validateDirectPurchase(Long productId) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepositoryPort.findById(productId)
                 .orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
 
         if (product.getStatus() != ProductStatus.ACTIVE) {

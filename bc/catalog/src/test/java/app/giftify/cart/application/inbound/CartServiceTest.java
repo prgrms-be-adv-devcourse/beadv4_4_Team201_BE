@@ -4,8 +4,8 @@ import app.giftify.cart.application.outbound.CartRepository;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.CartItemKey;
 import app.giftify.cart.core.domain.exception.CartException;
-import app.giftify.product.adapter.outbound.jpa.entity.Product;
-import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
+import app.giftify.product.application.port.out.ProductRepositoryPort;
+import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
@@ -37,7 +37,7 @@ class CartServiceTest {
     private CartRepository cartRepository;
 
     @Mock
-    private ProductRepository productRepository;
+    private ProductRepositoryPort productRepositoryPort;
 
     @Mock
     private WishlistItemRepositoryPort wishlistItemRepositoryPort;
@@ -64,7 +64,7 @@ class CartServiceTest {
 
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
-        given(productRepository.findById(productId)).willReturn(Optional.of(product));
+        given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.FUNDING, wishlistItemId),
@@ -98,7 +98,7 @@ class CartServiceTest {
 
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.INACTIVE); // 실패 조건
-        given(productRepository.findById(productId)).willReturn(Optional.of(product));
+        given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.FUNDING, wishlistItemId),
@@ -124,7 +124,7 @@ class CartServiceTest {
 
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
-        given(productRepository.findById(productId)).willReturn(Optional.of(product));
+        given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.PRODUCT, productId),
@@ -152,7 +152,7 @@ class CartServiceTest {
 
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.INACTIVE);
-        given(productRepository.findById(productId)).willReturn(Optional.of(product));
+        given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.PRODUCT, productId),

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -55,6 +56,13 @@ public class ProductAdapter implements ProductRepositoryPort {
         MyProductSearchDto dto = toDto(command);
         Page<ProductJpa> entityPage = productRepository.searchMyProducts(sellerId, dto);
         return entityPage.map(productMapper::toDomain);
+    }
+
+    @Override
+    public List<Product> findAllById(List<Long> productsIds) {
+        return productRepository.findAllById(productsIds).stream()
+                .map(productMapper::toDomain)
+                .toList();
     }
 
     private ProductSearchDto toDto(ProductSearchCommand command) {

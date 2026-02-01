@@ -9,6 +9,7 @@ import app.giftify.product.application.port.in.*;
 import app.giftify.product.application.port.out.MyProductSearchCommand;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.application.port.out.ProductSearchCommand;
+import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
@@ -30,7 +31,8 @@ import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
 import static app.giftify.product.domain.ProductStatus.INACTIVE;
-import static app.giftify.product.domain.exception.ProductErrorCode.*;
+import static app.giftify.product.domain.exception.ProductErrorCode.PRODUCT_NOT_ACTIVE;
+import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
     private final ProductStockHistoryRepository productStockHistoryRepository;
+    private final ProductSupport productSupport;
 
     // 상품 생성 (판매자)
     @Override
@@ -64,8 +67,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     @Override
     @Transactional(readOnly = true)
     public ProductResult getProduct(Long productId) {
-        Product product = productRepositoryPort.findById(productId)
-                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+        Product product = productSupport.findById(productId);
 
         Member seller = memberRepository.findById(product.getSellerId())
                 .orElseThrow(() -> new ProductException(SELLER_NOT_FOUND));
@@ -131,9 +133,8 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 상품 등록 승인 (관리자)
     @Override
     @Transactional
-    public void approveProduct(Long id) {
-        Product product = productRepositoryPort.findById(id)
-                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+    public void approveProduct(Long productId) {
+        Product product = productSupport.findById(productId);
 
         product.approve();
         productRepositoryPort.save(product);
@@ -151,9 +152,8 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 상품 등록 거절 (관리자)
     @Override
     @Transactional
-    public void rejectProduct(Long id) {
-        Product product = productRepositoryPort.findById(id)
-                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+    public void rejectProduct(Long productId) {
+        Product product = productSupport.findById(productId);
 
         product.reject();
         productRepositoryPort.save(product);
@@ -163,8 +163,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     @Override
     @Transactional
     public ProductUpdateResult updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
-        Product product = productRepositoryPort.findByIdAndSellerId(productId, sellerId)
-                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+        Product product = productSupport.findById(productId);
 
         String oldName = product.getName();
         int oldPrice = product.getPrice();
