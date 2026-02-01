@@ -57,15 +57,15 @@ public class ProductSnapshot extends BaseJpaEntity {
         this.onSale = onSale;
     }
 
-    public static ProductSnapshot from(Product product, Member seller) {
+    public static ProductSnapshot from(ProductJpa productJpa, Member seller) {
         return ProductSnapshot.builder()
-                .originalProductId(product.getId())
-                .sellerId(product.getSellerId())
+                .originalProductId(productJpa.getId())
+                .sellerId(productJpa.getSellerId())
                 .sellerNickname(seller.getNickname())
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .onSale(product.getStatus() == ACTIVE && product.getStock() != 0)
+                .name(productJpa.getName())
+                .description(productJpa.getDescription())
+                .price(productJpa.getPrice())
+                .onSale(productJpa.getStatus() == ACTIVE && productJpa.getStock() != 0)
                 .build();
     }
 }
