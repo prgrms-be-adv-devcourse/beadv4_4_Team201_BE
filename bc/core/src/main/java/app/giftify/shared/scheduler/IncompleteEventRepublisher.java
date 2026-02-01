@@ -20,9 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 public class IncompleteEventRepublisher {
 	private final IncompleteEventPublications incompleteEvents;
 
-	/**
-	 * 1분마다 실행되어 1분 이상 지난 미완료 이벤트를 재발행합니다.
-	 */
 	@Scheduled(fixedDelay = 60000)
 	public void republishIncompleteEvents() {
 		log.debug("[IncompleteEventRepublisher] 미완료 이벤트 확인 중...");
