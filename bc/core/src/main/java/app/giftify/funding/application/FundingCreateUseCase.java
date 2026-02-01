@@ -23,10 +23,7 @@ public class FundingCreateUseCase {
 
     public Funding createFunding(Long itemId, Integer amount) {
         FundingWishlistItem wishlistItem = fundingWishlistItemRepository.findById(itemId).orElseThrow(() ->
-            new FundingException(
-                FundingErrorCode.WISHLIST_ITEM_NOT_FOUND,
-                "위시리스트 상품이 존재하지 않습니다. ID: " + itemId
-            ));
+            new FundingException(FundingErrorCode.WISHLIST_ITEM_NOT_FOUND, + itemId));
 
         Funding funding = Funding.startFunding(wishlistItem, amount);
         fundingRepository.save(funding);

@@ -8,8 +8,8 @@ public enum FundingErrorCode implements ErrorCode {
     EXCEED_REMAINING_AMOUNT(HttpStatus.BAD_REQUEST,"F002", "펀딩 잔여 금액을 초과할 수 없습니다"),
     NOT_IN_PROGRESS(HttpStatus.BAD_REQUEST,"F003", "진행 중인 펀딩이 아닙니다. ID: %d"),
     ALREADY_TERMINATED(HttpStatus.BAD_REQUEST,"F004", "이미 완료된 펀딩입니다. ID: %d"),
-    WISHLIST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND,"F005", "위시리스트 상품이 존재하지 않습니다"),
-    FUNDING_NOT_FOUND(HttpStatus.NOT_FOUND,"F006", "펀딩을 찾을 수 없습니다"),
+    WISHLIST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND,"F005", "위시리스트 상품이 존재하지 않습니다. ID: %d"),
+    FUNDING_NOT_FOUND(HttpStatus.NOT_FOUND,"F006", "펀딩을 찾을 수 없습니다. ID: %d"),
     IS_NOT_EXPIRED(HttpStatus.BAD_REQUEST,"F007", "펀딩 기한이 만료되지 않았습니다. ID: %d"),
     FORBIDDEN(HttpStatus.FORBIDDEN,"F008", "해당 펀딩에 대한 권한이 없습니다"),
     NOT_ACHIEVED(HttpStatus.FORBIDDEN,"F009", "목표 달성된 펀딩이 아닙니다. ID: %d" );
