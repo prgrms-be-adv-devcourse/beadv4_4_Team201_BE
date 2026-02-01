@@ -27,4 +27,6 @@ public interface FundingParticipantMemberRepository extends JpaRepository<Fundin
            "WHERE fpm.fundingMemberId = :memberId " +
            "GROUP BY fpm.funding")
     Page<MyFundingInfo> findAllMyFundingInfos(@Param("memberId") Long memberId, Pageable pageable);
+
+    FundingParticipantMember findByFundingAndParticipantId(Funding funding, Long participantId);
 }
