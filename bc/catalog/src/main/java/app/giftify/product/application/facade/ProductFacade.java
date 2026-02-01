@@ -27,7 +27,14 @@ public class ProductFacade {
 
     @Transactional
     public ProductDto createProduct(Long sellerId, ProductCreateRequestDto requestDto) {
-        return productCreateUseCase.createProduct(sellerId, requestDto);
+        // Facade layer: DTO -> Command mapping
+        var command = new ProductCreateCommand(
+                requestDto.name(),
+                requestDto.description(),
+                requestDto.price(),
+                requestDto.stock()
+        );
+        return productCreateUseCase.createProduct(sellerId, command);
     }
 
     @Transactional(readOnly = true)
