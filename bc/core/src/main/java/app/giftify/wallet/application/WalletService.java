@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletResult;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
+import app.giftify.wallet.application.inbound.CreateWalletUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
 import app.giftify.wallet.application.inbound.WalletBalanceResult;
 import app.giftify.wallet.application.inbound.WithdrawStatus;
@@ -35,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase {
+public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, CreateWalletUseCase {
 
 	private final WalletRepository walletRepository;
 	private final WalletHistoryRepository historyRepository;
@@ -170,5 +171,28 @@ public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase
 			memberId,
 			wallet.getBalance()
 		);
+	}
+
+	/**
+	 * 회원의 지갑을 생성합니다.
+	 * 이미 지갑이 존재하는 경우 기존 지갑 정보를 반환합니다.
+	 *
+	 * @param memberId 회원 ID
+	 * @return 생성 결과
+	 */
+	@Override
+	@Transactional
+	public CreateWalletResult createIfNotExists(Long memberId) {
+		return walletRepository.findByMemberId(memberId)
+			.map(wallet -> {
+				log.debug("[WalletService] 이미 지갑이 존재합니다. memberId={}, walletId={}", memberId, wallet.getId());
+				return CreateWalletResult.alreadyExists(wallet.getId(), memberId);
+			})
+			.orElseGet(() -> {
+				Wallet wallet = Wallet.create(memberId, Money.zero());
+				Wallet savedWallet = walletRepository.save(wallet);
+				log.info("[WalletService] 신규 지갑 생성 완료. memberId={}, walletId={}", memberId, savedWallet.getId());
+				return CreateWalletResult.created(savedWallet.getId(), memberId);
+			});
 	}
 }
