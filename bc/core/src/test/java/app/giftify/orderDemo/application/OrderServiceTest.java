@@ -8,6 +8,9 @@ import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.OrderStatus;
 import app.giftify.orderDemo.domain.exception.DomainException;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderCreatedEvent;
+import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
@@ -23,7 +26,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -34,6 +40,9 @@ class OrderServiceTest {
     @Mock
     private OrderItemRepository orderItemRepository;
 
+    @Mock
+    private EventPublisher eventPublisher;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -43,7 +52,7 @@ class OrderServiceTest {
     void setUp() {
         validCommand = new PlaceOrderForItemCommand(
                 1L,
-                TargetType.PRODUCT,
+                TargetType.FUNDING,
                 2L,
                 3L,
                 Money.of(1000L),
@@ -79,6 +88,11 @@ class OrderServiceTest {
         assertEquals(1, snapshot.orderItemSnapshots().size());
         assertEquals(Money.of(1000L), snapshot.totalAmount()); // price * amount
         assertEquals(OrderStatus.CREATED, snapshot.status());
+
+        verify(eventPublisher, times(1)).publish(argThat(event ->
+                event instanceof OrderCreatedEvent));
+        verify(eventPublisher, times(1)).publish(argThat(event ->
+                event instanceof OrderItemCreatedEvent));
     }
 
     @Test

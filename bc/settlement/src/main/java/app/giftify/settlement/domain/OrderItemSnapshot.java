@@ -29,11 +29,8 @@ public class OrderItemSnapshot {
     private Long sellerId;
 
     @Column(nullable = false)
-    private Long quantity;
+    private BigDecimal price;
 
     @Column(nullable = false)
-    private BigDecimal unitPrice;
-
-    @Column(nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal amount;
 }

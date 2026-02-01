@@ -61,13 +61,12 @@ public class SettlementSnapshotEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderItemCreatedEvent(OrderItemCreatedEvent event) {
         orderItemSnapshotRepository.save(new OrderItemSnapshot(
-            event.orderItemId(),
-            event.orderId(),
-            event.fundingId(),
-            event.sellerId(),
-            event.quantity(),
-            event.unitPrice(),
-            event.totalAmount()
+            event.getOrderItemId(),
+            event.getOrderId(),
+            event.getFundingId(),
+            event.getSellerId(),
+            event.getPrice(),
+            event.getAmount()
         ));
     }
 

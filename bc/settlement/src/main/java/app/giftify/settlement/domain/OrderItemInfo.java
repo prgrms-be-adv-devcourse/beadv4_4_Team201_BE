@@ -7,8 +7,7 @@ public record OrderItemInfo(
     String orderNumber,
     Long orderItemId,
     Long sellerId,
-    Long quantity,
-    Money totalAmount,
+    Money amount,
     LocalDateTime orderedAt
 ) {
     public OrderItemInfo {
@@ -16,8 +15,7 @@ public record OrderItemInfo(
         if (orderNumber == null) throw new IllegalArgumentException("orderNumber는 필수입니다.");
         if (orderItemId == null) throw new IllegalArgumentException("orderItemId는 필수입니다.");
         if (sellerId == null) throw new IllegalArgumentException("sellerId는 필수입니다.");
-        if (quantity == null) throw new IllegalArgumentException("quantity는 필수입니다.");
-        if (totalAmount == null) throw new IllegalArgumentException("itemTotalAmount는 필수입니다.");
+        if (amount == null) throw new IllegalArgumentException("itemAmount는 필수입니다.");
         if (orderedAt == null) throw new IllegalArgumentException("orderedAt는 필수입니다.");
     }
 }

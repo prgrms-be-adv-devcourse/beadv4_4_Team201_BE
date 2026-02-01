@@ -2,6 +2,8 @@ package app.giftify.orderDemo.domain;
 
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.orderDemo.domain.exception.DomainException;
+import app.giftify.orderDemo.domain.exception.PolicyException;
+import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
@@ -103,5 +105,23 @@ public class OrderItem {
                 .amount(amount)
                 .status(status)
                 .build();
+    }
+
+    public void updateTargetToFunding(Long fundingId) {
+        this.targetId = fundingId;
+        this.targetType = TargetType.FUNDING;
+
+        if (order == null) throw new PolicyException(OrderErrorCode.ORDER_ITEM_NOT_ASSOCIATED);
+
+        OrderItemCreatedEvent event = new OrderItemCreatedEvent(
+                id,
+                targetId,
+                order.getId(),
+                sellerId,
+                price.amount(),
+                amount.amount()
+        );
+
+        order.registerEvent(event);
     }
 }

@@ -67,7 +67,6 @@ class SettlementItemServiceTest {
             orderId,
             fundingId,
             sellerId,
-            2L,
             new BigDecimal("5000"),
             new BigDecimal("10000")
         );
@@ -132,7 +131,6 @@ class SettlementItemServiceTest {
             orderId,
             fundingId,
             sellerId,
-            1L,
             new BigDecimal("5000"),
             new BigDecimal("5000")
         );
@@ -178,7 +176,6 @@ class SettlementItemServiceTest {
             orderId,
             fundingId,
             sellerId,
-            1L,
             new BigDecimal("3000"),
             new BigDecimal("3000")
         );

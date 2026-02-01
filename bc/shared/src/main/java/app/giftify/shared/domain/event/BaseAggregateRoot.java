@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class BaseAggregateRoot {
 	private final List<BaseDomainEvent> domainEvents = new ArrayList<>();
 
-	protected void registerEvent(BaseDomainEvent event) {
+	public void registerEvent(BaseDomainEvent event) {
 		domainEvents.add(event);
 	}
 
