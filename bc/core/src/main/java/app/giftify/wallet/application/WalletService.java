@@ -2,6 +2,7 @@ package app.giftify.wallet.application;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +10,10 @@ import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletResult;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
 import app.giftify.wallet.application.inbound.CreateWalletUseCase;
+import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
+import app.giftify.wallet.application.inbound.WalletHistoryQuery;
+import app.giftify.wallet.application.inbound.WalletHistoryResult;
 import app.giftify.wallet.application.inbound.WalletBalanceResult;
 import app.giftify.wallet.application.inbound.WithdrawStatus;
 import app.giftify.wallet.application.inbound.WithdrawWalletCommand;
@@ -36,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, CreateWalletUseCase {
+public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, QueryWalletHistoryUseCase, CreateWalletUseCase {
 
 	private final WalletRepository walletRepository;
 	private final WalletHistoryRepository historyRepository;
@@ -171,6 +175,31 @@ public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase
 			memberId,
 			wallet.getBalance()
 		);
+	}
+
+
+	/**
+	 * 회원의 지갑 거래 내역을 조회합니다.
+	 *
+	 * @param query 조회 조건 (memberId, type, page, size)
+	 * @return 페이징된 거래 내역
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public Page<WalletHistoryResult> getHistory(WalletHistoryQuery query) {
+		Wallet wallet = walletRepository.findByMemberId(query.memberId())
+			.orElseGet(() -> Wallet.create(query.memberId(), Money.zero()));
+
+		if (wallet.getId() == null) {
+			// 지갑이 없으면 빈 결과 반환
+			return Page.empty(query.toPageable());
+		}
+
+		return historyRepository.findByWalletId(
+			wallet.getId(),
+			query.type(),
+			query.toPageable()
+		).map(WalletHistoryResult::from);
 	}
 
 	/**
