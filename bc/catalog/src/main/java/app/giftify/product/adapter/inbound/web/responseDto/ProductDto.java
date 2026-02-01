@@ -1,6 +1,7 @@
 package app.giftify.product.adapter.inbound.web.responseDto;
 
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
+import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.domain.Product;
 
 import java.time.LocalDateTime;
@@ -27,7 +28,6 @@ public record ProductDto(
         );
     }
 
-    // 순수 도메인 Product 객체를 받도록 오버로드된 from 정적 메소드
     public static ProductDto from(Product product, String sellerNickname) {
         if (product == null)
             return null;
@@ -39,6 +39,20 @@ public record ProductDto(
                 product.getDescription(),
                 product.getPrice(),
                 product.getCreatedAt()
+        );
+    }
+
+    public static ProductDto from(ProductResult result) {
+        if (result == null)
+            return null;
+
+        return new ProductDto(
+                result.id(),
+                result.sellerNickName(),
+                result.name(),
+                result.description(),
+                result.price(),
+                result.createdAt()
         );
     }
 }
