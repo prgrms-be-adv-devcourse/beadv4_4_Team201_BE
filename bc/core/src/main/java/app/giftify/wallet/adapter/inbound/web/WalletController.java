@@ -1,8 +1,10 @@
 package app.giftify.wallet.adapter.inbound.web;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +16,17 @@ import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletRequest;
 import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
+import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletResponse;
+import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletResult;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
+import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
+import app.giftify.wallet.application.inbound.WalletHistoryQuery;
+import app.giftify.wallet.application.inbound.WalletHistoryResult;
 import app.giftify.wallet.application.inbound.WalletBalanceResult;
 import app.giftify.wallet.application.inbound.WithdrawWalletCommand;
 import app.giftify.wallet.application.inbound.WithdrawWalletResult;
@@ -37,6 +44,7 @@ public class WalletController implements WalletV2Api {
 	private final ChargeWalletUseCase chargeWalletUseCase;
 	private final WithdrawWalletUseCase withdrawWalletUseCase;
 	private final QueryWalletUseCase queryWalletUseCase;
+	private final QueryWalletHistoryUseCase queryWalletHistoryUseCase;
 
 	@Override
 	@Deprecated
@@ -85,5 +93,23 @@ public class WalletController implements WalletV2Api {
 
 		WalletBalanceResult result = queryWalletUseCase.getBalance(memberId);
 		return ResponseEntity.ok(CommonResponse.success(WalletBalanceResponse.from(result)));
+	}
+
+
+	@Override
+	@GetMapping("/history")
+	public ResponseEntity<CommonResponse<Page<WalletHistoryResponse>>> getHistory(
+		@CurrentMemberId Long memberId,
+		@RequestParam(name = "type", required = false) TransactionType type,
+		@RequestParam(name = "page", defaultValue = "0") int page,
+		@RequestParam(name = "size", defaultValue = "20") int size
+	) {
+		log.debug("[WalletController] 거래 내역 조회. memberId={}, type={}, page={}, size={}", memberId, type, page, size);
+
+		WalletHistoryQuery query = new WalletHistoryQuery(memberId, type, page, size);
+		Page<WalletHistoryResult> result = queryWalletHistoryUseCase.getHistory(query);
+		Page<WalletHistoryResponse> response = result.map(WalletHistoryResponse::from);
+
+		return ResponseEntity.ok(CommonResponse.success(response));
 	}
 }

@@ -1,14 +1,18 @@
 package app.giftify.wallet.adapter.inbound.web;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import app.giftify.shared.api.response.CommonResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletRequest;
 import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
+import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletResponse;
+import app.giftify.wallet.domain.TransactionType;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -103,5 +107,41 @@ public interface WalletV2Api {
     )
     ResponseEntity<CommonResponse<WalletBalanceResponse>> getBalance(
             @Parameter(hidden = true) Long memberId
+    );
+
+
+    @Operation(
+            summary = "예치금 거래 내역 조회",
+            description = """
+                    현재 로그인한 사용자의 예치금 거래 내역을 조회합니다.
+                    
+                    **거래 유형**:
+                    - CHARGE: 충전
+                    - WITHDRAW: 출금
+                    - PAYMENT: 결제
+                    
+                    **페이징**:
+                    - page: 페이지 번호 (0부터 시작, 기본값: 0)
+                    - size: 페이지 크기 (기본값: 20, 최대: 100)
+                    """
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = WalletHistoryResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "401",
+            description = "인증 토큰 누락 또는 유효하지 않음",
+            content = @Content
+    )
+    ResponseEntity<CommonResponse<Page<WalletHistoryResponse>>> getHistory(
+            @Parameter(hidden = true) Long memberId,
+            @Parameter(description = "거래 유형 필터 (선택)", example = "CHARGE")
+            @RequestParam(required = false) TransactionType type,
+            @Parameter(description = "페이지 번호", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "20")
+            @RequestParam(defaultValue = "20") int size
     );
 }

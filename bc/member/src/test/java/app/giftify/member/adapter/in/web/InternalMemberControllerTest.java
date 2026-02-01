@@ -55,7 +55,7 @@ class InternalMemberControllerTest {
 		given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(member));
 
 		// when & then
-		mockMvc.perform(get("/api/internal/members/by-auth-sub/{authSub}", AUTH_SUB))
+		mockMvc.perform(get("/api/internal/members/by-auth-sub").param("authSub", AUTH_SUB))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.memberId").value(1L))
 			.andExpect(jsonPath("$.authSub").value(AUTH_SUB))
@@ -71,7 +71,7 @@ class InternalMemberControllerTest {
 		given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.empty());
 
 		// when & then
-		mockMvc.perform(get("/api/internal/members/by-auth-sub/{authSub}", AUTH_SUB))
+		mockMvc.perform(get("/api/internal/members/by-auth-sub").param("authSub", AUTH_SUB))
 			.andExpect(status().isNotFound());
 	}
 }
