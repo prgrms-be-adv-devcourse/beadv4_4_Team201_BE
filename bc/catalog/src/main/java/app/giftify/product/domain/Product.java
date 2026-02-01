@@ -15,7 +15,7 @@ import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Getter
 public class Product extends BaseDomainModel {
-    private Long sellerId;
+    private final Long sellerId;
     private String name;
     private String description;
     private int price;
