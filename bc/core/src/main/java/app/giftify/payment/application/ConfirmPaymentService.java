@@ -12,6 +12,9 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.event.PaymentPaidEvent;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentCompletedForFunding;
+import app.giftify.shared.domain.event.payment.PaymentConfirmedForOrder;
+import app.giftify.shared.domain.type.PaymentType;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -62,7 +65,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		// 4. 저장 (uncommittedHistory 포함)
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 내부 이벤트 발행 (Handler에서 외부 이벤트로 변환)
+		// 5. 내부 이벤트 발행 (Wallet BC가 POINT_CHARGE 시 수신하여 지갑 충전)
 		eventPublisher.publish(new PaymentPaidEvent(
 			savedPayment.getId(),
 			savedPayment.getMemberId(),
@@ -71,5 +74,23 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 			savedPayment.getPaidAmount(),
 			command.paidAt()
 		));
+
+		// 6. 외부 BC용 이벤트 직접 발행
+		if (savedPayment.getType() == PaymentType.FUNDING) {
+			eventPublisher.publish(PaymentCompletedForFunding.create(
+				savedPayment.getId(),
+				savedPayment.getOrderId(),
+				savedPayment.getMemberId(),
+				savedPayment.getPaidAmount(),
+				command.paidAt()
+			));
+		} else {
+			eventPublisher.publish(PaymentConfirmedForOrder.create(
+				savedPayment.getId(),
+				savedPayment.getOrderId(),
+				savedPayment.getPaidAmount(),
+				command.paidAt()
+			));
+		}
 	}
 }
