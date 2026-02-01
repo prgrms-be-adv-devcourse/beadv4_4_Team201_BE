@@ -2,7 +2,7 @@ package app.giftify.product.adapter.outbound.jpa.repository;
 
 import app.giftify.product.adapter.inbound.web.requestDto.StockHistorySearchDto;
 import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistory;
-import app.giftify.product.domain.QProductStockHistory;
+import app.giftify.product.adapter.outbound.jpa.entity.QProductStockHistory;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

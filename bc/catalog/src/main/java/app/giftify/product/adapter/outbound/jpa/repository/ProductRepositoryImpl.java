@@ -2,9 +2,9 @@ package app.giftify.product.adapter.outbound.jpa.repository;
 
 import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
-import app.giftify.product.adapter.outbound.jpa.entity.Product;
+import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
+import app.giftify.product.adapter.outbound.jpa.entity.QProductJpa;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.product.domain.QProduct;
 import app.giftify.product.domain.exception.ProductException;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -27,8 +27,8 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 
     // 일반 상품 검색
     @Override
-    public Page<Product> searchProducts(ProductSearchDto searchDto) {
-        QProduct product = QProduct.product;
+    public Page<ProductJpa> searchProducts(ProductSearchDto searchDto) {
+        QProductJpa product = QProductJpa.productJpa;
         BooleanBuilder where = new BooleanBuilder();
 
         applyCommonFilter(searchDto, product, where);
@@ -41,8 +41,8 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 
     // 내가 판매하는 상품 조회
     @Override
-    public Page<Product> searchMyProducts(Long sellerId, MyProductSearchDto searchDto) {
-        QProduct product = QProduct.product;
+    public Page<ProductJpa> searchMyProducts(Long sellerId, MyProductSearchDto searchDto) {
+        QProductJpa product = QProductJpa.productJpa;
         BooleanBuilder where = new BooleanBuilder();
 
         applyCommonFilter(searchDto, product, where);
@@ -60,7 +60,7 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
 
     // ---------------------------
     // 일반 검색, 나의 상품 조회 공통 필터
-    private void applyCommonFilter(ProductSearchDto searchDto, QProduct product, BooleanBuilder where) {
+    private void applyCommonFilter(ProductSearchDto searchDto, QProductJpa product, BooleanBuilder where) {
         String keyword = searchDto.getKeyword();
         Integer minPrice = searchDto.getMinPrice();
         Integer maxPrice = searchDto.getMaxPrice();
@@ -88,11 +88,11 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
             where.and(product.stock.gt(0));
     }
 
-    private Page<Product> fetchPage(ProductSearchDto dto, QProduct product, BooleanBuilder where) {
+    private Page<ProductJpa> fetchPage(ProductSearchDto dto, QProductJpa product, BooleanBuilder where) {
         int page = dto.getPage();
         int size = dto.getSize();
 
-        List<Product> content = queryFactory
+        List<ProductJpa> content = queryFactory
                 .selectFrom(product)
                 .where(where)
                 .orderBy(toOrderSpecifier(dto.getSort(), product))
@@ -110,7 +110,7 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 
-    private OrderSpecifier<?> toOrderSpecifier(String sort, QProduct product) {
+    private OrderSpecifier<?> toOrderSpecifier(String sort, QProductJpa product) {
         // 기본 정렬: 생성일 최신순
         if (sort == null || sort.isBlank() || sort.equals("latest"))
             return product.createdAt.desc();
