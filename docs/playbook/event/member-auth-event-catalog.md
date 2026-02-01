@@ -1,7 +1,7 @@
 # Member & Auth Domain - Event Catalog
 
-**최종 수정일:** 2026-01-30
-**버전:** 1.1
+**최종 수정일:** 2026-01-31
+**버전:** 2.0
 **담당 모듈:** `bc/member`, `bc/shared`, `support/common`
 
 ---
@@ -134,8 +134,11 @@ new UserAuthenticatedEvent(
 
 | Consumer                         | Module             | Action             |
 |----------------------------------|--------------------|--------------------|
-| `UserAuthenticatedEventListener` | `bc/member`        | PreSignup 임시 정보 생성 |
+| `UserAuthenticatedEventListener` | `bc/member`        | **Member 자동 생성**   |
 | `AuthEventListener`              | `bc/member` (auth) | 로깅 (디버그용)          |
+
+> **변경사항 (2026-01-31)**: 기존 PreSignup 기반 플로우가 제거되고,
+> `UserAuthenticatedEventListener`가 직접 Member를 생성하도록 변경되었습니다.
 
 ---
 
@@ -149,26 +152,30 @@ new UserAuthenticatedEvent(
 |-------------------|----------------------------------------------------------------------|
 | **Handler Class** | `app.giftify.member.adapter.in.event.UserAuthenticatedEventListener` |
 | **Event**         | `UserAuthenticatedEvent`                                             |
-| **Annotation**    | `@EventListener`                                                     |
+| **Annotation**    | `@ApplicationModuleListener` (Spring Modulith)                       |
 
 #### 처리 로직
 
 ```java
-@EventListener
+@ApplicationModuleListener
 public void handleUserAuthenticatedEvent(UserAuthenticatedEvent event) {
     // 1. 이미 가입된 회원인지 확인
     if (registerMemberUseCase.existsByEmail(event.getEmail())) {
-        log.info("[Event] 이미 가입된 회원입니다. 임시 정보를 생성하지 않습니다.");
+        log.info("[Event] 이미 가입된 회원입니다.");
         return;
     }
 
-    // 2. PreSignup 임시 정보 생성
-    preSignupPort.save(new PreSignup(
-        event.getAuthSub(),
+    // 2. Member 자동 생성 (닉네임 자동생성)
+    RegisterCommand command = new RegisterCommand(
         event.getEmail(),
+        null,  // nickname: null이면 자동 생성 ("형용사+동물+숫자")
+        null, null, null,
         event.getName(),
-        event.getNickname()
-    ));
+        event.getAuthSub()
+    );
+
+    Member member = registerMemberUseCase.registerMember(command);
+    log.info("[Event] 신규 회원 자동 생성 완료: memberId={}", member.getId());
 }
 ```
 
@@ -194,10 +201,14 @@ UserAuthenticatedEvent
     │               │
     ▼               ▼
  (무시)      ┌─────────────┐
-             │ PreSignup   │
-             │ 생성        │
+             │ Member      │
+             │ 자동 생성    │
+             │ (닉네임 자동) │
              └─────────────┘
 ```
+
+> **참고**: `@ApplicationModuleListener`는 Spring Modulith의 이벤트 리스너로,
+> 트랜잭션 완료 후 이벤트가 전달되며, 실패 시 재시도를 지원합니다.
 
 ---
 
@@ -243,12 +254,12 @@ public class MemberService {
 
 ## Event Flow Diagrams
 
-### 신규 사용자 가입 플로우
+### 신규 사용자 자동 가입 플로우
 
 ```
 ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐
-│  Frontend  │    │LoginService│    │ Event Bus  │    │PreSignup   │
-│            │    │            │    │            │    │Listener    │
+│  Frontend  │    │LoginService│    │ Event Bus  │    │Member      │
+│            │    │            │    │ (Modulith) │    │Listener    │
 └─────┬──────┘    └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
       │                 │                 │                 │
       │ POST /login     │                 │                 │
@@ -262,28 +273,31 @@ public class MemberService {
       │                 │                 │ Event 전달      │
       │                 │                 │────────────────▶│
       │                 │                 │                 │
-      │                 │                 │                 │ PreSignup
-      │                 │                 │                 │ 저장
+      │                 │                 │                 │ Member
+      │                 │                 │                 │ 자동 생성
       │                 │                 │                 │────┐
       │                 │                 │                 │    │
       │                 │                 │                 │◀───┘
       │                 │                 │                 │
+      │                 │                 │ MemberSigned    │
+      │                 │                 │ Event 발행      │
+      │                 │                 │◀────────────────│
+      │                 │                 │                 │
       │ {isNewUser:true}│                 │                 │
       │◀────────────────│                 │                 │
       │                 │                 │                 │
-      │ POST /signup    │                 │                 │
-      │ {...}           │                 │                 │
-      │────────────────────────────────────────────────────▶│
-      │                 │                 │                 │
-      │                 │ MemberSigned    │                 │
-      │                 │ Event 발행      │                 │
-      │                 │────────────────▶│                 │
-      │                 │                 │                 │
-      │ Member Response │                 │                 │
-      │◀────────────────────────────────────────────────────│
+      │   (선택적)       │                 │                 │
+      │ PATCH /members/me                 │                 │
+      │ {프로필 수정}    │                 │                 │
+      │────────────────▶│                 │                 │
       │                 │                 │                 │
       ▼                 ▼                 ▼                 ▼
 ```
+
+> **변경사항 (2026-01-31)**:
+> - 기존 PreSignup 기반 플로우 제거
+> - 로그인 시 Member가 자동 생성됨
+> - 프로필 수정은 `PATCH /api/v2/members/me`로 진행
 
 ### 회원정보 수정 플로우
 
@@ -367,7 +381,8 @@ public abstract class ApplicationEvent extends EventObject {
 
 ## Version History
 
-| Version | Date       | Changes                                       |
-|---------|------------|-----------------------------------------------|
-| 1.1     | 2026-01-30 | UserAuthenticatedEvent 신규 사용자 로그인 시 발행 로직 추가  |
-| 1.0     | 2025-12-01 | 초기 버전 (MemberSignedEvent, MemberUpdatedEvent) |
+| Version | Date       | Changes                                              |
+|---------|------------|------------------------------------------------------|
+| 2.0     | 2026-01-31 | PreSignup 제거, Member 자동 생성으로 변경, @ApplicationModuleListener 적용 |
+| 1.1     | 2026-01-30 | UserAuthenticatedEvent 신규 사용자 로그인 시 발행 로직 추가         |
+| 1.0     | 2025-12-01 | 초기 버전 (MemberSignedEvent, MemberUpdatedEvent)        |

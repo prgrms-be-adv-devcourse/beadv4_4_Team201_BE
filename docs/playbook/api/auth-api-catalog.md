@@ -1,7 +1,7 @@
 # Auth Domain - API Catalog
 
-**최종 수정일:** 2026-01-30
-**버전:** 2.0
+**최종 수정일:** 2026-01-31
+**버전:** 2.1
 **담당 모듈:** `bc/member` (auth 논리 모듈)
 
 ---
@@ -110,7 +110,9 @@ Auth0 SPA SDK에서 발급받은 idToken을 검증하고, 회원 정보와 가�
 
 #### Domain Events Published
 
-- `UserAuthenticatedEvent` - 신규 사용자인 경우 (PreSignup 생성 트리거)
+- `UserAuthenticatedEvent` - 신규 사용자인 경우 발행
+  - `UserAuthenticatedEventListener`가 수신하여 **Member 자동 생성**
+  - 닉네임은 "형용사+동물+숫자" 형식으로 자동 생성
 
 ---
 
@@ -305,7 +307,7 @@ Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
      ▼                ▼                ▼                ▼
 ```
 
-### 신규 사용자 온보딩 플로우
+### 신규 사용자 자동 가입 플로우
 
 ```
                         isNewUser?
@@ -321,31 +323,35 @@ Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
     └────────┬────────┘         └─────────────────┘
              │
              ▼
-    ┌─────────────────┐
-    │ PreSignup 생성   │
-    │ (임시 정보 저장)  │
-    └────────┬────────┘
+    ┌─────────────────────────────┐
+    │ UserAuthenticatedEvent      │
+    │ Listener가 Member 자동 생성  │
+    │ (닉네임 자동생성)            │
+    └────────┬────────────────────┘
              │
              ▼
     ┌─────────────────┐
     │ 온보딩 화면 표시  │
-    │ (추가 정보 입력)  │
+    │ (프로필 수정)    │
     └────────┬────────┘
              │
              ▼
     ┌─────────────────┐
-    │ POST /api/      │
-    │ members/signup  │
-    │ { ... }         │
+    │ PATCH /api/v2/  │
+    │ members/me      │
+    │ (선택적 수정)    │
     └────────┬────────┘
              │
              ▼
     ┌─────────────────┐
-    │ 회원가입 완료!   │
-    │ MemberSigned    │
-    │ Event 발행      │
+    │ 온보딩 완료!     │
+    │ 홈 화면으로 이동  │
     └─────────────────┘
 ```
+
+> **참고**: 기존 `/api/members/signup` 엔드포인트는 여전히 존재하지만,
+> 회원이 이미 자동 생성되어 있으므로 **409 Conflict**가 반환됩니다.
+> 신규 플로우에서는 `/api/v2/members/me` PATCH로 프로필을 수정합니다.
 
 ---
 
@@ -383,7 +389,8 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## Version History
 
-| Version | Date       | Changes                                     |
-|---------|------------|---------------------------------------------|
-| 2.0     | 2026-01-30 | SPA SDK 로그인 API 추가 (`POST /api/auth/login`) |
-| 1.0     | 2025-12-01 | 초기 버전 (OAuth2 Redirect 방식)                  |
+| Version | Date       | Changes                                           |
+|---------|------------|---------------------------------------------------|
+| 2.1     | 2026-01-31 | Member 자동 생성 플로우로 변경 (PreSignup 제거)              |
+| 2.0     | 2026-01-30 | SPA SDK 로그인 API 추가 (`POST /api/auth/login`)       |
+| 1.0     | 2025-12-01 | 초기 버전 (OAuth2 Redirect 방식)                        |

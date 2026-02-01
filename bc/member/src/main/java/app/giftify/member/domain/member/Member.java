@@ -8,9 +8,10 @@ import java.time.LocalDate;
 
 public class Member extends BaseDomainModel {
     private final String email;
-    private String password; // Auth0 사용 시 비어있거나 더미값
+    // TODO: Auth0 사용으로 실제 인증에는 불필요. 개발 편의를 위해 임시 유지 (추후 제거 예정)
+    private String password;
     private String nickname;
-    private final LocalDate birthday;
+    private LocalDate birthday;
     private MemberRole role;
     private String address;
     private String phoneNum;
@@ -100,6 +101,18 @@ public class Member extends BaseDomainModel {
         }
         if (name != null) {
             this.name = name;
+        }
+    }
+
+    public void updateProfile(LocalDate birthday, String address, String phoneNum) {
+        if (birthday != null) {
+            this.birthday = birthday;
+        }
+        if (address != null && !address.isBlank()) {
+            this.address = address;
+        }
+        if (phoneNum != null && !phoneNum.isBlank()) {
+            this.phoneNum = phoneNum;
         }
     }
 

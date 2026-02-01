@@ -1,14 +1,13 @@
 package app.giftify.member.adapter.in.web;
 
-import app.giftify.member.application.port.in.GetMemberUseCase;
-import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.domain.exception.MemberNotFoundException;
-import app.giftify.member.domain.member.Member;
-import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,253 +24,259 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.time.LocalDate;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.domain.exception.MemberNotFoundException;
+import app.giftify.member.domain.member.Member;
+import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.security.common.context.AuthenticatedMember;
 
 @WebMvcTest(MemberV2Controller.class)
 class MemberV2ControllerTest {
 
-    /**
-     * 테스트용 예외 핸들러.
-     * MemberExceptionHandler가 MemberController에만 적용되므로 별도 정의.
-     */
-    @org.springframework.web.bind.annotation.RestControllerAdvice
-    static class TestExceptionHandler {
-        @org.springframework.web.bind.annotation.ExceptionHandler(MemberNotFoundException.class)
-        public org.springframework.http.ResponseEntity<?> handleNotFound(MemberNotFoundException e) {
-            return org.springframework.http.ResponseEntity.status(404).build();
-        }
-    }
+	/**
+	 * 테스트용 예외 핸들러.
+	 * MemberExceptionHandler가 MemberController에만 적용되므로 별도 정의.
+	 */
+	@org.springframework.web.bind.annotation.RestControllerAdvice
+	static class TestExceptionHandler {
+		@org.springframework.web.bind.annotation.ExceptionHandler(MemberNotFoundException.class)
+		public org.springframework.http.ResponseEntity<?> handleNotFound(MemberNotFoundException e) {
+			return org.springframework.http.ResponseEntity.status(404).build();
+		}
+	}
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired
+	private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private GetMemberUseCase getMemberUseCase;
+	@MockitoBean
+	private GetMemberUseCase getMemberUseCase;
 
-    @MockitoBean
-    private UpdateMemberUseCase updateMemberUseCase;
+	@MockitoBean
+	private RegisterMemberUseCase registerMemberUseCase;
 
-    private static final String AUTH_SUB = "auth0|12345";
+	@MockitoBean
+	private UpdateMemberUseCase updateMemberUseCase;
 
-    @BeforeEach
-    void setUp() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+	private static final String AUTH_SUB = "auth0|12345";
 
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(new MemberV2Controller(getMemberUseCase, updateMemberUseCase))
-                .setControllerAdvice(new TestExceptionHandler())
-                .setMessageConverters(new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(mapper))
-                .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
-                    @Override
-                    public boolean supportsParameter(MethodParameter parameter) {
-                        return parameter.hasParameterAnnotation(AuthenticatedMember.class);
-                    }
+	@BeforeEach
+	void setUp() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+		mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-                    @Override
-                    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-                        return AUTH_SUB;
-                    }
-                })
-                .build();
-    }
+		mockMvc = MockMvcBuilders
+			.standaloneSetup(new MemberV2Controller(getMemberUseCase, registerMemberUseCase, updateMemberUseCase))
+			.setControllerAdvice(new TestExceptionHandler())
+			.setMessageConverters(
+				new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(mapper))
+			.setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
+				@Override
+				public boolean supportsParameter(MethodParameter parameter) {
+					return parameter.hasParameterAnnotation(AuthenticatedMember.class);
+				}
 
-    @Nested
-    @DisplayName("GET /api/v2/members/me")
-    class Given_GetMe {
+				@Override
+				public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+					NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+					return AUTH_SUB;
+				}
+			})
+			.build();
+	}
 
-        @Nested
-        @DisplayName("When 회원이 존재하는 경우")
-        class When_MemberExists {
+	@Nested
+	@DisplayName("GET /api/v2/members/me")
+	class Given_GetMe {
 
-            @Test
-            @DisplayName("Then MemberResponse DTO로 반환하며 민감 정보 제외")
-            void Then_ReturnsMemberResponseWithoutSensitiveInfo() throws Exception {
-                // given
-                Member member = Member.builder()
-                        .id(1L)
-                        .email("test@example.com")
-                        .nickname("테스터")
-                        .birthday(LocalDate.of(1990, 1, 1))
-                        .address("서울시 강남구")
-                        .phoneNum("010-1234-5678")
-                        .name("홍길동")
-                        .status(MemberStatus.ACTIVE)
-                        .authSub(AUTH_SUB)
-                        .build();
+		@Nested
+		@DisplayName("When 회원이 존재하는 경우")
+		class When_MemberExists {
 
-                given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(member));
+			@Test
+			@DisplayName("Then MemberResponse DTO로 반환하며 민감 정보 제외")
+			void Then_ReturnsMemberResponseWithoutSensitiveInfo() throws Exception {
+				// given
+				Member member = Member.builder()
+					.id(1L)
+					.email("test@example.com")
+					.nickname("테스터")
+					.birthday(LocalDate.of(1990, 1, 1))
+					.address("서울시 강남구")
+					.phoneNum("010-1234-5678")
+					.name("홍길동")
+					.status(MemberStatus.ACTIVE)
+					.authSub(AUTH_SUB)
+					.build();
 
-                // when & then
-                mockMvc.perform(get("/api/v2/members/me"))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.id").value(1))
-                        .andExpect(jsonPath("$.email").value("test@example.com"))
-                        .andExpect(jsonPath("$.nickname").value("테스터"))
-                        .andExpect(jsonPath("$.birthday").value("1990-01-01"))
-                        .andExpect(jsonPath("$.address").value("서울시 강남구"))
-                        .andExpect(jsonPath("$.phoneNum").value("010-1234-5678"))
-                        .andExpect(jsonPath("$.name").value("홍길동"))
-                        .andExpect(jsonPath("$.status").value("ACTIVE"));
-            }
-        }
+				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(member));
 
-        @Nested
-        @DisplayName("When 회원이 존재하지 않는 경우")
-        class When_MemberNotExists {
+				// when & then
+				mockMvc.perform(get("/api/v2/members/me"))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").value(1))
+					.andExpect(jsonPath("$.email").value("test@example.com"))
+					.andExpect(jsonPath("$.nickname").value("테스터"))
+					.andExpect(jsonPath("$.birthday").value("1990-01-01"))
+					.andExpect(jsonPath("$.address").value("서울시 강남구"))
+					.andExpect(jsonPath("$.phoneNum").value("010-1234-5678"))
+					.andExpect(jsonPath("$.name").value("홍길동"))
+					.andExpect(jsonPath("$.status").value("ACTIVE"));
+			}
+		}
 
-            @Test
-            @DisplayName("Then 404 에러 반환")
-            void Then_Returns404() throws Exception {
-                // given
-                given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.empty());
+		@Nested
+		@DisplayName("When 회원이 존재하지 않는 경우")
+		class When_MemberNotExists {
 
-                // when & then
-                mockMvc.perform(get("/api/v2/members/me"))
-                        .andExpect(status().isNotFound());
-            }
-        }
-    }
+			@Test
+			@DisplayName("Then 404 에러 반환")
+			void Then_Returns404() throws Exception {
+				// given
+				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.empty());
 
-    @Nested
-    @DisplayName("PATCH /api/v2/members/me")
-    class Given_UpdateMe {
+				// when & then
+				mockMvc.perform(get("/api/v2/members/me"))
+					.andExpect(status().isNotFound());
+			}
+		}
+	}
 
-        @Nested
-        @DisplayName("When 활성 회원이 정보 수정 요청")
-        class When_ActiveMemberUpdates {
+	@Nested
+	@DisplayName("PATCH /api/v2/members/me")
+	class Given_UpdateMe {
 
-            @Test
-            @DisplayName("Then 수정된 MemberResponse 반환")
-            void Then_ReturnsUpdatedMemberResponse() throws Exception {
-                // given
-                Member existingMember = Member.builder()
-                        .id(1L)
-                        .status(MemberStatus.ACTIVE)
-                        .authSub(AUTH_SUB)
-                        .build();
+		@Nested
+		@DisplayName("When 활성 회원이 정보 수정 요청")
+		class When_ActiveMemberUpdates {
 
-                Member updatedMember = Member.builder()
-                        .id(1L)
-                        .email("test@example.com")
-                        .nickname("새닉네임")
-                        .address("부산시 해운대구")
-                        .phoneNum("010-9999-8888")
-                        .name("김철수")
-                        .status(MemberStatus.ACTIVE)
-                        .authSub(AUTH_SUB)
-                        .build();
+			@Test
+			@DisplayName("Then 수정된 MemberResponse 반환")
+			void Then_ReturnsUpdatedMemberResponse() throws Exception {
+				// given
+				Member existingMember = Member.builder()
+					.id(1L)
+					.status(MemberStatus.ACTIVE)
+					.authSub(AUTH_SUB)
+					.build();
 
-                given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingMember));
-                given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
+				Member updatedMember = Member.builder()
+					.id(1L)
+					.email("test@example.com")
+					.nickname("새닉네임")
+					.address("부산시 해운대구")
+					.phoneNum("010-9999-8888")
+					.name("김철수")
+					.status(MemberStatus.ACTIVE)
+					.authSub(AUTH_SUB)
+					.build();
 
-                String requestBody = """
-                        {
-                        	"nickname": "새닉네임",
-                        	"address": "부산시 해운대구",
-                        	"phoneNum": "010-9999-8888",
-                        	"name": "김철수"
-                        }
-                        """;
+				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingMember));
+				given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
 
-                // when & then
-                mockMvc.perform(patch("/api/v2/members/me")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.nickname").value("새닉네임"))
-                        .andExpect(jsonPath("$.address").value("부산시 해운대구"))
-                        .andExpect(jsonPath("$.phoneNum").value("010-9999-8888"))
-                        .andExpect(jsonPath("$.name").value("김철수"));
+				String requestBody = """
+					{
+						"nickname": "새닉네임",
+						"address": "부산시 해운대구",
+						"phoneNum": "010-9999-8888",
+						"name": "김철수"
+					}
+					""";
 
-                verify(updateMemberUseCase).updateMember(any(UpdateMemberUseCase.UpdateCommand.class));
-            }
-        }
+				// when & then
+				mockMvc.perform(patch("/api/v2/members/me")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.nickname").value("새닉네임"))
+					.andExpect(jsonPath("$.address").value("부산시 해운대구"))
+					.andExpect(jsonPath("$.phoneNum").value("010-9999-8888"))
+					.andExpect(jsonPath("$.name").value("김철수"));
 
-        @Nested
-        @DisplayName("When 탈퇴한 회원이 수정 요청")
-        class When_WithdrawnMemberUpdates {
+				verify(updateMemberUseCase).updateMember(any(UpdateMemberUseCase.UpdateCommand.class));
+			}
+		}
 
-            @Test
-            @DisplayName("Then 403 Forbidden 반환")
-            void Then_Returns403() throws Exception {
-                // given
-                Member withdrawnMember = Member.builder()
-                        .id(1L)
-                        .status(MemberStatus.WITHDRAWN)
-                        .authSub(AUTH_SUB)
-                        .build();
+		@Nested
+		@DisplayName("When 탈퇴한 회원이 수정 요청")
+		class When_WithdrawnMemberUpdates {
 
-                given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(withdrawnMember));
+			@Test
+			@DisplayName("Then 403 Forbidden 반환")
+			void Then_Returns403() throws Exception {
+				// given
+				Member withdrawnMember = Member.builder()
+					.id(1L)
+					.status(MemberStatus.WITHDRAWN)
+					.authSub(AUTH_SUB)
+					.build();
 
-                String requestBody = """
-                        {
-                        	"nickname": "새닉네임"
-                        }
-                        """;
+				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(withdrawnMember));
 
-                // when & then
-                mockMvc.perform(patch("/api/v2/members/me")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody))
-                        .andExpect(status().isForbidden());
+				String requestBody = """
+					{
+						"nickname": "새닉네임"
+					}
+					""";
 
-                verify(updateMemberUseCase, never()).updateMember(any());
-            }
-        }
+				// when & then
+				mockMvc.perform(patch("/api/v2/members/me")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+					.andExpect(status().isForbidden());
 
-        @Nested
-        @DisplayName("When 부분 필드만 수정 요청")
-        class When_PartialUpdate {
+				verify(updateMemberUseCase, never()).updateMember(any());
+			}
+		}
 
-            @Test
-            @DisplayName("Then 요청한 필드만 수정")
-            void Then_UpdatesOnlyRequestedFields() throws Exception {
-                // given
-                Member existingMember = Member.builder()
-                        .id(1L)
-                        .nickname("기존닉네임")
-                        .address("기존주소")
-                        .status(MemberStatus.ACTIVE)
-                        .authSub(AUTH_SUB)
-                        .build();
+		@Nested
+		@DisplayName("When 부분 필드만 수정 요청")
+		class When_PartialUpdate {
 
-                Member updatedMember = Member.builder()
-                        .id(1L)
-                        .nickname("새닉네임")
-                        .address("기존주소")
-                        .status(MemberStatus.ACTIVE)
-                        .authSub(AUTH_SUB)
-                        .build();
+			@Test
+			@DisplayName("Then 요청한 필드만 수정")
+			void Then_UpdatesOnlyRequestedFields() throws Exception {
+				// given
+				Member existingMember = Member.builder()
+					.id(1L)
+					.nickname("기존닉네임")
+					.address("기존주소")
+					.status(MemberStatus.ACTIVE)
+					.authSub(AUTH_SUB)
+					.build();
 
-                given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingMember));
-                given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
+				Member updatedMember = Member.builder()
+					.id(1L)
+					.nickname("새닉네임")
+					.address("기존주소")
+					.status(MemberStatus.ACTIVE)
+					.authSub(AUTH_SUB)
+					.build();
 
-                String requestBody = """
-                        {
-                        	"nickname": "새닉네임"
-                        }
-                        """;
+				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingMember));
+				given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
 
-                // when & then
-                mockMvc.perform(patch("/api/v2/members/me")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.nickname").value("새닉네임"));
-            }
-        }
-    }
+				String requestBody = """
+					{
+						"nickname": "새닉네임"
+					}
+					""";
+
+				// when & then
+				mockMvc.perform(patch("/api/v2/members/me")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.nickname").value("새닉네임"));
+			}
+		}
+	}
 }

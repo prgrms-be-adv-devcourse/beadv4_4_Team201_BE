@@ -17,15 +17,17 @@ public class AuthExceptionHandler {
     // [JWT 검증 실패 예외 처리]
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<?> handleJwtException(JwtException e) {
+        String message = e.getMessage() != null ? e.getMessage() : "Invalid token";
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Map.of("error", "Invalid Token", "message", e.getMessage()));
+            .body(Map.of("error", "Invalid Token", "message", message));
     }
 
     // [인증 실패 예외 처리]
     @ExceptionHandler({AuthenticationException.class, OAuth2AuthenticationException.class})
     public ResponseEntity<?> handleAuthenticationException(Exception e) {
+        String message = e.getMessage() != null ? e.getMessage() : "Authentication failed";
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Map.of("error", "Authentication Failed", "message", e.getMessage()));
+            .body(Map.of("error", "Authentication Failed", "message", message));
     }
 
     // [기타 보안 관련 예외 처리]
