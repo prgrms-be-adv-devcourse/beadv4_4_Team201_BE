@@ -1,6 +1,6 @@
 package app.giftify.product.adapter.inbound.web.responseDto;
 
-import app.giftify.product.domain.Product;
+import app.giftify.product.application.port.in.ProductUpdateResult;
 import app.giftify.product.domain.ProductStatus;
 
 import java.time.LocalDateTime;
@@ -16,17 +16,17 @@ public record ProductUpdateResponseDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static ProductUpdateResponseDto from(Product product) {
+    public static ProductUpdateResponseDto from(ProductUpdateResult result) {
         return new ProductUpdateResponseDto(
-                product.getId(),
-                product.getSellerId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getStock(),
-                product.getStatus(),
-                product.getCreatedAt(),
-                product.getUpdatedAt()
+                result.id(),
+                result.sellerId(),
+                result.name(),
+                result.description(),
+                result.price(),
+                result.stock(),
+                result.status(),
+                result.createdAt(),
+                result.updatedAt()
         );
     }
 }

@@ -3,7 +3,6 @@ package app.giftify.product.application.service;
 import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
-import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistory;
 import app.giftify.product.adapter.outbound.jpa.repository.ProductStockHistoryRepository;
 import app.giftify.product.application.port.in.*;
@@ -163,7 +162,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 상품 수정 (판매자)
     @Override
     @Transactional
-    public ProductUpdateResponseDto updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
+    public ProductUpdateResult updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
         Product product = productRepositoryPort.findByIdAndSellerId(productId, sellerId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
@@ -214,7 +213,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             ));
         }
 
-        return ProductUpdateResponseDto.from(product);
+        return ProductUpdateResult.from(product);
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)

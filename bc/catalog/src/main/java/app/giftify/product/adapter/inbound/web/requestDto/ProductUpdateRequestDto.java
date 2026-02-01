@@ -7,6 +7,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
 import static app.giftify.product.domain.ProductStatus.INACTIVE;
+import static app.giftify.product.domain.exception.ProductErrorCode.INVALID_PRODUCT_STATUS;
+import static app.giftify.product.domain.exception.ProductErrorCode.PRODUCT_UPDATE_EMPTY_REQUEST;
 
 public record ProductUpdateRequestDto(
         String name,
