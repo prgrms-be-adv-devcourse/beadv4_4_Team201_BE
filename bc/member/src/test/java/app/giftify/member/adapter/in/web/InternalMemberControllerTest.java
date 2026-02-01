@@ -1,6 +1,7 @@
 package app.giftify.member.adapter.in.web;
 
 import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.shared.domain.type.MemberRole;
@@ -27,12 +28,15 @@ class InternalMemberControllerTest {
 	@MockitoBean
 	private GetMemberUseCase getMemberUseCase;
 
+	@MockitoBean
+	private RegisterMemberUseCase registerMemberUseCase;
+
 	private static final String AUTH_SUB = "auth0|12345";
 
 	@BeforeEach
 	void setUp() {
 		mockMvc = MockMvcBuilders
-			.standaloneSetup(new InternalMemberController(getMemberUseCase))
+			.standaloneSetup(new InternalMemberController(getMemberUseCase, registerMemberUseCase))
 			.build();
 	}
 
