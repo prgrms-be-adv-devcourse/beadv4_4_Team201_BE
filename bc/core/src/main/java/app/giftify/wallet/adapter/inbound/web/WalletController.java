@@ -47,7 +47,7 @@ public class WalletController implements WalletV2Api {
 	private final QueryWalletHistoryUseCase queryWalletHistoryUseCase;
 
 	@Override
-	@Deprecated
+	@Deprecated(since = "v2", forRemoval = true)
 	@PostMapping("/charge")
 	public ResponseEntity<CommonResponse<ChargeWalletResponse>> charge(
 		@CurrentMemberId Long memberId,
