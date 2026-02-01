@@ -1,7 +1,15 @@
 package app.giftify.wallet.adapter.inbound.web;
 
 import app.giftify.shared.domain.vo.Money;
-import app.giftify.wallet.application.inbound.*;
+import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
+import app.giftify.wallet.application.inbound.QueryWalletUseCase;
+import app.giftify.wallet.application.inbound.WalletBalanceResult;
+import app.giftify.wallet.application.inbound.WalletHistoryQuery;
+import app.giftify.wallet.application.inbound.WalletHistoryResult;
+import app.giftify.wallet.application.inbound.WithdrawStatus;
+import app.giftify.wallet.application.inbound.WithdrawWalletCommand;
+import app.giftify.wallet.application.inbound.WithdrawWalletResult;
+import app.giftify.wallet.application.inbound.WithdrawWalletUseCase;
 import app.giftify.wallet.domain.TransactionType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,9 +39,6 @@ import java.math.BigDecimal;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WalletController 테스트")
 class WalletControllerTest {
-
-	@Mock
-	private ChargeWalletUseCase chargeWalletUseCase;
 
 	@Mock
 	private WithdrawWalletUseCase withdrawWalletUseCase;

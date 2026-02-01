@@ -6,14 +6,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import app.giftify.shared.api.response.CommonResponse;
-import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletRequest;
-import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletResponse;
 import app.giftify.wallet.domain.TransactionType;
-import io.swagger.v3.oas.annotations.Hidden;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,25 +22,6 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Wallet V2", description = "예치금 지갑 API (v2)")
 public interface WalletV2Api {
-
-    @Hidden
-    @Deprecated(since = "v2", forRemoval = true)
-    @Operation(
-            summary = "[Deprecated] 지갑 충전",
-            description = """
-                    **⚠️ 이 API는 더 이상 사용하지 않습니다.**
-
-                    예치금 충전은 Payment API를 통해 진행됩니다:
-                    1. `POST /api/v2/payments/charge` - 결제 생성
-                    2. Toss SDK로 결제 진행
-                    3. `POST /api/v2/payments/confirm` - 결제 승인
-                    4. PaymentPaidEvent 발행 → 지갑 자동 충전
-                    """
-    )
-    ResponseEntity<CommonResponse<ChargeWalletResponse>> charge(
-            @Parameter(hidden = true) Long memberId,
-            @RequestBody @Valid ChargeWalletRequest request
-    );
 
     @Operation(
             summary = "예치금 출금 요청",

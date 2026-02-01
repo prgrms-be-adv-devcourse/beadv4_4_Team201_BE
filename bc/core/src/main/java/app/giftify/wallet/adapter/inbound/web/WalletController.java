@@ -13,16 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.CommonResponse;
 import app.giftify.shared.domain.vo.Money;
-import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletRequest;
-import app.giftify.wallet.adapter.inbound.web.dto.ChargeWalletResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletResponse;
 import app.giftify.wallet.domain.TransactionType;
-import app.giftify.wallet.application.inbound.ChargeWalletCommand;
-import app.giftify.wallet.application.inbound.ChargeWalletResult;
-import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
 import app.giftify.wallet.application.inbound.WalletHistoryQuery;
@@ -41,29 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Validated
 public class WalletController implements WalletV2Api {
-	private final ChargeWalletUseCase chargeWalletUseCase;
 	private final WithdrawWalletUseCase withdrawWalletUseCase;
 	private final QueryWalletUseCase queryWalletUseCase;
 	private final QueryWalletHistoryUseCase queryWalletHistoryUseCase;
-
-	@Override
-	@Deprecated(since = "v2", forRemoval = true)
-	@PostMapping("/charge")
-	public ResponseEntity<CommonResponse<ChargeWalletResponse>> charge(
-		@CurrentMemberId Long memberId,
-		@Valid @RequestBody ChargeWalletRequest request
-	) {
-		log.info("[WalletController] 충전 요청. memberId={}", memberId);
-
-		ChargeWalletCommand command = new ChargeWalletCommand(
-			memberId,
-			Money.of(request.amount()),
-			request.chargeOrderId()
-		);
-
-		ChargeWalletResult result = chargeWalletUseCase.charge(command);
-		return ResponseEntity.ok(CommonResponse.success(ChargeWalletResponse.from(result)));
-	}
 
 	@Override
 	@PostMapping("/withdraw")
