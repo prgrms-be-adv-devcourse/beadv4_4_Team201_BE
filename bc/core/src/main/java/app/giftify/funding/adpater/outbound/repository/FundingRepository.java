@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface FundingRepository extends JpaRepository<Funding, Long> {
 
@@ -16,6 +17,8 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
     Page<Funding> findAllByStatusIn(List<FundingStatus> statuses, Pageable pageable);
 
     List<Funding> findByDeadlineAfterAndStatusIn(LocalDateTime now, List<FundingStatus> statuses);
+
+    Optional<Funding> findByWishlistItemId(Long wishlistItemId);
 
 //    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }
