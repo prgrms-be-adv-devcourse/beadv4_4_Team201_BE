@@ -4,8 +4,8 @@ import app.giftify.cart.application.outbound.CartRepository;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
-import app.giftify.product.adapter.outbound.ProductRepository;
-import app.giftify.product.domain.Product;
+import app.giftify.product.adapter.outbound.jpa.entity.Product;
+import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -53,7 +53,8 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
             case PRODUCT -> validateDirectPurchase(targetId);
             case FUNDING -> validateFundingPurchase(targetId);
             default -> throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
-        };
+        }
+        ;
     }
 
     // 일반 구매 검증

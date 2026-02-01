@@ -1,7 +1,7 @@
 package app.giftify.cart.adapter.inbound;
 
 import app.giftify.cart.core.domain.CartItem;
-import app.giftify.product.domain.Product;
+import app.giftify.product.adapter.outbound.jpa.entity.Product;
 import app.giftify.shared.domain.type.TargetType;
 
 public record CartItemResponse(

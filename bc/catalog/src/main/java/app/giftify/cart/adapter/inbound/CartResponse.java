@@ -1,7 +1,7 @@
 package app.giftify.cart.adapter.inbound;
 
 import app.giftify.cart.core.domain.Cart;
-import app.giftify.product.domain.Product;
+import app.giftify.product.adapter.outbound.jpa.entity.Product;
 
 import java.util.List;
 import java.util.Map;

@@ -1,7 +1,7 @@
 package app.giftify.product.adapter.outbound.dataInit;
 
-import app.giftify.product.adapter.outbound.ProductRepository;
-import app.giftify.product.domain.Product;
+import app.giftify.product.adapter.outbound.jpa.entity.Product;
+import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
