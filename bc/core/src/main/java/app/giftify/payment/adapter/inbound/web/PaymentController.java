@@ -22,6 +22,10 @@ import app.giftify.payment.application.inbound.CreatePaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentGateway;
+import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.domain.Payment;
+import app.giftify.payment.domain.PaymentErrorCode;
+import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.CommonResponse;
@@ -40,6 +44,7 @@ public class PaymentController {
 	private final ConfirmPaymentUseCase confirmPaymentUseCase;
 	private final QueryPaymentUseCase queryPaymentUseCase;
 	private final PaymentGateway paymentGateway;
+	private final PaymentRepository paymentRepository;  // 추가
 
 	@PostMapping("/charge")
 	public ResponseEntity<CommonResponse<PaymentChargeResponse>> charge(
@@ -76,10 +81,30 @@ public class PaymentController {
 	) {
 		log.info("[PaymentController] 결제 승인 요청. memberId={}, paymentId={}", memberId, request.paymentId());
 
+		// 1. 원본 Payment 조회
+		Payment payment = paymentRepository.findById(request.paymentId())
+			.orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+		// 2. 금액 검증 (조작 방지)
+		Money requestedAmount = Money.of(request.amount());
+		if (!payment.getPaidAmount().equals(requestedAmount)) {
+			log.warn("[PaymentController] 금액 불일치! expected={}, actual={}",
+				payment.getPaidAmount(), requestedAmount);
+			throw new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH);
+		}
+
+		// 3. 소유자 검증
+		if (!payment.getMemberId().equals(memberId)) {
+			log.warn("[PaymentController] 결제 소유자 불일치! paymentMemberId={}, requestMemberId={}",
+				payment.getMemberId(), memberId);
+			throw new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND);
+		}
+
+		// 4. Toss PG 승인 요청 (DB에서 조회한 금액 사용)
 		TossConfirmResult pgResult = paymentGateway.confirm(
 			request.paymentKey(),
 			request.orderId(),
-			Money.of(request.amount())
+			payment.getPaidAmount()
 		);
 
 		if (pgResult.success()) {
