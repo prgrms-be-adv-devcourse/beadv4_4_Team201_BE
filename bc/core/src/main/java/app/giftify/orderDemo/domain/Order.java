@@ -2,6 +2,7 @@ package app.giftify.orderDemo.domain;
 
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.orderDemo.domain.exception.DomainException;
+import app.giftify.shared.domain.event.BaseAggregateRoot;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-public class Order {
+public class Order extends BaseAggregateRoot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -22,7 +22,8 @@ public enum OrderErrorCode implements ErrorCode {
     INVALID_ORDER_ITEM("ORDER-110", "유효하지 않은 주문 아이템입니다.", false),
     INVALID_PAYMENT_METHOD("ORDER-111", "유효하지 않은 결제 수단입니다.", false),
 
-    INVALID_TOTAL_AMOUNT("ORDER_112", "총 금액은 1000원 이상이어야 합니다.", false);
+    INVALID_TOTAL_AMOUNT("ORDER_112", "총 금액은 1000원 이상이어야 합니다.", false),
+    ORDER_ITEM_NOT_ASSOCIATED("ORDER_113", "주문 아이템이 주문과 연결되지 않았습니다.", false);
 
     private final String code;
     private final String message;
