@@ -20,5 +20,7 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     Optional<Funding> findByWishlistItemId(Long wishlistItemId);
 
+    Optional<Funding> existsByWishlistItemId(Long wishlistItemId);
+
 //    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }

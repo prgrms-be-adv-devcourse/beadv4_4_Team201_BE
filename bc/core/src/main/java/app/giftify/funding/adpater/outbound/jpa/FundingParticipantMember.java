@@ -21,15 +21,15 @@ public class FundingParticipantMember extends BaseJpaEntity {
     private Funding funding;
 
     @Column(nullable = false)
-    private Long fundingMemberId;
+    private Long participantId;
 
     @Column(nullable = false)
     private Integer amount;
 
 
-    public FundingParticipantMember(Funding funding, Long fundingMemberId, Integer amount) {
+    public FundingParticipantMember(Funding funding, Long participantId, Integer amount) {
         this.funding = funding;
-        this.fundingMemberId = fundingMemberId;
+        this.participantId = participantId;
         this.amount = amount;
     }
 

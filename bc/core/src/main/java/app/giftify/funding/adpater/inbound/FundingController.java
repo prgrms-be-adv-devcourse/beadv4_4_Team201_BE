@@ -111,10 +111,9 @@ public class FundingController {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     @PostMapping("/{id}/refuse")
-    public ResponseEntity<FundingCompleteResponseDto> refuseFunding(@PathVariable Long id,
-                                                                    @Parameter(hidden = true) Long memberId) {
+    public ResponseEntity<FundingCompleteResponseDto> refuseFunding(@PathVariable Long id) {
         // TODO : 인증 적용
-        FundingCompleteResponseDto funding = fundingFacade.refuseFunding(id, memberId);
+        FundingCompleteResponseDto funding = fundingFacade.refuseFunding(id);
         return ResponseEntity.ok(funding);
     }
 
@@ -130,7 +129,7 @@ public class FundingController {
             @PathVariable Long id,
             @Parameter(hidden = true) Long memberId) {
         // TODO : 인증 적용
-        FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id, memberId);
+        FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id);
         return ResponseEntity.ok(funding);
     }
 
