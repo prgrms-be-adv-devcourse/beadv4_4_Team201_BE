@@ -30,4 +30,10 @@ public class WishlistSupport { // 조회 + 예외처리용 헬퍼
         return wishlistItemRepositoryPort.findByWishlistIdAndProductId(wishlistId, productId)
                 .orElseThrow(WishlistItemNotFoundException::new);
     }
+
+    // 위시리스트아이템 id로 위시리스트아이템 조회
+    public WishlistItem getWishlistItemById(Long wishlistItemId) {
+        return wishlistItemRepositoryPort.findById(wishlistItemId)
+                .orElseThrow(WishlistItemNotFoundException::new);
+    }
 }
