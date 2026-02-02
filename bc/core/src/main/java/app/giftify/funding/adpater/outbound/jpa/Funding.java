@@ -17,9 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funding extends BaseJpaEntity {
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "funding_wishlist_item_id", nullable = false)
-    private FundingWishlistItem fundingWishlistItem;
+    @Column(nullable = false, unique = true)
+    private Long wishlistItemId;
 
     @Column(nullable = false)
     private Integer targetAmount;
@@ -41,25 +40,17 @@ public class Funding extends BaseJpaEntity {
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
 
-    private Funding(FundingWishlistItem item, Integer currentAmount) {
-        this.fundingWishlistItem = item;
-        this.targetAmount = item.getProductPrice();
-        this.currentAmount = currentAmount;
+    private Funding(Long wishlistItemId, Integer productPrice) {
+        this.wishlistItemId = wishlistItemId;
+        this.targetAmount = productPrice;
+        this.currentAmount = 0;
         this.status = FundingStatus.IN_PROGRESS;
         this.deadline = LocalDateTime.now().plusDays(15);
     }
 
-    public static Funding startFunding(FundingWishlistItem item, Integer amount) {
-        validateLeastAmount(amount);
-
-        Funding funding = new Funding(item, amount);
-
-        // 첫 결제 금액이 목표 금액과 같으면 바로 달성 상태로 변경
-        if (amount.equals(funding.targetAmount)) {
-            funding.status = FundingStatus.ACHIEVED;
-        }
-
-        return funding;
+    // todo 상품가격 가져오기 수정
+    public static Funding startFunding(Long wishlistItemId, Integer productPrice) {
+        return new Funding(wishlistItemId, productPrice);
     }
 
     public static void validateLeastAmount(Integer amount) {

@@ -28,10 +28,9 @@ public class FundingParticipantMember extends BaseJpaEntity {
 
 
     public FundingParticipantMember(Funding funding, Long fundingMemberId, Integer amount) {
-        addAmount(amount);
-
         this.funding = funding;
         this.fundingMemberId = fundingMemberId;
+        this.amount = amount;
     }
 
     public void addAmount(Integer amount) {

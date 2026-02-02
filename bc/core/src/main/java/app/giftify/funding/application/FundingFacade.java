@@ -19,9 +19,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class FundingFacade {
-    private final FundingRepository fundingRepository;
     private final FundingCreateUseCase fundingCreateUseCase;
-    private final FundingSyncItemUseCase fundingSyncItemUseCase;
     private final FundingGetUseCase fundingGetUseCase;
     private final FundingCloseUseCase fundingCloseUseCase;
     private final FundingExpireUseCase fundingExpireUseCase;
@@ -29,42 +27,21 @@ public class FundingFacade {
     private final FundingRefuseUseCase fundingRefuseUseCase;
     private final FundingAcceptUseCase fundingAcceptUseCase;
 
+
     @Transactional
-    public void handleFundingFromOrder(FundingFromOrderCommand command) {
-        // 진행중인 펀딩인지 확인
-        Optional<Funding> fundingOpt = fundingRepository.findByWishlistItemId(command.wishlistItemId());
+    public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer productPrice, Integer amount) {
+        // Funding 생성 (기여금 0원의 빈 펀딩)
+        Funding funding = fundingCreateUseCase.createFunding(wishlistItemId, productPrice);
 
-        if (fundingOpt.isPresent()) {
-            // 진행 중인 펀딩이면 기여
-            fundingContributeUseCase.contribute(fundingOpt.get().getId(), command.participantId(), command.amount());
-            return;
-        }
+        // 펀딩 기여(기여금, 기여자 추가)
+        fundingContributeUseCase.contribute(wishlistItemId, participantId, amount);
 
-        // 아직 시작 안됨 -> 펀딩 시작
-        FundingWishlistItem syncedItem =
-                fundingSyncItemUseCase.syncItem(
-                        new WishlistItemDto(
-                                command.wishlistItemId(),
-                                command.receiverId(),
-                                command.amount()
-                        )
-                );
-
-        fundingCreateUseCase.createFunding(syncedItem.getId(),command.amount());
-
-        // 첫 기여자도 기록 -> creatFunding이랑 중복되는 로직 없는지 확인하기
-        fundingContributeUseCase.contribute(fundingOpt.get().getId(), command.participantId(), command.amount());
+        return FundingResponseDto.fromEntity(funding);
     }
 
     @Transactional
-    public FundingResponseDto startFunding(WishlistItemDto wishlistItemDto, Integer amount) {
-        // 1. WishlistItem 복제
-        FundingWishlistItem syncedItem = fundingSyncItemUseCase.syncItem(wishlistItemDto);
-
-        // 2. Funding 생성 (첫 결제 금액으로)
-        Funding funding = fundingCreateUseCase.createFunding(syncedItem.getId(), amount);
-
-        return FundingResponseDto.fromEntity(funding);
+    public void contributeFunding(Long fundingId, Long participantId, Integer amount) {
+        fundingContributeUseCase.contribute(fundingId, participantId, amount);
     }
 
     @Transactional(readOnly = true)
