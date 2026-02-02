@@ -20,8 +20,8 @@ public class OrderItemSnapshotAdapter implements OrderItemSnapshotRepository {
     }
 
     @Override
-    public OrderItemSnapshot getByFundingId(Long fundingId) {
-        return jpaOrderItemSnapshotRepository.findById(fundingId)
+    public OrderItemSnapshot getByTargetId(Long targetId) {
+        return jpaOrderItemSnapshotRepository.findByTargetId(targetId)
                 .orElseThrow(() -> new PolicyException(SettlementErrorCode.ORDER_ITEM_SNAPSHOT_NOT_FOUND));
     }
 }

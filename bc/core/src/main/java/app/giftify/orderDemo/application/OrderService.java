@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
-@Service
+@Service("orderV2Service")
 @RequiredArgsConstructor
 public class OrderService {
 
