@@ -1,10 +1,10 @@
 package app.giftify.shared.domain.type;
 
 public enum TargetType {
-    PRODUCT("일반 상품"),
-    FUNDING("펀딩 상품"),
-    DEPOSIT("예치금"),
-    COUPON("쿠폰");
+    GENERAL_PRODUCT("일반 상품"),       // 일반 결제형 상품
+    FUNDING_PENDING("펀딩 예정 상품"),   // 첫 참여 펀딩
+    FUNDING("펀딩 상품")
+    ;
 
     private final String description;
 

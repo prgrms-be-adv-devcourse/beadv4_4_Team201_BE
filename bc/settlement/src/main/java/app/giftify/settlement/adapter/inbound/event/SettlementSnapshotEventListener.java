@@ -1,5 +1,6 @@
 package app.giftify.settlement.adapter.inbound.event;
 
+
 import app.giftify.settlement.application.SettlementItemService;
 import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
@@ -61,13 +62,14 @@ public class SettlementSnapshotEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderItemCreatedEvent(OrderItemCreatedEvent event) {
         orderItemSnapshotRepository.save(new OrderItemSnapshot(
-            event.orderItemId(),
-            event.orderId(),
-            event.fundingId(),
-            event.sellerId(),
-            event.quantity(),
-            event.unitPrice(),
-            event.totalAmount()
+                event.getOrderItemId(),
+                event.getOrderId(),
+                event.getTargetId(),
+                event.getTargetType(),
+                event.getOrderItemType(),
+                event.getSellerId(),
+                event.getPrice(),
+                event.getAmount()
         ));
     }
 
