@@ -3,6 +3,7 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -195,5 +196,54 @@ class WishlistItemServiceTest {
         // then
         assertThat(result).hasSize(2);
         assertThat(result).extracting(WishlistItem::getProductId).containsExactly(1L, 2L);
+    }
+
+    @Test
+    @DisplayName("위시리스트 아이템 스냅샷을 조회한다")
+    void getSnapshot() {
+        // given
+        Long wishlistItemId = 1L;
+        Long productId = 100L;
+        String productName = "테스트 상품";
+        int productPrice = 10000;
+        Long sellerId = 5L;
+
+        WishlistItem wishlistItem = WishlistItem.builder()
+                .id(wishlistItemId)
+                .wishlistId(WISHLIST_ID)
+                .productId(productId)
+                .wishlistItemStatus(WishlistItemStatus.PENDING)
+                .build();
+        given(wishlistSupport.getWishlistItemById(wishlistItemId)).willReturn(wishlistItem);
+
+        Product product = Mockito.mock(Product.class);
+        given(product.getId()).willReturn(productId);
+        given(product.getName()).willReturn(productName);
+        given(product.getPrice()).willReturn(productPrice);
+        given(product.getSellerId()).willReturn(sellerId);
+        given(productSupport.findById(productId)).willReturn(product);
+
+        // when
+        WishlistItemSnapshot result = wishlistItemService.getSnapshot(wishlistItemId);
+
+        // then
+        assertThat(result.originalWishlistItemId()).isEqualTo(wishlistItemId);
+        assertThat(result.productId()).isEqualTo(productId);
+        assertThat(result.productName()).isEqualTo(productName);
+        assertThat(result.productPrice()).isEqualTo(productPrice);
+        assertThat(result.sellerId()).isEqualTo(sellerId);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 위시리스트 아이템 스냅샷 조회 시 예외 발생")
+    void getSnapshot_NotFound() {
+        // given
+        Long wishlistItemId = 999L;
+        given(wishlistSupport.getWishlistItemById(wishlistItemId))
+                .willThrow(new WishlistItemNotFoundException());
+
+        // when & then
+        assertThatThrownBy(() -> wishlistItemService.getSnapshot(wishlistItemId))
+                .isInstanceOf(WishlistItemNotFoundException.class);
     }
 }

@@ -3,7 +3,9 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -29,7 +31,7 @@ import static app.giftify.wishlist.core.domain.WishlistItemStatus.PENDING;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistItemUseCase, RemoveWishlistItemUseCase {
+public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistItemUseCase, RemoveWishlistItemUseCase, GetWishlistItemSnapshotUseCase {
 
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
     private final WishlistRepositoryPort wishlistRepositoryPort;
@@ -120,6 +122,20 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
         wishlistItemRepositoryPort.delete(wishlistItem);
 
         // todo 장바구니아이템 상태 변경
+    }
+
+    /**
+     * 위시리스트아이템 스냅샷 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public WishlistItemSnapshot getSnapshot(Long wishlistItemId) {
+        WishlistItem wishlistItem = wishlistSupport.getWishlistItemById(wishlistItemId);
+        Product product = productSupport.findById(wishlistItem.getProductId());
+
+        return new WishlistItemSnapshot(
+                wishlistItem.getId(), product.getId(), product.getName(), product.getPrice(), product.getSellerId()
+        );
     }
 
     // memberId로 Wishlist 조회 없으면 생성
