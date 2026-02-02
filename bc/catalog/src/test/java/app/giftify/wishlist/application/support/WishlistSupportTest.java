@@ -147,4 +147,41 @@ class WishlistSupportTest {
                     .isInstanceOf(WishlistItemNotFoundException.class);
         }
     }
+
+    @Nested
+    @DisplayName("getWishlistItemById")
+    class GetWishlistItemById {
+
+        @Test
+        @DisplayName("위시리스트 아이템 ID로 조회 성공")
+        void success() {
+            // given
+            Long wishlistItemId = 1L;
+            WishlistItem wishlistItem = WishlistItem.builder()
+                    .id(wishlistItemId)
+                    .wishlistId(10L)
+                    .productId(100L)
+                    .wishlistItemStatus(WishlistItemStatus.PENDING)
+                    .build();
+            given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.of(wishlistItem));
+
+            // when
+            WishlistItem result = wishlistSupport.getWishlistItemById(wishlistItemId);
+
+            // then
+            assertThat(result.getId()).isEqualTo(wishlistItemId);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 위시리스트 아이템 ID로 조회 시 예외 발생")
+        void notFound() {
+            // given
+            Long wishlistItemId = 999L;
+            given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> wishlistSupport.getWishlistItemById(wishlistItemId))
+                    .isInstanceOf(WishlistItemNotFoundException.class);
+        }
+    }
 }
