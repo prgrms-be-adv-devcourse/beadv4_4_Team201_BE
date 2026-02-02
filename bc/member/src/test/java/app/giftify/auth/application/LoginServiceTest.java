@@ -80,6 +80,44 @@ class LoginServiceTest {
         }
 
         @Nested
+        @DisplayName("When 회원 조회 시 예외 발생 (신규 사용자로 처리)")
+        class When_MemberLookupException {
+
+            @Test
+            @DisplayName("Then 신규 사용자로 처리하여 회원/지갑 생성")
+            void Then_TreatedAsNewUserAndCreatesMemberAndWallet() {
+                // given
+                String idToken = "valid.id.token";
+                String authSub = "auth0|exception-user";
+                String email = "exception@example.com";
+                String name = "예외유저";
+                Long memberId = 300L;
+                Long walletId = 400L;
+
+                Jwt jwt = createMockJwt(authSub, email, name, "exceptionNick");
+                given(authService.decodeAndValidateToken(idToken)).willReturn(jwt);
+                given(memberApiClient.getMemberByAuthSub(authSub))
+                        .willThrow(new RuntimeException("Connection timeout"));
+
+                // 회원 생성 mock
+                MemberInfo newMember = MemberInfo.of(memberId, authSub, MemberRole.BUYER, email, "exceptionNick");
+                given(memberApiClient.createMember(any(MemberApiClient.CreateMemberRequest.class))).willReturn(newMember);
+
+                // 지갑 생성 mock
+                var walletResponse = new WalletApiClient.CreateWalletResponse(walletId, memberId, true);
+                given(walletApiClient.createWallet(any(WalletApiClient.CreateWalletRequest.class))).willReturn(walletResponse);
+
+                // when
+                LoginResult result = loginService.login(new LoginCommand(idToken));
+
+                // then
+                assertThat(result.isNewUser()).isTrue();
+                verify(memberApiClient).createMember(any(MemberApiClient.CreateMemberRequest.class));
+                verify(walletApiClient).createWallet(any(WalletApiClient.CreateWalletRequest.class));
+            }
+        }
+
+        @Nested
         @DisplayName("When 신규 사용자인 경우")
         class When_NewUser {
 
