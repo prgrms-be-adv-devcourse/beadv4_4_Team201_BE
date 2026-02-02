@@ -2,13 +2,18 @@ package app.giftify.wallet.application;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletResult;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
+import app.giftify.wallet.application.inbound.CreateWalletUseCase;
+import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
+import app.giftify.wallet.application.inbound.WalletHistoryQuery;
+import app.giftify.wallet.application.inbound.WalletHistoryResult;
 import app.giftify.wallet.application.inbound.WalletBalanceResult;
 import app.giftify.wallet.application.inbound.WithdrawStatus;
 import app.giftify.wallet.application.inbound.WithdrawWalletCommand;
@@ -35,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase {
+public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, QueryWalletHistoryUseCase, CreateWalletUseCase {
 
 	private final WalletRepository walletRepository;
 	private final WalletHistoryRepository historyRepository;
@@ -170,5 +175,53 @@ public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase
 			memberId,
 			wallet.getBalance()
 		);
+	}
+
+
+	/**
+	 * 회원의 지갑 거래 내역을 조회합니다.
+	 *
+	 * @param query 조회 조건 (memberId, type, page, size)
+	 * @return 페이징된 거래 내역
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public Page<WalletHistoryResult> getHistory(WalletHistoryQuery query) {
+		Wallet wallet = walletRepository.findByMemberId(query.memberId())
+			.orElseGet(() -> Wallet.create(query.memberId(), Money.zero()));
+
+		if (wallet.getId() == null) {
+			// 지갑이 없으면 빈 결과 반환
+			return Page.empty(query.toPageable());
+		}
+
+		return historyRepository.findByWalletId(
+			wallet.getId(),
+			query.type(),
+			query.toPageable()
+		).map(WalletHistoryResult::from);
+	}
+
+	/**
+	 * 회원의 지갑을 생성합니다.
+	 * 이미 지갑이 존재하는 경우 기존 지갑 정보를 반환합니다.
+	 *
+	 * @param memberId 회원 ID
+	 * @return 생성 결과
+	 */
+	@Override
+	@Transactional
+	public CreateWalletResult createIfNotExists(Long memberId) {
+		return walletRepository.findByMemberId(memberId)
+			.map(wallet -> {
+				log.debug("[WalletService] 이미 지갑이 존재합니다. memberId={}, walletId={}", memberId, wallet.getId());
+				return CreateWalletResult.alreadyExists(wallet.getId(), memberId);
+			})
+			.orElseGet(() -> {
+				Wallet wallet = Wallet.create(memberId, Money.zero());
+				Wallet savedWallet = walletRepository.save(wallet);
+				log.info("[WalletService] 신규 지갑 생성 완료. memberId={}, walletId={}", memberId, savedWallet.getId());
+				return CreateWalletResult.created(savedWallet.getId(), memberId);
+			});
 	}
 }

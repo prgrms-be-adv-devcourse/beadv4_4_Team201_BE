@@ -1,6 +1,7 @@
 package app.giftify.payment.application;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.event.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentRefundedForSettlement;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -59,7 +61,7 @@ public class RefundPaymentService implements RefundPaymentUseCase {
 		// 4. 저장
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 내부 이벤트 발행
+		// 5. 내부 이벤트 발행 (다른 BC가 수신할 수 있도록 유지)
 		eventPublisher.publish(new PaymentRefundedEvent(
 			savedPayment.getId(),
 			savedPayment.getMemberId(),
@@ -67,6 +69,19 @@ public class RefundPaymentService implements RefundPaymentUseCase {
 			savedPayment.getType(),
 			savedPayment.getPaidAmount(),
 			command.reason(),
+			refundedAt
+		));
+
+		// 6. 외부 BC용 이벤트 직접 발행 (Settlement BC)
+		List<Long> sellerIds = savedPayment.getOrderItems().stream()
+			.map(item -> item.sellerId())
+			.distinct()
+			.toList();
+
+		eventPublisher.publish(PaymentRefundedForSettlement.create(
+			savedPayment.getId(),
+			savedPayment.getPaidAmount(),
+			sellerIds,
 			refundedAt
 		));
 	}

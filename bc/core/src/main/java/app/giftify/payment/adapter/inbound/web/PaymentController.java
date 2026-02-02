@@ -1,45 +1,45 @@
 package app.giftify.payment.adapter.inbound.web;
 
-import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
-import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeResponse;
-import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
-import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmResponse;
-import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
-import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
-import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
-import app.giftify.payment.application.inbound.CreatePaymentCommand;
-import app.giftify.payment.application.inbound.CreatePaymentUseCase;
-import app.giftify.payment.application.inbound.PaymentCreatedResult;
-import app.giftify.payment.application.inbound.QueryPaymentUseCase;
-import app.giftify.payment.application.outbound.PaymentGateway;
-import app.giftify.payment.domain.PaymentMethod;
-import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.CommonResponse;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import java.util.Collections;
+import java.util.UUID;
+
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.UUID;
+import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
+import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeResponse;
+import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
+import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmResponse;
+import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
+import app.giftify.payment.application.inbound.ConfirmPaymentResult;
+import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
+import app.giftify.payment.application.inbound.CreatePaymentCommand;
+import app.giftify.payment.application.inbound.CreatePaymentUseCase;
+import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.payment.application.inbound.QueryPaymentUseCase;
+import app.giftify.payment.domain.PaymentMethod;
+import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.shared.domain.vo.Money;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v2/payments")
 @RequiredArgsConstructor
-public class PaymentController {
+public class PaymentController implements PaymentV2Api {
 	private final CreatePaymentUseCase createPaymentUseCase;
 	private final ConfirmPaymentUseCase confirmPaymentUseCase;
 	private final QueryPaymentUseCase queryPaymentUseCase;
-	private final PaymentGateway paymentGateway;
 
+	@Override
 	@PostMapping("/charge")
 	public ResponseEntity<CommonResponse<PaymentChargeResponse>> charge(
 		@CurrentMemberId Long memberId,
@@ -49,6 +49,7 @@ public class PaymentController {
 
 		String orderId = request.orderId() != null ? request.orderId() : "CHG-" + UUID.randomUUID();
 		String idempotencyKey = UUID.randomUUID().toString();
+		var requestedAmount = Money.of(request.amount());
 
 		CreatePaymentCommand command = new CreatePaymentCommand(
 			idempotencyKey,
@@ -56,15 +57,18 @@ public class PaymentController {
 			orderId,
 			PaymentType.POINT_CHARGE,
 			PaymentMethod.CARD,
-			Money.of(request.amount()),
+			requestedAmount,
 			Collections.emptyList()
 		);
 
 		PaymentCreatedResult result = createPaymentUseCase.create(command);
 
-		return ResponseEntity.ok(CommonResponse.success(PaymentChargeResponse.from(result)));
+		return ResponseEntity.ok(CommonResponse.success(
+			PaymentChargeResponse.from(result, requestedAmount))
+		);
 	}
 
+	@Override
 	@PostMapping("/confirm")
 	public ResponseEntity<CommonResponse<PaymentConfirmResponse>> confirm(
 		@CurrentMemberId Long memberId,
@@ -72,27 +76,23 @@ public class PaymentController {
 	) {
 		log.info("[PaymentController] 결제 승인 요청. memberId={}, paymentId={}", memberId, request.paymentId());
 
-		TossConfirmResult pgResult = paymentGateway.confirm(
+		ConfirmPaymentCommand command = new ConfirmPaymentCommand(
+			request.paymentId(),
+			memberId,
 			request.paymentKey(),
 			request.orderId(),
 			Money.of(request.amount())
 		);
 
-		if (pgResult.success()) {
-			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				request.paymentId(),
-				request.paymentKey(),
-				null,
-				LocalDateTime.now()
-			);
-			confirmPaymentUseCase.confirm(command);
+		ConfirmPaymentResult result = confirmPaymentUseCase.confirm(command);
 
+		if (result.success()) {
 			return ResponseEntity.ok(CommonResponse.success(
-				PaymentConfirmResponse.success(request.paymentId())
+				PaymentConfirmResponse.success(result.paymentId())
 			));
 		} else {
 			return ResponseEntity.ok(CommonResponse.success(
-				PaymentConfirmResponse.failure(pgResult.errorCode(), pgResult.errorMessage())
+				PaymentConfirmResponse.failure(result.errorCode(), result.errorMessage())
 			));
 		}
 	}
