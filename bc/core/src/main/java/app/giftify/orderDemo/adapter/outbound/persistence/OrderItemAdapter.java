@@ -8,7 +8,7 @@ import app.giftify.orderDemo.domain.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository("orderItemV2Adapter")
 @RequiredArgsConstructor
 public class OrderItemAdapter implements OrderItemRepository {
 
