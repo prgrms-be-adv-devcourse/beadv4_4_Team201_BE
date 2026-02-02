@@ -1,17 +1,13 @@
 package app.giftify.payment.adapter.inbound.web;
 
 import static org.hamcrest.Matchers.startsWith;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,21 +31,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
 import app.giftify.payment.adapter.inbound.web.exception.PaymentExceptionHandler;
-import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
+import app.giftify.payment.application.inbound.ConfirmPaymentResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.CreatePaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
-import app.giftify.payment.application.outbound.PaymentGateway;
-import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.Payment;
-import app.giftify.payment.domain.PaymentMethod;
+import app.giftify.payment.domain.PaymentErrorCode;
+import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentController 테스트")
@@ -68,12 +60,6 @@ class PaymentControllerTest {
 	@Mock
 	private QueryPaymentUseCase queryPaymentUseCase;
 
-	@Mock
-	private PaymentGateway paymentGateway;
-
-	@Mock
-	private PaymentRepository paymentRepository;
-
 	private static final Long TEST_MEMBER_ID = 100L;
 	private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(10000);
 
@@ -84,9 +70,7 @@ class PaymentControllerTest {
 			.standaloneSetup(new PaymentController(
 				createPaymentUseCase,
 				confirmPaymentUseCase,
-				queryPaymentUseCase,
-				paymentGateway,
-				paymentRepository
+				queryPaymentUseCase
 			))
 			.setControllerAdvice(new PaymentExceptionHandler())
 			.setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
@@ -211,7 +195,7 @@ class PaymentControllerTest {
 	class ConfirmTests {
 
 		@Test
-		@DisplayName("정상적인 PG 승인 요청이면 결제를 승인한다")
+		@DisplayName("정상적인 결제 승인 요청이면 성공 응답을 반환한다")
 		void confirm_WithValidRequest_Success() throws Exception {
 			// given
 			Long paymentId = 1L;
@@ -225,24 +209,8 @@ class PaymentControllerTest {
 				TEST_AMOUNT
 			);
 
-			Payment payment = Payment.builder()
-				.id(paymentId)
-				.idempotencyKey("idempotency-key")
-				.orderId(orderId)
-				.memberId(TEST_MEMBER_ID)
-				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.CARD)
-				.originAmount(Money.of(TEST_AMOUNT))
-				.paidAmount(Money.of(TEST_AMOUNT))
-				.orderItems(Collections.emptyList())
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			TossConfirmResult pgResult = TossConfirmResult.success(paymentKey);
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(eq(paymentKey), eq(orderId), any(Money.class)))
-				.willReturn(pgResult);
+			given(confirmPaymentUseCase.confirm(any(ConfirmPaymentCommand.class)))
+				.willReturn(ConfirmPaymentResult.success(paymentId));
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/confirm")
@@ -256,13 +224,11 @@ class PaymentControllerTest {
 				.andExpect(jsonPath("$.data.errorCode").isEmpty())
 				.andExpect(jsonPath("$.data.errorMessage").isEmpty());
 
-			verify(paymentRepository).findById(paymentId);
-			verify(paymentGateway).confirm(eq(paymentKey), eq(orderId), any(Money.class));
 			verify(confirmPaymentUseCase).confirm(any(ConfirmPaymentCommand.class));
 		}
 
 		@Test
-		@DisplayName("PG 승인이 실패하면 에러 정보를 반환한다")
+		@DisplayName("PG 승인이 실패하면 실패 응답을 반환한다")
 		void confirm_PgConfirmFailed_ReturnsFailureResponse() throws Exception {
 			// given
 			Long paymentId = 1L;
@@ -278,24 +244,8 @@ class PaymentControllerTest {
 				TEST_AMOUNT
 			);
 
-			Payment payment = Payment.builder()
-				.id(paymentId)
-				.idempotencyKey("idempotency-key")
-				.orderId(orderId)
-				.memberId(TEST_MEMBER_ID)
-				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.CARD)
-				.originAmount(Money.of(TEST_AMOUNT))
-				.paidAmount(Money.of(TEST_AMOUNT))
-				.orderItems(Collections.emptyList())
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			TossConfirmResult pgResult = TossConfirmResult.failure(errorCode, errorMessage);
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(eq(paymentKey), eq(orderId), any(Money.class)))
-				.willReturn(pgResult);
+			given(confirmPaymentUseCase.confirm(any(ConfirmPaymentCommand.class)))
+				.willReturn(ConfirmPaymentResult.failure(errorCode, errorMessage));
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/confirm")
@@ -309,9 +259,7 @@ class PaymentControllerTest {
 				.andExpect(jsonPath("$.data.errorCode").value(errorCode))
 				.andExpect(jsonPath("$.data.errorMessage").value(errorMessage));
 
-			verify(paymentRepository).findById(paymentId);
-			verify(paymentGateway).confirm(eq(paymentKey), eq(orderId), any(Money.class));
-			verify(confirmPaymentUseCase, never()).confirm(any(ConfirmPaymentCommand.class));
+			verify(confirmPaymentUseCase).confirm(any(ConfirmPaymentCommand.class));
 		}
 
 		@Test
@@ -329,7 +277,8 @@ class PaymentControllerTest {
 				TEST_AMOUNT
 			);
 
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.empty());
+			given(confirmPaymentUseCase.confirm(any(ConfirmPaymentCommand.class)))
+				.willThrow(new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/confirm")
@@ -338,9 +287,7 @@ class PaymentControllerTest {
 				.andDo(print())
 				.andExpect(status().is4xxClientError());
 
-			verify(paymentRepository).findById(paymentId);
-			verify(paymentGateway, never()).confirm(any(), any(), any());
-			verify(confirmPaymentUseCase, never()).confirm(any());
+			verify(confirmPaymentUseCase).confirm(any(ConfirmPaymentCommand.class));
 		}
 
 		@Test
@@ -350,7 +297,7 @@ class PaymentControllerTest {
 			Long paymentId = 1L;
 			String paymentKey = "toss-payment-key-123";
 			String orderId = "ORDER-123456";
-			BigDecimal requestAmount = BigDecimal.valueOf(5000);  // 다른 금액
+			BigDecimal requestAmount = BigDecimal.valueOf(5000);
 
 			PaymentConfirmRequest request = new PaymentConfirmRequest(
 				paymentId,
@@ -359,20 +306,8 @@ class PaymentControllerTest {
 				requestAmount
 			);
 
-			Payment payment = Payment.builder()
-				.id(paymentId)
-				.idempotencyKey("idempotency-key")
-				.orderId(orderId)
-				.memberId(TEST_MEMBER_ID)
-				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.CARD)
-				.originAmount(Money.of(TEST_AMOUNT))
-				.paidAmount(Money.of(TEST_AMOUNT))  // 10000원
-				.orderItems(Collections.emptyList())
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(confirmPaymentUseCase.confirm(any(ConfirmPaymentCommand.class)))
+				.willThrow(new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH));
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/confirm")
@@ -381,9 +316,7 @@ class PaymentControllerTest {
 				.andDo(print())
 				.andExpect(status().is4xxClientError());
 
-			verify(paymentRepository).findById(paymentId);
-			verify(paymentGateway, never()).confirm(any(), any(), any());
-			verify(confirmPaymentUseCase, never()).confirm(any());
+			verify(confirmPaymentUseCase).confirm(any(ConfirmPaymentCommand.class));
 		}
 
 		@Test
@@ -393,7 +326,6 @@ class PaymentControllerTest {
 			Long paymentId = 1L;
 			String paymentKey = "toss-payment-key-123";
 			String orderId = "ORDER-123456";
-			Long anotherMemberId = 200L;  // 다른 회원이 소유한 결제
 
 			PaymentConfirmRequest request = new PaymentConfirmRequest(
 				paymentId,
@@ -402,20 +334,8 @@ class PaymentControllerTest {
 				TEST_AMOUNT
 			);
 
-			Payment payment = Payment.builder()
-				.id(paymentId)
-				.idempotencyKey("idempotency-key")
-				.orderId(orderId)
-				.memberId(anotherMemberId)  // 다른 회원 소유 (현재 사용자는 TEST_MEMBER_ID=100L)
-				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.CARD)
-				.originAmount(Money.of(TEST_AMOUNT))
-				.paidAmount(Money.of(TEST_AMOUNT))
-				.orderItems(Collections.emptyList())
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(confirmPaymentUseCase.confirm(any(ConfirmPaymentCommand.class)))
+				.willThrow(new PaymentException(PaymentErrorCode.UNAUTHORIZED_ACCESS));
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/confirm")
@@ -424,9 +344,7 @@ class PaymentControllerTest {
 				.andDo(print())
 				.andExpect(status().is4xxClientError());
 
-			verify(paymentRepository).findById(paymentId);
-			verify(paymentGateway, never()).confirm(any(), any(), any());
-			verify(confirmPaymentUseCase, never()).confirm(any());
+			verify(confirmPaymentUseCase).confirm(any(ConfirmPaymentCommand.class));
 		}
 
 		@Test
@@ -442,8 +360,6 @@ class PaymentControllerTest {
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 
-			verify(paymentRepository, never()).findById(anyLong());
-			verify(paymentGateway, never()).confirm(any(), any(), any());
 			verify(confirmPaymentUseCase, never()).confirm(any());
 		}
 	}
