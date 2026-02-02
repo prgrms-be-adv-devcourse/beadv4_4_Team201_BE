@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository("orderV2Adapter")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderAdapter implements OrderRepository {

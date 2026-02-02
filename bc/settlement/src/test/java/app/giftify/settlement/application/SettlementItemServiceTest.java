@@ -87,7 +87,7 @@ class SettlementItemServiceTest {
             PaymentMethodType.WALLET
         );
 
-        when(orderItemSnapshotRepository.getByFundingId(targetId)).thenReturn(itemSnapshot);
+        when(orderItemSnapshotRepository.getByTargetId(targetId)).thenReturn(itemSnapshot);
         when(orderSnapshotRepository.getById(orderId)).thenReturn(orderSnapshot);
         when(paymentSnapshotRepository.getByOrderNumber(orderNumber)).thenReturn(paymentSnapshot);
         when(feePolicyService.getPlatformFeeRate()).thenReturn(new BigDecimal("0.01"));
@@ -103,7 +103,7 @@ class SettlementItemServiceTest {
         assertThat(saved.getType()).isEqualTo(SettlementItemType.ITEM_PAYMENT);
         assertThat(saved.getOrderId()).isEqualTo(orderId);
         assertThat(saved.getOrderItemId()).isEqualTo(orderItemId);
-        assertThat(saved.getFundingId()).isEqualTo(targetId);
+        assertThat(saved.getTargetId()).isEqualTo(targetId);
         assertThat(saved.getOrderNumber()).isEqualTo(orderNumber);
         assertThat(saved.getOrderedAt()).isEqualTo(orderedAt);
         assertThat(saved.getPaidAt()).isEqualTo(paidAt);
@@ -155,7 +155,7 @@ class SettlementItemServiceTest {
             PaymentMethodType.WALLET
         );
 
-        when(orderItemSnapshotRepository.getByFundingId(targetId)).thenReturn(itemSnapshot);
+        when(orderItemSnapshotRepository.getByTargetId(targetId)).thenReturn(itemSnapshot);
         when(orderSnapshotRepository.getById(orderId)).thenReturn(orderSnapshot);
         when(paymentSnapshotRepository.getByOrderNumber(orderNumber)).thenReturn(paymentSnapshot);
         when(feePolicyService.getPlatformFeeRate()).thenReturn(new BigDecimal("0.01"));
@@ -204,7 +204,7 @@ class SettlementItemServiceTest {
             PaymentMethodType.WALLET
         );
 
-        when(orderItemSnapshotRepository.getByFundingId(targetId)).thenReturn(itemSnapshot);
+        when(orderItemSnapshotRepository.getByTargetId(targetId)).thenReturn(itemSnapshot);
         when(orderSnapshotRepository.getById(orderId)).thenReturn(orderSnapshot);
         when(paymentSnapshotRepository.getByOrderNumber(orderNumber)).thenReturn(paymentSnapshot);
         when(feePolicyService.getPlatformFeeRate()).thenReturn(new BigDecimal("0.01"));
