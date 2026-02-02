@@ -16,7 +16,7 @@ public record FundingCompleteResponseDto(
    public static FundingCompleteResponseDto fromEntity(Funding funding) {
        return new FundingCompleteResponseDto(
                funding.getId(),
-               funding.getFundingWishlistItem().getId(),
+               funding.getWishlistItemId(),
                funding.getStatus(),
                funding.getClosedAt()
        );

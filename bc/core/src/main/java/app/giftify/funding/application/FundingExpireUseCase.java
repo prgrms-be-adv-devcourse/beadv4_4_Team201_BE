@@ -1,7 +1,6 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.jpa.FundingWishlistItem;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
@@ -26,27 +25,19 @@ public class FundingExpireUseCase {
         Funding funding = fundingRepository.findById(id)
                 .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
-        // 관리자 권한 체크 (Member BC에서 role 정보 가져와서 확인)
-        // if (!isAdmin(requestMemberId)) {
-        //     throw new FundingException(FundingErrorCode.FORBIDDEN, "관리자만 펀딩을 종료할 수 있습니다.");
-        // }
-
-        FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
         Integer currentAmount = funding.getCurrentAmount();
-
 
         funding.expire();
 
         eventPublisher.publish(new FundingExpiredEvent(
                 funding.getId(),
-                wishlistItem.getWishlistId(),
-                currentAmount,
-                wishlistItem.getReceiverId()
+                funding.getWishlistItemId(),
+                currentAmount
         ));
 
         return new FundingCompleteResponseDto(
                 funding.getId(),
-                funding.getFundingWishlistItem().getId(),
+                funding.getWishlistItemId(),
                 funding.getStatus(),
                 funding.getClosedAt()
         );
@@ -63,23 +54,21 @@ public class FundingExpireUseCase {
         );
 
         for (Funding funding : expiredFundings) {
-            FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
             Integer currentAmount = funding.getCurrentAmount();
 
             funding.expire();
 
             eventPublisher.publish(new FundingExpiredEvent(
                     funding.getId(),
-                    wishlistItem.getWishlistId(),
-                    currentAmount,
-                    wishlistItem.getReceiverId()
+                    funding.getWishlistItemId(),
+                    currentAmount
             ));
         }
 
         return expiredFundings.stream()
                 .map(funding -> new FundingCompleteResponseDto(
                         funding.getId(),
-                        funding.getFundingWishlistItem().getId(),
+                        funding.getWishlistItemId(),
                         funding.getStatus(),
                         funding.getClosedAt()
                 ))

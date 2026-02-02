@@ -5,7 +5,6 @@ import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.adpater.outbound.jpa.FundingWishlistItem;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
@@ -23,7 +22,7 @@ public class FundingContributeUseCase {
         Funding funding = fundingRepository.findById(fundingId)
             .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
-        // 참여자 추가
+        // 참여자 존재여부 확인 및 추가
         FundingParticipantMember member = fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId);
 
         if (member == null) {
@@ -37,14 +36,9 @@ public class FundingContributeUseCase {
 
         // 달성된 경우 이벤트 발행
         if (funding.isAchieved()) {
-            FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
-            
             eventPublisher.publish(new FundingAchievedEvent(
-                funding.getId(),
-                wishlistItem.getWishlistId(),
-                funding.getTargetAmount(),
-                wishlistItem.getProductId(),
-                wishlistItem.getReceiverId()
+                    funding.getId(),
+                    funding.getWishlistItemId()
             ));
         }
     }
