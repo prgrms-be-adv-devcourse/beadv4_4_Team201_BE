@@ -1,6 +1,6 @@
 package app.giftify.wishlist.application.service;
 
-import app.giftify.product.application.ProductSupport;
+import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
