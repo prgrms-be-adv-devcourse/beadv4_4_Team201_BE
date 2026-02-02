@@ -34,6 +34,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		return paymentRepository.findByIdempotencyKey(command.idempotencyKey())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
+				existing.getOrderId(),
 				existing.getIdempotencyKey(),
 				existing.getStatus(),
 				requiresPgApproval(existing.getMethod())
@@ -70,6 +71,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		// 6. PG 결제는 기존 플로우
 		return new PaymentCreatedResult(
 			savedPayment.getId(),
+			savedPayment.getOrderId(),
 			savedPayment.getIdempotencyKey(),
 			savedPayment.getStatus(),
 			true
@@ -97,6 +99,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 
 			return PaymentCreatedResult.insufficientWalletBalance(
 				payment.getId(),
+				payment.getOrderId(),
 				command.idempotencyKey(),
 				result.requiredAmount(),
 				result.currentBalance()
@@ -108,6 +111,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 
 		return new PaymentCreatedResult(
 			payment.getId(),
+			payment.getOrderId(),
 			payment.getIdempotencyKey(),
 			PaymentStatus.PENDING,
 			false

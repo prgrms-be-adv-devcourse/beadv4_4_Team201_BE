@@ -474,10 +474,6 @@ public class Payment extends BaseDomainModel {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] paidAmount는 필수입니다.");
 			}
-			if (orderItems == null || orderItems.isEmpty()) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] orderItems는 필수입니다.");
-			}
 			if (status == null) {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] status는 필수입니다.");
@@ -489,12 +485,20 @@ public class Payment extends BaseDomainModel {
 					"[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
 			}
 
-			Money itemsTotal = orderItems.stream()
-				.map(OrderItemSnapshot::subtotal)
-				.reduce(Money.zero(), Money::plus);
-			if (!itemsTotal.equals(originAmount)) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
+			// POINT_CHARGE가 아닌 경우에만 orderItems 검증
+			if (type != PaymentType.POINT_CHARGE) {
+				if (orderItems == null || orderItems.isEmpty()) {
+					throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+						"[Payment] orderItems는 필수입니다.");
+				}
+
+				Money itemsTotal = orderItems.stream()
+					.map(OrderItemSnapshot::subtotal)
+					.reduce(Money.zero(), Money::plus);
+				if (!itemsTotal.equals(originAmount)) {
+					throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+						"[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
+				}
 			}
 		}
 	}
