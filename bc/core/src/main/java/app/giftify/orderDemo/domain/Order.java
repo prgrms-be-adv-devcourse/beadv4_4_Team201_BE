@@ -44,9 +44,11 @@ public class Order extends BaseAggregateRoot {
     private Money totalAmount;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private PaymentMethodType paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

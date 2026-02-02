@@ -1,7 +1,7 @@
 package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
-import app.giftify.orderDemo.application.inbound.vo.OrderView;
+import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -91,9 +91,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderView> getOrders(Long memberId, Pageable pageable) {
+    public Page<OrderSummary> getOrders(Long memberId, Pageable pageable) {
         Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
 
-        return pages.map(OrderView::of);
+        return pages.map(OrderSummary::of);
     }
 }

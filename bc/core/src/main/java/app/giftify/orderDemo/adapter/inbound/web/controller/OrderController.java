@@ -6,7 +6,7 @@ import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.orderDemo.application.OrderService;
-import app.giftify.orderDemo.application.inbound.vo.OrderView;
+import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -20,12 +20,13 @@ import java.util.List;
 @RestController("orderV2Controller")
 @RequestMapping("/api/v2/orders")
 @RequiredArgsConstructor
-public class OrderController {
+public class OrderController implements OrderControllerSpec {
 
     private final CoreFacade coreFacade;
     private final OrderService orderService;
 
     @PostMapping
+    @Override
     public ResponseEntity<PlaceOrderResult> placeOrder(
             @CurrentMemberId Long memberId,
             @RequestBody PlaceOrderRequest request
@@ -40,19 +41,20 @@ public class OrderController {
     }
 
     @GetMapping
+    @Override
     public ResponseEntity<GetOrdersResponse> getOrders(
             @CurrentMemberId Long memberId,
             Pageable pageable
     ) {
-        Page<OrderView> page = orderService.getOrders(memberId, pageable);
-        List<OrderView> content = page.getContent();
+        Page<OrderSummary> page = orderService.getOrders(memberId, pageable);
+        List<OrderSummary> content = page.getContent();
 
         GetOrdersResponse response = createGetOrdersResponse(content, page);
 
         return ResponseEntity.ok(response);
     }
 
-    private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderView> content, Page<OrderView> page) {
+    private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {
         return new GetOrdersResponse(
                 content,
                 page.getNumber(),

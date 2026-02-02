@@ -7,7 +7,7 @@ import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
 
-public record OrderView(
+public record OrderSummary(
         Long orderId,
         String orderNumber,
         Long quantity,
@@ -18,8 +18,8 @@ public record OrderView(
         LocalDateTime confirmedAt,
         LocalDateTime cancelledAt
 ) {
-    public static OrderView of(Order order) {
-        return new OrderView(
+    public static OrderSummary of(Order order) {
+        return new OrderSummary(
                 order.getId(),
                 order.getOrderNumber(),
                 order.getQuantity(),
