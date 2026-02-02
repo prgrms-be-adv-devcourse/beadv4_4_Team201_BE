@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
@@ -33,10 +32,8 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.payment.domain.event.PaymentPaidEvent;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCompletedForFunding;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForOrder;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -131,8 +128,8 @@ class ConfirmPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("POINT_CHARGE 결제 승인 시 PaymentPaidEvent와 PaymentConfirmedForOrder를 발행한다")
-		void confirm_PointChargePayment_PublishesCorrectEvents() {
+		@DisplayName("결제 승인 시 PaymentPaidEvent를 발행한다")
+		void confirm_Payment_PublishesPaymentPaidEvent() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
@@ -155,27 +152,18 @@ class ConfirmPaymentServiceTest {
 			confirmPaymentService.confirm(command);
 
 			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
+			ArgumentCaptor<PaymentConfirmedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentConfirmedEvent.class);
+			verify(eventPublisher).publish(eventCaptor.capture());
 
-			List<Object> publishedEvents = eventCaptor.getAllValues();
-			assertThat(publishedEvents).hasSize(2);
-
-			// PaymentPaidEvent 검증
-			PaymentPaidEvent paidEvent = (PaymentPaidEvent) publishedEvents.get(0);
+			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
 			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
 			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
 			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.POINT_CHARGE);
-
-			// PaymentConfirmedForOrder 검증
-			PaymentConfirmedForOrder orderEvent = (PaymentConfirmedForOrder) publishedEvents.get(1);
-			assertThat(orderEvent.paymentId()).isEqualTo(paymentId);
-			assertThat(orderEvent.orderId()).isEqualTo(orderId);
 		}
 
 		@Test
-		@DisplayName("FUNDING 결제 승인 시 PaymentCompletedForFunding을 발행한다")
-		void confirm_FundingPayment_PublishesPaymentCompletedForFunding() {
+		@DisplayName("FUNDING 결제도 정상적으로 승인된다")
+		void confirm_FundingPayment_Success() {
 			// given
 			Long paymentId = 2L;
 			Long memberId = 200L;
@@ -195,19 +183,12 @@ class ConfirmPaymentServiceTest {
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
 			// when
-			confirmPaymentService.confirm(command);
+			ConfirmPaymentResult result = confirmPaymentService.confirm(command);
 
 			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
-
-			List<Object> publishedEvents = eventCaptor.getAllValues();
-
-			// PaymentCompletedForFunding 검증
-			PaymentCompletedForFunding fundingEvent = (PaymentCompletedForFunding) publishedEvents.get(1);
-			assertThat(fundingEvent.paymentId()).isEqualTo(paymentId);
-			assertThat(fundingEvent.orderId()).isEqualTo(orderId);
-			assertThat(fundingEvent.participantId()).isEqualTo(memberId);
+			assertThat(result.success()).isTrue();
+			assertThat(result.paymentId()).isEqualTo(paymentId);
+			verify(eventPublisher).publish(any(PaymentConfirmedEvent.class));
 		}
 	}
 
@@ -278,7 +259,7 @@ class ConfirmPaymentServiceTest {
 			// given
 			Long paymentId = 1L;
 			Long actualOwnerId = 100L;
-			Long requesterId = 999L;  // 다른 사용자
+			Long requesterId = 999L;
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
 				paymentId, requesterId, "payment-key", "order-123", Money.of(10000)
@@ -302,8 +283,7 @@ class ConfirmPaymentServiceTest {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
-			Money actualAmount = Money.of(10000);
-			Money requestedAmount = Money.of(5000);  // 조작된 금액
+			Money requestedAmount = Money.of(5000);
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
 				paymentId, memberId, "payment-key", "order-123", requestedAmount

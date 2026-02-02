@@ -1,19 +1,16 @@
 package app.giftify.payment.application.handler;
 
-import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.OrderItemSnapshot;
-import app.giftify.payment.domain.Payment;
-import app.giftify.payment.domain.PaymentErrorCode;
-import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.PaymentMethod;
-import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.payment.domain.event.PaymentPaidEvent;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCompletedForFunding;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForOrder;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.wallet.domain.event.WalletDeductedEvent;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,16 +20,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.domain.OrderItemSnapshot;
+import app.giftify.payment.domain.Payment;
+import app.giftify.payment.domain.PaymentErrorCode;
+import app.giftify.payment.domain.PaymentException;
+import app.giftify.payment.domain.PaymentMethod;
+import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.wallet.domain.event.WalletDeductedEvent;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WalletDeductedEventHandler 테스트")
@@ -52,8 +51,8 @@ class WalletDeductedEventHandlerTest {
 	class FundingPaymentTests {
 
 		@Test
-		@DisplayName("FUNDING 결제가 완료되면 PaymentCompletedForFunding 이벤트를 발행한다")
-		void handle_PublishesPaymentCompletedForFunding_WhenPaymentTypeIsFunding() {
+		@DisplayName("FUNDING 결제가 완료되면 PaymentPaidEvent를 발행한다")
+		void handle_PublishesPaymentPaidEvent_WhenPaymentTypeIsFunding() {
 			// given
 			Long paymentId = 1L;
 			Long walletId = 100L;
@@ -90,30 +89,16 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
+			ArgumentCaptor<PaymentConfirmedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentConfirmedEvent.class);
+			verify(eventPublisher).publish(eventCaptor.capture());
 
-			List<Object> publishedEvents = eventCaptor.getAllValues();
-
-			// 첫 번째: PaymentPaidEvent (내부 이벤트)
-			assertThat(publishedEvents.get(0)).isInstanceOf(PaymentPaidEvent.class);
-			PaymentPaidEvent paidEvent = (PaymentPaidEvent) publishedEvents.get(0);
+			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
 			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
 			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
 			assertThat(paidEvent.getOrderId()).isEqualTo(orderId);
 			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.FUNDING);
 			assertThat(paidEvent.getPaidAmount()).isEqualTo(amount);
 			assertThat(paidEvent.getPaidAt()).isEqualTo(deductedAt);
-
-			// 두 번째: PaymentCompletedForFunding (외부 이벤트)
-			assertThat(publishedEvents.get(1)).isInstanceOf(PaymentCompletedForFunding.class);
-			PaymentCompletedForFunding fundingEvent = (PaymentCompletedForFunding) publishedEvents.get(1);
-			assertThat(fundingEvent.paymentId()).isEqualTo(paymentId);
-			assertThat(fundingEvent.orderId()).isEqualTo(orderId);
-			assertThat(fundingEvent.participantId()).isEqualTo(memberId);
-			assertThat(fundingEvent.amount()).isEqualTo(amount);
-			assertThat(fundingEvent.occurredAt()).isEqualTo(deductedAt);
-			assertThat(fundingEvent.eventId()).isNotNull();
 		}
 
 		@Test
@@ -169,8 +154,8 @@ class WalletDeductedEventHandlerTest {
 	class PointChargePaymentTests {
 
 		@Test
-		@DisplayName("POINT_CHARGE 결제가 완료되면 PaymentConfirmedForOrder 이벤트를 발행한다")
-		void handle_PublishesPaymentConfirmedForOrder_WhenPaymentTypeIsPointCharge() {
+		@DisplayName("POINT_CHARGE 결제가 완료되면 PaymentPaidEvent를 발행한다")
+		void handle_PublishesPaymentPaidEvent_WhenPaymentTypeIsPointCharge() {
 			// given
 			Long paymentId = 2L;
 			Long walletId = 100L;
@@ -203,30 +188,13 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
+			ArgumentCaptor<PaymentConfirmedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentConfirmedEvent.class);
+			verify(eventPublisher).publish(eventCaptor.capture());
 
-			List<Object> publishedEvents = eventCaptor.getAllValues();
-
-			// 첫 번째: PaymentPaidEvent (내부 이벤트)
-			assertThat(publishedEvents.get(0)).isInstanceOf(PaymentPaidEvent.class);
-			PaymentPaidEvent paidEvent = (PaymentPaidEvent) publishedEvents.get(0);
+			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
 			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
 			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(paidEvent.getOrderId()).isEqualTo(orderId);
 			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.POINT_CHARGE);
-			assertThat(paidEvent.getPaidAmount()).isEqualTo(amount);
-			assertThat(paidEvent.getPaidAt()).isEqualTo(deductedAt);
-
-			// 두 번째: PaymentConfirmedForOrder (외부 이벤트)
-			// FUNDING이 아니면 PaymentConfirmedForOrder가 발행됨
-			assertThat(publishedEvents.get(1)).isInstanceOf(PaymentConfirmedForOrder.class);
-			PaymentConfirmedForOrder orderEvent = (PaymentConfirmedForOrder) publishedEvents.get(1);
-			assertThat(orderEvent.paymentId()).isEqualTo(paymentId);
-			assertThat(orderEvent.orderId()).isEqualTo(orderId);
-			assertThat(orderEvent.amount()).isEqualTo(amount);
-			assertThat(orderEvent.occurredAt()).isEqualTo(deductedAt);
-			assertThat(orderEvent.eventId()).isNotNull();
 		}
 
 		@Test
@@ -320,13 +288,7 @@ class WalletDeductedEventHandlerTest {
 			verify(paymentRepository).save(paymentCaptor.capture());
 
 			Payment savedPayment = paymentCaptor.getValue();
-
-			// requestId는 Payment History에 기록되므로,
-			// markAsPaid 호출 시 "WALLET-999" 형식의 requestId가 전달되었는지 확인
-			// (실제로는 PaymentHistory를 통해 확인해야 하지만, 여기서는 간접적으로 검증)
 			assertThat(savedPayment.getStatus()).isEqualTo(PaymentStatus.PAID);
-
-			// uncommittedHistory를 통해 requestId 검증
 			assertThat(savedPayment.getUncommittedHistory()).hasSize(1);
 		}
 	}
@@ -359,8 +321,8 @@ class WalletDeductedEventHandlerTest {
 				.hasFieldOrPropertyWithValue("errorCode", PaymentErrorCode.PAYMENT_NOT_FOUND);
 
 			verify(paymentRepository).findById(paymentId);
-			verify(paymentRepository, times(0)).save(any(Payment.class));
-			verify(eventPublisher, times(0)).publish(any());
+			verify(paymentRepository, never()).save(any(Payment.class));
+			verify(eventPublisher, never()).publish(any());
 		}
 
 		@Test
@@ -382,7 +344,6 @@ class WalletDeductedEventHandlerTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			// PAID 상태인 결제 (이미 완료된 결제)
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.idempotencyKey("idem-key-paid")
@@ -406,8 +367,8 @@ class WalletDeductedEventHandlerTest {
 				.hasFieldOrPropertyWithValue("errorCode", PaymentErrorCode.NOT_PAYABLE);
 
 			verify(paymentRepository).findById(paymentId);
-			verify(paymentRepository, times(0)).save(any(Payment.class));
-			verify(eventPublisher, times(0)).publish(any());
+			verify(paymentRepository, never()).save(any(Payment.class));
+			verify(eventPublisher, never()).publish(any());
 		}
 	}
 
@@ -417,7 +378,7 @@ class WalletDeductedEventHandlerTest {
 
 		@Test
 		@DisplayName("Payment를 저장하고 저장된 Payment로 이벤트를 발행한다")
-		void handle_SavesPaymentAndPublishesEventsWithSavedPayment() {
+		void handle_SavesPaymentAndPublishesEvent() {
 			// given
 			Long paymentId = 5L;
 			Long walletId = 100L;
@@ -456,7 +417,7 @@ class WalletDeductedEventHandlerTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher, times(2)).publish(any());
+			verify(eventPublisher).publish(any(PaymentConfirmedEvent.class));
 		}
 	}
 }

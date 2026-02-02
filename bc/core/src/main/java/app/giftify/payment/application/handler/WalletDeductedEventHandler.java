@@ -8,11 +8,8 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentPaidEvent;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCompletedForFunding;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForOrder;
-import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +47,7 @@ public class WalletDeductedEventHandler {
 
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 내부 이벤트 발행 (Wallet BC가 수신할 수 있도록 유지)
-		eventPublisher.publish(new PaymentPaidEvent(
+		eventPublisher.publish(new PaymentConfirmedEvent(
 			savedPayment.getId(),
 			savedPayment.getMemberId(),
 			savedPayment.getOrderId(),
@@ -59,24 +55,6 @@ public class WalletDeductedEventHandler {
 			savedPayment.getPaidAmount(),
 			event.getDeductedAt()
 		));
-
-		// 외부 BC용 이벤트 직접 발행
-		if (savedPayment.getType() == PaymentType.FUNDING) {
-			eventPublisher.publish(PaymentCompletedForFunding.create(
-				savedPayment.getId(),
-				savedPayment.getOrderId(),
-				savedPayment.getMemberId(),
-				savedPayment.getPaidAmount(),
-				event.getDeductedAt()
-			));
-		} else {
-			eventPublisher.publish(PaymentConfirmedForOrder.create(
-				savedPayment.getId(),
-				savedPayment.getOrderId(),
-				savedPayment.getPaidAmount(),
-				event.getDeductedAt()
-			));
-		}
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
 			savedPayment.getId(), savedPayment.getStatus());

@@ -3,7 +3,7 @@ package app.giftify.wallet.adapter.inbound.event;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
-import app.giftify.payment.domain.event.PaymentPaidEvent;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentPaidEventHandler {
+public class PaymentConfirmedEvnetHandler {
 	private final ChargeWalletUseCase chargeWalletUseCase;
 
 	/**
@@ -29,12 +29,12 @@ public class PaymentPaidEventHandler {
 	 * - Toss PG 승인을 롤백시켜야 하는 동기 트랜잭션 방식을 피하기 위해 사용
 	 */
 	@ApplicationModuleListener
-	public void handle(PaymentPaidEvent event) {
+	public void handle(PaymentConfirmedEvent event) {
 		if (event.getPaymentType() != PaymentType.POINT_CHARGE) {
 			return;
 		}
 
-		log.info("[PaymentPaidEventHandler] POINT_CHARGE 결제 완료. memberId={}, orderId={}, amount={}",
+		log.info("[PaymentConfirmedEvnetHandler] POINT_CHARGE 결제 완료. memberId={}, orderId={}, amount={}",
 			event.getMemberId(), event.getOrderId(), event.getPaidAmount());
 
 		ChargeWalletCommand command = new ChargeWalletCommand(
@@ -45,7 +45,7 @@ public class PaymentPaidEventHandler {
 
 		chargeWalletUseCase.charge(command);
 
-		log.info("[PaymentPaidEventHandler] 지갑 충전 완료. memberId={}, amount={}",
+		log.info("[PaymentConfirmedEvnetHandler] 지갑 충전 완료. memberId={}, amount={}",
 			event.getMemberId(), event.getPaidAmount());
 	}
 }

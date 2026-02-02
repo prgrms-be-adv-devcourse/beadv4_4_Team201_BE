@@ -1,6 +1,6 @@
 package app.giftify.wallet.adapter.inbound.event;
 
-import app.giftify.payment.domain.event.PaymentPaidEvent;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
@@ -24,14 +24,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PaymentPaidEventHandler 테스트")
-class PaymentPaidEventHandlerTest {
+@DisplayName("PaymentConfirmedEvnetHandler 테스트")
+class PaymentConfirmedEventHandlerTest {
 
 	@Mock
 	private ChargeWalletUseCase chargeWalletUseCase;
 
 	@InjectMocks
-	private PaymentPaidEventHandler eventHandler;
+	private PaymentConfirmedEvnetHandler eventHandler;
 
 	@Nested
 	@DisplayName("handle 메서드")
@@ -47,7 +47,7 @@ class PaymentPaidEventHandlerTest {
 			Money amount = Money.of(10000);
 			LocalDateTime paidAt = LocalDateTime.now();
 
-			PaymentPaidEvent event = new PaymentPaidEvent(
+			PaymentConfirmedEvent event = new PaymentConfirmedEvent(
 				paymentId, memberId, orderId, PaymentType.POINT_CHARGE, amount, paidAt
 			);
 
@@ -71,7 +71,7 @@ class PaymentPaidEventHandlerTest {
 		@DisplayName("FUNDING 타입 결제이면 무시한다")
 		void handle_FundingPayment_Ignores() {
 			// given
-			PaymentPaidEvent event = new PaymentPaidEvent(
+			PaymentConfirmedEvent event = new PaymentConfirmedEvent(
 				1L, 100L, "order-123", PaymentType.FUNDING, Money.of(10000), LocalDateTime.now()
 			);
 

@@ -9,14 +9,14 @@ import app.giftify.shared.domain.vo.Money;
  * 결제 완료 내부 이벤트.
  * PaymentInternalEventHandler에서 외부 이벤트로 변환됩니다.
  */
-public final class PaymentPaidEvent extends PaymentInternalEvent {
+public final class PaymentConfirmedEvent extends PaymentInternalEvent {
 	private final Long memberId;
 	private final String orderId;
 	private final PaymentType paymentType;
 	private final Money paidAmount;
 	private final LocalDateTime paidAt;
 
-	public PaymentPaidEvent(
+	public PaymentConfirmedEvent(
 		Long paymentId,
 		Long memberId,
 		String orderId,

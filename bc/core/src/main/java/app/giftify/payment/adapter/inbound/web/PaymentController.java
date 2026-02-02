@@ -3,6 +3,8 @@ package app.giftify.payment.adapter.inbound.web;
 import java.util.Collections;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +27,6 @@ import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.CommonResponse;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

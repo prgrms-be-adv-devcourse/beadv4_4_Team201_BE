@@ -15,6 +15,8 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
+import app.giftify.shared.domain.event.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,18 +29,18 @@ import lombok.extern.slf4j.Slf4j;
 public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 	private final PaymentRepository paymentRepository;
 	private final PaymentGateway paymentGateway;
-	private final PaymentEventHelper eventHelper;
+	private final EventPublisher eventPublisher;
 	private final PaymentFieldEncryptor encryptor;
 
 	public ConfirmPaymentService(
 		PaymentRepository paymentRepository,
 		PaymentGateway paymentGateway,
-		PaymentEventHelper eventHelper,
+		EventPublisher eventPublisher,
 		PaymentFieldEncryptor encryptor
 	) {
 		this.paymentRepository = paymentRepository;
 		this.paymentGateway = paymentGateway;
-		this.eventHelper = eventHelper;
+		this.eventPublisher = eventPublisher;
 		this.encryptor = encryptor;
 	}
 
@@ -85,16 +87,23 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		// 6. 상태 변경 (도메인 메서드)
 		payment.markAsPaid(
 			encryptedPaymentKey,
-			null,  // approveCode는 TossConfirmResult에서 필요시 추출
+			null,
 			paidAt,
-			command.paymentKey()  // requestId로 원본 paymentKey 사용
+			command.paymentKey()
 		);
 
 		// 7. 저장 (uncommittedHistory 포함)
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 8. 이벤트 발행 (내부 + 외부 BC)
-		eventHelper.publishPaymentCompletedEvents(savedPayment, paidAt);
+		// 8. 이벤트 발행 (Wallet BC가 POINT_CHARGE 시 수신하여 지갑 충전)
+		eventPublisher.publish(new PaymentConfirmedEvent(
+			savedPayment.getId(),
+			savedPayment.getMemberId(),
+			savedPayment.getOrderId(),
+			savedPayment.getType(),
+			savedPayment.getPaidAmount(),
+			paidAt
+		));
 
 		return ConfirmPaymentResult.success(savedPayment.getId());
 	}
