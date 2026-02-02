@@ -2,15 +2,13 @@ package app.giftify.orderDemo.adapter.inbound.web.controller;
 
 import app.giftify.facade.CoreFacade;
 import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.vo.GetOrdersResult;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.security.common.CurrentMemberId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -30,6 +28,12 @@ public class OrderController {
 
         // todo: 응답 객체 생성 구현
 
+        return null;
+    }
+
+    @GetMapping
+    public ResponseEntity<GetOrdersResult> getOrders(@CurrentMemberId Long memberId) {
+        GetOrdersResult result = coreFacade.getOrders(memberId);
         return null;
     }
 }

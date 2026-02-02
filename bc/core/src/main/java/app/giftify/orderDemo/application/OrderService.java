@@ -86,4 +86,9 @@ public class OrderService {
         // 트랜잭션 커밋 후 이벤트 발행
         item.getOrder().pullEvents().forEach(eventPublisher::publish);
     }
+
+    @Transactional(readOnly = true)
+    public List<OrderSnapshot> getOrders(Long memberId) {
+        return null;
+    }
 }

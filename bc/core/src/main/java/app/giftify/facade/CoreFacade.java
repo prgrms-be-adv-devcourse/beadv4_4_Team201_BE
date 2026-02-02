@@ -1,14 +1,21 @@
 package app.giftify.facade;
 
 import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.vo.GetOrdersResult;
 import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.orderDemo.application.OrderService;
+import app.giftify.orderDemo.domain.OrderSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class CoreFacade {
+
+    private final OrderService orderService;
 
     /**
      * 트랜잭션 하나로 묶고
@@ -34,6 +41,12 @@ public class CoreFacade {
         // todo: 결제, 주문, 주문 아이템, 펀딩 상태 변경
 
         // todo: (optional) 펀딩 생성
+
+        return null;
+    }
+
+    public GetOrdersResult getOrders(Long memberId) {
+        List<OrderSnapshot> snapshots = orderService.getOrders(memberId);
 
         return null;
     }
