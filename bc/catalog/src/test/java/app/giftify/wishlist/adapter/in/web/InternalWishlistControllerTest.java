@@ -2,7 +2,7 @@ package app.giftify.wishlist.adapter.in.web;
 
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
-import app.giftify.wishlist.adapter.in.web.controller.WishlistItemSnapshotController;
+import app.giftify.wishlist.adapter.in.web.controller.InternalWishlistController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.core.MethodParameter;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -23,11 +24,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(WishlistItemSnapshotControllerTest.class)
-public class WishlistItemSnapshotControllerTest {
+@WebMvcTest(InternalWishlistController.class)
+public class InternalWishlistControllerTest {
 
     private MockMvc mockMvc;
 
+    @MockitoBean
     private GetWishlistItemSnapshotUseCase getWishlistItemSnapshotUseCase;
 
     private static final Long MEMBER_ID = 10L;
@@ -38,7 +40,7 @@ public class WishlistItemSnapshotControllerTest {
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(
-                        new WishlistItemSnapshotController(getWishlistItemSnapshotUseCase))
+                        new InternalWishlistController(getWishlistItemSnapshotUseCase))
                 .setControllerAdvice(new WishlistExceptionHandler())
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
                     @Override

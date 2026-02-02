@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/internal/wishlist/items")
+@RequestMapping("/api/internal/wishlist")
 @RequiredArgsConstructor
-public class WishlistItemSnapshotController {
+public class InternalWishlistController {
 
     private final GetWishlistItemSnapshotUseCase getWishlistItemSnapshotUseCase;
 
     // 위시리스트 아이템 스냅샷 조회
-    @GetMapping("/{wishlistItemId}/snapshot")
+    @GetMapping("/items/{wishlistItemId}/snapshot")
     public ResponseEntity<?> getSnapshot(
             @PathVariable("wishlistItemId") Long wishlistItemId
     ) {
