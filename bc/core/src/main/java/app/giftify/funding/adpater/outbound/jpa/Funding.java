@@ -49,8 +49,8 @@ public class Funding extends BaseJpaEntity {
     }
 
     // todo 상품가격 가져오기 수정
-    public static Funding startFunding(Long wishlistItemId, Integer productPrice) {
-        return new Funding(wishlistItemId, productPrice);
+    public static Funding startFunding(Long wishlistItemId, Integer targetAmount) {
+        return new Funding(wishlistItemId, targetAmount);
     }
 
     public static void validateLeastAmount(Integer amount) {

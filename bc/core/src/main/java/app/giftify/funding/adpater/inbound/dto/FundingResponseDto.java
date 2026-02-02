@@ -2,6 +2,7 @@ package app.giftify.funding.adpater.inbound.dto;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -16,7 +17,6 @@ public record FundingResponseDto (
 
     // 위시리스트 아이템 정보
     Long wishlistItemId,
-    Long productId,
     String productName,
     Integer productPrice,
 
@@ -25,7 +25,7 @@ public record FundingResponseDto (
     long daysRemaining       // 남은 일수
 ) {
 
-    public static FundingResponseDto fromEntity(Funding funding) {
+    public static FundingResponseDto fromEntity(Funding funding, WishlistItemSnapshot snapshot) {
         double rate = 0.0;
         if (funding.getTargetAmount() > 0) {
             rate = (double) funding.getCurrentAmount() / funding.getTargetAmount() * 100.0;
@@ -43,10 +43,9 @@ public record FundingResponseDto (
                 funding.getCurrentAmount(),
                 funding.getStatus(),
                 funding.getDeadline(),
-                funding.getFundingWishlistItem().getId(),
-                funding.getFundingWishlistItem().getProductId(),
-                funding.getFundingWishlistItem().getProductName(),
-                funding.getFundingWishlistItem().getProductPrice(),
+                snapshot.originalWishlistItemId(),
+                snapshot.productName(),
+                snapshot.productPrice(),
                 Math.round(rate * 10.0) / 10.0, // 소수점 첫째자리까지 반올림
                 days
         );

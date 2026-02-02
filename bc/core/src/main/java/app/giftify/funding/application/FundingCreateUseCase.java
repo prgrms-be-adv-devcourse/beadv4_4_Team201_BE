@@ -1,9 +1,12 @@
 package app.giftify.funding.application;
 
+import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,10 +19,11 @@ public class FundingCreateUseCase {
 
     private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
+    private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
 
-    public Funding createFunding(Long wishlistItemId) {
+    public FundingCreateResult createFunding(Long wishlistItemId) {
         WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(wishlistItemId);
-        Integer targetAmount = snapshot.productrPrice();
+        Integer targetAmount = snapshot.productPrice();
 
         Funding funding = Funding.startFunding(wishlistItemId, targetAmount);
         fundingRepository.save(funding);
@@ -32,6 +36,6 @@ public class FundingCreateUseCase {
         ));
 
         log.info("[Funding] 펀딩 생성 완료. fundingId={}", funding.getId());
-        return funding;
+        return new FundingCreateResult(funding, snapshot);
     }
 }

@@ -18,7 +18,7 @@ public class FundingContributeUseCase {
     private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
     private final EventPublisher eventPublisher;
 
-    public void contribute(Long fundingId, Long participantId, Integer amount) {
+    public Funding contribute(Long fundingId, Long participantId, Integer amount) {
         Funding funding = fundingRepository.findById(fundingId)
             .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
@@ -41,5 +41,6 @@ public class FundingContributeUseCase {
                     funding.getWishlistItemId()
             ));
         }
+        return funding;
     }
 }

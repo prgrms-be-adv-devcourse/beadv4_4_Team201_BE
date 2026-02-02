@@ -1,19 +1,16 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.jpa.FundingWishlistItem;
+import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.WishlistItemDto;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.shared.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -29,14 +26,14 @@ public class FundingFacade {
 
 
     @Transactional
-    public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer productPrice, Integer amount) {
+    public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer amount) {
         // Funding 생성 (기여금 0원의 빈 펀딩)
-        Funding funding = fundingCreateUseCase.createFunding(wishlistItemId, productPrice);
+        FundingCreateResult result = fundingCreateUseCase.createFunding(wishlistItemId);
 
-        // 펀딩 기여(기여금, 기여자 추가)
-        fundingContributeUseCase.contribute(wishlistItemId, participantId, amount);
+        // 펀딩 기여(변경된 funding 받기)
+        Funding fundingAfterContribute = fundingContributeUseCase.contribute(wishlistItemId, participantId, amount);
 
-        return FundingResponseDto.fromEntity(funding);
+        return FundingResponseDto.fromEntity(fundingAfterContribute, result.wishlistItemSnapshot());
     }
 
     @Transactional
@@ -80,13 +77,13 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingCompleteResponseDto refuseFunding(Long id, Long memberId) {
-        return fundingRefuseUseCase.refuseFunding(id, memberId);
+    public FundingCompleteResponseDto refuseFunding(Long id) {
+        return fundingRefuseUseCase.refuseFunding(id);
     }
 
     @Transactional
-    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
-        return fundingAcceptUseCase.acceptFunding(id, memberId);
+    public FundingCompleteResponseDto acceptFunding(Long id) {
+        return fundingAcceptUseCase.acceptFunding(id);
     }
 
 //    @Transactional
