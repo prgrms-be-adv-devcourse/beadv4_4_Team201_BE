@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("/api/orders")
+@RestController("orderV2Controller")
+@RequestMapping("/api/v2/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
