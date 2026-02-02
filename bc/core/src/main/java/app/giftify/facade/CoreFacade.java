@@ -2,6 +2,7 @@ package app.giftify.facade;
 
 import app.giftify.facade.command.PlaceOrderCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.orderDemo.application.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 public class CoreFacade {
+
+    private final OrderService orderService;
 
     /**
      * 트랜잭션 하나로 묶고
