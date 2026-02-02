@@ -2,6 +2,7 @@ package app.giftify.shared.domain.vo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * 금액은 수정되어선 안된다.
@@ -89,5 +90,19 @@ public record Money(BigDecimal amount) {
 
 	public String toPlainString() {
 		return this.amount.toPlainString();
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (object == null || getClass() != object.getClass())
+			return false;
+
+		Money money = (Money)object;
+		return Objects.equals(amount, money.amount);
+	}
+
+	@Override
+	public int hashCode() {
+		return amount.stripTrailingZeros().hashCode(); // scaling 제외하고 값만 비교하기 위해
 	}
 }

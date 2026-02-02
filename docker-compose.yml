@@ -17,6 +17,10 @@ services:
       AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
       AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
       AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
+      # Redis 환경 변수
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-giftify-secret}
     ports:
       - "8080:8080"
     depends_on:
@@ -45,6 +49,31 @@ services:
       retries: 5
     networks:
       - giftify-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: giftify-redis-session
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --maxmemory 100mb
+      --maxmemory-policy volatile-ttl
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - giftify-network
+    restart: unless-stopped
+      
 
   prometheus: # 별도 depends_on 없이 → Prometheus가 api-server 없어도 시작 가능하게 (scrape 실패만 발생)
     image: prom/prometheus:v2.48.0
@@ -86,6 +115,7 @@ volumes:
     driver: local
   grafana_data:
     driver: local
+  redis-data:
 
 #### Docker Networks ####
 networks:
