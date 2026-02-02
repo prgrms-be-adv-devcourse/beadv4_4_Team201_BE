@@ -17,6 +17,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 @ExtendWith(MockitoExtension.class)
 class TokenBlacklistServiceTest {
 
@@ -26,11 +28,13 @@ class TokenBlacklistServiceTest {
 	@Mock
 	private ValueOperations<String, String> valueOperations;
 
+	private SimpleMeterRegistry meterRegistry;
 	private TokenBlacklistService tokenBlacklistService;
 
 	@BeforeEach
 	void setUp() {
-		tokenBlacklistService = new TokenBlacklistService(redisTemplate);
+		meterRegistry = new SimpleMeterRegistry();
+		tokenBlacklistService = new TokenBlacklistService(redisTemplate, meterRegistry);
 	}
 
 	private Jwt createJwt(String jti, String subject, Instant issuedAt) {
@@ -138,6 +142,24 @@ class TokenBlacklistServiceTest {
 
 			// Then
 			assertThat(result).isFalse();
+		}
+
+		@Test
+		@DisplayName("Redis 장애 시 redis.failure 메트릭이 증가해야 한다")
+		void shouldIncrementRedisFailureMetricOnError() {
+			// Given
+			Jwt jwt = createJwt("jti-error", "auth0|user", Instant.now());
+			given(redisTemplate.hasKey(anyString()))
+				.willThrow(new RuntimeException("Redis connection failed"));
+
+			double beforeCount = meterRegistry.counter("token.blacklist.redis.failure").count();
+
+			// When
+			tokenBlacklistService.isTokenRevoked(jwt);
+
+			// Then
+			double afterCount = meterRegistry.counter("token.blacklist.redis.failure").count();
+			assertThat(afterCount).isEqualTo(beforeCount + 1);
 		}
 	}
 

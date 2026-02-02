@@ -19,6 +19,9 @@ dependencies {
     implementation(libs.spring.boot.starter.oauth2.client)
     implementation(libs.spring.boot.starter.data.redis)
 
+    // Monitoring (Micrometer)
+    implementation(libs.micrometer.core)
+
     // Auth Utils (JWT, Dotenv)
     implementation(libs.dotenv)
     implementation(libs.java.jwt)

@@ -107,6 +107,7 @@ testcontainers-redis = { module = "com.redis:testcontainers-redis", version = "2
 # =============================================================================
 # Monitoring & Documentation
 # =============================================================================
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
