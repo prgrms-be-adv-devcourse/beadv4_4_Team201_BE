@@ -12,8 +12,7 @@ public class CoreFacade {
 
     /**
      * 트랜잭션 하나로 묶고
-     * 각 단계는 필요하면 재시도
-     * 그래도 실패하면 전체 롤백
+     * 실패하면 전체 롤백
      */
     @Transactional
     public PlaceOrderResult placeOrder(PlaceOrderCommand command) {
