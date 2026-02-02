@@ -57,7 +57,7 @@ public class SettlementItemService {
     }
 
     private SettlementSource fetchSettlementSource(InitializeSettlementItemCommand command) {
-        OrderItemSnapshot item = orderItemSnapshotRepository.getByFundingId(command.fundingId());
+        OrderItemSnapshot item = orderItemSnapshotRepository.getByTargetId(command.fundingId());
         OrderSnapshot order = orderSnapshotRepository.getById(item.getOrderId());
         PaymentSnapshot payment = paymentSnapshotRepository.getByOrderNumber(order.getOrderNumber());
 
