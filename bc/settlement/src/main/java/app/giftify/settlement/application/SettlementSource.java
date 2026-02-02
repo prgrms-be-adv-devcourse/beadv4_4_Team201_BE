@@ -19,7 +19,7 @@ public record SettlementSource(
     }
 
     public Long getFunding() {
-        return item.getFundingId();
+        return item.getTargetId();
     }
 
     public Long getSellerId() {

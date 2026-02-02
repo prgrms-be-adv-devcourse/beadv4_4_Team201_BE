@@ -19,6 +19,10 @@ public record Money(BigDecimal amount) {
 		return new Money(BigDecimal.valueOf(amount));
 	}
 
+	public static Money of(String amount) {
+		return new Money(new BigDecimal(amount));
+	}
+
 	public static Money zero() {
 		return of(0);
 	}
@@ -82,4 +86,8 @@ public record Money(BigDecimal amount) {
     public boolean isNegative() {
 		return this.amount.compareTo(BigDecimal.ZERO) < 0;
     }
+
+	public String toPlainString() {
+		return this.amount.toPlainString();
+	}
 }

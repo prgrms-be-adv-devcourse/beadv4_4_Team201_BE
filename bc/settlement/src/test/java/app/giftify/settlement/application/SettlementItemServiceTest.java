@@ -8,7 +8,9 @@ import app.giftify.settlement.application.outbound.port.SettlementItemRepository
 import app.giftify.settlement.domain.*;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.exception.DomainException;
+import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +53,9 @@ class SettlementItemServiceTest {
     @Test
     @DisplayName("정산 아이템 초기화: 스냅샷과 수수료 정책으로 정산 아이템을 생성해 저장한다")
     void initializeSettlementItem_createsSettlementItemFromSnapshots() {
-        Long fundingId = 10L;
+        Long targetId = 10L;
+        TargetType targetType = TargetType.FUNDING;
+        OrderItemType orderItemType = OrderItemType.FUNDING_GIFT;
         Long orderItemId = 20L;
         Long orderId = 30L;
         Long sellerId = 40L;
@@ -63,13 +67,14 @@ class SettlementItemServiceTest {
         LocalDateTime confirmedAt = paidAt.plusHours(2);
 
         OrderItemSnapshot itemSnapshot = new OrderItemSnapshot(
-            orderItemId,
-            orderId,
-            fundingId,
-            sellerId,
-            2L,
-            new BigDecimal("5000"),
-            new BigDecimal("10000")
+                orderItemId,
+                orderId,
+                targetId,
+                targetType,
+                orderItemType,
+                sellerId,
+                Money.of("5000"),
+                Money.of("10000")
         );
         OrderSnapshot orderSnapshot = new OrderSnapshot(orderId, orderNumber, orderedAt);
         PaymentSnapshot paymentSnapshot = new PaymentSnapshot(
@@ -82,13 +87,13 @@ class SettlementItemServiceTest {
             PaymentMethodType.WALLET
         );
 
-        when(orderItemSnapshotRepository.getByFundingId(fundingId)).thenReturn(itemSnapshot);
+        when(orderItemSnapshotRepository.getByFundingId(targetId)).thenReturn(itemSnapshot);
         when(orderSnapshotRepository.getById(orderId)).thenReturn(orderSnapshot);
         when(paymentSnapshotRepository.getByOrderNumber(orderNumber)).thenReturn(paymentSnapshot);
         when(feePolicyService.getPlatformFeeRate()).thenReturn(new BigDecimal("0.01"));
         when(feePolicyService.getPgFeeRate()).thenReturn(new BigDecimal("0.02"));
 
-        settlementItemService.initializeSettlementItem(new InitializeSettlementItemCommand(fundingId, confirmedAt));
+        settlementItemService.initializeSettlementItem(new InitializeSettlementItemCommand(targetId, confirmedAt));
 
         ArgumentCaptor<SettlementItem> captor = ArgumentCaptor.forClass(SettlementItem.class);
         verify(settlementItemRepository).save(captor.capture());
@@ -98,7 +103,7 @@ class SettlementItemServiceTest {
         assertThat(saved.getType()).isEqualTo(SettlementItemType.ITEM_PAYMENT);
         assertThat(saved.getOrderId()).isEqualTo(orderId);
         assertThat(saved.getOrderItemId()).isEqualTo(orderItemId);
-        assertThat(saved.getFundingId()).isEqualTo(fundingId);
+        assertThat(saved.getFundingId()).isEqualTo(targetId);
         assertThat(saved.getOrderNumber()).isEqualTo(orderNumber);
         assertThat(saved.getOrderedAt()).isEqualTo(orderedAt);
         assertThat(saved.getPaidAt()).isEqualTo(paidAt);
@@ -117,24 +122,27 @@ class SettlementItemServiceTest {
     @Test
     @DisplayName("정산 아이템 초기화 실패: 결제 완료 시점이 없으면 예외가 발생한다")
     void initializeSettlementItem_throwsWhenPaymentNotCompleted() {
-        Long fundingId = 10L;
+        Long targetId = 10L;
+        TargetType targetType = TargetType.FUNDING;
+        OrderItemType orderItemType = OrderItemType.FUNDING_GIFT;
         Long orderItemId = 20L;
         Long orderId = 30L;
         Long sellerId = 40L;
         Long paymentId = 50L;
-        String orderNumber = "ORD-20240101-002";
+        String orderNumber = "ORD-20240101-001";
 
         LocalDateTime orderedAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime confirmedAt = orderedAt.plusHours(2);
 
         OrderItemSnapshot itemSnapshot = new OrderItemSnapshot(
-            orderItemId,
-            orderId,
-            fundingId,
-            sellerId,
-            1L,
-            new BigDecimal("5000"),
-            new BigDecimal("5000")
+                orderItemId,
+                orderId,
+                targetId,
+                targetType,
+                orderItemType,
+                sellerId,
+                Money.of("5000"),
+                Money.of("10000")
         );
         OrderSnapshot orderSnapshot = new OrderSnapshot(orderId, orderNumber, orderedAt);
         PaymentSnapshot paymentSnapshot = new PaymentSnapshot(
@@ -147,14 +155,14 @@ class SettlementItemServiceTest {
             PaymentMethodType.WALLET
         );
 
-        when(orderItemSnapshotRepository.getByFundingId(fundingId)).thenReturn(itemSnapshot);
+        when(orderItemSnapshotRepository.getByFundingId(targetId)).thenReturn(itemSnapshot);
         when(orderSnapshotRepository.getById(orderId)).thenReturn(orderSnapshot);
         when(paymentSnapshotRepository.getByOrderNumber(orderNumber)).thenReturn(paymentSnapshot);
         when(feePolicyService.getPlatformFeeRate()).thenReturn(new BigDecimal("0.01"));
         when(feePolicyService.getPgFeeRate()).thenReturn(new BigDecimal("0.02"));
 
         assertThatThrownBy(() ->
-            settlementItemService.initializeSettlementItem(new InitializeSettlementItemCommand(fundingId, confirmedAt))
+            settlementItemService.initializeSettlementItem(new InitializeSettlementItemCommand(targetId, confirmedAt))
         ).isInstanceOf(DomainException.class)
             .extracting(exception -> ((DomainException) exception).getErrorCode())
             .isEqualTo(SettlementErrorCode.PAYMENT_NOT_COMPLETED);
@@ -163,24 +171,27 @@ class SettlementItemServiceTest {
     @Test
     @DisplayName("정산 아이템 초기화 실패: 구매 확정 시점이 없으면 예외가 발생한다")
     void initializeSettlementItem_throwsWhenConfirmedAtMissing() {
-        Long fundingId = 11L;
-        Long orderItemId = 21L;
-        Long orderId = 31L;
-        Long sellerId = 41L;
-        Long paymentId = 51L;
-        String orderNumber = "ORD-20240101-003";
+        Long targetId = 10L;
+        TargetType targetType = TargetType.FUNDING;
+        OrderItemType orderItemType = OrderItemType.FUNDING_GIFT;
+        Long orderItemId = 20L;
+        Long orderId = 30L;
+        Long sellerId = 40L;
+        Long paymentId = 50L;
+        String orderNumber = "ORD-20240101-001";
 
         LocalDateTime orderedAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime paidAt = orderedAt.plusHours(1);
 
         OrderItemSnapshot itemSnapshot = new OrderItemSnapshot(
-            orderItemId,
-            orderId,
-            fundingId,
-            sellerId,
-            1L,
-            new BigDecimal("3000"),
-            new BigDecimal("3000")
+                orderItemId,
+                orderId,
+                targetId,
+                targetType,
+                orderItemType,
+                sellerId,
+                Money.of("5000"),
+                Money.of("10000")
         );
         OrderSnapshot orderSnapshot = new OrderSnapshot(orderId, orderNumber, orderedAt);
         PaymentSnapshot paymentSnapshot = new PaymentSnapshot(
@@ -193,14 +204,14 @@ class SettlementItemServiceTest {
             PaymentMethodType.WALLET
         );
 
-        when(orderItemSnapshotRepository.getByFundingId(fundingId)).thenReturn(itemSnapshot);
+        when(orderItemSnapshotRepository.getByFundingId(targetId)).thenReturn(itemSnapshot);
         when(orderSnapshotRepository.getById(orderId)).thenReturn(orderSnapshot);
         when(paymentSnapshotRepository.getByOrderNumber(orderNumber)).thenReturn(paymentSnapshot);
         when(feePolicyService.getPlatformFeeRate()).thenReturn(new BigDecimal("0.01"));
         when(feePolicyService.getPgFeeRate()).thenReturn(new BigDecimal("0.02"));
 
         assertThatThrownBy(() ->
-            settlementItemService.initializeSettlementItem(new InitializeSettlementItemCommand(fundingId, null))
+            settlementItemService.initializeSettlementItem(new InitializeSettlementItemCommand(targetId, null))
         ).isInstanceOf(DomainException.class)
             .extracting(exception -> ((DomainException) exception).getErrorCode())
             .isEqualTo(SettlementErrorCode.CONFIRMED_AT_REQUIRED);

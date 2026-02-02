@@ -1,14 +1,12 @@
 package app.giftify.settlement.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import app.giftify.shared.domain.type.OrderItemType;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.Money;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_item_snapshot")
@@ -23,17 +21,24 @@ public class OrderItemSnapshot {
     private Long orderId;
 
     @Column(nullable = false, unique = true)
-    private Long fundingId;
+    private Long targetId;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private TargetType targetType;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private OrderItemType orderItemType;
 
     @Column(nullable = false)
     private Long sellerId;
 
     @Column(nullable = false)
-    private Long quantity;
+    @Convert(converter = MoneyConverter.class)
+    private Money price;
 
     @Column(nullable = false)
-    private BigDecimal unitPrice;
-
-    @Column(nullable = false)
-    private BigDecimal totalAmount;
+    @Convert(converter = MoneyConverter.class)
+    private Money amount;
 }

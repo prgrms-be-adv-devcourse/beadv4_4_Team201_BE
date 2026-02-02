@@ -1,23 +1,63 @@
 package app.giftify.shared.domain.event.order;
 
-import java.math.BigDecimal;
+import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.shared.domain.type.OrderItemType;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.Money;
 
 /**
  * targetType == FUNDING 일 때만 발행
- * @param orderItemId
- * @param orderId
- * @param sellerId
- * @param quantity
- * @param unitPrice
- * @param totalAmount
  */
-public record OrderItemCreatedEvent(
-        Long orderItemId,
-        Long fundingId,
-        Long orderId,
-        Long sellerId,
-        Long quantity,
-        BigDecimal unitPrice,
-        BigDecimal totalAmount
-) {
+public class OrderItemCreatedEvent extends BaseDomainEvent {
+    private final Long orderItemId;
+    private final Long targetId;
+    private final TargetType targetType;
+    private final OrderItemType orderItemType;
+    private final Long orderId;
+    private final Long sellerId;
+    private final Money price;
+    private final Money amount;
+
+    public OrderItemCreatedEvent(Long orderItemId, Long targetId, TargetType targetType, OrderItemType orderItemType, Long orderId, Long sellerId, Money price, Money amount) {
+        this.orderItemId = orderItemId;
+        this.targetId = targetId;
+        this.targetType = targetType;
+        this.orderItemType = orderItemType;
+        this.orderId = orderId;
+        this.sellerId = sellerId;
+        this.price = price;
+        this.amount = amount;
+    }
+
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
+
+    public Long getTargetId() {
+        return targetId;
+    }
+
+    public TargetType getTargetType() {
+        return targetType;
+    }
+
+    public OrderItemType getOrderItemType() {
+        return orderItemType;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public Money getPrice() {
+        return price;
+    }
+
+    public Money getAmount() {
+        return amount;
+    }
 }
