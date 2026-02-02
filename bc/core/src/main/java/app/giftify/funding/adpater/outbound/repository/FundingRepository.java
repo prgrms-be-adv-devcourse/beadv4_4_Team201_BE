@@ -5,6 +5,8 @@ import app.giftify.funding.domain.FundingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +22,11 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     Optional<Funding> findByWishlistItemId(Long wishlistItemId);
 
-    Optional<Funding> existsByWishlistItemId(Long wishlistItemId);
+    @Query("SELECT f FROM Funding f WHERE f.wishlistItemId = :wishlistItemId " +
+            "AND f.status IN ('IN_PROGRESS', 'ACHIEVED')")
+    Optional<Funding> findActiveByWishlistItemId(@Param("wishlistItemId") Long wishlistItemId);
+
+    Optional<Funding> findByWishlistItemIdAndStatus(Long wishlistItemId, FundingStatus status);
 
 //    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }
