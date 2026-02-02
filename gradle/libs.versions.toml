@@ -2,7 +2,7 @@
 # =============================================================================
 # Core Versions
 # =============================================================================
-java = "21"
+java = "21" # Version reference 'java' is not used in build scripts
 springBoot = "3.4.1"
 springDependencyManagement = "1.1.7"
 springModulith = "1.3.1"
@@ -30,6 +30,7 @@ dotenv = "3.0.0"
 # =============================================================================
 archunit = "1.3.0"
 restAssured = "5.4.0"
+testcontainers = "1.19.3"
 
 # =============================================================================
 # Monitoring & Docs
@@ -100,6 +101,8 @@ dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv" }
 # =============================================================================
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "restAssured" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-redis = { module = "com.redis:testcontainers-redis", version = "2.2.2" }
 
 # =============================================================================
 # Monitoring & Documentation

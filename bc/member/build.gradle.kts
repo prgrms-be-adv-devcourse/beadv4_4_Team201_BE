@@ -38,4 +38,6 @@ dependencies {
     testImplementation(libs.archunit)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.testcontainers.redis)
 }
