@@ -1,16 +1,21 @@
 package app.giftify.payment.application;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
+import app.giftify.payment.application.inbound.ConfirmPaymentResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentFieldEncryptor;
+import app.giftify.payment.application.outbound.PaymentGateway;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentPaidEvent;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,21 +28,24 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 	private final PaymentRepository paymentRepository;
+	private final PaymentGateway paymentGateway;
 	private final EventPublisher eventPublisher;
 	private final PaymentFieldEncryptor encryptor;
 
 	public ConfirmPaymentService(
 		PaymentRepository paymentRepository,
+		PaymentGateway paymentGateway,
 		EventPublisher eventPublisher,
 		PaymentFieldEncryptor encryptor
 	) {
 		this.paymentRepository = paymentRepository;
+		this.paymentGateway = paymentGateway;
 		this.eventPublisher = eventPublisher;
 		this.encryptor = encryptor;
 	}
 
 	@Override
-	public void confirm(ConfirmPaymentCommand command) {
+	public ConfirmPaymentResult confirm(ConfirmPaymentCommand command) {
 		// 1. 결제 조회
 		Payment payment = paymentRepository.findById(command.paymentId())
 			.orElseThrow(() -> new PaymentException(
@@ -45,31 +53,58 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 				"[ConfirmPaymentService] 결제를 찾을 수 없습니다. paymentId=" + command.paymentId()
 			));
 
-		// 2. 민감 정보 암호화
-		String encryptedPaymentKey = encryptor.encrypt(command.paymentKey());
-		String encryptedApproveCode = command.approveCode() != null
-			? encryptor.encrypt(command.approveCode())
-			: null;
+		// 2. 소유자 검증
+		if (!payment.getMemberId().equals(command.requesterId())) {
+			log.warn("[ConfirmPaymentService] 결제 소유자 불일치! paymentMemberId={}, requesterId={}",
+				payment.getMemberId(), command.requesterId());
+			throw new PaymentException(PaymentErrorCode.UNAUTHORIZED_ACCESS);
+		}
 
-		// 3. 상태 변경 (도메인 메서드)
-		payment.markAsPaid(
-			encryptedPaymentKey,
-			encryptedApproveCode,
-			command.paidAt(),
-			command.paymentKey()  // requestId로 원본 paymentKey 사용
+		// 3. 금액 검증 (조작 방지)
+		if (!payment.getPaidAmount().equals(command.requestedAmount())) {
+			log.warn("[ConfirmPaymentService] 금액 불일치! expected={}, actual={}",
+				payment.getPaidAmount(), command.requestedAmount());
+			throw new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH);
+		}
+
+		// 4. PG 승인 요청 (DB에서 조회한 금액 사용)
+		TossConfirmResult pgResult = paymentGateway.confirm(
+			command.paymentKey(),
+			command.orderId(),
+			payment.getPaidAmount()
 		);
 
-		// 4. 저장 (uncommittedHistory 포함)
+		if (!pgResult.success()) {
+			log.warn("[ConfirmPaymentService] PG 승인 실패. errorCode={}, errorMessage={}",
+				pgResult.errorCode(), pgResult.errorMessage());
+			return ConfirmPaymentResult.failure(pgResult.errorCode(), pgResult.errorMessage());
+		}
+
+		// 5. 민감 정보 암호화
+		String encryptedPaymentKey = encryptor.encrypt(command.paymentKey());
+		LocalDateTime paidAt = LocalDateTime.now();
+
+		// 6. 상태 변경 (도메인 메서드)
+		payment.markAsPaid(
+			encryptedPaymentKey,
+			null,
+			paidAt,
+			command.paymentKey()
+		);
+
+		// 7. 저장 (uncommittedHistory 포함)
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 내부 이벤트 발행 (Handler에서 외부 이벤트로 변환)
-		eventPublisher.publish(new PaymentPaidEvent(
+		// 8. 이벤트 발행 (Wallet BC가 POINT_CHARGE 시 수신하여 지갑 충전)
+		eventPublisher.publish(new PaymentConfirmedEvent(
 			savedPayment.getId(),
 			savedPayment.getMemberId(),
 			savedPayment.getOrderId(),
 			savedPayment.getType(),
 			savedPayment.getPaidAmount(),
-			command.paidAt()
+			paidAt
 		));
+
+		return ConfirmPaymentResult.success(savedPayment.getId());
 	}
 }
