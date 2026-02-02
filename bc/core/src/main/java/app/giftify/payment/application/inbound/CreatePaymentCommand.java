@@ -24,21 +24,24 @@ public record CreatePaymentCommand(
 				"[CreatePaymentCommand] idempotencyKey는 필수입니다.");
 		}
 
-		if (orderItems == null || orderItems.isEmpty()) {
-			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[CreatePaymentCommand] orderItems는 필수입니다.");
-		}
+		// POINT_CHARGE 유형이 아닌 경우에만 orderItems 검증
+		if (type != PaymentType.POINT_CHARGE) {
+			if (orderItems == null || orderItems.isEmpty()) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[CreatePaymentCommand] orderItems는 필수입니다.");
+			}
 
-		// 실제 금액 계산
-		Money itemsTotal = orderItems.stream()
-			.map(OrderItemSnapshot::subtotal)
-			.reduce(Money.zero(), Money::plus);
+			// 실제 금액 계산
+			Money itemsTotal = orderItems.stream()
+				.map(OrderItemSnapshot::subtotal)
+				.reduce(Money.zero(), Money::plus);
 
-		//  "기대 금액"과 "실제 계산 금액" 비교
-		if (!itemsTotal.equals(expectedAmount)) {
-			throw new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH,
-				String.format("[CreatePaymentCommand] 주문 금액이 변경되었습니다. " +
-					"기대 금액: %s, 현재 금액: %s", expectedAmount, itemsTotal));
+			//  "기대 금액"과 "실제 계산 금액" 비교
+			if (!itemsTotal.equals(expectedAmount)) {
+				throw new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH,
+					String.format("[CreatePaymentCommand] 주문 금액이 변경되었습니다. " +
+						"기대 금액: %s, 현재 금액: %s", expectedAmount, itemsTotal));
+			}
 		}
 	}
 }
