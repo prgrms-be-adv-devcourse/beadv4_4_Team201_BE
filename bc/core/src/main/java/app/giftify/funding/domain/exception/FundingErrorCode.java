@@ -12,7 +12,10 @@ public enum FundingErrorCode implements ErrorCode {
     FUNDING_NOT_FOUND(HttpStatus.NOT_FOUND,"F006", "펀딩을 찾을 수 없습니다. ID: %d"),
     IS_NOT_EXPIRED(HttpStatus.BAD_REQUEST,"F007", "펀딩 기한이 만료되지 않았습니다. ID: %d"),
     FORBIDDEN(HttpStatus.FORBIDDEN,"F008", "해당 펀딩에 대한 권한이 없습니다"),
-    NOT_ACHIEVED(HttpStatus.FORBIDDEN,"F009", "목표 달성된 펀딩이 아닙니다. ID: %d" );
+    NOT_ACHIEVED(HttpStatus.FORBIDDEN,"F009", "목표 달성된 펀딩이 아닙니다. ID: %d" ),
+
+    // 외부 에러
+    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "F100", "외부 API 오류입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
