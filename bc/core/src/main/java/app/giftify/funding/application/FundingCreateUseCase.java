@@ -1,52 +1,37 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.domain.exception.FundingErrorCode;
-import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.adpater.outbound.jpa.FundingWishlistItem;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
-import app.giftify.funding.adpater.outbound.repository.FundingWishlistItemRepository;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FundingCreateUseCase {
 
     private final FundingRepository fundingRepository;
-    private final FundingWishlistItemRepository fundingWishlistItemRepository;
     private final EventPublisher eventPublisher;
 
-    public Funding createFunding(Long itemId, Integer amount) {
-        FundingWishlistItem wishlistItem = fundingWishlistItemRepository.findById(itemId).orElseThrow(() ->
-            new FundingException(FundingErrorCode.WISHLIST_ITEM_NOT_FOUND, + itemId));
+    public Funding createFunding(Long wishlistItemId) {
+        WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(wishlistItemId);
+        Integer targetAmount = snapshot.productrPrice();
 
-        Funding funding = Funding.startFunding(wishlistItem, amount);
+        Funding funding = Funding.startFunding(wishlistItemId, targetAmount);
         fundingRepository.save(funding);
 
-        // Member BC에서 수신하여 WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
+        // WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
         eventPublisher.publish(new FundingCreatedEvent(
-            funding.getId(),
-            wishlistItem.getWishlistId(),
-            funding.getTargetAmount(),
-            funding.getDeadline()
+                funding.getId(),
+                funding.getWishlistItemId(),
+                funding.getDeadline()
         ));
 
-        // 첫 결제로 바로 목표 달성한 경우 FundingAchievedEvent 발행
-        if (funding.isAchieved()) {
-            eventPublisher.publish(new FundingAchievedEvent(
-                funding.getId(),
-                wishlistItem.getWishlistId(),
-                funding.getTargetAmount(),
-                wishlistItem.getProductId(),
-                wishlistItem.getReceiverId()
-            ));
-        }
-
+        log.info("[Funding] 펀딩 생성 완료. fundingId={}", funding.getId());
         return funding;
     }
 }
