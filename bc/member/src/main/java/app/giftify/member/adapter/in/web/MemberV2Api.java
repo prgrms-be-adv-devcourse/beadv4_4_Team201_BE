@@ -105,4 +105,37 @@ public interface MemberV2Api {
             @Parameter(hidden = true) @AuthenticatedMember String authSub,
             @RequestBody @Valid SignupRequest request
     );
+
+    @Operation(
+            summary = "회원 탈퇴",
+            description = """
+                    회원 탈퇴를 처리합니다.
+
+                    **처리 내용**:
+                    1. 회원 상태를 WITHDRAWN으로 변경
+                    2. 해당 사용자의 모든 토큰 무효화 (TokenBlacklist)
+
+                    **주의사항**:
+                    - 탈퇴 후 기존 토큰으로 API 호출이 차단됩니다
+                    - 이미 탈퇴한 회원이 재호출하면 404 반환
+                    """
+    )
+    @ApiResponse(
+            responseCode = "204",
+            description = "탈퇴 성공",
+            content = @Content
+    )
+    @ApiResponse(
+            responseCode = "401",
+            description = "인증 토큰 누락 또는 유효하지 않음",
+            content = @Content
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "회원을 찾을 수 없음",
+            content = @Content
+    )
+    ResponseEntity<Void> withdraw(
+            @Parameter(hidden = true) @AuthenticatedMember String authSub
+    );
 }
