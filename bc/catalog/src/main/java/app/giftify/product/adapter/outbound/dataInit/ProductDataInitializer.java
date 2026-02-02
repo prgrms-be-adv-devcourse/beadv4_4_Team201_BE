@@ -1,13 +1,17 @@
 package app.giftify.product.adapter.outbound.dataInit;
 
-import app.giftify.product.adapter.outbound.ProductRepository;
-import app.giftify.product.domain.Product;
+import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
+import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
+import app.giftify.product.domain.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+import static app.giftify.product.domain.ProductStatus.ACTIVE;
+import static app.giftify.product.domain.ProductStatus.DRAFT;
 
 @Component
 @RequiredArgsConstructor
@@ -17,10 +21,12 @@ public class ProductDataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        // 데이터가 이미 존재하면 초기화하지 않음
         if (productRepository.count() > 0) {
             return;
         }
 
+        // 초기 상품 데이터 목록 정의
         List<ProductData> products = List.of(
                 new ProductData("에어팟 프로 2세대", "애플 정품 노이즈 캔슬링 이어폰", 359000),
                 new ProductData("스타벅스 텀블러", "리유저블 콜드컵 710ml 그린", 23000),
@@ -34,26 +40,22 @@ public class ProductDataInitializer implements ApplicationRunner {
                 new ProductData("몽블랑 볼펜", "마이스터스튁 클래식 블랙", 520000)
         );
 
+        // 각 상품 데이터를 ProductJpa 엔티티로 변환하여 저장
         for (int i = 0; i < products.size(); i++) {
             ProductData data = products.get(i);
+            // 처음 5개 상품은 ACTIVE 상태, 나머지는 DRAFT 상태로 설정
+            ProductStatus status = (i < 5) ? ACTIVE : DRAFT;
 
-            Product product = Product.builder()
+            ProductJpa productJpa = ProductJpa.builder()
                     .sellerId(3L)
                     .name(data.name)
                     .description(data.description)
                     .price(data.price)
                     .stock(50)
+                    .status(status) // 설정된 상태 직접 지정
                     .build();
 
-            // 먼저 저장 (DRAFT 상태)
-            productRepository.save(product);
-
-            // 5개만 ACTIVE로 상태 변경
-            if (i < 5) {
-                product.approve();  // DRAFT → INACTIVE
-                product.active();   // INACTIVE → ACTIVE
-                productRepository.save(product);
-            }
+            productRepository.save(productJpa);
         }
     }
 

@@ -1,18 +1,11 @@
 package app.giftify.product.domain;
 
 import app.giftify.product.domain.exception.ProductException;
-import app.giftify.shared.domain.event.product.ProductReplicaCreationRequestedEvent;
+import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
-import app.giftify.support.jpa.BaseJpaEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -20,39 +13,32 @@ import java.time.LocalDateTime;
 import static app.giftify.product.domain.ProductStatus.*;
 import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
-@Entity
-@Table(name = "PRODUCT")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Product extends BaseJpaEntity {
-    private Long sellerId;
+public class Product extends BaseDomainModel {
+    private final Long sellerId;
     private String name;
     private String description;
     private int price;
     private int stock;
-    @Enumerated(EnumType.STRING)
     private ProductStatus status;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     @Builder
-    public static Product create(
-            Long sellerId, String name, String description, int price, int stock
-    ) {
+    public Product(Long id, Long sellerId, String name, String description, int price, int stock, ProductStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        super(id);
         validateCreation(sellerId, name, description, price, stock);
-
-        Product product = new Product();
-        product.sellerId = sellerId;
-        product.name = name;
-        product.description = description;
-        product.price = price;
-        product.stock = stock;
-        product.status = ProductStatus.DRAFT; // 기본값 고정
-        return product;
+        this.sellerId = sellerId;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.stock = stock;
+        this.status = (status == null) ? DRAFT : status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    // 상품 생성 검증 (Fail-Fast)
-    private static void validateCreation(
-            Long sellerId, String name, String description, int price, int stock
-    ) {
+    private static void validateCreation(Long sellerId, String name, String description, int price, int stock) {
         if (sellerId == null)
             throw new ProductException(PRODUCT_SELLER_REQUIRED);
         if (!StringUtils.hasText(name))
@@ -72,12 +58,6 @@ public class Product extends BaseJpaEntity {
     // 상품 등록 승인
     public void approve() {
         transitionTo(INACTIVE); // 판매 대기 상태로
-        registerEvent(new ProductReplicaCreationRequestedEvent(
-                LocalDateTime.now(),
-                this.getId(),
-                this.getName(),
-                this.getPrice()
-        ));
     }
 
     // 상품 등록 거절
@@ -88,7 +68,7 @@ public class Product extends BaseJpaEntity {
     // 상품 판매 시작
     public void active() {
         transitionTo(ACTIVE);
-        registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId())); // 판매 가능 이벤트 발생
+        registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId()));
     }
 
     // 상품 판매 중지
@@ -96,27 +76,27 @@ public class Product extends BaseJpaEntity {
         transitionTo(INACTIVE);
         registerEvent(new ProductSaleDisabledEvent(
                 LocalDateTime.now(), this.getId()
-        )); // 판매 불가능 이벤트 발생
+        ));
     }
 
     // 상품 상태 검증 todo Map<from,to> 상태 머신
     private void validateTransition(ProductStatus toStatus) {
-        if (toStatus == ProductStatus.DRAFT) {
+        if (toStatus == DRAFT) {
             throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
         }
         switch (toStatus) {
-            case REJECTED -> {
+            case REJECTED:
                 if (this.status != DRAFT)
                     throw new ProductException(PRODUCT_NOT_IN_DRAFT_STATUS);
-            }
-            case ACTIVE -> {
+                break;
+            case ACTIVE:
                 if (this.status != INACTIVE)
                     throw new ProductException(PRODUCT_NOT_IN_INACTIVE_STATUS);
-            }
-            case INACTIVE -> {
+                break;
+            case INACTIVE:
                 if (this.status != DRAFT && this.status != ACTIVE)
                     throw new ProductException(PRODUCT_REJECTED_CANNOT_BE_ACTIVATED);
-            }
+                break;
         }
     }
 
@@ -147,10 +127,10 @@ public class Product extends BaseJpaEntity {
         this.stock = newStock;
 
         if (beforeStock > 0 && newStock == 0 && this.status == ACTIVE) {
-            registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId())); // 품절 이벤트 발생
+            registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId()));
         }
         if (beforeStock == 0 && newStock > 0 && this.status == ACTIVE) {
-            registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId())); // 판매 가능 이벤트 발생
+            registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId()));
         }
 
         return new StockChangeResult(beforeStock, this.stock, newStock - beforeStock);
@@ -160,12 +140,11 @@ public class Product extends BaseJpaEntity {
     public StockChangeResult decreaseStock(int quantity) {
         if (this.stock < quantity)
             throw new ProductException(PRODUCT_OUT_OF_STOCK);
-
         int beforeStock = this.stock;
         this.stock -= quantity;
 
         if (this.stock == 0 && this.status == ACTIVE)
-            registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId())); // 품절 이벤트 발생
+            registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId()));
 
         return new StockChangeResult(beforeStock, this.stock, -quantity);
     }
@@ -176,7 +155,7 @@ public class Product extends BaseJpaEntity {
         this.stock += quantity;
 
         if (beforeStock == 0 && this.status == ACTIVE)
-            registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId())); // 판매 가능 이벤트 발생
+            registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId()));
 
         return new StockChangeResult(beforeStock, this.stock, quantity);
     }
