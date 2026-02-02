@@ -48,7 +48,7 @@ public class OrderService {
 
     private void publishOrderItemCreatedEventWithoutPendingType(OrderSnapshot orderSnapshot) {
         orderSnapshot.orderItemSnapshots().stream()
-                .filter(item -> !Objects.equals(item.targetType(), TargetType.FUNDING_PENDING.name()))
+                .filter(item -> !Objects.equals(item.targetType(), TargetType.FUNDING_PENDING))
                 .forEach(item -> {
                     OrderItemCreatedEvent event = new OrderItemCreatedEvent(
                             item.orderItemId(),
