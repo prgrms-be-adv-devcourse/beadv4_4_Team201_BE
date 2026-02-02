@@ -1,6 +1,7 @@
 package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -12,6 +13,8 @@ import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +51,7 @@ public class OrderService {
 
     private void publishOrderItemCreatedEventWithoutPendingType(OrderSnapshot orderSnapshot) {
         orderSnapshot.orderItemSnapshots().stream()
-                .filter(item -> !Objects.equals(item.targetType(), TargetType.FUNDING_PENDING))
+                .filter(item -> !Objects.equals(item.targetType(), TargetType.FUNDING_PENDING.name()))
                 .forEach(item -> {
                     OrderItemCreatedEvent event = new OrderItemCreatedEvent(
                             item.orderItemId(),
@@ -85,5 +88,12 @@ public class OrderService {
 
         // 트랜잭션 커밋 후 이벤트 발행
         item.getOrder().pullEvents().forEach(eventPublisher::publish);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderSummary> getOrders(Long memberId, Pageable pageable) {
+        Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
+
+        return pages.map(OrderSummary::of);
     }
 }
