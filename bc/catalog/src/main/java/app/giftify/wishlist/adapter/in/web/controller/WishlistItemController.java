@@ -1,8 +1,10 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistItemResponse;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class WishlistItemController {
     private final AddWishlistItemUseCase addWishlistItemUseCase;
     private final GetWishlistItemUseCase getWishlistItemUseCase;
+    private final GetWishlistItemSnapshotUseCase getWishlistItemSnapshotUseCase;
     private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
     // 위시리스트에 담긴 모든 상품 조회
@@ -77,5 +80,14 @@ public class WishlistItemController {
         removeWishlistItemUseCase.removeWishlistItem(command);
 
         return ResponseEntity.noContent().build();
+    }
+
+    // 위시리스트 아이템 스냅샷 조회
+    @GetMapping("/{wishlistItemId}/snapshot")
+    public ResponseEntity<WishlistItemSnapshot> getSnapshot(
+            @PathVariable("wishlistItemId") Long wishlistItemId
+    ) {
+        WishlistItemSnapshot snapshot = getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemId);
+        return ResponseEntity.ok(snapshot);
     }
 }
