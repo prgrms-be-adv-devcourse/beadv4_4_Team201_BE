@@ -1,6 +1,7 @@
 package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.vo.OrderView;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -12,6 +13,8 @@ import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +91,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderSnapshot> getOrders(Long memberId) {
-        return null;
+    public Page<OrderView> getOrders(Long memberId, Pageable pageable) {
+        Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
+
+        return pages.map(OrderView::of);
     }
 }
