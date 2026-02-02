@@ -2,7 +2,6 @@ package app.giftify.product.adapter.inbound.web.controller;
 
 import app.giftify.product.adapter.inbound.web.requestDto.*;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
-import app.giftify.product.adapter.inbound.web.responseDto.ProductSnapshotDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
 import app.giftify.product.application.port.in.*;
@@ -35,7 +34,6 @@ public class ProductController {
     private final ProductRejectUseCase productRejectUseCase;
     private final ProductUpdateUseCase productUpdateUseCase;
     private final ProductStockHistoryUseCase productStockHistoryUseCase;
-    private final ProductSnapshotCreateUseCase productSnapshotCreateUseCase;
 
     // 상품 등록
     @PostMapping
@@ -135,18 +133,5 @@ public class ProductController {
     ) {
         PageResponse<StockHistoryDto> stockHistories = productStockHistoryUseCase.searchStockHistories(sellerId, searchDto);
         return ResponseEntity.status(OK).body(stockHistories);
-    }
-
-    /**
-     * 상품 스냅샷 생성 (내부 서비스 호출용)
-     * - productId List를 받아 스냅샷 생성 후 반환
-     * - 요청 순서대로 스냅샷 반환 보장
-     */
-    @PostMapping("/snapshots")
-    public ResponseEntity<List<ProductSnapshotDto>> createProductSnapshots(
-            @RequestBody ProductSnapshotRequestDto requestDto
-    ) {
-        List<ProductSnapshotDto> snapshotDtos = productSnapshotCreateUseCase.createProductSnapshots(requestDto);
-        return ResponseEntity.status(CREATED).body(snapshotDtos);
     }
 }
