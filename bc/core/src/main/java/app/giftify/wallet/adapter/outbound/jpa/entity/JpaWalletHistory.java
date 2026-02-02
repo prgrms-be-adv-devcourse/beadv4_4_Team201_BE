@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.wallet.domain.ReferenceType;
+import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.domain.WalletHistory;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Column;
@@ -70,6 +73,20 @@ public class JpaWalletHistory extends BaseJpaEntity {
 			history.getReferenceType().name(),
 			history.getReferenceId(),
 			history.getOccurredAt()
+		);
+	}
+
+
+	public WalletHistory toDomain() {
+		return WalletHistory.restore(
+			getId(),
+			walletId,
+			TransactionType.valueOf(transactionType),
+			Money.of(amount),
+			Money.of(balanceAfter),
+			ReferenceType.valueOf(referenceType),
+			referenceId,
+			occurredAt
 		);
 	}
 }
