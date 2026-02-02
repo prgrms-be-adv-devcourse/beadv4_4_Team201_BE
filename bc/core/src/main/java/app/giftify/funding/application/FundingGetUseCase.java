@@ -37,8 +37,6 @@ public class FundingGetUseCase {
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + id)
         );
 
-        WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
-
         // 진행 중이거나 목표 달성한 펀딩만 조회 가능
         if (funding.getStatus() != FundingStatus.IN_PROGRESS
             && funding.getStatus() != FundingStatus.ACHIEVED) {

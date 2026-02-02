@@ -24,7 +24,6 @@ public class FundingFacade {
     private final FundingRefuseUseCase fundingRefuseUseCase;
     private final FundingAcceptUseCase fundingAcceptUseCase;
 
-
     @Transactional
     public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer amount) {
         // Funding 생성 (기여금 0원의 빈 펀딩)
