@@ -119,7 +119,7 @@ public class OrderItem {
 
     public void updateTargetToFunding(Long fundingId) {
         this.targetId = fundingId;
-        this.targetType = TargetType.FUNDING_PENDING;
+        this.targetType = TargetType.FUNDING;
 
         if (order == null) throw new PolicyException(OrderErrorCode.ORDER_ITEM_NOT_ASSOCIATED);
 
