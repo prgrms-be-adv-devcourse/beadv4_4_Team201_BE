@@ -43,7 +43,7 @@ public record OrderItemSnapshot(
 		Money expectedSubtotal = unitPrice.times(quantity);
 		if (!expectedSubtotal.equals(subtotal)) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				String.format("[OrderItemSnapshot] subtotal(%s)이 unitPrice × quantity(%s)와 일치하지 않습니다.",
+				String.format("[OrderItemSnapshot] subtotal(%s)이 price × quantity(%s)와 일치하지 않습니다.",
 					subtotal, expectedSubtotal));
 		}
 	}
