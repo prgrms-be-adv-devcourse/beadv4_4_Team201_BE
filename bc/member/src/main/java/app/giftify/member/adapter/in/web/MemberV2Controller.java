@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
@@ -38,6 +40,7 @@ public class MemberV2Controller implements MemberV2Api {
     private final GetMemberUseCase getMemberUseCase;
     private final RegisterMemberUseCase registerMemberUseCase;
     private final UpdateMemberUseCase updateMemberUseCase;
+    private final WithdrawMemberUseCase withdrawMemberUseCase;
 
     /**
      * 내 정보 조회.
@@ -107,5 +110,22 @@ public class MemberV2Controller implements MemberV2Api {
 
         Member member = registerMemberUseCase.signup(authSub, request);
         return ResponseEntity.ok(MemberResponse.from(member));
+    }
+
+    /**
+     * 회원 탈퇴.
+     */
+    @Override
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> withdraw(
+            @AuthenticatedMember String authSub
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        withdrawMemberUseCase.withdrawMember(authSub);
+
+        return ResponseEntity.noContent().build();
     }
 }

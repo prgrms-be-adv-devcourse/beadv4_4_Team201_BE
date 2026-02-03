@@ -1,9 +1,7 @@
 package app.giftify.auth.support.config;
 
-import app.giftify.auth.application.AuthService;
-import app.giftify.auth.support.filter.MemberPrincipalFilter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +22,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.Arrays;
+import app.giftify.auth.application.AuthService;
+import app.giftify.auth.support.filter.MemberPrincipalFilter;
+import app.giftify.auth.support.filter.TokenBlacklistFilter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
@@ -33,13 +35,14 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final MemberPrincipalFilter memberPrincipalFilter;
-    private final AuthService authService;
-    private final Environment env;
+	private final ClientRegistrationRepository clientRegistrationRepository;
+	private final MemberPrincipalFilter memberPrincipalFilter;
+	private final TokenBlacklistFilter tokenBlacklistFilter;
+	private final AuthService authService;
+	private final Environment env;
 
-    @Value("${auth0.audience}")
-    private String audience;
+	@Value("${auth0.audience}")
+	private String audience;
 
     @Bean
     @Order(1)
@@ -59,8 +62,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
-        return http.build();
-    }
+		return http.build();
+	}
 
     @Bean
     @Order(2)
@@ -113,18 +116,20 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/api/auth/login-success", true)
                 )
 
-                // JWT 리소스 서버 설정
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-                // MemberPrincipal 보강 필터 (JWT 검증 후 실행)
-                .addFilterAfter(memberPrincipalFilter, BearerTokenAuthenticationFilter.class)
-                // 로그아웃 설정
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
-                        .logoutSuccessHandler(oidcLogoutSuccessHandler())
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                );
+			// JWT 리소스 서버 설정
+			.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+			// Token Blacklist 검증 필터 (JWT 검증 후 실행)
+			.addFilterAfter(tokenBlacklistFilter, BearerTokenAuthenticationFilter.class)
+			// MemberPrincipal 보강 필터 (JWT 검증 후 실행)
+			.addFilterAfter(memberPrincipalFilter, BearerTokenAuthenticationFilter.class)
+			// 로그아웃 설정
+			.logout(logout -> logout
+				.logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
+				.logoutSuccessHandler(oidcLogoutSuccessHandler())
+				.invalidateHttpSession(true)
+				.clearAuthentication(true)
+				.deleteCookies("JSESSIONID")
+			);
 
         return http.build();
     }
