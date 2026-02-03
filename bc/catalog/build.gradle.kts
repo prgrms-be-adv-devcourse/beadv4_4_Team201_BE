@@ -14,6 +14,7 @@ repositories {
 dependencies {
     implementation(project(":support:jpa"))
     implementation(project(":support:security"))
+    implementation(project(":support:web"))
     implementation(project(":bc:shared"))
 
     // Spring Boot Starters

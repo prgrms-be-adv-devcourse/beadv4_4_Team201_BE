@@ -17,6 +17,10 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.oauth2.resource.server)
     implementation(libs.spring.boot.starter.oauth2.client)
+    implementation(libs.spring.boot.starter.data.redis)
+
+    // Monitoring (Micrometer)
+    implementation(libs.micrometer.core)
 
     // Auth Utils (JWT, Dotenv)
     implementation(libs.dotenv)
@@ -37,4 +41,6 @@ dependencies {
     testImplementation(libs.archunit)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.testcontainers.redis)
 }
