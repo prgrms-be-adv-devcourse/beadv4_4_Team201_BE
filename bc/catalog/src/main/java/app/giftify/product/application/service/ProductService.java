@@ -184,7 +184,6 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 }
             }
         }
-
         productRepositoryPort.save(product);
 
         return ProductUpdateResult.from(product);
