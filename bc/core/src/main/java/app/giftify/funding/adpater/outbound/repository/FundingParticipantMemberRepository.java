@@ -13,18 +13,20 @@ import java.util.Optional;
 
 public interface FundingParticipantMemberRepository extends JpaRepository<FundingParticipantMember, Long> {
 
-    @Query("SELECT SUM(fpm.amount) FROM FundingParticipantMember fpm WHERE fpm.funding.id = :fundingId AND fpm.fundingMemberId = :memberId")
-    Optional<Integer> findTotalAmountByFundingIdAndMemberId(@Param("fundingId") Long fundingId, @Param("memberId") Long memberId);
+    @Query("SELECT SUM(fpm.amount) FROM FundingParticipantMember fpm WHERE fpm.funding.id = :fundingId AND fpm.participantId = :memberId")
+    Optional<Integer> findTotalAmountByFundingIdAndParticipantId(@Param("fundingId") Long fundingId, @Param("memberId") Long memberId);
 
-    boolean existsByFundingIdAndFundingMemberId(Long fundingId, Long memberId);
+    boolean existsByFundingIdAndParticipantId(Long fundingId, Long memberId);
 
-    @Query("SELECT DISTINCT fpm.funding FROM FundingParticipantMember fpm WHERE fpm.fundingMemberId = :memberId")
-    Page<Funding> findAllFundingsByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+    @Query("SELECT DISTINCT fpm.funding FROM FundingParticipantMember fpm WHERE fpm.participantId = :memberId")
+    Page<Funding> findAllFundingsByParticipantId(@Param("memberId") Long memberId, Pageable pageable);
 
     // N+1 문제 해결을 위한 DTO 프로젝션 쿼리
     @Query("SELECT new app.giftify.funding.application.MyFundingInfo(fpm.funding, SUM(fpm.amount)) " +
            "FROM FundingParticipantMember fpm " +
-           "WHERE fpm.fundingMemberId = :memberId " +
+           "WHERE fpm.participantId = :memberId " +
            "GROUP BY fpm.funding")
     Page<MyFundingInfo> findAllMyFundingInfos(@Param("memberId") Long memberId, Pageable pageable);
+
+    FundingParticipantMember findByFundingAndParticipantId(Funding funding, Long participantId);
 }

@@ -1,5 +1,7 @@
 package app.giftify.funding.adpater.outbound.jpa;
 
+import app.giftify.funding.domain.exception.FundingErrorCode;
+import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.support.jpa.BaseJpaEntity;
 
 import jakarta.persistence.*;
@@ -19,20 +21,23 @@ public class FundingParticipantMember extends BaseJpaEntity {
     private Funding funding;
 
     @Column(nullable = false)
-    private Long fundingMemberId;
+    private Long participantId;
 
     @Column(nullable = false)
     private Integer amount;
 
 
-    public FundingParticipantMember(Funding funding, Long fundingMemberId, Integer amount) {
-        if (amount == null || amount < 1000) {
-            throw new IllegalArgumentException("참여 금액은 1,000원 이상이어야 합니다.");
-        }
-
+    public FundingParticipantMember(Funding funding, Long participantId, Integer amount) {
         this.funding = funding;
-        this.fundingMemberId = fundingMemberId;
+        this.participantId = participantId;
         this.amount = amount;
+    }
+
+    public void addAmount(Integer amount) {
+        if (amount == null || amount < 1000) {
+            throw new FundingException(FundingErrorCode.INVALID_AMOUNT);
+        }
+        this.amount += amount;
     }
 
 }
