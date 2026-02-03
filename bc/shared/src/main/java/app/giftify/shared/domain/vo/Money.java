@@ -83,11 +83,25 @@ public record Money(BigDecimal amount) {
 		}
 	}
 
-    public boolean isNegative() {
+	public boolean isNegative() {
 		return this.amount.compareTo(BigDecimal.ZERO) < 0;
-    }
+	}
 
 	public String toPlainString() {
 		return this.amount.toPlainString();
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (object == null || getClass() != object.getClass())
+			return false;
+
+		Money money = (Money)object;
+		return amount.compareTo(money.amount) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return amount.stripTrailingZeros().hashCode(); // scaling 제외하고 값만 비교하기 위해
 	}
 }

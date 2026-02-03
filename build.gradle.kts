@@ -12,6 +12,54 @@ plugins {
 }
 
 // =============================================================================
+// JaCoCo 커버리지 제외 패턴
+// =============================================================================
+// 테스트 정책에 따라 커버리지 측정에서 제외할 클래스 패턴
+// - DTO, Entity, Config 등 테스트 불필요 클래스 제외
+// - 핵심 비즈니스 로직(Service, Domain, Controller)만 측정
+// =============================================================================
+val jacocoExclusions = listOf(
+    // Config 클래스
+    "**/config/**",
+    "**/*Config.class",
+    "**/*Config$*.class",
+    "**/*Properties.class",
+
+    // DTO 클래스 (Request, Response, Command, Query, Result)
+    "**/dto/**",
+    "**/inbound/*Command.class",
+    "**/inbound/*Query.class",
+    "**/inbound/*Result.class",
+    "**/pg/*Result.class",              // PG 응답 DTO (TossConfirmResult 등)
+
+    // UseCase/Port 인터페이스
+    "**/inbound/*UseCase.class",
+    "**/outbound/*Port.class",
+    "**/outbound/*Repository.class",    // Port 인터페이스 (Repository 패턴)
+    "**/outbound/*Reader.class",        // Port 인터페이스 (Reader 패턴)
+    "**/outbound/*Gateway.class",       // Port 인터페이스 (Gateway 패턴)
+    "**/outbound/*Encryptor.class",     // Port 인터페이스 (Encryptor 패턴)
+    "**/application/*UseCase.class",    // funding 모듈 UseCase (application 직하 위치)
+    "**/port/in/*UseCase.class",        // member 모듈 UseCase (port/in 구조)
+    "**/port/in/*UseCase$*.class",      // member 모듈 UseCase 내부 클래스
+    "**/port/out/*Port.class",          // member 모듈 Port (port/out 구조)
+
+    // JPA Entity
+    "**/entity/**",
+    "**/*Entity.class",
+    "**/*JpaEntity.class",
+
+    // 예외 및 에러코드
+    "**/exception/**",
+    "**/*Exception.class",
+    "**/*ErrorCode.class",
+
+    // 기타
+    "**/*Mapper.class",
+    "**/*DataInitializer.class"
+)
+
+// =============================================================================
 // 전체 프로젝트 공통 설정
 // =============================================================================
 allprojects {
@@ -57,6 +105,15 @@ subprojects {
         // Jacoco 개별 리포트 설정
         tasks.withType<JacocoReport> {
             dependsOn(tasks.withType<Test>())
+
+            classDirectories.setFrom(
+                files(classDirectories.files.map {
+                    fileTree(it) {
+                        exclude(jacocoExclusions)
+                    }
+                })
+            )
+
             reports {
                 xml.required.set(true)
                 html.required.set(true)
@@ -78,7 +135,11 @@ tasks.register<JacocoReport>("jacocoAggregatedReport") {
 
     additionalSourceDirs.setFrom(jacocoSubprojects.map { it.the<SourceSetContainer>()["main"].allSource.srcDirs })
     sourceDirectories.setFrom(jacocoSubprojects.map { it.the<SourceSetContainer>()["main"].allSource.srcDirs })
-    classDirectories.setFrom(jacocoSubprojects.map { it.the<SourceSetContainer>()["main"].output })
+    classDirectories.setFrom(
+        files(jacocoSubprojects.map { it.the<SourceSetContainer>()["main"].output }).asFileTree.matching {
+            exclude(jacocoExclusions)
+        }
+    )
     executionData.setFrom(
         jacocoSubprojects.flatMap { subproject ->
             subproject.tasks.withType<Test>().map { it.extensions.getByType<JacocoTaskExtension>().destinationFile }

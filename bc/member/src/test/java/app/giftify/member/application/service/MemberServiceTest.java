@@ -1,5 +1,21 @@
 package app.giftify.member.application.service;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import app.giftify.auth.application.TokenBlacklistService;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
@@ -12,23 +28,6 @@ import app.giftify.member.domain.member.NicknameGenerator;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -41,6 +40,9 @@ class MemberServiceTest {
 
     @Mock
     private NicknameGenerator nicknameGenerator;
+
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
 
     @InjectMocks
     private MemberService memberService;
@@ -268,9 +270,9 @@ class MemberServiceTest {
         // given
         String authSub = "auth0|12345";
         Member member = Member.builder()
-                .authSub(authSub)
-                .status(MemberStatus.ACTIVE)
-                .build();
+            .authSub(authSub)
+            .status(MemberStatus.ACTIVE)
+            .build();
 
         given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(member));
         given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
@@ -281,6 +283,7 @@ class MemberServiceTest {
         // then
         assertThat(member.getStatus()).isEqualTo(MemberStatus.WITHDRAWN);
         verify(memberRepositoryPort).save(member);
+        verify(tokenBlacklistService).revokeAllUserTokens(authSub);
     }
 
     @Nested
