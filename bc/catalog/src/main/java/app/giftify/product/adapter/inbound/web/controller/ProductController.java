@@ -1,6 +1,7 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
 import app.giftify.product.adapter.inbound.web.requestDto.*;
+import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
@@ -112,13 +113,13 @@ public class ProductController {
     // (판매자) 나의 상품 조회
     @GetMapping("/my")
     @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<PageResponse<ProductDto>> searchMyProducts(
+    public ResponseEntity<PageResponse<MyProductDto>> searchMyProducts(
             @CurrentMemberId Long sellerId,
             @ModelAttribute MyProductSearchDto searchDto
     ) {
-        PageResponse<ProductResult> resultPage = productSearchUseCase.searchMyProducts(sellerId, searchDto);
-        List<ProductDto> dtoList = resultPage.content().stream()
-                .map(ProductDto::from)
+        PageResponse<MyProductResult> resultPage = productSearchUseCase.searchMyProducts(sellerId, searchDto);
+        List<MyProductDto> dtoList = resultPage.content().stream()
+                .map(MyProductDto::from)
                 .collect(Collectors.toList());
         var response = PageResponse.of(dtoList, resultPage.pageNumber(), resultPage.pageSize(), resultPage.totalElements());
         return ResponseEntity.status(OK).body(response);
