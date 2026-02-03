@@ -1,7 +1,8 @@
 package app.giftify.funding.adpater.inbound.dto;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -28,7 +29,7 @@ public record MyFundingResponseDto(
         Integer myContribution
 ) {
 
-    public static MyFundingResponseDto fromEntity(Funding funding, Integer myContribution) {
+    public static MyFundingResponseDto fromEntity(Funding funding, Integer myContribution, WishlistItemSnapshot snapshot) {
         double rate = 0.0;
         if (funding.getTargetAmount() > 0) {
             rate = (double) funding.getCurrentAmount() / funding.getTargetAmount() * 100.0;
@@ -46,10 +47,10 @@ public record MyFundingResponseDto(
                 funding.getCurrentAmount(),
                 funding.getStatus(),
                 funding.getDeadline(),
-                funding.getFundingWishlistItem().getId(),
-                funding.getFundingWishlistItem().getProductId(),
-                funding.getFundingWishlistItem().getProductName(),
-                funding.getFundingWishlistItem().getProductPrice(),
+                snapshot.originalWishlistItemId(),
+                snapshot.productId(),
+                snapshot.productName(),
+                snapshot.productPrice(),
                 Math.round(rate * 10.0) / 10.0,
                 days,
                 myContribution

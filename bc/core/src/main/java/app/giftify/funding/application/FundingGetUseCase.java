@@ -1,14 +1,16 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,14 +27,17 @@ public class FundingGetUseCase {
 
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository participantMemberRepository;
+    private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
 
     /**
      * 전체 공개 단일 펀딩 조회
      */
     public FundingResponseDto getFunding(Long id) {
         Funding funding = fundingRepository.findById(id).orElseThrow(() ->
-                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + id)
-        );
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, id));
+
+        WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
+
 
         // 진행 중이거나 목표 달성한 펀딩만 조회 가능
         if (funding.getStatus() != FundingStatus.IN_PROGRESS
@@ -41,7 +46,7 @@ public class FundingGetUseCase {
                 FundingErrorCode.NOT_IN_PROGRESS, "진행 중이거나 목표 달성한 펀딩만 조회할 수 있습니다");
         }
 
-        return FundingResponseDto.fromEntity(funding);
+        return FundingResponseDto.fromEntity(funding, snapshot);
     }
 
     /**
@@ -54,7 +59,10 @@ public class FundingGetUseCase {
         Page<Funding> fundingPage = fundingRepository.findAllByStatusIn(statuses, pageable);
 
         List<FundingResponseDto> content = fundingPage.getContent().stream()
-            .map(FundingResponseDto::fromEntity)
+            .map(funding -> {
+                WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
+                return FundingResponseDto.fromEntity(funding, snapshot);
+            })
             .collect(Collectors.toList());
 
         return PageResponse.of(content, page, size, fundingPage.getTotalElements());
@@ -65,20 +73,22 @@ public class FundingGetUseCase {
      */
     public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
         Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
-                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + fundingId)
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + fundingId)
         );
 
+        WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
+
         // 참여 여부 확인
-        boolean isParticipated = participantMemberRepository.existsByFundingIdAndFundingMemberId(fundingId, memberId);
+        boolean isParticipated = participantMemberRepository.existsByFundingIdAndParticipantId(fundingId, memberId);
         if (!isParticipated) {
-            throw new FundingException(FundingErrorCode.FORBIDDEN, "해당 펀딩에 참여한 기록이 없습니다.");
+            throw new FundingException(FundingErrorCode.FORBIDDEN);
         }
 
         // 참여 금액 조회
-        Integer myContribution = participantMemberRepository.findTotalAmountByFundingIdAndMemberId(fundingId, memberId)
+        Integer myContribution = participantMemberRepository.findTotalAmountByFundingIdAndParticipantId(fundingId, memberId)
                 .orElse(0);
 
-        return MyFundingResponseDto.fromEntity(funding, myContribution);
+        return MyFundingResponseDto.fromEntity(funding, myContribution, snapshot);
     }
 
     /**
@@ -89,12 +99,16 @@ public class FundingGetUseCase {
 
         Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, pageable);
 
-        List<MyFundingResponseDto> contents = myFundingInfoPage.getContent().stream()
-                .map(info -> MyFundingResponseDto.fromEntity(
-                        info.funding(),
-                        info.myContribution()
-                ))
-                .collect(Collectors.toList());
+        List<MyFundingResponseDto> contents =
+                myFundingInfoPage.getContent().stream()
+                        .map(info -> {
+                            Funding funding = info.funding();
+
+                            WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
+
+                            return MyFundingResponseDto.fromEntity(funding, info.myContribution(), snapshot);
+                        })
+                        .collect(Collectors.toList());
 
         return PageResponse.of(contents, page, size, myFundingInfoPage.getTotalElements());
     }

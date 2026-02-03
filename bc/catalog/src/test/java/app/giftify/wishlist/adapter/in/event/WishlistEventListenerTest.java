@@ -83,7 +83,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingCreatedEvent event = new FundingCreatedEvent(
-                    100L, wishlistItemId, 50000, LocalDateTime.now().plusDays(7)
+                    100L, wishlistItemId, LocalDateTime.now().plusDays(7)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
@@ -107,7 +107,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingAchievedEvent event = new FundingAchievedEvent(
-                    100L, wishlistItemId, 50000, 1L, 1L
+                    100L, wishlistItemId
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
@@ -153,7 +153,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingCanceledEvent event = new FundingCanceledEvent(
-                    100L, wishlistItemId, 50000, 1L, 1L
+                    100L, wishlistItemId, 50000
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
@@ -177,7 +177,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingExpiredEvent event = new FundingExpiredEvent(
-                    100L, wishlistItemId, 30000, 1L
+                    100L, wishlistItemId, 30000
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
