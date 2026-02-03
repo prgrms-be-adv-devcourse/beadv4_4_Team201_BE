@@ -16,14 +16,11 @@ import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.product.ProductReplicaCreationRequestedEvent;
-import app.giftify.shared.domain.event.product.ProductReplicaUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -107,7 +104,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 내가 등록한 상품 검색 (판매자)
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ProductResult> searchMyProducts(Long sellerId, MyProductSearchDto searchDto) {
+    public PageResponse<MyProductResult> searchMyProducts(Long sellerId, MyProductSearchDto searchDto) {
         MyProductSearchCommand command = new MyProductSearchCommand(
                 searchDto.getKeyword(),
                 searchDto.getMinPrice(),
@@ -120,7 +117,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         );
 
         Page<Product> result = productRepositoryPort.searchMyProducts(sellerId, command);
-        List<ProductResult> content = toProductResults(result.getContent());
+        List<MyProductResult> content = toMyProductResults(result.getContent());
 
         return PageResponse.of(
                 content,
@@ -138,15 +135,6 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         product.approve();
         productRepositoryPort.save(product);
-
-        eventPublisher.publish(
-                new ProductReplicaCreationRequestedEvent(
-                        LocalDateTime.now(),
-                        product.getId(),
-                        product.getName(),
-                        product.getPrice()
-                )
-        );
     }
 
     // 상품 등록 거절 (관리자)
@@ -164,9 +152,6 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     @Transactional
     public ProductUpdateResult updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
         Product product = productSupport.findById(productId);
-
-        String oldName = product.getName();
-        int oldPrice = product.getPrice();
 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
         Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription);
@@ -199,18 +184,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 }
             }
         }
-
         productRepositoryPort.save(product);
-        product.pullEvents().forEach(eventPublisher::publish);
-
-        if (!oldName.equals(product.getName()) || oldPrice != product.getPrice()) {
-            eventPublisher.publish(new ProductReplicaUpdatedEvent(
-                    LocalDateTime.now(),
-                    product.getId(),
-                    product.getName(),
-                    product.getPrice()
-            ));
-        }
 
         return ProductUpdateResult.from(product);
     }
@@ -222,6 +196,13 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         return products.stream()
                 .map(product -> ProductResult.of(product, sellerNicknameMap.get(product.getSellerId())))
+                .toList();
+    }
+
+    private List<MyProductResult> toMyProductResults(List<Product> products) {
+
+        return products.stream()
+                .map(MyProductResult::of)
                 .toList();
     }
 

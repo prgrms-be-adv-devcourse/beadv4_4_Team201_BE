@@ -28,8 +28,20 @@ public class ProductMapper {
         if (domain == null) {
             return null;
         }
+        // 기존 엔티티 수정 (ID 있음)
+        if (domain.getId() != null) {
+            return new ProductJpa(
+                    domain.getId(),
+                    domain.getSellerId(),
+                    domain.getName(),
+                    domain.getDescription(),
+                    domain.getPrice(),
+                    domain.getStock(),
+                    domain.getStatus()
+            );
+        }
+        // 새 엔티티 생성 (ID 없음)
         return ProductJpa.builder()
-                // id is auto-generated, not set here
                 .sellerId(domain.getSellerId())
                 .name(domain.getName())
                 .description(domain.getDescription())

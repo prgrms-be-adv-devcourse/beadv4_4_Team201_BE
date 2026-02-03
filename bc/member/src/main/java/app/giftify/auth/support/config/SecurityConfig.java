@@ -52,7 +52,9 @@ public class SecurityConfig {
                         "/api/auth/login",
                         "/actuator/health",
                         "/actuator/health/**",
-                        "/error"
+                        "/error",
+                        "/api/products/{id}",
+                        "/api/products/search"
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
