@@ -32,7 +32,6 @@ public class ProductJpa extends BaseJpaEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    // 기존 엔티티 복원용 (ID 포함)
     public ProductJpa(Long id, Long sellerId, String name, String description,
                       int price, int stock, ProductStatus status) {
         super(id);
