@@ -8,6 +8,7 @@ public class MemberUpdatedEvent extends BaseDomainEvent {
     private final String nickname;
 
     public MemberUpdatedEvent(Long memberId, String authSub, String nickname) {
+        super();
         this.memberId = memberId;
         this.authSub = authSub;
         this.nickname = nickname;
