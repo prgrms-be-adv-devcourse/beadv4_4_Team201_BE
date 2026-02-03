@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Map;
 
 @Slf4j
-@RestControllerAdvice
-public class OrderControllerAdvice {
+@RestControllerAdvice(basePackages = "app.giftify.orderDemo")
+public class OrderExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
@@ -35,18 +35,6 @@ public class OrderControllerAdvice {
         Map<String, Object> body = Map.of(
                 "code", ex.getErrorCode().getCode(),
                 "message", "서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-        );
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleUnknownException(Exception ex) {
-        log.error("[OrderControllerAdvice] 알 수 없는 예외 발생", ex);
-
-        Map<String, Object> body = Map.of(
-                "code", "UNKNOWN_ERROR",
-                "message", "알 수 없는 오류가 발생했습니다."
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
