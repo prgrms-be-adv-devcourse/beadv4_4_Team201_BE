@@ -4,7 +4,7 @@ import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;

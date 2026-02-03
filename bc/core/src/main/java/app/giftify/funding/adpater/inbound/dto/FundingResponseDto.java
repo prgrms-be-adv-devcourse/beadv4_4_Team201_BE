@@ -1,7 +1,7 @@
 package app.giftify.funding.adpater.inbound.dto;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 
 import java.time.LocalDateTime;
@@ -17,6 +17,7 @@ public record FundingResponseDto (
 
     // 위시리스트 아이템 정보
     Long wishlistItemId,
+    Long productId,
     String productName,
     Integer productPrice,
 
@@ -44,6 +45,7 @@ public record FundingResponseDto (
                 funding.getStatus(),
                 funding.getDeadline(),
                 snapshot.originalWishlistItemId(),
+                snapshot.productId(),
                 snapshot.productName(),
                 snapshot.productPrice(),
                 Math.round(rate * 10.0) / 10.0, // 소수점 첫째자리까지 반올림

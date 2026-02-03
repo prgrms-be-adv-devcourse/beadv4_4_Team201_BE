@@ -1,6 +1,7 @@
-package app.giftify.funding.adpater.inbound;
+package app.giftify.funding.adpater.inbound.web;
 
 import app.giftify.funding.application.FundingService;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,8 @@ public class InternalFundingController {
     private final FundingService fundingService;
 
     @GetMapping("/wishlist-items/{wishlistItemId}/snapshot")
-    public ResponseEntity<FundingSnapshot> getFundingSnapshotByWishlistItem(@PathVariable Long wishlistItemId) {
-        return fundingService.getSnapshot(wishlistItemId)
+    public ResponseEntity<FundingSnapshot> getFundingSnapshotByWishlistItemAndStatus(@PathVariable Long wishlistItemId, FundingStatus status) {
+        return fundingService.getSnapshot(wishlistItemId, status)
                 .map(ResponseEntity::ok)                        // IN_PROGRESS, ACHIEVED 펀딩 있음 -> 200 OK
                 .orElse(ResponseEntity.notFound().build());     // 없거나 다른 상태 -> 404 Not Found
     }

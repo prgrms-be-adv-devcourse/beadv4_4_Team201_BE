@@ -2,7 +2,7 @@ package app.giftify.funding.adpater.outbound.jpa;
 
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -17,11 +17,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funding extends BaseJpaEntity {
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Long wishlistItemId;
 
     @Column(nullable = false)
-    private Integer targetAmount;
+    private Long productId;
+
+    @Column(nullable = false)
+    private Integer targetAmount;       // 상품 원가 (목표액)
 
     @Column(nullable = false)
     private Integer currentAmount;
@@ -31,7 +34,7 @@ public class Funding extends BaseJpaEntity {
     private FundingStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime deadline;        // 펀딩 종료 예정 시점
+    private LocalDateTime deadline;      // 펀딩 종료 예정 시점
 
     @Column
     private LocalDateTime closedAt;     // 펀딩이 실제 종료된 시점
@@ -40,17 +43,17 @@ public class Funding extends BaseJpaEntity {
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
 
-    private Funding(Long wishlistItemId, Integer productPrice) {
+    private Funding(Long wishlistItemId, Integer productPrice, Long productId) {
         this.wishlistItemId = wishlistItemId;
         this.targetAmount = productPrice;
+        this.productId = productId;
         this.currentAmount = 0;
         this.status = FundingStatus.IN_PROGRESS;
         this.deadline = LocalDateTime.now().plusDays(15);
     }
 
-    // todo 상품가격 가져오기 수정
-    public static Funding startFunding(Long wishlistItemId, Integer targetAmount) {
-        return new Funding(wishlistItemId, targetAmount);
+    public static Funding startFunding(Long wishlistItemId, Integer targetAmount, Long productId) {
+        return new Funding(wishlistItemId, targetAmount, productId);
     }
 
     public static void validateLeastAmount(Integer amount) {

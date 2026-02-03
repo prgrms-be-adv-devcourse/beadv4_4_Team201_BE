@@ -1,7 +1,7 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;

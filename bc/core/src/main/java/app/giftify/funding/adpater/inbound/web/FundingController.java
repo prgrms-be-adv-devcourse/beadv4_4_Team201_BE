@@ -1,4 +1,4 @@
-package app.giftify.funding.adpater.inbound;
+package app.giftify.funding.adpater.inbound.web;
 
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;

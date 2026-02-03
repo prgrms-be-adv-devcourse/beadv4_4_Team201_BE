@@ -1,7 +1,7 @@
 package app.giftify.funding.adpater.outbound.repository;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,10 +21,6 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
     List<Funding> findByDeadlineAfterAndStatusIn(LocalDateTime now, List<FundingStatus> statuses);
 
     Optional<Funding> findByWishlistItemId(Long wishlistItemId);
-
-    @Query("SELECT f FROM Funding f WHERE f.wishlistItemId = :wishlistItemId " +
-            "AND f.status IN ('IN_PROGRESS', 'ACHIEVED')")
-    Optional<Funding> findActiveByWishlistItemId(@Param("wishlistItemId") Long wishlistItemId);
 
     Optional<Funding> findByWishlistItemIdAndStatus(Long wishlistItemId, FundingStatus status);
 
