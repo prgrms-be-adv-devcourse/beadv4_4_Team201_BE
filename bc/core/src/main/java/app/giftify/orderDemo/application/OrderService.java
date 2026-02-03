@@ -105,7 +105,7 @@ public class OrderService {
     public OrderDetail getOrderDetail(Long memberId, Long orderId) {
         Order order = orderRepository.getById(orderId);
 
-        validateOwner(memberId, order.getId());
+        validateOwner(memberId, order.getBuyerId());
 
         OrderSummary summary = OrderSummary.of(order);
         List<OrderItemDetail> itemDetails = getOrderItemDetails(order);
@@ -113,11 +113,11 @@ public class OrderService {
         return new OrderDetail(summary, itemDetails);
     }
 
-    private static void validateOwner(Long memberId, Long orderId) {
-        if (!Objects.equals(orderId, memberId)) {
+    private static void validateOwner(Long memberId, Long buyerId) {
+        if (!Objects.equals(buyerId, memberId)) {
             throw new PolicyException(
                     OrderErrorCode.ORDER_OWNER_MISMATCH,
-                    String.format("memberId = %d, orderId = %d", memberId, orderId)
+                    String.format("memberId = %d, orderId = %d", memberId, buyerId)
             );
         }
     }

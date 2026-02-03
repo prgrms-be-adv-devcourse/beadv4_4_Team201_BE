@@ -61,7 +61,7 @@ public class OrderController implements OrderControllerSpec {
     @Override
     public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(
             @CurrentMemberId Long memberId,
-            @PathVariable Long orderId) {
+            @PathVariable(name = "orderId") Long orderId) {
         OrderDetail orderDetail = orderService.getOrderDetail(memberId, orderId);
 
         GetOrderDetailResponse data = new GetOrderDetailResponse(orderDetail);
