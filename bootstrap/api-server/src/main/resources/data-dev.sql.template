@@ -1,0 +1,120 @@
+-- =============================================================================
+-- Giftify Development Environment Seed Data (PostgreSQL) - TEMPLATE
+-- =============================================================================
+-- 사용법:
+-- 1. 이 파일을 data-dev.sql로 복사
+-- 2. <AUTH_SUB_*> 플레이스홀더를 실제 Auth0 sub ID로 교체
+-- 3. data-dev.sql은 .gitignore에 포함되어 있으므로 커밋되지 않음
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- 1. MEMBERS (회원)
+-- -----------------------------------------------------------------------------
+INSERT INTO members (id, email, password, nickname, birthday, role, address, phone_num, name, status, auth_sub,
+                     created_at, updated_at, created_by, updated_by)
+VALUES (1, 'qa-seller-giftify@team201.dev', 'CHANGE_ME', '멍청한돼지0009', '1975-11-08', 'SELLER', '서울시 종로구',
+        '010-1234-5678', '김주영', 'ACTIVE', '<AUTH_SUB_SELLER_1>', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 'qa-buyer-giftify@team201.dev', 'CHANGE_ME', '나른한고양이0013', '2003-02-14', 'BUYER', '서울시 송파구',
+        '010-5678-1234', '김영주', 'ACTIVE', '<AUTH_SUB_BUYER_1>', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 'qa-seller-giftify@naver.com', 'CHANGE_ME', '멍청한고양이2013', '2003-02-14', 'SELLER',
+        '서울시 송파구', '010-0002-9871', '김영주', 'ACTIVE', '<AUTH_SUB_SELLER_2>', NOW(), NOW(), 'SYSTEM',
+        'SYSTEM'),
+       (4, 'admin-giftify@team201.dev', 'CHANGE_ME', '관리자', '1999-01-01', 'ADMIN', '서울시 강남구',
+        '010-0000-0000', 'TEAM201', 'ACTIVE', '<AUTH_SUB_ADMIN>', NOW(), NOW(), 'SYSTEM',
+        'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+-- PostgreSQL 시퀀스 조정
+SELECT setval('members_id_seq', GREATEST((SELECT MAX(id) FROM members), 100), false);
+
+-- -----------------------------------------------------------------------------
+-- 2. MEMBER_REPLICA (회원 레플리카 - catalog 모듈)
+-- -----------------------------------------------------------------------------
+INSERT INTO member_replica (id, nickname)
+VALUES (1, '멍청한돼지0009'),
+       (2, '나른한고양이0013'),
+       (3, '멍청한고양이2013'),
+       (4, '관리자') ON CONFLICT (id) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- 3. FUNDING_MEMBER (펀딩 회원 - core 모듈)
+-- -----------------------------------------------------------------------------
+INSERT INTO funding_member (id, auth_sub, nickname)
+VALUES (1, '<AUTH_SUB_SELLER_1>', '멍청한돼지0009'),
+       (2, '<AUTH_SUB_BUYER_1>', '나른한고양이0013'),
+       (3, '<AUTH_SUB_SELLER_2>', '멍청한고양이2013'),
+       (4, '<AUTH_SUB_ADMIN>', '관리자') ON CONFLICT (id) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- 4. WALLET (지갑)
+-- -----------------------------------------------------------------------------
+INSERT INTO wallet (id, member_id, balance, version, created_at, updated_at, created_by, updated_by)
+VALUES (1, 1, 100000.00, 0, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 2, 50000.00, 0, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 3, 1000000.00, 0, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 4, 0.00, 0, NOW(), NOW(), 'SYSTEM', 'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('wallet_id_seq', GREATEST((SELECT MAX(id) FROM wallet), 100), false);
+
+-- -----------------------------------------------------------------------------
+-- 5. CART (장바구니)
+-- -----------------------------------------------------------------------------
+INSERT INTO cart (id, member_id, created_at, updated_at, created_by, updated_by)
+VALUES (1, 1, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 2, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 3, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 4, NOW(), NOW(), 'SYSTEM', 'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('cart_id_seq', GREATEST((SELECT MAX(id) FROM cart), 100), false);
+
+-- -----------------------------------------------------------------------------
+-- 6. WISHLIST (위시리스트)
+-- -----------------------------------------------------------------------------
+INSERT INTO wishlist (id, member_id, visibility, created_at, updated_at, created_by, updated_by)
+VALUES (1, 1, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 2, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 3, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 4, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('wishlist_id_seq', GREATEST((SELECT MAX(id) FROM wishlist), 100), false);
+
+-- -----------------------------------------------------------------------------
+-- 7. PRODUCT (상품)
+-- -----------------------------------------------------------------------------
+INSERT INTO product (id, seller_id, name, description, price, stock, status, created_at, updated_at, created_by,
+                     updated_by)
+VALUES
+    -- ACTIVE 상품 (판매중)
+    (1, 3, '에어팟 프로 2세대', '애플 정품 노이즈 캔슬링 이어폰', 359000, 50, 'ACTIVE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (2, 3, '스타벅스 텀블러', '리유저블 콜드컵 710ml 그린', 23000, 50, 'ACTIVE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (3, 3, '닌텐도 스위치 OLED', '화이트 에디션 새상품', 415000, 50, 'ACTIVE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (4, 3, '다이슨 에어랩', '컴플리트 롱 니켈/코퍼', 699000, 50, 'ACTIVE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (5, 3, '레고 스타워즈', '밀레니엄 팔콘 75375', 89000, 50, 'ACTIVE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    -- DRAFT 상품 (승인 대기)
+    (6, 3, '캠핑 감성 랜턴', '충전식 LED 무드등 빈티지 스타일', 32000, 50, 'DRAFT', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (7, 3, '고양이 자동 급식기', '6L 대용량 스마트 펫 피더', 78000, 50, 'DRAFT', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (8, 3, '마샬 스피커', '액톤 III 블루투스 스피커 블랙', 489000, 50, 'DRAFT', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (9, 3, '무지 아로마 디퓨저', '초음파 가습기 겸용 500ml', 45000, 50, 'DRAFT', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (10, 3, '몽블랑 볼펜', '마이스터스튁 클래식 블랙', 520000, 50, 'DRAFT', NOW(), NOW(), 'SYSTEM',
+     'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('product_id_seq', GREATEST((SELECT MAX(id) FROM product), 100), false);
+
+-- -----------------------------------------------------------------------------
+-- 8. WISHLIST_ITEM (위시리스트 아이템) - Optional
+-- -----------------------------------------------------------------------------
+INSERT INTO wishlist_item (id, wishlist_id, product_id, wishlist_item_status, created_at, updated_at, created_by,
+                           updated_by)
+VALUES (1, 1, 1, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 1, 2, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 2, 3, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('wishlist_item_id_seq', GREATEST((SELECT MAX(id) FROM wishlist_item), 100), false);
+
+-- =============================================================================
+-- Placeholders to replace:
+-- =============================================================================
+-- <AUTH_SUB_SELLER_1>  : Auth0 sub for qa-seller-giftify@team201.dev
+-- <AUTH_SUB_BUYER_1>   : Auth0 sub for qa-buyer-giftify@team201.dev
+-- <AUTH_SUB_SELLER_2>  : Auth0 sub for qa-seller-giftify@naver.com
+-- <AUTH_SUB_ADMIN>     : Auth0 sub for admin-giftify@team201.dev
+-- =============================================================================
