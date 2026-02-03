@@ -1,24 +1,18 @@
 package app.giftify.shared.api.exception;
 
-public class DomainException extends RuntimeException {
-    private final ErrorCode errorCode;
-
+/**
+ * 도메인 검증 실패
+ */
+public class DomainException extends BusinessException {
     public DomainException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+        super(errorCode);
     }
 
     public DomainException(ErrorCode errorCode, String message) {
-        super(message);
-        this.errorCode = errorCode;
+        super(errorCode, message);
     }
 
     public DomainException(ErrorCode errorCode, String message, Throwable cause) {
-        super(message, cause);
-        this.errorCode = errorCode;
-    }
-
-    public ErrorCode getErrorCode() {
-        return errorCode;
+        super(errorCode, message, cause);
     }
 }

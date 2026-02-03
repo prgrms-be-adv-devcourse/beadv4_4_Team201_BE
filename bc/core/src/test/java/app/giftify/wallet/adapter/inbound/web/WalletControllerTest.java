@@ -32,7 +32,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import app.giftify.wallet.adapter.inbound.web.dto.*;
-import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.api.response.RsData;
 
 import java.math.BigDecimal;
 
@@ -69,13 +69,13 @@ class WalletControllerTest {
 			given(withdrawWalletUseCase.withdraw(any(WithdrawWalletCommand.class))).willReturn(result);
 
 			// when
-			ResponseEntity<CommonResponse<WithdrawWalletResponse>> response =
+			ResponseEntity<RsData<WithdrawWalletResponse>> response =
 				walletController.withdraw(TEST_MEMBER_ID, request);
 
 			// then
 			assertThat(response.getStatusCode().value()).isEqualTo(200);
 			assertThat(response.getBody()).isNotNull();
-			assertThat(response.getBody().getResult()).isEqualTo(CommonResponse.Result.SUCCESS);
+			assertThat(response.getBody().getResult()).isEqualTo(RsData.Result.SUCCESS);
 			assertThat(response.getBody().getData().walletId()).isEqualTo(1L);
 			assertThat(response.getBody().getData().status()).isEqualTo("PENDING");
 			verify(withdrawWalletUseCase).withdraw(any(WithdrawWalletCommand.class));
@@ -94,13 +94,13 @@ class WalletControllerTest {
 			given(queryWalletUseCase.getBalance(anyLong())).willReturn(result);
 
 			// when
-			ResponseEntity<CommonResponse<WalletBalanceResponse>> response =
+			ResponseEntity<RsData<WalletBalanceResponse>> response =
 				walletController.getBalance(TEST_MEMBER_ID);
 
 			// then
 			assertThat(response.getStatusCode().value()).isEqualTo(200);
 			assertThat(response.getBody()).isNotNull();
-			assertThat(response.getBody().getResult()).isEqualTo(CommonResponse.Result.SUCCESS);
+			assertThat(response.getBody().getResult()).isEqualTo(RsData.Result.SUCCESS);
 			assertThat(response.getBody().getData().walletId()).isEqualTo(1L);
 			assertThat(response.getBody().getData().balance()).isEqualTo(BigDecimal.valueOf(50000));
 			verify(queryWalletUseCase).getBalance(TEST_MEMBER_ID);
@@ -123,13 +123,13 @@ class WalletControllerTest {
 			given(queryWalletHistoryUseCase.getHistory(any(WalletHistoryQuery.class))).willReturn(result);
 
 			// when
-			ResponseEntity<CommonResponse<Page<WalletHistoryResponse>>> response =
+			ResponseEntity<RsData<Page<WalletHistoryResponse>>> response =
 				walletController.getHistory(TEST_MEMBER_ID, null, 0, 20);
 
 			// then
 			assertThat(response.getStatusCode().value()).isEqualTo(200);
 			assertThat(response.getBody()).isNotNull();
-			assertThat(response.getBody().getResult()).isEqualTo(CommonResponse.Result.SUCCESS);
+			assertThat(response.getBody().getResult()).isEqualTo(RsData.Result.SUCCESS);
 			assertThat(response.getBody().getData().getContent()).hasSize(1);
 			assertThat(response.getBody().getData().getContent().get(0).type()).isEqualTo("CHARGE");
 			verify(queryWalletHistoryUseCase).getHistory(any(WalletHistoryQuery.class));
@@ -147,7 +147,7 @@ class WalletControllerTest {
 			given(queryWalletHistoryUseCase.getHistory(any(WalletHistoryQuery.class))).willReturn(result);
 
 			// when
-			ResponseEntity<CommonResponse<Page<WalletHistoryResponse>>> response =
+			ResponseEntity<RsData<Page<WalletHistoryResponse>>> response =
 				walletController.getHistory(TEST_MEMBER_ID, TransactionType.WITHDRAW, 0, 20);
 
 			// then
