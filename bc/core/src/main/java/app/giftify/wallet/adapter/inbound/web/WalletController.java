@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
@@ -42,7 +42,7 @@ public class WalletController implements WalletV2Api {
 
 	@Override
 	@PostMapping("/withdraw")
-	public ResponseEntity<CommonResponse<WithdrawWalletResponse>> withdraw(
+	public ResponseEntity<RsData<WithdrawWalletResponse>> withdraw(
 		@CurrentMemberId Long memberId,
 		@Valid @RequestBody WithdrawWalletRequest request
 	) {
@@ -56,24 +56,24 @@ public class WalletController implements WalletV2Api {
 		);
 
 		WithdrawWalletResult result = withdrawWalletUseCase.withdraw(command);
-		return ResponseEntity.ok(CommonResponse.success(WithdrawWalletResponse.from(result)));
+		return ResponseEntity.ok(RsData.success(WithdrawWalletResponse.from(result)));
 	}
 
 	@Override
 	@GetMapping("/balance")
-	public ResponseEntity<CommonResponse<WalletBalanceResponse>> getBalance(
+	public ResponseEntity<RsData<WalletBalanceResponse>> getBalance(
 		@CurrentMemberId Long memberId
 	) {
 		log.debug("[WalletController] 잔액 조회. memberId={}", memberId);
 
 		WalletBalanceResult result = queryWalletUseCase.getBalance(memberId);
-		return ResponseEntity.ok(CommonResponse.success(WalletBalanceResponse.from(result)));
+		return ResponseEntity.ok(RsData.success(WalletBalanceResponse.from(result)));
 	}
 
 
 	@Override
 	@GetMapping("/history")
-	public ResponseEntity<CommonResponse<Page<WalletHistoryResponse>>> getHistory(
+	public ResponseEntity<RsData<Page<WalletHistoryResponse>>> getHistory(
 		@CurrentMemberId Long memberId,
 		@RequestParam(name = "type", required = false) TransactionType type,
 		@RequestParam(name = "page", defaultValue = "0") int page,
@@ -85,6 +85,6 @@ public class WalletController implements WalletV2Api {
 		Page<WalletHistoryResult> result = queryWalletHistoryUseCase.getHistory(query);
 		Page<WalletHistoryResponse> response = result.map(WalletHistoryResponse::from);
 
-		return ResponseEntity.ok(CommonResponse.success(response));
+		return ResponseEntity.ok(RsData.success(response));
 	}
 }
