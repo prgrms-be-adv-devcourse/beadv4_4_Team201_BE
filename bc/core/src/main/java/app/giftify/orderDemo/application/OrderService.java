@@ -1,6 +1,8 @@
 package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
+import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
@@ -95,5 +97,10 @@ public class OrderService {
         Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
 
         return pages.map(OrderSummary::of);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetail getOrderDetail(Long memberId, Long orderId) {
+        return null;
     }
 }

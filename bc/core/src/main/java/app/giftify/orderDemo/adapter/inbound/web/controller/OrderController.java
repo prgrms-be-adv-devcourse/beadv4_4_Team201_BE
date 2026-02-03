@@ -4,6 +4,7 @@ import app.giftify.facade.CoreFacade;
 import app.giftify.facade.command.PlaceOrderCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
+import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.orderDemo.application.OrderService;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
@@ -54,6 +55,12 @@ public class OrderController implements OrderControllerSpec {
 
 
         return ResponseEntity.ok(RsData.success(data));
+    }
+
+    @GetMapping
+    @Override
+    public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(Long memberId, Long orderId) {
+        return null;
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {
