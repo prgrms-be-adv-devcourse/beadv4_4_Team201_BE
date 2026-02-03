@@ -7,7 +7,6 @@ public class TossPaymentsProperties {
 
 	private Api api = new Api();
 	private String secretKey;
-	private String clientKey;
 
 	@Data
 	public static class Api {
