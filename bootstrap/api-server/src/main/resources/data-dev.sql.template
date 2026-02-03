@@ -110,6 +110,38 @@ VALUES (1, 1, 1, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
 SELECT setval('wishlist_item_id_seq', GREATEST((SELECT MAX(id) FROM wishlist_item), 100), false);
 
+-- -----------------------------------------------------------------------------
+-- 9. ORDER_V2 (주문)
+-- -----------------------------------------------------------------------------
+INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
+                      created_at, updated_at)
+VALUES
+    -- PAID 주문: 구매자(2)가 에어팟(1) 구매
+    (1, 2, 'ORD-20260201-0001', 359000.00, 1, 'WALLET', 'PAID', NOW(), NOW()),
+    -- CONFIRMED 주문: 구매자(2)가 스타벅스 텀블러(2) 구매 후 확정
+    (2, 2, 'ORD-20260201-0002', 23000.00, 1, 'WALLET', 'CONFIRMED', NOW(), NOW()),
+    -- CREATED 주문: 구매자(2)가 닌텐도 스위치(3) 주문 생성 (결제 전)
+    (3, 2, 'ORD-20260202-0001', 415000.00, 1, 'WALLET', 'CREATED', NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('order_v2_id_seq', GREATEST((SELECT MAX(id) FROM order_v2), 100), false);
+
+-- -----------------------------------------------------------------------------
+-- 10. ORDER_ITEM_V2 (주문 아이템)
+-- -----------------------------------------------------------------------------
+INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
+                           price, amount, status, created_at, updated_at)
+VALUES
+    -- 주문1의 아이템: 에어팟 프로
+    (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 359000.00, 359000.00, 1, NOW(), NOW()),
+    -- 주문2의 아이템: 스타벅스 텀블러
+    (2, 2, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 23000.00, 23000.00, 2, NOW(), NOW()),
+    -- 주문3의 아이템: 닌텐도 스위치
+    (3, 3, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 415000.00, 415000.00, 0, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('order_item_v2_id_seq', GREATEST((SELECT MAX(id) FROM order_item_v2), 100), false);
+
 -- =============================================================================
 -- Placeholders to replace:
 -- =============================================================================
