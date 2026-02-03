@@ -3,6 +3,7 @@ package app.giftify.orderDemo.adapter.inbound.web.controller;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
+import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.data.domain.Pageable;
@@ -14,12 +15,12 @@ public interface OrderControllerSpec {
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
-    ResponseEntity<PlaceOrderResult> placeOrder(Long memberId,PlaceOrderRequest request);
+    ResponseEntity<RsData<PlaceOrderResult>> placeOrder(Long memberId, PlaceOrderRequest request);
 
     @Operation(summary = "주문 목록 조회", description = "로그인된 회원 ID로 주문 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "주문 목록 조회 성공")
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
-    ResponseEntity<GetOrdersResponse> getOrders(Long memberId, Pageable pageable);
+    ResponseEntity<RsData<GetOrdersResponse>> getOrders(Long memberId, Pageable pageable);
 }
