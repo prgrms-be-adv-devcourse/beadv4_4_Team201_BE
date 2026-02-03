@@ -6,22 +6,16 @@ public class FundingCanceledEvent extends BaseDomainEvent {
     private final Long fundingId;
     private final Long wishlistItemId;
     private final Integer canceledAmount;
-    private final Long productId;
-    private final Long fundingReceiverId;
 
     public FundingCanceledEvent(
             Long fundingId,
             Long wishlistItemId,
-            Integer canceledAmount,
-            Long productId,
-            Long fundingReceiverId
+            Integer canceledAmount
     ) {
         super();
         this.fundingId = fundingId;
         this.wishlistItemId = wishlistItemId;
         this.canceledAmount = canceledAmount;
-        this.productId = productId;
-        this.fundingReceiverId = fundingReceiverId;
     }
 
     public Long getFundingId() {
@@ -36,13 +30,6 @@ public class FundingCanceledEvent extends BaseDomainEvent {
         return canceledAmount;
     }
 
-    public Long getProductId() {
-        return productId;
-    }
-
-    public Long getFundingReceiverId() {
-        return fundingReceiverId;
-    }
 
     @Override
     public String toString() {
@@ -50,8 +37,6 @@ public class FundingCanceledEvent extends BaseDomainEvent {
                 "fundingId=" + fundingId +
                 ", wishlistItemId=" + wishlistItemId +
                 ", canceledAmount=" + canceledAmount +
-                ", productId=" + productId +
-                ", fundingReceiverId=" + fundingReceiverId +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';

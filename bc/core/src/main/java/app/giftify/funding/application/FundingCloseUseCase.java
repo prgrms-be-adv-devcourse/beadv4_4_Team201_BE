@@ -3,7 +3,6 @@ package app.giftify.funding.application;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.adpater.outbound.jpa.FundingWishlistItem;
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
@@ -24,22 +23,13 @@ public class FundingCloseUseCase {
         Funding funding = fundingRepository.findById(id)
             .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
-        FundingWishlistItem wishlistItem = funding.getFundingWishlistItem();
-
-        // 관리자 권한 체크 (Member BC에서 role 정보 가져와서 확인)
-        // if (!isAdmin(requestMemberId)) {
-        //     throw new FundingException(FundingErrorCode.FORBIDDEN, "관리자만 펀딩을 종료할 수 있습니다.");
-        // }
-
         funding.close();
 
         // 환불 처리를 위한 이벤트 발행
         eventPublisher.publish(new FundingCanceledEvent(
             funding.getId(),
-            wishlistItem.getWishlistId(),
-            funding.getCurrentAmount(),
-            wishlistItem.getProductId(),
-            wishlistItem.getReceiverId()
+            funding.getWishlistItemId(),
+            funding.getCurrentAmount()
         ));
 
         return FundingCompleteResponseDto.fromEntity(funding);
