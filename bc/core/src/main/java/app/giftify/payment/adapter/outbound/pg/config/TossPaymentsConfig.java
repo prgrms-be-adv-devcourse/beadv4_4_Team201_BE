@@ -35,20 +35,9 @@ public class TossPaymentsConfig {
 	@Bean
 	public RestClient tossPaymentsRestClient(TossPaymentsProperties properties) {
 		String secretKey = properties.getSecretKey();
-		String baseUrl = properties.getApi().getBaseUrl();
-
-		// 디버깅 로그
-		log.info("[TossPaymentsConfig] baseUrl: {}", baseUrl);
-		log.info("[TossPaymentsConfig] secretKey is null: {}", secretKey == null);
-		log.info("[TossPaymentsConfig] secretKey length: {}", secretKey != null ? secretKey.length() : 0);
-		log.info("[TossPaymentsConfig] secretKey prefix: {}",
-			secretKey != null && secretKey.length() > 10 ? secretKey.substring(0, 10) + "..." : secretKey);
-
 		String credentials = secretKey + ":";
 		String encodedCredentials = Base64.getEncoder()
 			.encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-
-		log.info("[TossPaymentsConfig] encoded credentials: {}", encodedCredentials);
 
 		return RestClient.builder()
 			.baseUrl(properties.getApi().getBaseUrl())
