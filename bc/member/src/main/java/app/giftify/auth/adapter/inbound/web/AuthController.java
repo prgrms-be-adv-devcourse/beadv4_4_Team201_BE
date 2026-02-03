@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v2/auth")
 @RequiredArgsConstructor
-public class AuthController implements AuthV2Api {
+public class AuthController implements AuthV2ApiSpec {
 
 	private final AuthService authService;
 	private final LoginUseCase loginUseCase;

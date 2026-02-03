@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @Tag(name = "Auth V2", description = "인증 관련 API")
-public interface AuthV2Api {
+public interface AuthV2ApiSpec {
 
 	@Operation(
 		summary = "로그인 (SPA SDK용)",

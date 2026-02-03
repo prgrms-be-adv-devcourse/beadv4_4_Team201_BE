@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @Tag(name = "Payment V2", description = "결제 API (v2)")
-public interface PaymentV2Api {
+public interface PaymentV2ApiSpec {
 
     @Operation(
             summary = "결제 생성 (예치금 충전)",
