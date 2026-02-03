@@ -3,12 +3,15 @@ package app.giftify.member.adapter.out.jpa.dataInit;
 import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
 import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
 import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.type.MemberRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -18,8 +21,10 @@ import java.time.LocalDate;
 public class MemberDataInitializer implements ApplicationRunner {
 
     private final MemberJpaRepository memberJpaRepository;
+    private final EventPublisher eventPublisher;
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) {
         log.info("===== MemberDataInitializer 시작 =====");
 
@@ -70,6 +75,7 @@ public class MemberDataInitializer implements ApplicationRunner {
     private void saveIfNotExists(MemberJpaEntity member) {
         if (memberJpaRepository.findByAuthSub(member.getAuthSub()).isEmpty()) {
             memberJpaRepository.save(member);
+            eventPublisher.publish(new MemberSignedEvent(member.getId(), member.getAuthSub(), member.getNickname()));
             log.info("Member 추가: email={}, authSub={}", member.getEmail(), member.getAuthSub());
         } else {
             log.info("Member 이미 존재 (스킵): email={}, authSub={}", member.getEmail(), member.getAuthSub());

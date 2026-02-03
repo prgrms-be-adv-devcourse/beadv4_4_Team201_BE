@@ -9,5 +9,5 @@ public interface ProductSearchUseCase {
     PageResponse<ProductResult> searchProducts(ProductSearchDto searchDto);
 
     // 내 상품 검색 (판매자)
-    PageResponse<ProductResult> searchMyProducts(Long sellerId, MyProductSearchDto searchDto);
+    PageResponse<MyProductResult> searchMyProducts(Long sellerId, MyProductSearchDto searchDto);
 }
