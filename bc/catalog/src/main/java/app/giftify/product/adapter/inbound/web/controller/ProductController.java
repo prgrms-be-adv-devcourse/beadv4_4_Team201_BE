@@ -136,6 +136,7 @@ public class ProductController implements ProductV2ApiSpec {
 	// (판매자) 나의 상품 조회
 	@GetMapping("/my")
 	@PreAuthorize("hasRole('SELLER')")
+	@Override
 	public ResponseEntity<RsData<PageResponse<MyProductDto>>> searchMyProducts(
 		@CurrentMemberId Long sellerId,
 		@Valid @ModelAttribute MyProductSearchDto searchDto
@@ -152,6 +153,7 @@ public class ProductController implements ProductV2ApiSpec {
 	// (판매자) 재고 이력 조회
 	@GetMapping("/my/stock-histories")
 	@PreAuthorize("hasRole('SELLER')")
+	@Override
 	public ResponseEntity<RsData<PageResponse<StockHistoryDto>>> searchStockHistories(
 		@CurrentMemberId Long sellerId,
 		@Valid @ModelAttribute StockHistorySearchDto searchDto

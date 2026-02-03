@@ -140,12 +140,17 @@ public class TokenBlacklistService {
 		if (userRevokedTime == null) {
 			return false;
 		}
-		Instant revokedAt = Instant.ofEpochMilli(Long.parseLong(userRevokedTime));
-		boolean revoked = issuedAt.isBefore(revokedAt);
-		if (revoked) {
-			log.debug("Token for user {} was issued before revocation", subject);
+		try {
+			Instant revokedAt = Instant.ofEpochMilli(Long.parseLong(userRevokedTime));
+			boolean revoked = issuedAt.isBefore(revokedAt);
+			if (revoked) {
+				log.debug("Token for user {} was issued before revocation", subject);
+			}
+			return revoked;
+		} catch (NumberFormatException e) {
+			log.warn("Invalid revocation time format for user {}: {}", subject, userRevokedTime);
+			return false;
 		}
-		return revoked;
 	}
 
 	private boolean isGloballyRevoked(Instant issuedAt) {
@@ -156,12 +161,17 @@ public class TokenBlacklistService {
 		if (globalRevokedTime == null) {
 			return false;
 		}
-		Instant revokedAt = Instant.ofEpochMilli(Long.parseLong(globalRevokedTime));
-		boolean revoked = issuedAt.isBefore(revokedAt);
-		if (revoked) {
-			log.debug("Token was issued before global revocation");
+		try {
+			Instant revokedAt = Instant.ofEpochMilli(Long.parseLong(globalRevokedTime));
+			boolean revoked = issuedAt.isBefore(revokedAt);
+			if (revoked) {
+				log.debug("Token was issued before global revocation");
+			}
+			return revoked;
+		} catch (NumberFormatException e) {
+			log.warn("Invalid global revocation time format: {}", globalRevokedTime);
+			return false;
 		}
-		return revoked;
 	}
 
 	/**
