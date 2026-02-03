@@ -6,6 +6,13 @@ plugins {
 
 dependencies {
     implementation(project(":support:common"))
+    implementation(project(":bc:shared"))
+
     implementation(libs.spring.boot.starter.web)
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
     api(libs.springdoc.openapi)
 }

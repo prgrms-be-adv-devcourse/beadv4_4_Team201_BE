@@ -24,7 +24,7 @@ import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
 import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class PaymentController implements PaymentV2Api {
 
 	@Override
 	@PostMapping("/charge")
-	public ResponseEntity<CommonResponse<PaymentChargeResponse>> charge(
+	public ResponseEntity<RsData<PaymentChargeResponse>> charge(
 		@CurrentMemberId Long memberId,
 		@Valid @RequestBody PaymentChargeRequest request
 	) {
@@ -63,14 +63,14 @@ public class PaymentController implements PaymentV2Api {
 
 		PaymentCreatedResult result = createPaymentUseCase.create(command);
 
-		return ResponseEntity.ok(CommonResponse.success(
+		return ResponseEntity.ok(RsData.success(
 			PaymentChargeResponse.from(result, requestedAmount))
 		);
 	}
 
 	@Override
 	@PostMapping("/confirm")
-	public ResponseEntity<CommonResponse<PaymentConfirmResponse>> confirm(
+	public ResponseEntity<RsData<PaymentConfirmResponse>> confirm(
 		@CurrentMemberId Long memberId,
 		@Valid @RequestBody PaymentConfirmRequest request
 	) {
@@ -87,11 +87,11 @@ public class PaymentController implements PaymentV2Api {
 		ConfirmPaymentResult result = confirmPaymentUseCase.confirm(command);
 
 		if (result.success()) {
-			return ResponseEntity.ok(CommonResponse.success(
+			return ResponseEntity.ok(RsData.success(
 				PaymentConfirmResponse.success(result.paymentId())
 			));
 		} else {
-			return ResponseEntity.ok(CommonResponse.success(
+			return ResponseEntity.ok(RsData.success(
 				PaymentConfirmResponse.failure(result.errorCode(), result.errorMessage())
 			));
 		}
