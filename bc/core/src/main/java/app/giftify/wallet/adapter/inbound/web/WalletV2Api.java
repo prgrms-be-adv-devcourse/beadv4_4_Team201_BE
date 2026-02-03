@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;
@@ -60,7 +60,7 @@ public interface WalletV2Api {
             description = "지갑을 찾을 수 없음",
             content = @Content
     )
-    ResponseEntity<CommonResponse<WithdrawWalletResponse>> withdraw(
+    ResponseEntity<RsData<WithdrawWalletResponse>> withdraw(
             @Parameter(hidden = true) Long memberId,
             @RequestBody @Valid WithdrawWalletRequest request
     );
@@ -84,7 +84,7 @@ public interface WalletV2Api {
             description = "지갑을 찾을 수 없음 (회원가입 후 첫 조회 시 자동 생성)",
             content = @Content
     )
-    ResponseEntity<CommonResponse<WalletBalanceResponse>> getBalance(
+    ResponseEntity<RsData<WalletBalanceResponse>> getBalance(
             @Parameter(hidden = true) Long memberId
     );
 
@@ -114,7 +114,7 @@ public interface WalletV2Api {
             description = "인증 토큰 누락 또는 유효하지 않음",
             content = @Content
     )
-    ResponseEntity<CommonResponse<Page<WalletHistoryResponse>>> getHistory(
+    ResponseEntity<RsData<Page<WalletHistoryResponse>>> getHistory(
             @Parameter(hidden = true) Long memberId,
             @Parameter(description = "거래 유형 필터 (선택)", example = "CHARGE")
             @RequestParam(required = false) TransactionType type,

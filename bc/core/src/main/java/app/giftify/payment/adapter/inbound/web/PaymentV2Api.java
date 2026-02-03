@@ -7,7 +7,7 @@ import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeResponse;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmResponse;
-import app.giftify.shared.api.response.CommonResponse;
+import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,7 +49,7 @@ public interface PaymentV2Api {
             description = "인증 토큰 누락 또는 유효하지 않음",
             content = @Content
     )
-    ResponseEntity<CommonResponse<PaymentChargeResponse>> charge(
+    ResponseEntity<RsData<PaymentChargeResponse>> charge(
             @Parameter(hidden = true) Long memberId,
             @RequestBody @Valid PaymentChargeRequest request
     );
@@ -91,7 +91,7 @@ public interface PaymentV2Api {
             description = "결제 정보를 찾을 수 없음",
             content = @Content
     )
-    ResponseEntity<CommonResponse<PaymentConfirmResponse>> confirm(
+    ResponseEntity<RsData<PaymentConfirmResponse>> confirm(
             @Parameter(hidden = true) Long memberId,
             @RequestBody @Valid PaymentConfirmRequest request
     );
