@@ -7,9 +7,11 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+@Tag(name = "Order V2", description = "주문 API (v2)")
 public interface OrderControllerSpec {
     @Operation(summary = "주문 생성", description = "로그인된 회원 ID로 단일/복수 주문 항목에 대해 주문을 생성합니다.")
     @ApiResponse(responseCode = "201", description = "주문 생성 성공")

@@ -7,6 +7,7 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.orderDemo.application.OrderService;
+import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
@@ -53,14 +54,20 @@ public class OrderController implements OrderControllerSpec {
 
         GetOrdersResponse data = createGetOrdersResponse(content, page);
 
-
         return ResponseEntity.ok(RsData.success(data));
     }
 
-    @GetMapping
+    @GetMapping("/{orderId}")
     @Override
-    public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(Long memberId, Long orderId) {
-        return null;
+    public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(
+            @CurrentMemberId Long memberId,
+            @PathVariable Long orderId) {
+        OrderDetail orderDetail = orderService.getOrderDetail(memberId, orderId);
+
+        GetOrderDetailResponse data = new GetOrderDetailResponse(orderDetail);
+        RsData<GetOrderDetailResponse> body = RsData.success(data);
+
+        return ResponseEntity.ok(body);
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {

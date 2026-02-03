@@ -9,6 +9,8 @@ import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
+import app.giftify.orderDemo.domain.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
@@ -53,7 +55,7 @@ public class OrderService {
 
     private void publishOrderItemCreatedEventWithoutPendingType(OrderSnapshot orderSnapshot) {
         orderSnapshot.orderItemSnapshots().stream()
-                .filter(item -> !Objects.equals(item.targetType(), TargetType.FUNDING_PENDING.name()))
+                .filter(item -> item.targetType() != TargetType.FUNDING_PENDING)
                 .forEach(item -> {
                     OrderItemCreatedEvent event = new OrderItemCreatedEvent(
                             item.orderItemId(),
@@ -101,6 +103,28 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderDetail getOrderDetail(Long memberId, Long orderId) {
-        return null;
+        Order order = orderRepository.getById(orderId);
+
+        validateOwner(memberId, order.getId());
+
+        OrderSummary summary = OrderSummary.of(order);
+        List<OrderItemDetail> itemDetails = getOrderItemDetails(order);
+
+        return new OrderDetail(summary, itemDetails);
+    }
+
+    private static void validateOwner(Long memberId, Long orderId) {
+        if (!Objects.equals(orderId, memberId)) {
+            throw new PolicyException(
+                    OrderErrorCode.ORDER_OWNER_MISMATCH,
+                    String.format("memberId = %d, orderId = %d", memberId, orderId)
+            );
+        }
+    }
+
+    private static @NonNull List<OrderItemDetail> getOrderItemDetails(Order order) {
+        return order.getItems().stream()
+                .map(OrderItemDetail::of)
+                .toList();
     }
 }

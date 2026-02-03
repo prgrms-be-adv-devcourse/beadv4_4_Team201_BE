@@ -8,4 +8,6 @@ public interface OrderRepository {
     Order save(Order order);
 
     Page<Order> getByBuyerId(Long buyerId, Pageable pageable);
+
+    Order getById(Long orderId);
 }
