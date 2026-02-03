@@ -21,6 +21,9 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-giftify-secret}
+      # Payment 암호화 환경 변수
+      PAYMENT_ENCRYPTION_PASSWORD: ${PAYMENT_ENCRYPTION_PASSWORD:-dev-encryption-password}
+      PAYMENT_ENCRYPTION_SALT: ${PAYMENT_ENCRYPTION_SALT:-deadbeefcafebabe}
     ports:
       - "8080:8080"
     depends_on:
