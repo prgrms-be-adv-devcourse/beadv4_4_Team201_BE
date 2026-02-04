@@ -1,4 +1,4 @@
-package app.giftify.facade.client;
+package app.giftify.orderDemo.adapter.outbound.client;
 
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import org.springframework.web.bind.annotation.PathVariable;
