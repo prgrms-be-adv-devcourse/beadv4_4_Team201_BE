@@ -15,7 +15,7 @@ public class CartExceptionHandler {
         CartErrorCode errorCode = (CartErrorCode) e.getErrorCode();
 
         return ResponseEntity
-                .status(errorCode.getHttpStatus())
+                .status(errorCode.getStatusCode())
                 .body(Map.of(
                         "code", errorCode.getCode(),
                         "message", e.getMessage()  // 포맷팅된 메시지 (예: "펀딩을 찾을 수 없습니다. ID: 123")
