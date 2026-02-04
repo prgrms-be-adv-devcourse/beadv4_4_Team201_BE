@@ -14,8 +14,8 @@ public class ClientConfig {
     private String baseUrl;
 
     @Bean
-    public WishlistClient wishlistClient() {
-        RestClient restClient = RestClient.builder()
+    public WishlistClient wishlistClient(RestClient.Builder builder) {
+        RestClient restClient = builder
                 .baseUrl(baseUrl)
                 .build();
 
