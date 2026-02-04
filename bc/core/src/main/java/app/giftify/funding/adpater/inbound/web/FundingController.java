@@ -2,10 +2,11 @@ package app.giftify.funding.adpater.inbound.web;
 
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
+import app.giftify.funding.adpater.inbound.dto.ContributeFundingResponseDto;
 import app.giftify.funding.application.FundingFacade;
 import app.giftify.security.common.context.AuthenticatedMember;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,31 +18,25 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/fundings")
-public class FundingController {
+public class FundingController implements FundingV2ApiSpec {
 
     private final FundingFacade fundingFacade;
 
-    @Operation(summary = "펀딩 단건 조회", description = "펀딩 ID로 단건 펀딩 정보를 조회합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "펀딩 조회 성공"),
-            @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
-    })
+    @Override
     @GetMapping("/{id}")
-    public ResponseEntity<FundingResponseDto> getFunding(@PathVariable Long id) {
+    public ResponseEntity<RsData<FundingResponseDto>> getFunding(@PathVariable Long id) {
         FundingResponseDto funding = fundingFacade.getFunding(id);
-        return ResponseEntity.ok(funding);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 
-    @Operation(summary = "펀딩 목록 조회", description = "페이지 단위로 전체 펀딩 목록을 조회합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "펀딩 목록 조회 성공")
-    })
+    @Override
     @GetMapping("list")
-    public ResponseEntity<PageResponse<FundingResponseDto>> getFundings(
+    public ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         PageResponse<FundingResponseDto> fundings = fundingFacade.getFundings(page, size);
-        return ResponseEntity.ok(fundings);
+        return ResponseEntity.ok(RsData.success(fundings));
     }
 
     @Operation(summary = "펀딩 종료", description = "관리자가 펀딩을 종료 처리합니다.")
@@ -52,10 +47,10 @@ public class FundingController {
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
     @PutMapping("/{id}/close")
-    public ResponseEntity<FundingCompleteResponseDto> closeFunding(@PathVariable Long id) {
+    public ResponseEntity<RsData<FundingCompleteResponseDto>> closeFunding(@PathVariable Long id) {
         // TODO: 관리자 권한 체크 필요
         FundingCompleteResponseDto funding = fundingFacade.closeFunding(id);
-        return ResponseEntity.ok(funding);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 
     @Operation(summary = "펀딩 만료 처리", description = "관리자가 펀딩을 만료 처리합니다.")
@@ -66,10 +61,10 @@ public class FundingController {
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
     @PutMapping("/{id}/expire")
-    public ResponseEntity<FundingCompleteResponseDto> expireFunding(@PathVariable Long id) {
+    public ResponseEntity<RsData<FundingCompleteResponseDto>> expireFunding(@PathVariable Long id) {
         // TODO: 관리자 권한 체크 필요
         FundingCompleteResponseDto funding = fundingFacade.expireFunding(id);
-        return ResponseEntity.ok(funding);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 
     @Operation(summary = "참여한 펀딩 단건 조회", description = "회원이 참여한 펀딩을 펀딩 ID로 조회합니다.")
@@ -79,12 +74,12 @@ public class FundingController {
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
     @GetMapping("/participated/{id}")
-    public ResponseEntity<MyFundingResponseDto> getParticipatedFunding(
+    public ResponseEntity<RsData<ContributeFundingResponseDto>> getParticipatedFunding(
             @PathVariable Long id,
             @Parameter(hidden = true) @AuthenticatedMember Long memberId
     ) {
-        MyFundingResponseDto funding = fundingFacade.getParticipatedFunding(id, memberId);
-        return ResponseEntity.ok(funding);
+        ContributeFundingResponseDto funding = fundingFacade.getParticipatedFunding(id, memberId);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 
     @Operation(summary = "참여한 펀딩 목록 조회", description = "회원이 참여한 펀딩 목록을 페이지 단위로 조회합니다.")
@@ -93,13 +88,13 @@ public class FundingController {
             @ApiResponse(responseCode = "403", description = "회원 접근 권한 없음 (F008)")
     })
     @GetMapping("participated/list")
-    public ResponseEntity<PageResponse<MyFundingResponseDto>> getParticipatedFundings(
+    public ResponseEntity<RsData<PageResponse<ContributeFundingResponseDto>>> getParticipatedFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @Parameter(hidden = true) @AuthenticatedMember Long memberId
     ) {
-        PageResponse<MyFundingResponseDto> fundings = fundingFacade.getParticipatedFundings(page, size, memberId);
-        return ResponseEntity.ok(fundings);
+        PageResponse<ContributeFundingResponseDto> fundings = fundingFacade.getParticipatedFundings(page, size, memberId);
+        return ResponseEntity.ok(RsData.success(fundings));
     }
 
     @Operation(summary = "펀딩 거절",description = "수령자가 펀딩을 거절 처리합니다.")
@@ -110,11 +105,11 @@ public class FundingController {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     @PostMapping("/{id}/refuse")
-    public ResponseEntity<FundingCompleteResponseDto> refuseFunding(
+    public ResponseEntity<RsData<FundingCompleteResponseDto>> refuseFunding(
             @PathVariable Long id,
             @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
         FundingCompleteResponseDto funding = fundingFacade.refuseFunding(id, memberId);
-        return ResponseEntity.ok(funding);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 
     @Operation(summary = "펀딩 수락",description = "수령자가 펀딩을 수락 처리합니다.")
@@ -125,15 +120,29 @@ public class FundingController {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     @PostMapping("/{id}/accept")
-    public ResponseEntity<FundingCompleteResponseDto> acceptFunding(
+    public ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
             @PathVariable Long id,
             @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
         FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id, memberId);
-        return ResponseEntity.ok(funding);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 
+    @Operation(summary = "나의 펀딩 단건 조회",description = "수령자가 본인의 단건 펀딩 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "펀딩 조회 성공"),
+            @ApiResponse(responseCode = "400",description = "진행 중이 아닌 펀딩 (F003)"),
+            @ApiResponse(responseCode = "403",description = "수령자 권한 없음 (F008)"),
+            @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
+    })
+    @GetMapping("/my/{id}")
+    public ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+        MyFundingResponseDto funding = fundingFacade.getMyFunding(id, memberId);
+        return ResponseEntity.ok(RsData.success(funding));
+    }
 
-
-// 나의 펀딩 (수령자) -> 진행중/완료로 나눠져야 함. 완료된 펀딩은 참여자 목록을 볼 수 있어야 함
-// 펀딩 검색 -> 필요할까?
+    /**
+     * 나의 펀딩 리스트 조회
+     */
 }
