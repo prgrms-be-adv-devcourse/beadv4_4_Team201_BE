@@ -19,7 +19,7 @@ public class MemberExceptionHandler {
         log.error("[Member Module Exception] Code: {}, Message: {}", e.getErrorCode().getCode(), e.getMessage());
 
         return ResponseEntity
-                .status(400) // [비즈니스 예외] 기본적으로 400 Bad Request
+                .status(e.getErrorCode().getStatusCode()) // [비즈니스 예외] 기본적으로 400 Bad Request
                 .body(Map.of(
                         "code", e.getErrorCode().getCode(),
                         "message", e.getMessage()
