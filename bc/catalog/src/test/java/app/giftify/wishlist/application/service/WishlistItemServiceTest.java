@@ -226,16 +226,12 @@ class WishlistItemServiceTest {
         given(product1.getName()).willReturn("테스트 상품1");
         given(product1.getPrice()).willReturn(10000);
         given(product1.getSellerId()).willReturn(5L);
-        given(product1.getStatus()).willReturn(ProductStatus.ACTIVE);
-        given(product1.getStock()).willReturn(10);
 
         Product product2 = Mockito.mock(Product.class);
         given(product2.getId()).willReturn(101L);
         given(product2.getName()).willReturn("테스트 상품2");
         given(product2.getPrice()).willReturn(20000);
         given(product2.getSellerId()).willReturn(5L);
-        given(product2.getStatus()).willReturn(ProductStatus.ACTIVE);
-        given(product2.getStock()).willReturn(5);
 
         given(productSupport.findAllById(List.of(100L, 101L))).willReturn(List.of(product1, product2));
 
@@ -286,18 +282,11 @@ class WishlistItemServiceTest {
         given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
                 .willReturn(List.of(wishlistItem1, wishlistItem2, wishlistItem3));
 
-        Product product1 = Mockito.mock(Product.class);
-        given(product1.getId()).willReturn(100L);
-        given(product1.getStatus()).willReturn(ProductStatus.ACTIVE);
-
-        Product product2 = Mockito.mock(Product.class);
-        given(product2.getId()).willReturn(101L);
-        given(product2.getStatus()).willReturn(ProductStatus.INACTIVE);  // 판매 중지
-
-        Product product3 = Mockito.mock(Product.class);
-        given(product3.getId()).willReturn(102L);
-
-        List<Product> products = List.of(product1, product2, product3);
+        List<Product> products = List.of(
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class)
+        );
         given(productSupport.findAllById(List.of(100L, 101L, 102L))).willReturn(products);
         Mockito.doThrow(new ProductNotActiveException(101L))
                 .when(productSupport).validatePurchasable(products);
@@ -319,20 +308,11 @@ class WishlistItemServiceTest {
         given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
                 .willReturn(List.of(wishlistItem1, wishlistItem2, wishlistItem3));
 
-        Product product1 = Mockito.mock(Product.class);
-        given(product1.getId()).willReturn(100L);
-        given(product1.getStatus()).willReturn(ProductStatus.ACTIVE);
-        given(product1.getStock()).willReturn(10);
-
-        Product product2 = Mockito.mock(Product.class);
-        given(product2.getId()).willReturn(101L);
-        given(product2.getStatus()).willReturn(ProductStatus.ACTIVE);
-        given(product2.getStock()).willReturn(0);  // 재고 없음
-
-        Product product3 = Mockito.mock(Product.class);
-        given(product3.getId()).willReturn(102L);
-
-        List<Product> products = List.of(product1, product2, product3);
+        List<Product> products = List.of(
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class)
+        );
         given(productSupport.findAllById(List.of(100L, 101L, 102L))).willReturn(products);
         Mockito.doThrow(new ProductOutOfStockException(101L))
                 .when(productSupport).validatePurchasable(products);

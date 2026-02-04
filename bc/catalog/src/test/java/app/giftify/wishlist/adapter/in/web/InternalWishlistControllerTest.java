@@ -1,7 +1,8 @@
 package app.giftify.wishlist.adapter.in.web;
 
-import app.giftify.product.domain.exception.ProductErrorCode;
-import app.giftify.product.domain.exception.ProductException;
+import app.giftify.product.adapter.inbound.web.handler.ProductExceptionHandler;
+import app.giftify.product.domain.exception.ProductNotActiveException;
+import app.giftify.product.domain.exception.ProductOutOfStockException;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.adapter.in.web.controller.InternalWishlistController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
@@ -37,7 +38,7 @@ public class InternalWishlistControllerTest {
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new InternalWishlistController(getWishlistItemSnapshotUseCase))
-                .setControllerAdvice(new WishlistExceptionHandler())
+                .setControllerAdvice(new WishlistExceptionHandler(), new ProductExceptionHandler())
                 .build();
     }
 
@@ -80,7 +81,8 @@ public class InternalWishlistControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[999]"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("W102"));
+                .andExpect(jsonPath("$.code").value("W102"))
+                .andExpect(jsonPath("$.message").value("위시리스트 아이템을 찾을 수 없습니다."));
     }
 
     @Test
@@ -89,14 +91,15 @@ public class InternalWishlistControllerTest {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
         given(getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds))
-                .willThrow(new ProductException(ProductErrorCode.PRODUCT_NOT_ACTIVE));
+                .willThrow(new ProductNotActiveException(101L));
 
         // when & then
         mockMvc.perform(post("/api/internal/wishlist/items/snapshots")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[1, 2, 3]"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("P207"));
+                .andExpect(jsonPath("$.code").value("P207"))
+                .andExpect(jsonPath("$.message").value("판매 중인 상품이 아닙니다. (productId: 101)"));
     }
 
     @Test
@@ -105,13 +108,14 @@ public class InternalWishlistControllerTest {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
         given(getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds))
-                .willThrow(new ProductException(ProductErrorCode.PRODUCT_OUT_OF_STOCK));
+                .willThrow(new ProductOutOfStockException(101L));
 
         // when & then
         mockMvc.perform(post("/api/internal/wishlist/items/snapshots")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[1, 2, 3]"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("P201"));
+                .andExpect(jsonPath("$.code").value("P201"))
+                .andExpect(jsonPath("$.message").value("상품 재고가 부족합니다. (productId: 101)"));
     }
 }
