@@ -15,6 +15,6 @@ public class GetFundingSnapshotUseCase {
 
     public Optional<FundingSnapshot> getSnapshot(Long wishlistItemId) {
         return fundingRepository.findByWishlistItemIdAndStatus(wishlistItemId, FundingStatus.IN_PROGRESS)
-                .map(funding -> new FundingSnapshot(funding.getId()));
+                .map(funding -> new FundingSnapshot(funding.getId(), funding.getWishlistItemId()));
     }
     }
