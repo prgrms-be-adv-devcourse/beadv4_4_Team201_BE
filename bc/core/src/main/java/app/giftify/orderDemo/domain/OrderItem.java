@@ -143,7 +143,7 @@ public class OrderItem {
         return "OrderItem{" +
                 "id=" + id +
                 ", orderId=" + orderId +
-                ", targetId=" + targetId +
+                ", wishlistItemId=" + targetId +
                 ", targetType=" + targetType +
                 ", orderItemType=" + orderItemType +
                 ", sellerId=" + sellerId +

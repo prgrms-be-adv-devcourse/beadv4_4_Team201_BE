@@ -25,7 +25,10 @@ public enum OrderErrorCode implements ErrorCode {
     ORDER_ITEM_NOT_ASSOCIATED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ORDER-113", "주문 아이템이 주문과 연결되지 않았습니다."),
     INVALID_ORDER_TYPE(HttpStatus.BAD_REQUEST.value(), "ORDER-114", "유효하지 않은 주문 타입입니다."),
 
-    ORDER_OWNER_MISMATCH(HttpStatus.FORBIDDEN.value(), "ORDER-115", "주문 소유자 불일치로 접근 권한이 없습니다.");
+    ORDER_OWNER_MISMATCH(HttpStatus.FORBIDDEN.value(), "ORDER-115", "주문 소유자 불일치로 접근 권한이 없습니다."),
+    ALREADY_FUNDING_IN_PROGRESS(HttpStatus.CONFLICT.value(), "ORDER-116", "이미 펀딩이 진행된 상품으로 일반 선물이 불가능합니다"),
+    UNSUPPORTED_ORDER_COMBINATION(HttpStatus.BAD_REQUEST.value(), "ORDER-117", "해당 상품 상태에서는 요청하신 주문 처리가 불가능합니다."),
+    WISHLIST_ITEM_SNAPSHOT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "ORDER-118", "주문 상품의 상세 정보를 불러올 수 없습니다.");
 
     private final int statusCode;
     private final String code;

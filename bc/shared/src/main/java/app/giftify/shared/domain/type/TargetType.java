@@ -15,4 +15,8 @@ public enum TargetType {
     public String getDescription() {
         return description;
     }
+
+    public boolean isFunding() {
+        return this == FUNDING || this == FUNDING_PENDING;
+    }
 }
