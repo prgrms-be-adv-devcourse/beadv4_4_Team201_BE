@@ -29,7 +29,7 @@ spring:
   sql:
     init:
       mode: always
-      data-locations: classpath:data-dev.sql
+      data-locations: optional:classpath:data-dev.sql
 
 management:
   metrics:
