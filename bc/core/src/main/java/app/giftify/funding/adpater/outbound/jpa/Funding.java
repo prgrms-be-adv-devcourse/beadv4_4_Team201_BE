@@ -30,6 +30,9 @@ public class Funding extends BaseJpaEntity {
     private Long productId;
 
     @Column(nullable = false)
+    private Long receiverId;
+
+    @Column(nullable = false)
     private Integer targetAmount;       // 상품 원가 (목표액)
 
     @Column(nullable = false)
@@ -49,17 +52,18 @@ public class Funding extends BaseJpaEntity {
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
 
-    private Funding(Long wishlistItemId, Integer productPrice, Long productId) {
+    private Funding(Long wishlistItemId, Long productId, Long receiverId, Integer productPrice) {
         this.wishlistItemId = wishlistItemId;
-        this.targetAmount = productPrice;
         this.productId = productId;
+        this.receiverId = receiverId;
+        this.targetAmount = productPrice;
         this.currentAmount = 0;
         this.status = FundingStatus.IN_PROGRESS;
         this.deadline = LocalDateTime.now().plusDays(15);
     }
 
-    public static Funding startFunding(Long wishlistItemId, Integer targetAmount, Long productId) {
-        return new Funding(wishlistItemId, targetAmount, productId);
+    public static Funding startFunding(Long wishlistItemId, Long productId, Long receiverId, Integer targetAmount) {
+        return new Funding(wishlistItemId, productId, receiverId, targetAmount);
     }
 
     public static void validateLeastAmount(Integer amount) {

@@ -84,13 +84,13 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingCompleteResponseDto refuseFunding(Long id) {
-        return fundingRefuseUseCase.refuseFunding(id);
+    public FundingCompleteResponseDto refuseFunding(Long id, Long memberId) {
+        return fundingRefuseUseCase.refuseFunding(id, memberId);
     }
 
     @Transactional
-    public FundingCompleteResponseDto acceptFunding(Long id) {
-        return fundingAcceptUseCase.acceptFunding(id);
+    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
+        return fundingAcceptUseCase.acceptFunding(id, memberId);
     }
 
 //    @Transactional

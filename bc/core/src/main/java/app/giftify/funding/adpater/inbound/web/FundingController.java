@@ -4,6 +4,7 @@ import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
 import app.giftify.funding.application.FundingFacade;
+import app.giftify.security.common.context.AuthenticatedMember;
 import app.giftify.shared.api.paging.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/fundings")
+@RequestMapping("/api/v2/fundings")
 public class FundingController {
 
     private final FundingFacade fundingFacade;
@@ -80,9 +81,8 @@ public class FundingController {
     @GetMapping("/participated/{id}")
     public ResponseEntity<MyFundingResponseDto> getParticipatedFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) Long memberId
+            @Parameter(hidden = true) @AuthenticatedMember Long memberId
     ) {
-        // TODO : 인증 적용
         MyFundingResponseDto funding = fundingFacade.getParticipatedFunding(id, memberId);
         return ResponseEntity.ok(funding);
     }
@@ -96,9 +96,8 @@ public class FundingController {
     public ResponseEntity<PageResponse<MyFundingResponseDto>> getParticipatedFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @Parameter(hidden = true) Long memberId
+            @Parameter(hidden = true) @AuthenticatedMember Long memberId
     ) {
-        // TODO : 인증 적용
         PageResponse<MyFundingResponseDto> fundings = fundingFacade.getParticipatedFundings(page, size, memberId);
         return ResponseEntity.ok(fundings);
     }
@@ -111,9 +110,10 @@ public class FundingController {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     @PostMapping("/{id}/refuse")
-    public ResponseEntity<FundingCompleteResponseDto> refuseFunding(@PathVariable Long id) {
-        // TODO : 인증 적용
-        FundingCompleteResponseDto funding = fundingFacade.refuseFunding(id);
+    public ResponseEntity<FundingCompleteResponseDto> refuseFunding(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+        FundingCompleteResponseDto funding = fundingFacade.refuseFunding(id, memberId);
         return ResponseEntity.ok(funding);
     }
 
@@ -127,9 +127,8 @@ public class FundingController {
     @PostMapping("/{id}/accept")
     public ResponseEntity<FundingCompleteResponseDto> acceptFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) Long memberId) {
-        // TODO : 인증 적용
-        FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id);
+            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+        FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id, memberId);
         return ResponseEntity.ok(funding);
     }
 

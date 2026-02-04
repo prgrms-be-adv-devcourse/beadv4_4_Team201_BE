@@ -24,9 +24,10 @@ public class FundingCreateUseCase {
     public FundingCreateResult createFunding(Long wishlistItemId) {
         WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(wishlistItemId);
         Integer targetAmount = snapshot.productPrice();
+        Long receiverId = snapshot.memberId();
         Long productId = snapshot.productId();
 
-        Funding funding = Funding.startFunding(wishlistItemId, targetAmount, productId);
+        Funding funding = Funding.startFunding(wishlistItemId, productId, receiverId, targetAmount);
         fundingRepository.save(funding);
 
         // WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
