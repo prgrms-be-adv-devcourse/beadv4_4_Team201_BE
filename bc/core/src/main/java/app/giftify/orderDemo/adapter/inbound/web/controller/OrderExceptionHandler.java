@@ -1,11 +1,10 @@
 package app.giftify.orderDemo.adapter.inbound.web.controller;
 
-import app.giftify.orderDemo.domain.errorCode.ErrorCode;
-import app.giftify.orderDemo.domain.exception.BusinessException;
-import app.giftify.orderDemo.domain.exception.InfraException;
+import app.giftify.shared.api.exception.BusinessException;
+import app.giftify.shared.api.exception.ErrorCode;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.response.RsData;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,10 +21,9 @@ public class OrderExceptionHandler {
 
         log.warn("[OrderExceptionHandler] errorCode={}, message={}", errorCode.getCode(), ex.getMessage(), ex);
 
-        HttpStatus status = ex.isRetryable() ? HttpStatus.CONFLICT : errorCode.getStatus();
         RsData<Void> body = RsData.fail(errorCode.getCode(), errorCode.getMessage());
 
-        return ResponseEntity.status(status)
+        return ResponseEntity.status(errorCode.getStatusCode())
                 .body(body);
     }
 
@@ -37,7 +35,7 @@ public class OrderExceptionHandler {
 
         RsData<Void> body = RsData.fail(errorCode.getCode(), SERVER_ERROR_MESSAGE);
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(errorCode.getStatusCode())
                 .body(body);
     }
 }

@@ -1,7 +1,7 @@
 package app.giftify.orderDemo.domain;
 
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
-import app.giftify.orderDemo.domain.exception.DomainException;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.domain.event.BaseAggregateRoot;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.vo.Money;

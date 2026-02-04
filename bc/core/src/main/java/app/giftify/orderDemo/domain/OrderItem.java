@@ -1,8 +1,8 @@
 package app.giftify.orderDemo.domain;
 
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
-import app.giftify.orderDemo.domain.exception.DomainException;
-import app.giftify.orderDemo.domain.exception.PolicyException;
+import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
