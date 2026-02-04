@@ -7,4 +7,8 @@ public class ProductException extends DomainException {
     public ProductException(ProductErrorCode errorCode) {
         super(errorCode);
     }
+
+    public ProductException(ProductErrorCode errorCode, String message) {
+        super(errorCode, message);
+    }
 }

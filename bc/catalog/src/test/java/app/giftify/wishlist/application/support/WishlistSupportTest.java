@@ -51,7 +51,7 @@ class WishlistSupportTest {
             given(wishlistRepositoryPort.findById(wishlistId)).willReturn(Optional.of(wishlist));
 
             // when
-            Wishlist result = wishlistSupport.getById(wishlistId);
+            Wishlist result = wishlistSupport.getWishlistById(wishlistId);
 
             // then
             assertThat(result.getId()).isEqualTo(wishlistId);
@@ -65,7 +65,7 @@ class WishlistSupportTest {
             given(wishlistRepositoryPort.findById(wishlistId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> wishlistSupport.getById(wishlistId))
+            assertThatThrownBy(() -> wishlistSupport.getWishlistById(wishlistId))
                     .isInstanceOf(WishlistNotFoundException.class);
         }
     }
@@ -87,7 +87,7 @@ class WishlistSupportTest {
             given(wishlistRepositoryPort.findByMemberId(memberId)).willReturn(Optional.of(wishlist));
 
             // when
-            Wishlist result = wishlistSupport.getByMemberId(memberId);
+            Wishlist result = wishlistSupport.getWishlistByMemberId(memberId);
 
             // then
             assertThat(result.getMemberId()).isEqualTo(memberId);
@@ -101,7 +101,7 @@ class WishlistSupportTest {
             given(wishlistRepositoryPort.findByMemberId(memberId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> wishlistSupport.getByMemberId(memberId))
+            assertThatThrownBy(() -> wishlistSupport.getWishlistByMemberId(memberId))
                     .isInstanceOf(WishlistNotFoundException.class);
         }
     }
@@ -126,7 +126,7 @@ class WishlistSupportTest {
                     .willReturn(Optional.of(wishlistItem));
 
             // when
-            WishlistItem result = wishlistSupport.getByWishlistIdAndProductId(wishlistId, productId);
+            WishlistItem result = wishlistSupport.getWishlistItemByWishlistIdAndProductId(wishlistId, productId);
 
             // then
             assertThat(result.getWishlistId()).isEqualTo(wishlistId);
@@ -143,7 +143,7 @@ class WishlistSupportTest {
                     .willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> wishlistSupport.getByWishlistIdAndProductId(wishlistId, productId))
+            assertThatThrownBy(() -> wishlistSupport.getWishlistItemByWishlistIdAndProductId(wishlistId, productId))
                     .isInstanceOf(WishlistItemNotFoundException.class);
         }
     }
