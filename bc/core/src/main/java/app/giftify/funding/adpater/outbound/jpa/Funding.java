@@ -125,13 +125,11 @@ public class Funding extends BaseJpaEntity {
         this.closedAt = LocalDateTime.now();
     }
 
-    public boolean isExpired(LocalDateTime now) {return now.isAfter(this.deadline); }
+    public boolean isExpired(LocalDateTime now) { return now.isAfter(this.deadline); }
 
-    public boolean isExpired() {return LocalDateTime.now().isAfter(this.deadline); }
+    public boolean isExpired() { return LocalDateTime.now().isAfter(this.deadline); }
 
-    public boolean isAchieved() {
-        return this.currentAmount.equals(this.targetAmount);
-    }
+    public boolean isAchieved() { return this.currentAmount.equals(this.targetAmount); }
 
     public void refuse() {
         if (this.getStatus() != FundingStatus.ACHIEVED) {
@@ -147,5 +145,9 @@ public class Funding extends BaseJpaEntity {
         }
         this.status = FundingStatus.ACCEPTED;
         this.closedAt = LocalDateTime.now();
+    }
+
+    public void validateReceiver(Long memberId) {
+        if (memberId != this.getReceiverId()) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
     }
 }
