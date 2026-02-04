@@ -13,7 +13,13 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "FUNDING")
+@Table(name = "FUNDING",
+        indexes = {
+        @Index(
+                name = "idx_funding_wishlist_status",
+                columnList = "wishlist_item_id, status"
+        )
+            })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funding extends BaseJpaEntity {
 

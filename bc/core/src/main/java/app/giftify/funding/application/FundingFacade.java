@@ -6,11 +6,13 @@ import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -23,6 +25,12 @@ public class FundingFacade {
     private final FundingContributeUseCase fundingContributeUseCase;
     private final FundingRefuseUseCase fundingRefuseUseCase;
     private final FundingAcceptUseCase fundingAcceptUseCase;
+    private final GetFundingSnapshotUseCase getFundingSnapshotUseCase;
+
+    @Transactional(readOnly = true)
+    public Optional<FundingSnapshot> getSnapshot(Long wishlistItemId) {
+        return getFundingSnapshotUseCase.getSnapshot(wishlistItemId);
+    }
 
     @Transactional
     public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer amount) {
