@@ -4,10 +4,13 @@ import app.giftify.facade.CoreFacade;
 import app.giftify.facade.command.PlaceOrderCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
+import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.orderDemo.application.OrderService;
+import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.response.RsData;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
@@ -27,7 +30,7 @@ public class OrderController implements OrderControllerSpec {
 
     @PostMapping
     @Override
-    public ResponseEntity<PlaceOrderResult> placeOrder(
+    public ResponseEntity<RsData<PlaceOrderResult>> placeOrder(
             @CurrentMemberId Long memberId,
             @RequestBody PlaceOrderRequest request
     ) {
@@ -42,16 +45,29 @@ public class OrderController implements OrderControllerSpec {
 
     @GetMapping
     @Override
-    public ResponseEntity<GetOrdersResponse> getOrders(
+    public ResponseEntity<RsData<GetOrdersResponse>> getOrders(
             @CurrentMemberId Long memberId,
             Pageable pageable
     ) {
         Page<OrderSummary> page = orderService.getOrders(memberId, pageable);
         List<OrderSummary> content = page.getContent();
 
-        GetOrdersResponse response = createGetOrdersResponse(content, page);
+        GetOrdersResponse data = createGetOrdersResponse(content, page);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(RsData.success(data));
+    }
+
+    @GetMapping("/{orderId}")
+    @Override
+    public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(
+            @CurrentMemberId Long memberId,
+            @PathVariable(name = "orderId") Long orderId) {
+        OrderDetail orderDetail = orderService.getOrderDetail(memberId, orderId);
+
+        GetOrderDetailResponse data = new GetOrderDetailResponse(orderDetail);
+        RsData<GetOrderDetailResponse> body = RsData.success(data);
+
+        return ResponseEntity.ok(body);
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {

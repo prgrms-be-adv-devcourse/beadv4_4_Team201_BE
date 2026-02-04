@@ -8,7 +8,7 @@ import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.OrderStatus;
-import app.giftify.orderDemo.domain.exception.DomainException;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
