@@ -7,6 +7,7 @@ import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.domain.exception.DuplicateMemberException;
+import app.giftify.member.domain.exception.MemberErrorCode;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.security.common.context.AuthenticatedMember;
@@ -185,7 +186,7 @@ class MemberControllerTest {
         mockMvc.perform(post("/api/members/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().is(MemberErrorCode.DUPLICATE_MEMBER.getStatusCode()))
                 .andExpect(jsonPath("$.code").value("M201"))
                 .andExpect(jsonPath("$.message", containsString("이미 가입된 이메일입니다")));
     }
