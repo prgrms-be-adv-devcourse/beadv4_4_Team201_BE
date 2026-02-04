@@ -27,11 +27,11 @@ public class WishlistExceptionHandler {
         WishlistErrorCode errorCode = (WishlistErrorCode) e.getErrorCode();
 
         Map<String, Object> body = Map.of(
-                "status", errorCode.getStatus().value(),
+                "status", errorCode.getStatusCode(),
                 "code", errorCode.getCode(),
                 "message", e.getMessage()
         );
 
-        return ResponseEntity.status(errorCode.getStatus()).body(body);
+        return ResponseEntity.status(errorCode.getStatusCode()).body(body);
     }
 }

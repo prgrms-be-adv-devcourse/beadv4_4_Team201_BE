@@ -26,11 +26,11 @@ public class ProductExceptionHandler {
         ProductErrorCode errorCode = (ProductErrorCode) ex.getErrorCode();
 
         Map<String, Object> body = Map.of(
-                "status", errorCode.getStatus().value(),
+                "status", errorCode.getStatusCode(),
                 "code", errorCode.getCode(),
                 "message", errorCode.getMessage()
         );
 
-        return ResponseEntity.status(errorCode.getStatus()).body(body);
+        return ResponseEntity.status(errorCode.getStatusCode()).body(body);
     }
 }
