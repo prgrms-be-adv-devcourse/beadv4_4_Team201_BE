@@ -24,6 +24,9 @@ services:
       # Payment 암호화 환경 변수
       PAYMENT_ENCRYPTION_PASSWORD: ${PAYMENT_ENCRYPTION_PASSWORD:-dev-encryption-password}
       PAYMENT_ENCRYPTION_SALT: ${PAYMENT_ENCRYPTION_SALT:-deadbeefcafebabe}
+      # TossPayments 환경 변수
+      TOSSPAYMENTS_API_BASE_URL: ${TOSSPAYMENTS_API_BASE_URL:-https://api.tosspayments.com}
+      TOSSPAYMENTS_SECRET_KEY: ${TOSSPAYMENTS_SECRET_KEY}
     ports:
       - "8080:8080"
     depends_on:

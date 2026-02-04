@@ -5,7 +5,6 @@ payment:
 
 tosspayments:
   secret-key: ${TOSSPAYMENTS_SECRET_KEY}
-  client-key: ${TOSSPAYMENTS_CLIENT_KEY}
   api:
     base-url: ${TOSSPAYMENTS_API_BASE_URL}
 
