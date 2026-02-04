@@ -4,7 +4,7 @@ import app.giftify.orderDemo.adapter.outbound.persistence.jpa.JpaOrderItemReposi
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
-import app.giftify.orderDemo.domain.exception.PolicyException;
+import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

@@ -1,12 +1,16 @@
 package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
+import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
+import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
@@ -51,7 +55,7 @@ public class OrderService {
 
     private void publishOrderItemCreatedEventWithoutPendingType(OrderSnapshot orderSnapshot) {
         orderSnapshot.orderItemSnapshots().stream()
-                .filter(item -> !Objects.equals(item.targetType(), TargetType.FUNDING_PENDING.name()))
+                .filter(item -> item.targetType() != TargetType.FUNDING_PENDING)
                 .forEach(item -> {
                     OrderItemCreatedEvent event = new OrderItemCreatedEvent(
                             item.orderItemId(),
@@ -95,5 +99,32 @@ public class OrderService {
         Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
 
         return pages.map(OrderSummary::of);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetail getOrderDetail(Long memberId, Long orderId) {
+        Order order = orderRepository.getById(orderId);
+
+        validateOwner(memberId, order.getBuyerId());
+
+        OrderSummary summary = OrderSummary.of(order);
+        List<OrderItemDetail> itemDetails = getOrderItemDetails(order);
+
+        return new OrderDetail(summary, itemDetails);
+    }
+
+    private static void validateOwner(Long memberId, Long buyerId) {
+        if (!Objects.equals(buyerId, memberId)) {
+            throw new PolicyException(
+                    OrderErrorCode.ORDER_OWNER_MISMATCH,
+                    String.format("memberId = %d, orderId = %d", memberId, buyerId)
+            );
+        }
+    }
+
+    private static @NonNull List<OrderItemDetail> getOrderItemDetails(Order order) {
+        return order.getItems().stream()
+                .map(OrderItemDetail::of)
+                .toList();
     }
 }
