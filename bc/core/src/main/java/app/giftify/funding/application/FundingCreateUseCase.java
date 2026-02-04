@@ -29,6 +29,7 @@ public class FundingCreateUseCase {
 
         Funding funding = Funding.startFunding(wishlistItemId, productId, receiverId, targetAmount);
         fundingRepository.save(funding);
+        log.info("[Funding] 펀딩 생성 완료. fundingId={}", funding.getId());
 
         // WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
         eventPublisher.publish(new FundingCreatedEvent(
@@ -37,7 +38,6 @@ public class FundingCreateUseCase {
                 funding.getDeadline()
         ));
 
-        log.info("[Funding] 펀딩 생성 완료. fundingId={}", funding.getId());
         return new FundingCreateResult(funding, snapshot);
     }
 }
