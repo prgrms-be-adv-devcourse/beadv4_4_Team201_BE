@@ -9,3 +9,6 @@ tosspayments:
   client-key: ${TOSSPAYMENTS_CLIENT_KEY}
   api:
     base-url: ${TOSSPAYMENTS_API_BASE_URL}
+
+internal-api:
+  base-url: http://localhost:8080
