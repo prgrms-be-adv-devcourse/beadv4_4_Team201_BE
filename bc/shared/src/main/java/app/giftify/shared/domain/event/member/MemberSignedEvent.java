@@ -8,6 +8,7 @@ public class MemberSignedEvent extends BaseDomainEvent {
     private final String nickname;
 
     public MemberSignedEvent(Long memberId, String authSub, String nickname) {
+        super();
         this.memberId = memberId;
         this.authSub = authSub;
         this.nickname = nickname;

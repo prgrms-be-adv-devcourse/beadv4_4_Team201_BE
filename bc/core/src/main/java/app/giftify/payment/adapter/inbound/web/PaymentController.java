@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/v2/payments")
 @RequiredArgsConstructor
-public class PaymentController implements PaymentV2Api {
+public class PaymentController implements PaymentV2ApiSpec {
 	private final CreatePaymentUseCase createPaymentUseCase;
 	private final ConfirmPaymentUseCase confirmPaymentUseCase;
 	private final QueryPaymentUseCase queryPaymentUseCase;

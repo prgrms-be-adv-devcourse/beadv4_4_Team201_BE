@@ -2,3 +2,9 @@ payment:
   encryption:
     password: ${PAYMENT_ENCRYPTION_PASSWORD}  # 비밀번호
     salt: ${PAYMENT_ENCRYPTION_SALT}          # Hex 인코딩된 솔트 (16바이트 이상)
+
+tosspayments:
+  secret-key: ${TOSSPAYMENTS_SECRET_KEY}
+  client-key: ${TOSSPAYMENTS_CLIENT_KEY}
+  api:
+    base-url: ${TOSSPAYMENTS_API_BASE_URL}

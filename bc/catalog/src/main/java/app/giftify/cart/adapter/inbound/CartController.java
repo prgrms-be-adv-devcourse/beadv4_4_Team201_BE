@@ -13,14 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/carts")
+@RequestMapping("/api/v2/carts")
 @RequiredArgsConstructor
-public class CartController {
+public class CartController implements CartV2ApiSpec {
     private final CartService cartService;
 
-    /**
-     * 장바구니에 상품 추가
-     */
+    @Override
     @PostMapping("/add")
     public ResponseEntity<Void> addItem(@AuthenticatedMember Long memberId, @RequestBody CartItemRequest request) {
         cartService.addItem(memberId, new AddCartItemCommand(
