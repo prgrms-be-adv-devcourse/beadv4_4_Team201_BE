@@ -2,13 +2,13 @@ package app.giftify.facade.command;
 
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 
 import java.util.List;
 
 public record PlaceOrderCommand(
         Long buyerId,
-        PaymentMethodType method,
+        PaymentMethod method,
         List<PlaceOrderItemRequest> items
 ) {
     public static PlaceOrderCommand of(Long buyerId, PlaceOrderRequest request) {

@@ -117,14 +117,19 @@ ALTER TABLE wishlist_item
 -- 9. ORDER_V2 (주문)
 -- -----------------------------------------------------------------------------
 INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
-                      created_at, updated_at)
+                      payment_key, last_transaction_key, paid_at, created_at, updated_at)
 VALUES
-    -- PAID 주문: 구매자(2)가 에어팟(1) 구매
-    (1, 2, 'ORD-20260201-0001', 359000.00, 1, 'WALLET', 'PAID', NOW(), NOW()),
-    -- CONFIRMED 주문: 구매자(2)가 스타벅스 텀블러(2) 구매 후 확정
-    (2, 2, 'ORD-20260201-0002', 23000.00, 1, 'WALLET', 'CONFIRMED', NOW(), NOW()),
-    -- CREATED 주문: 구매자(2)가 닌텐도 스위치(3) 주문 생성 (결제 전)
-    (3, 2, 'ORD-20260202-0001', 415000.00, 1, 'WALLET', 'CREATED', NOW(), NOW());
+    -- 1. PAID 주문
+    (1, 2, 'ORD-20260205-A1B2C3D4E5F6-20260205170000', 359000.00, 1, 'CARD', 'PAID',
+     'toss_pk_20260205_0001', 'toss_tx_20260205_0001', '2026-02-05 17:05:00', NOW(), NOW()),
+
+    -- 2. CONFIRMED 주문
+    (2, 2, 'ORD-20260205-B2C3D4E5F6G7-20260205171000', 23000.00, 1, 'CARD', 'CONFIRMED',
+     'toss_pk_20260205_0002', 'toss_tx_20260205_0002', '2026-02-05 17:15:00', NOW(), NOW()),
+
+    -- 3. CREATED 주문
+    (3, 2, 'ORD-20260205-C3D4E5F6G7H8-20260205172000', 415000.00, 1, 'CARD', 'CREATED',
+     NULL, NULL, NULL, NOW(), NOW());
 
 ALTER TABLE order_v2
     ALTER COLUMN id RESTART WITH 100;
@@ -135,12 +140,14 @@ ALTER TABLE order_v2
 INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
                            price, amount, status, created_at, updated_at)
 VALUES
-    -- 주문1의 아이템: 에어팟 프로
-    (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 359000.00, 359000.00, 1, NOW(), NOW()),
-    -- 주문2의 아이템: 스타벅스 텀블러
-    (2, 2, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 23000.00, 23000.00, 2, NOW(), NOW()),
-    -- 주문3의 아이템: 닌텐도 스위치
-    (3, 3, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 415000.00, 415000.00, 0, NOW(), NOW());
+    -- 주문1의 아이템: 에어팟 프로 (상태: PAID -> 1)
+    (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 359000.00, 359000.00, 'CREATED', NOW(), NOW()),
+
+    -- 주문2의 아이템: 스타벅스 텀블러 (상태: PAID -> 1)
+    (2, 2, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 23000.00, 23000.00, 'CREATED', NOW(), NOW()),
+
+    -- 주문3의 아이템: 닌텐도 스위치 (상태: CREATED -> 0)
+    (3, 3, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2, 415000.00, 415000.00, 'CREATED', NOW(), NOW());
 
 ALTER TABLE order_item_v2
     ALTER COLUMN id RESTART WITH 100;

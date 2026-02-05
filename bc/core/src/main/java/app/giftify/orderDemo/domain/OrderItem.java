@@ -57,6 +57,7 @@ public class OrderItem {
     private Money amount;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
 
     @Column
@@ -143,7 +144,7 @@ public class OrderItem {
         return "OrderItem{" +
                 "id=" + id +
                 ", orderId=" + orderId +
-                ", targetId=" + targetId +
+                ", wishlistItemId=" + targetId +
                 ", targetType=" + targetType +
                 ", orderItemType=" + orderItemType +
                 ", sellerId=" + sellerId +
