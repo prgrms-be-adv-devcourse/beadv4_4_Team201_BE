@@ -67,7 +67,7 @@ public class WishlistEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleFundingCanceled(FundingCanceledEvent event) {
         updateStatus(event.getWishlistItemId(),
-                WishlistItemStatus.NO_THANKS,
+                WishlistItemStatus.PENDING,
                 "[Wishlist] 위시리스트상품의 펀딩이 거절되었습니다.");
     }
 

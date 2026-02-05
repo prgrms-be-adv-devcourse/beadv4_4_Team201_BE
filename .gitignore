@@ -99,9 +99,7 @@ bin/
 **/.env
 **/.env.properties
 
-### SQL Seed Data (contains Auth0 credentials)
-**/data-local.sql
-**/data-dev.sql
+### contains Auth0 credentials
 docs/workthroughs/
 .gw/
 .worktrees/
