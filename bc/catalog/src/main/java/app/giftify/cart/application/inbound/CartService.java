@@ -4,6 +4,7 @@ import app.giftify.cart.adapter.inbound.CartResponse;
 import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.CartItem;
+import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
@@ -34,40 +35,27 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
     }
 
     @Override
-    public Cart addItem(Long cartId, AddCartItemCommand command) {
+    public CartItemAddResult addItem(Long cartId, AddCartItemCommand command) {
         Cart cart = cartRepositoryPort.findById(cartId)
                 .orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
+        // 타입 검증
         TargetType targetType = command.cartItemKey().targetType();
-        Long targetId = command.cartItemKey().targetId();
+        validateFundingTarget(targetType);
 
-        // 타입별 검증
-        validateCartItem(targetType, targetId);
+        // 펀딩 구매 검증
+        Long wishlistItemId = command.cartItemKey().targetId();
+        validateFundingPurchase(wishlistItemId);
 
-        cart.addItem(
-                targetType,
-                targetId,
-                command.amount()
-        );
+        CartItemAddResult result = cart.addItem(targetType, wishlistItemId, command.amount());
+        cartRepositoryPort.save(cart);
 
-        return cartRepositoryPort.save(cart);
+        return result;
     }
 
-    private void validateCartItem(TargetType targetType, Long targetId) {
-        switch (targetType) {
-            case GENERAL_PRODUCT -> validateDirectPurchase(targetId);
-            case FUNDING_PENDING -> validateFundingPurchase(targetId);
-            default -> throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
-        }
-    }
-
-    // 일반 구매 검증
-    private void validateDirectPurchase(Long productId) {
-        Product product = productRepositoryPort.findById(productId)
-                .orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
-
-        if (product.getStatus() != ProductStatus.ACTIVE) {
-            throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
+    private void validateFundingTarget(TargetType targetType) {
+        if (targetType != TargetType.FUNDING_PENDING) {
+            throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
         }
     }
 
@@ -83,7 +71,12 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
         }
 
         // 원본 Product 상태 검증
-        validateDirectPurchase(wishlistItem.getProductId());
+        Product product = productRepositoryPort.findById(wishlistItem.getProductId())
+                .orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
+        }
     }
 
     // 카트 조회(아이템 목록)

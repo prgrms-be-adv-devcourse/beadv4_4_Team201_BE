@@ -2,6 +2,7 @@ package app.giftify.cart.adapter.inbound;
 
 import app.giftify.cart.application.inbound.AddCartItemCommand;
 import app.giftify.cart.application.inbound.CartService;
+import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.CartItemKey;
 import app.giftify.security.common.context.AuthenticatedMember;
 import app.giftify.shared.api.response.RsData;
@@ -19,11 +20,15 @@ public class CartController implements CartV2ApiSpec {
     @Override
     @PostMapping("/{cartId}/add")
     public ResponseEntity<RsData<Void>> addItem(@PathVariable Long cartId, @RequestBody CartItemRequest request) {
-        cartService.addItem(cartId, new AddCartItemCommand(
+        CartItemAddResult result = cartService.addItem(cartId, new AddCartItemCommand(
                 new CartItemKey(request.targetType(), request.targetId()),
                 Money.of(request.amount())
         ));
-        return ResponseEntity.ok(RsData.success(null));
+
+        if (result == CartItemAddResult.UPDATED) {
+            return ResponseEntity.ok(RsData.success(null, "이미 장바구니에 있는 펀딩으로 가격이 수정되었습니다."));
+        }
+        return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
     }
 
     @GetMapping("/{cartId}")

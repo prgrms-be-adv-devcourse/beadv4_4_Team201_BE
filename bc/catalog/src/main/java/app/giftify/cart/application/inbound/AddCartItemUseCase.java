@@ -1,7 +1,7 @@
 package app.giftify.cart.application.inbound;
 
-import app.giftify.cart.core.domain.Cart;
+import app.giftify.cart.core.domain.CartItemAddResult;
 
 public interface AddCartItemUseCase {
-    Cart addItem(Long cartId, AddCartItemCommand command);
+    CartItemAddResult addItem(Long cartId, AddCartItemCommand command);
 }

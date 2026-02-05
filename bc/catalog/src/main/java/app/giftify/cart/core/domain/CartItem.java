@@ -33,7 +33,7 @@ public class CartItem extends BaseDomainModel {
         return new CartItem(null, cartId, targetType, targetId, amount);
     }
 
-    public void changeAmount(Money newAmount) {
+    public void updateAmount(Money newAmount) {
         validate(newAmount);
         this.amount = newAmount;
     }
