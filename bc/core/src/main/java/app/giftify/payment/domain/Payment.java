@@ -22,7 +22,8 @@ public class Payment extends BaseDomainModel {
 	private final List<OrderItemSnapshot> orderItems;
 
 	private PaymentStatus status;
-	private String paymentKey; // NOTE :: lastTransactionKey 도 확장을 위해 추가하기
+	private String paymentKey;
+	private String lastTransactionKey;
 	private String approveCode;
 	private LocalDateTime paidAt;// NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
 	private final LocalDateTime createdAt; // NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
@@ -33,7 +34,7 @@ public class Payment extends BaseDomainModel {
 	private Payment(Long id, String idempotencyKey, PaymentType type, PaymentMethod method,
 		String orderId, Long memberId,
 		Money originAmount, Money paidAmount, List<OrderItemSnapshot> orderItems,
-		PaymentStatus status, String paymentKey, String approveCode,
+		PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
 		LocalDateTime paidAt, LocalDateTime createdAt
 	) {
 		super(id);
@@ -47,6 +48,7 @@ public class Payment extends BaseDomainModel {
 		this.orderItems = List.copyOf(orderItems);
 		this.status = status;
 		this.paymentKey = paymentKey;
+		this.lastTransactionKey = lastTransactionKey;
 		this.approveCode = approveCode;
 		this.paidAt = paidAt;
 		this.createdAt = createdAt;
@@ -313,6 +315,10 @@ public class Payment extends BaseDomainModel {
 		return paymentKey;
 	}
 
+	public String getLastTransactionKey() {
+		return lastTransactionKey;
+	}
+
 	public String getApproveCode() {
 		return approveCode;
 	}
@@ -370,6 +376,7 @@ public class Payment extends BaseDomainModel {
 		private PaymentType type;
 		private PaymentMethod method;
 		private String paymentKey;
+		private String lastTransactionKey;
 		private String approveCode;
 		private LocalDateTime paidAt;
 		private LocalDateTime createdAt;
@@ -429,6 +436,11 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
+		public Builder lastTransactionKey(String lastTransactionKey) {
+			this.lastTransactionKey = lastTransactionKey;
+			return this;
+		}
+
 		public Builder approveCode(String approveCode) {
 			this.approveCode = approveCode;
 			return this;
@@ -452,7 +464,7 @@ public class Payment extends BaseDomainModel {
 				type, method,
 				orderId, memberId,
 				originAmount, paidAmount, orderItems,
-				status, paymentKey, approveCode,
+				status, paymentKey, lastTransactionKey, approveCode,
 				paidAt, createdAt
 			);
 		}

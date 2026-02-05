@@ -46,7 +46,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 				existing.getOrderId(),
 				existing.getStatus(),
 				existing.getPaymentKey(),
-				null,
+				existing.getLastTransactionKey(),
 				existing.getCreatedAt()
 			))
 			.orElseGet(() -> createDepositChargePayment(command));
@@ -80,7 +80,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			savedPayment.getOrderId(),
 			savedPayment.getStatus(),
 			savedPayment.getPaymentKey(),
-			null,
+			savedPayment.getLastTransactionKey(),
 			savedPayment.getCreatedAt()
 		);
 	}
@@ -96,7 +96,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 				existing.getOrderId(),
 				existing.getStatus(),
 				existing.getPaymentKey(),
-				null,
+				existing.getLastTransactionKey(),
 				existing.getCreatedAt()
 			))
 			.orElseGet(() -> createFundingPayment(command));
@@ -135,7 +135,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			savedPayment.getOrderId(),
 			savedPayment.getStatus(),
 			savedPayment.getPaymentKey(),
-			null,
+			savedPayment.getLastTransactionKey(),
 			savedPayment.getCreatedAt()
 		);
 	}
@@ -169,7 +169,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			payment.getOrderId(),
 			PaymentStatus.PENDING,
 			payment.getPaymentKey(),
-			null,
+			payment.getLastTransactionKey(),
 			payment.getCreatedAt()
 		);
 	}
