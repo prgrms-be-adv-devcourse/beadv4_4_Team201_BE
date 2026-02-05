@@ -59,7 +59,6 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
             case FUNDING_PENDING -> validateFundingPurchase(targetId);
             default -> throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
         }
-        ;
     }
 
     // 일반 구매 검증
