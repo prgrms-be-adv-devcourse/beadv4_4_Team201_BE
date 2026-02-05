@@ -152,4 +152,18 @@ public class OrderItem {
                 ", amount=" + amount +
                 '}';
     }
+
+    public void toPaid() {
+        if (this.status == OrderItemStatus.PAID) {
+            return;
+        }
+
+        if (status != OrderItemStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 아이템 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
+            );
+        }
+        status = OrderItemStatus.PAID;
+    }
 }
