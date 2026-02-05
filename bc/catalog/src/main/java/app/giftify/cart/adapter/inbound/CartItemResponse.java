@@ -8,7 +8,7 @@ public record CartItemResponse(
         TargetType targetType,
         Long targetId,
         String productName,
-        int productPrice,          // 상품 원래 가격
+        long productPrice,          // 상품 원래 가격
         long contributionAmount   // 사용자가 담은 펀딩 금액
 ) {
     public static CartItemResponse from(CartItem item, Product product) {
@@ -16,7 +16,7 @@ public record CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
                 product.getName(),
-                product.getPrice(),
+                (long) product.getPrice(),
                 item.getAmount().amount().longValue()
         );
     }

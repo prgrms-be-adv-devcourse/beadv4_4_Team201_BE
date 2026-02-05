@@ -5,7 +5,6 @@ import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
-import app.giftify.wishlist.core.domain.WishlistItemStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,14 +40,16 @@ public class Cart extends BaseDomainModel {
     /*
     장바구니에 상품 추가
      */
-    public void addItem(TargetType targetType, Long targetId, Money amount) {
+    public CartItemAddResult addItem(TargetType targetType, Long targetId, Money amount) {
         // 금액 검증은 CartItem이 함
         CartItemKey key = new CartItemKey(targetType, targetId);
 
         if (items.containsKey(key)) {
-            items.get(key).changeAmount(amount);
+            items.get(key).updateAmount(amount);
+            return CartItemAddResult.UPDATED;
         } else {
             items.put(key, CartItem.create(this.getId(), targetType, targetId, amount));
+            return CartItemAddResult.ADDED;
         }
     }
 

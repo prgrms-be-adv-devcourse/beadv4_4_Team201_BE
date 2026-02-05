@@ -1,10 +1,12 @@
 package app.giftify.cart.adapter.inbound;
 
+import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.shared.api.response.RsData;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,8 +20,18 @@ public interface CartV2ApiSpec {
 		@ApiResponse(responseCode = "400", description = "잘못된 요청 (유효하지 않은 targetType 또는 targetId)"),
 		@ApiResponse(responseCode = "401", description = "인증 실패")
 	})
-	ResponseEntity<Void> addItem(
-		@Parameter(hidden = true) Long memberId,
+	ResponseEntity<RsData<Void>> addItem(
+		@PathVariable Long cartId,
 		@RequestBody CartItemRequest request
+	);
+	
+	@Operation(summary = "장바구니 조회", description = "특정 회원의 장바구니를 조회합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "조회 성공"),
+		@ApiResponse(responseCode = "401", description = "인증 실패")
+	})
+	ResponseEntity<RsData<CartResponse>> getCart(
+		@PathVariable Long cartId,
+		@AuthenticatedMember Long memberId
 	);
 }
