@@ -32,16 +32,29 @@ public class LifeCycleMeta {
                 this.cancelledAt = cancelledAt;
         }
 
-        public static LifeCycleMeta ready(LocalDateTime confirmedAt) {
+        public static LifeCycleMeta pending(LocalDateTime confirmedAt) {
                 if (confirmedAt == null) {
                         throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
                 }
 
                 return new LifeCycleMeta(
-                        SettlementItemStatus.READY,
+                        SettlementItemStatus.PENDING,
                         calculateExpectedDate(confirmedAt),
                         null,
                         null
+                );
+        }
+
+        public LifeCycleMeta ready() {
+                if (this.status != SettlementItemStatus.PENDING) {
+                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+                }
+
+                return new LifeCycleMeta(
+                        SettlementItemStatus.READY,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
                 );
         }
 

@@ -159,7 +159,7 @@ public class SettlementItem {
                 source.getPaidAt(),
                 confirmedAt,
                 core,
-                LifeCycleMeta.ready(confirmedAt)
+                LifeCycleMeta.pending(confirmedAt)
         );
     }
 

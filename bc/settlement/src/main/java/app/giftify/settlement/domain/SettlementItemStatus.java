@@ -1,8 +1,9 @@
 package app.giftify.settlement.domain;
 
 public enum SettlementItemStatus {
+    PENDING,
     READY,
-    IN_PROGRESS,
+    VALID_FAIL,
     COMPLETED,
     CANCELLED
 }
