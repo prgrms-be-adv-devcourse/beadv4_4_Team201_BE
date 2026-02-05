@@ -54,7 +54,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -100,7 +100,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -149,7 +149,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -196,7 +196,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -255,7 +255,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -302,7 +302,7 @@ class CreatePaymentServiceTest {
 			Money requiredAmount = Money.of(10000);
 			Money currentBalance = Money.of(3000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -358,7 +358,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -409,7 +409,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -452,7 +452,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
@@ -500,7 +500,7 @@ class CreatePaymentServiceTest {
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(

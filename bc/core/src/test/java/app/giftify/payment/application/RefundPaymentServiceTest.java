@@ -60,12 +60,8 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item1 = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(10000), 1, Money.of(10000), 200L
-			);
-			OrderItemSnapshot item2 = new OrderItemSnapshot(
-				"item-2", "상품2", Money.of(5000), 2, Money.of(10000), 201L
-			);
+			OrderItemSnapshot item1 = new OrderItemSnapshot(1L, Money.of(10000), 200L);
+			OrderItemSnapshot item2 = new OrderItemSnapshot(2L, Money.of(10000), 201L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -105,9 +101,7 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(20000), 1, Money.of(20000), 200L
-			);
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -155,12 +149,8 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item1 = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(10000), 1, Money.of(10000), 200L
-			);
-			OrderItemSnapshot item2 = new OrderItemSnapshot(
-				"item-2", "상품2", Money.of(5000), 2, Money.of(10000), 201L
-			);
+			OrderItemSnapshot item1 = new OrderItemSnapshot(1L, Money.of(10000), 200L);
+			OrderItemSnapshot item2 = new OrderItemSnapshot(2L, Money.of(10000), 201L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -208,15 +198,9 @@ class RefundPaymentServiceTest {
 			String reason = "단순 변심";
 
 			// 동일한 판매자(200L)의 상품이 여러 개 포함
-			OrderItemSnapshot item1 = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(10000), 1, Money.of(10000), 200L
-			);
-			OrderItemSnapshot item2 = new OrderItemSnapshot(
-				"item-2", "상품2", Money.of(5000), 1, Money.of(5000), 200L
-			);
-			OrderItemSnapshot item3 = new OrderItemSnapshot(
-				"item-3", "상품3", Money.of(5000), 1, Money.of(5000), 201L
-			);
+			OrderItemSnapshot item1 = new OrderItemSnapshot(1L, Money.of(10000), 200L);
+			OrderItemSnapshot item2 = new OrderItemSnapshot(2L, Money.of(5000), 200L);
+			OrderItemSnapshot item3 = new OrderItemSnapshot(3L, Money.of(5000), 201L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -285,9 +269,7 @@ class RefundPaymentServiceTest {
 			Long unauthorizedRequesterId = 999L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(20000), 1, Money.of(20000), 200L
-			);
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -328,9 +310,7 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(20000), 1, Money.of(20000), 200L
-			);
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -368,9 +348,7 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(20000), 1, Money.of(20000), 200L
-			);
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -411,9 +389,7 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(20000), 1, Money.of(20000), 200L
-			);
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
@@ -454,9 +430,7 @@ class RefundPaymentServiceTest {
 			Long requesterId = 100L;
 			String reason = "단순 변심";
 
-			OrderItemSnapshot item = new OrderItemSnapshot(
-				"item-1", "상품1", Money.of(20000), 1, Money.of(20000), 200L
-			);
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)

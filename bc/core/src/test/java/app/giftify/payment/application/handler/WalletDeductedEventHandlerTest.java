@@ -66,7 +66,7 @@ class WalletDeductedEventHandlerTest {
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(50000), 1, Money.of(50000), 100L)
+				new OrderItemSnapshot(1L, Money.of(50000), 100L)
 			);
 
 			Payment payment = Payment.builder()
@@ -117,7 +117,7 @@ class WalletDeductedEventHandlerTest {
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(50000), 1, Money.of(50000), 100L)
+				new OrderItemSnapshot(1L, Money.of(50000), 100L)
 			);
 
 			Payment payment = Payment.builder()
@@ -261,7 +261,7 @@ class WalletDeductedEventHandlerTest {
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(20000), 1, Money.of(20000), 100L)
+				new OrderItemSnapshot(1L, Money.of(20000), 100L)
 			);
 
 			Payment payment = Payment.builder()
@@ -341,7 +341,7 @@ class WalletDeductedEventHandlerTest {
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			Payment payment = Payment.builder()
@@ -392,7 +392,7 @@ class WalletDeductedEventHandlerTest {
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(40000), 1, Money.of(40000), 100L)
+				new OrderItemSnapshot(1L, Money.of(40000), 100L)
 			);
 
 			Payment payment = Payment.builder()
