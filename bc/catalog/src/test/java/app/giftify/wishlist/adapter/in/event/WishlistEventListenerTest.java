@@ -130,7 +130,8 @@ class WishlistEventListenerTest {
         void handleFundingAccepted_ChangesStatusToCompleted() {
             // given
             Long wishlistItemId = 1L;
-            FundingAcceptedEvent event = new FundingAcceptedEvent(100L, wishlistItemId, LocalDateTime.now());
+            Long productId = 1L;
+            FundingAcceptedEvent event = new FundingAcceptedEvent(100L, wishlistItemId, productId, LocalDateTime.now());
 
             WishlistItem wishlistItem = WishlistItem.builder()
                     .id(wishlistItemId)
