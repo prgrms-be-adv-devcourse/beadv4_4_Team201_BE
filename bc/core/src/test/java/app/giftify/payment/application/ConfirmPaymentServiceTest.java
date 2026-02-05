@@ -30,8 +30,8 @@ import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.type.PaymentType;
@@ -68,7 +68,7 @@ class ConfirmPaymentServiceTest {
 				.originAmount(Money.of(10000))
 				.paidAmount(Money.of(10000))
 				.orderItems(List.of(
-					new OrderItemSnapshot("item-1", "Test Item", Money.of(10000), 1, Money.of(10000), 1L)
+					new OrderItemSnapshot(1L, Money.of(10000), 1L)
 				))
 				.status(PaymentStatus.PENDING)
 				.build();
@@ -92,7 +92,7 @@ class ConfirmPaymentServiceTest {
 	class ConfirmSuccessTests {
 
 		@Test
-		@DisplayName("POINT_CHARGE 결제를 정상적으로 승인한다")
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제를 정상적으로 승인한다")
 		void confirm_PointChargePayment_Success() {
 			// given
 			Long paymentId = 1L;
@@ -105,7 +105,7 @@ class ConfirmPaymentServiceTest {
 				paymentId, memberId, paymentKey, orderId, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.POINT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(paymentKey, orderId, amount))
@@ -141,7 +141,7 @@ class ConfirmPaymentServiceTest {
 				paymentId, memberId, paymentKey, orderId, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.POINT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
@@ -158,7 +158,7 @@ class ConfirmPaymentServiceTest {
 			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
 			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
 			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.POINT_CHARGE);
+			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 		}
 
 		@Test
@@ -210,7 +210,7 @@ class ConfirmPaymentServiceTest {
 				paymentId, memberId, paymentKey, orderId, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.POINT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(paymentKey, orderId, amount))
@@ -265,7 +265,7 @@ class ConfirmPaymentServiceTest {
 				paymentId, requesterId, "payment-key", "order-123", Money.of(10000)
 			);
 
-			Payment payment = createPendingPayment(paymentId, actualOwnerId, "order-123", PaymentType.POINT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, actualOwnerId, "order-123", PaymentType.DEPOSIT_CHARGE);
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
 			// when & then
@@ -289,7 +289,7 @@ class ConfirmPaymentServiceTest {
 				paymentId, memberId, "payment-key", "order-123", requestedAmount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, "order-123", PaymentType.POINT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, "order-123", PaymentType.DEPOSIT_CHARGE);
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
 			// when & then
@@ -320,7 +320,7 @@ class ConfirmPaymentServiceTest {
 				paymentId, memberId, paymentKey, orderId, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.POINT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
 			String encryptedPaymentKey = "encrypted-payment-key";
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));

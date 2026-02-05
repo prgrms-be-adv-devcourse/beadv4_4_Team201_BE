@@ -3,6 +3,8 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.product.domain.exception.ProductNotActiveException;
+import app.giftify.product.domain.exception.ProductOutOfStockException;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
@@ -127,14 +129,14 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistSupport.getByMemberId(MEMBER_ID)).willReturn(wishlist);
+        given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         WishlistItem wishlistItem = WishlistItem.builder()
                 .wishlistId(WISHLIST_ID)
                 .productId(productId)
                 .wishlistItemStatus(WishlistItemStatus.PENDING)
                 .build();
-        given(wishlistSupport.getByWishlistIdAndProductId(WISHLIST_ID, productId)).willReturn(wishlistItem);
+        given(wishlistSupport.getWishlistItemByWishlistIdAndProductId(WISHLIST_ID, productId)).willReturn(wishlistItem);
 
         // when
         wishlistItemService.removeWishlistItem(command);
@@ -156,8 +158,8 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistSupport.getByMemberId(MEMBER_ID)).willReturn(wishlist);
-        given(wishlistSupport.getByWishlistIdAndProductId(WISHLIST_ID, productId))
+        given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
+        given(wishlistSupport.getWishlistItemByWishlistIdAndProductId(WISHLIST_ID, productId))
                 .willThrow(new WishlistItemNotFoundException());
 
         // when & then
@@ -200,50 +202,177 @@ class WishlistItemServiceTest {
 
     @Test
     @DisplayName("위시리스트 아이템 스냅샷을 조회한다")
-    void getSnapshot() {
+    void getSnapshotList() {
         // given
-        Long wishlistItemId = 1L;
-        Long productId = 100L;
-        String productName = "테스트 상품";
-        int productPrice = 10000;
-        Long sellerId = 5L;
+        List<Long> wishlistItemIds = List.of(1L, 2L);
 
-        WishlistItem wishlistItem = WishlistItem.builder()
-                .id(wishlistItemId)
+        WishlistItem wishlistItem1 = WishlistItem.builder()
+                .id(1L)
                 .wishlistId(WISHLIST_ID)
-                .productId(productId)
+                .productId(100L)
                 .wishlistItemStatus(WishlistItemStatus.PENDING)
                 .build();
-        given(wishlistSupport.getWishlistItemById(wishlistItemId)).willReturn(wishlistItem);
+        WishlistItem wishlistItem2 = WishlistItem.builder()
+                .id(2L)
+                .wishlistId(WISHLIST_ID)
+                .productId(101L)
+                .wishlistItemStatus(WishlistItemStatus.PENDING)
+                .build();
+        given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
+                .willReturn(List.of(wishlistItem1, wishlistItem2));
 
-        Product product = Mockito.mock(Product.class);
-        given(product.getId()).willReturn(productId);
-        given(product.getName()).willReturn(productName);
-        given(product.getPrice()).willReturn(productPrice);
-        given(product.getSellerId()).willReturn(sellerId);
-        given(productSupport.findById(productId)).willReturn(product);
+        Product product1 = Mockito.mock(Product.class);
+        given(product1.getId()).willReturn(100L);
+        given(product1.getName()).willReturn("테스트 상품1");
+        given(product1.getPrice()).willReturn(10000);
+        given(product1.getSellerId()).willReturn(5L);
+
+        Product product2 = Mockito.mock(Product.class);
+        given(product2.getId()).willReturn(101L);
+        given(product2.getName()).willReturn("테스트 상품2");
+        given(product2.getPrice()).willReturn(20000);
+        given(product2.getSellerId()).willReturn(5L);
+
+        given(productSupport.findAllById(List.of(100L, 101L))).willReturn(List.of(product1, product2));
+
+        Wishlist wishlist = Wishlist.builder()
+                .id(WISHLIST_ID)
+                .memberId(MEMBER_ID)
+                .visibility(Visibility.PUBLIC)
+                .build();
+        given(wishlistSupport.getWishlistAllById(List.of(WISHLIST_ID))).willReturn(List.of(wishlist));
 
         // when
-        WishlistItemSnapshot result = wishlistItemService.getSnapshot(wishlistItemId);
+        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
 
         // then
-        assertThat(result.originalWishlistItemId()).isEqualTo(wishlistItemId);
-        assertThat(result.productId()).isEqualTo(productId);
-        assertThat(result.productName()).isEqualTo(productName);
-        assertThat(result.productPrice()).isEqualTo(productPrice);
-        assertThat(result.sellerId()).isEqualTo(sellerId);
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).originalWishlistItemId()).isEqualTo(1L);
+        assertThat(result.get(0).productId()).isEqualTo(100L);
+        assertThat(result.get(0).productName()).isEqualTo("테스트 상품1");
+        assertThat(result.get(0).productPrice()).isEqualTo(10000);
+        assertThat(result.get(0).sellerId()).isEqualTo(5L);
+        assertThat(result.get(0).wishlistOwnerId()).isEqualTo(MEMBER_ID);
+        assertThat(result.get(1).originalWishlistItemId()).isEqualTo(2L);
+        assertThat(result.get(1).productName()).isEqualTo("테스트 상품2");
     }
 
     @Test
     @DisplayName("존재하지 않는 위시리스트 아이템 스냅샷 조회 시 예외 발생")
-    void getSnapshot_NotFound() {
+    void getSnapshot_List_NotFound() {
         // given
-        Long wishlistItemId = 999L;
-        given(wishlistSupport.getWishlistItemById(wishlistItemId))
+        List<Long> wishlistItemIds = List.of(999L);
+        given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
                 .willThrow(new WishlistItemNotFoundException());
 
         // when & then
-        assertThatThrownBy(() -> wishlistItemService.getSnapshot(wishlistItemId))
+        assertThatThrownBy(() -> wishlistItemService.getSnapshotList(wishlistItemIds))
                 .isInstanceOf(WishlistItemNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("스냅샷 조회 실패 - 상품 판매 상태 아님")
+    void getSnapshot_List_ProductNotActive() {
+        // given
+        List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
+
+        WishlistItem wishlistItem1 = WishlistItem.builder().id(1L).wishlistId(WISHLIST_ID).productId(100L).build();
+        WishlistItem wishlistItem2 = WishlistItem.builder().id(2L).wishlistId(WISHLIST_ID).productId(101L).build();
+        WishlistItem wishlistItem3 = WishlistItem.builder().id(3L).wishlistId(WISHLIST_ID).productId(102L).build();
+        given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
+                .willReturn(List.of(wishlistItem1, wishlistItem2, wishlistItem3));
+
+        List<Product> products = List.of(
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class)
+        );
+        given(productSupport.findAllById(List.of(100L, 101L, 102L))).willReturn(products);
+        Mockito.doThrow(new ProductNotActiveException(101L))
+                .when(productSupport).validatePurchasable(products);
+
+        // when & then
+        assertThatThrownBy(() -> wishlistItemService.getSnapshotList(wishlistItemIds))
+                .isInstanceOf(ProductNotActiveException.class);
+    }
+
+    @Test
+    @DisplayName("스냅샷 조회 실패 - 상품 재고 없음")
+    void getSnapshot_List_ProductOutOfStock() {
+        // given
+        List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
+
+        WishlistItem wishlistItem1 = WishlistItem.builder().id(1L).wishlistId(WISHLIST_ID).productId(100L).build();
+        WishlistItem wishlistItem2 = WishlistItem.builder().id(2L).wishlistId(WISHLIST_ID).productId(101L).build();
+        WishlistItem wishlistItem3 = WishlistItem.builder().id(3L).wishlistId(WISHLIST_ID).productId(102L).build();
+        given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
+                .willReturn(List.of(wishlistItem1, wishlistItem2, wishlistItem3));
+
+        List<Product> products = List.of(
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class),
+                Mockito.mock(Product.class)
+        );
+        given(productSupport.findAllById(List.of(100L, 101L, 102L))).willReturn(products);
+        Mockito.doThrow(new ProductOutOfStockException(101L))
+                .when(productSupport).validatePurchasable(products);
+
+        // when & then
+        assertThatThrownBy(() -> wishlistItemService.getSnapshotList(wishlistItemIds))
+                .isInstanceOf(ProductOutOfStockException.class);
+    }
+
+    @Test
+    @DisplayName("스냅샷 조회 시 요청 순서가 보장된다")
+    void getSnapshot_List_OrderPreserved() {
+        // given - 요청 순서: [3, 1, 2]
+        List<Long> wishlistItemIds = List.of(3L, 1L, 2L);
+
+        WishlistItem wishlistItem1 = WishlistItem.builder().id(1L).wishlistId(WISHLIST_ID).productId(100L).build();
+        WishlistItem wishlistItem2 = WishlistItem.builder().id(2L).wishlistId(WISHLIST_ID).productId(101L).build();
+        WishlistItem wishlistItem3 = WishlistItem.builder().id(3L).wishlistId(WISHLIST_ID).productId(102L).build();
+
+        // DB 반환 순서: [1, 2, 3] (요청 순서와 다름)
+        given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
+                .willReturn(List.of(wishlistItem1, wishlistItem2, wishlistItem3));
+
+        Product product1 = Mockito.mock(Product.class);
+        given(product1.getId()).willReturn(100L);
+        given(product1.getName()).willReturn("상품1");
+        given(product1.getPrice()).willReturn(10000);
+        given(product1.getSellerId()).willReturn(5L);
+
+        Product product2 = Mockito.mock(Product.class);
+        given(product2.getId()).willReturn(101L);
+        given(product2.getName()).willReturn("상품2");
+        given(product2.getPrice()).willReturn(20000);
+        given(product2.getSellerId()).willReturn(5L);
+
+        Product product3 = Mockito.mock(Product.class);
+        given(product3.getId()).willReturn(102L);
+        given(product3.getName()).willReturn("상품3");
+        given(product3.getPrice()).willReturn(30000);
+        given(product3.getSellerId()).willReturn(5L);
+
+        given(productSupport.findAllById(List.of(100L, 101L, 102L))).willReturn(List.of(product1, product2, product3));
+
+        Wishlist wishlist = Wishlist.builder()
+                .id(WISHLIST_ID)
+                .memberId(MEMBER_ID)
+                .visibility(Visibility.PUBLIC)
+                .build();
+        given(wishlistSupport.getWishlistAllById(List.of(WISHLIST_ID))).willReturn(List.of(wishlist));
+
+        // when
+        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
+
+        // then - 결과 순서: [3, 1, 2] (요청 순서와 동일해야 함)
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).originalWishlistItemId()).isEqualTo(3L);
+        assertThat(result.get(0).productName()).isEqualTo("상품3");
+        assertThat(result.get(1).originalWishlistItemId()).isEqualTo(1L);
+        assertThat(result.get(1).productName()).isEqualTo("상품1");
+        assertThat(result.get(2).originalWishlistItemId()).isEqualTo(2L);
+        assertThat(result.get(2).productName()).isEqualTo("상품2");
     }
 }

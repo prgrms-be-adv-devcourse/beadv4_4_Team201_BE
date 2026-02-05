@@ -27,8 +27,8 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCanceledForOrder;
@@ -48,14 +48,14 @@ class CancelPaymentServiceTest {
 	@InjectMocks
 	private CancelPaymentService cancelPaymentService;
 
-	// POINT_CHARGE는 orderItems가 불필요하므로 테스트에 적합
+	// DEPOSIT_CHARGE(예치금 충전)는 orderItems가 불필요하므로 테스트에 적합
 	private Payment createPendingPayment(Long paymentId, Long memberId, String orderId) {
 		return Payment.builder()
 			.id(paymentId)
 			.idempotencyKey("idem-key-" + UUID.randomUUID())
 			.orderId(orderId)
 			.memberId(memberId)
-			.type(PaymentType.POINT_CHARGE)
+			.type(PaymentType.DEPOSIT_CHARGE)
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
@@ -70,7 +70,7 @@ class CancelPaymentServiceTest {
 			.idempotencyKey("idem-key-" + UUID.randomUUID())
 			.orderId(orderId)
 			.memberId(memberId)
-			.type(PaymentType.POINT_CHARGE)
+			.type(PaymentType.DEPOSIT_CHARGE)
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
@@ -252,7 +252,7 @@ class CancelPaymentServiceTest {
 			assertThat(event.getPaymentId()).isEqualTo(paymentId);
 			assertThat(event.getMemberId()).isEqualTo(memberId);
 			assertThat(event.getOrderId()).isEqualTo(orderId);
-			assertThat(event.getPaymentType()).isEqualTo(PaymentType.POINT_CHARGE);
+			assertThat(event.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 			assertThat(event.getPaidAmount()).isEqualTo(Money.of(10000));
 			assertThat(event.getReason()).isEqualTo(reason);
 			assertThat(event.getCanceledAt()).isNotNull();

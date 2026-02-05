@@ -185,6 +185,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             }
         }
         productRepositoryPort.save(product);
+        product.pullEvents().forEach(eventPublisher::publish); // 기록된 도메인 이벤트를 발행
 
         return ProductUpdateResult.from(product);
     }
