@@ -18,7 +18,7 @@ public class CartController implements CartV2ApiSpec {
     private final CartService cartService;
 
     @Override
-    @PostMapping("/{cartId}/add")
+    @PostMapping("/{cartId}")
     public ResponseEntity<RsData<Void>> addItem(@PathVariable Long cartId, @RequestBody CartItemRequest request) {
         CartItemAddResult result = cartService.addItem(cartId, new AddCartItemCommand(
                 new CartItemKey(request.targetType(), request.targetId()),
@@ -31,6 +31,7 @@ public class CartController implements CartV2ApiSpec {
         return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
     }
 
+    @Override
     @GetMapping("/{cartId}")
     public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable Long cartId, @AuthenticatedMember Long memberId) {
         CartResponse response = cartService.getCart(cartId, memberId);
