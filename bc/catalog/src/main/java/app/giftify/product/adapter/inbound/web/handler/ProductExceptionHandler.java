@@ -24,11 +24,12 @@ public class ProductExceptionHandler {
     @ExceptionHandler(ProductException.class)
     public ResponseEntity<Map<String, Object>> handleProductException(ProductException ex) {
         ProductErrorCode errorCode = (ProductErrorCode) ex.getErrorCode();
+        String message = ex.getMessage() != null ? ex.getMessage() : errorCode.getMessage(); //todo 통일
 
         Map<String, Object> body = Map.of(
                 "status", errorCode.getStatusCode(),
                 "code", errorCode.getCode(),
-                "message", errorCode.getMessage()
+                "message", message
         );
 
         return ResponseEntity.status(errorCode.getStatusCode()).body(body);

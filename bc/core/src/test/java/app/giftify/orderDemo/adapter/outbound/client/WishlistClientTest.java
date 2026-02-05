@@ -58,12 +58,13 @@ class WishlistClientTest {
                 100L,
                 "Product",
                 50000,
-                100L
+                100L,
+                10L
         );
 
         String responseBody = objectMapper.writeValueAsString(snapshot);
 
-        server.expect(requestTo(baseUrl + "/api/internal/wishlist/items/" + wishlistItemId +"/snapshot"))
+        server.expect(requestTo(baseUrl + "/api/internal/wishlist/items/" + wishlistItemId + "/snapshot"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
 
