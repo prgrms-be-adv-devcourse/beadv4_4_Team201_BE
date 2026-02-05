@@ -132,13 +132,14 @@ public class Order extends BaseAggregateRoot {
                 .toList();
 
         return OrderSnapshot.builder()
+                .orderId(id)
                 .orderNumber(orderNumber)
                 .buyerId(buyerId)
+                .orderItemSnapshots(itemSnapshots)
+                .totalAmount(totalAmount)
                 .paymentMethod(paymentMethod)
                 .status(status)
-                .totalAmount(totalAmount)
                 .createdAt(createdAt)
-                .orderItemSnapshots(itemSnapshots)
                 .build();
     }
 
