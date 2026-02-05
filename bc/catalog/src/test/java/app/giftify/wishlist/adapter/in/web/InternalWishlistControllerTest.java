@@ -51,7 +51,7 @@ public class InternalWishlistControllerTest {
                 new WishlistItemSnapshot(1L, 100L, "테스트 상품1", 10000, 5L, 77L),
                 new WishlistItemSnapshot(2L, 101L, "테스트 상품2", 20000, 5L, 77L)
         );
-        given(getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds)).willReturn(snapshots);
+        given(getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds)).willReturn(snapshots);
 
         // when & then
         mockMvc.perform(post("/api/internal/wishlist/items/snapshots")
@@ -73,7 +73,7 @@ public class InternalWishlistControllerTest {
     void getSnapshot_NotFound() throws Exception {
         // given
         List<Long> wishlistItemIds = List.of(999L);
-        given(getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds))
+        given(getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds))
                 .willThrow(new app.giftify.wishlist.core.domain.exception.WishlistItemNotFoundException());
 
         // when & then
@@ -90,7 +90,7 @@ public class InternalWishlistControllerTest {
     void getSnapshot_ProductNotActive() throws Exception {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
-        given(getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds))
+        given(getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds))
                 .willThrow(new ProductNotActiveException(101L));
 
         // when & then
@@ -107,7 +107,7 @@ public class InternalWishlistControllerTest {
     void getSnapshot_ProductOutOfStock() throws Exception {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
-        given(getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds))
+        given(getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds))
                 .willThrow(new ProductOutOfStockException(101L));
 
         // when & then

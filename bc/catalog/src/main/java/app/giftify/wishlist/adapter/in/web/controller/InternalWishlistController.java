@@ -4,10 +4,7 @@ import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,11 +16,19 @@ public class InternalWishlistController {
     private final GetWishlistItemSnapshotUseCase getWishlistItemSnapshotUseCase;
 
     // 위시리스트 아이템 스냅샷 조회
+    @GetMapping("/items/{wishlistItemId}/snapshot")
+    public ResponseEntity<?> getSnapshot(
+            @PathVariable("wishlistItemId") Long wishlistItemId
+    ) {
+        WishlistItemSnapshot snapshot = getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemId);
+        return ResponseEntity.ok(snapshot);
+    }
+
     @PostMapping("/items/snapshots")
-    public ResponseEntity<List<WishlistItemSnapshot>> getSnapshot(
+    public ResponseEntity<List<WishlistItemSnapshot>> getSnapshotList(
             @RequestBody List<Long> wishlistItemIds
     ) {
-        List<WishlistItemSnapshot> snapshots = getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemIds);
+        List<WishlistItemSnapshot> snapshots = getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds);
         return ResponseEntity.ok(snapshots);
     }
 }

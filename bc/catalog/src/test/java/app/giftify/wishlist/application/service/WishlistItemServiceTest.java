@@ -202,7 +202,7 @@ class WishlistItemServiceTest {
 
     @Test
     @DisplayName("위시리스트 아이템 스냅샷을 조회한다")
-    void getSnapshot() {
+    void getSnapshotList() {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L);
 
@@ -243,7 +243,7 @@ class WishlistItemServiceTest {
         given(wishlistSupport.getWishlistAllById(List.of(WISHLIST_ID))).willReturn(List.of(wishlist));
 
         // when
-        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshot(wishlistItemIds);
+        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
 
         // then
         assertThat(result).hasSize(2);
@@ -259,20 +259,20 @@ class WishlistItemServiceTest {
 
     @Test
     @DisplayName("존재하지 않는 위시리스트 아이템 스냅샷 조회 시 예외 발생")
-    void getSnapshot_NotFound() {
+    void getSnapshot_List_NotFound() {
         // given
         List<Long> wishlistItemIds = List.of(999L);
         given(wishlistSupport.getWishlistItemListById(wishlistItemIds))
                 .willThrow(new WishlistItemNotFoundException());
 
         // when & then
-        assertThatThrownBy(() -> wishlistItemService.getSnapshot(wishlistItemIds))
+        assertThatThrownBy(() -> wishlistItemService.getSnapshotList(wishlistItemIds))
                 .isInstanceOf(WishlistItemNotFoundException.class);
     }
 
     @Test
     @DisplayName("스냅샷 조회 실패 - 상품 판매 상태 아님")
-    void getSnapshot_ProductNotActive() {
+    void getSnapshot_List_ProductNotActive() {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
 
@@ -292,13 +292,13 @@ class WishlistItemServiceTest {
                 .when(productSupport).validatePurchasable(products);
 
         // when & then
-        assertThatThrownBy(() -> wishlistItemService.getSnapshot(wishlistItemIds))
+        assertThatThrownBy(() -> wishlistItemService.getSnapshotList(wishlistItemIds))
                 .isInstanceOf(ProductNotActiveException.class);
     }
 
     @Test
     @DisplayName("스냅샷 조회 실패 - 상품 재고 없음")
-    void getSnapshot_ProductOutOfStock() {
+    void getSnapshot_List_ProductOutOfStock() {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L, 3L);
 
@@ -318,13 +318,13 @@ class WishlistItemServiceTest {
                 .when(productSupport).validatePurchasable(products);
 
         // when & then
-        assertThatThrownBy(() -> wishlistItemService.getSnapshot(wishlistItemIds))
+        assertThatThrownBy(() -> wishlistItemService.getSnapshotList(wishlistItemIds))
                 .isInstanceOf(ProductOutOfStockException.class);
     }
 
     @Test
     @DisplayName("스냅샷 조회 시 요청 순서가 보장된다")
-    void getSnapshot_OrderPreserved() {
+    void getSnapshot_List_OrderPreserved() {
         // given - 요청 순서: [3, 1, 2]
         List<Long> wishlistItemIds = List.of(3L, 1L, 2L);
 
@@ -364,7 +364,7 @@ class WishlistItemServiceTest {
         given(wishlistSupport.getWishlistAllById(List.of(WISHLIST_ID))).willReturn(List.of(wishlist));
 
         // when
-        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshot(wishlistItemIds);
+        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
 
         // then - 결과 순서: [3, 1, 2] (요청 순서와 동일해야 함)
         assertThat(result).hasSize(3);
