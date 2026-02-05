@@ -12,12 +12,12 @@ import app.giftify.shared.domain.vo.Money;
 /**
  * 결제 생성 커맨드.
  *
- * <p>{@code orderId}는 멱등성 키 역할도 겸합니다.
+ * <p>{@code orderId(=orderNumber)}는 멱등성 키 역할도 겸합니다.
  * 같은 orderId로 중복 결제 생성을 시도하면 기존 결제가 반환됩니다.</p>
  */
 public record CreatePaymentCommand(
 	Long memberId,
-	String orderId,           // 멱등성 키 역할도 겸함
+	String orderId,           // 멱등성 키 역할도 겸함, 주문 도메인의 orderNumber와 동일
 	PaymentType type,
 	PaymentMethod method,
 	Money expectedAmount,
