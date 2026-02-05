@@ -8,6 +8,7 @@ import app.giftify.wishlist.core.domain.Wishlist;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -26,6 +27,12 @@ public class WishlistAdapter implements WishlistRepositoryPort {
     public Optional<Wishlist> findByMemberId(Long memberId) {
         return wishlistRepository.findById(memberId)
                 .map(WishlistMapper::toDomain);
+    }
+
+    @Override
+    public List<Wishlist> findAllById(List<Long> wishlistIds) {
+        return wishlistRepository.findAllById(wishlistIds)
+                .stream().map(WishlistMapper::toDomain).toList();
     }
 
     @Override
