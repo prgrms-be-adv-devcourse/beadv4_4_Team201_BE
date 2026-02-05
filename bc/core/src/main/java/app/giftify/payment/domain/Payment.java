@@ -12,10 +12,10 @@ import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
-	private final String idempotencyKey;
+	private final String idempotencyKey; // Note :: 이거 없애기. 없애는 이유는 orderId 가 곧 멱등키이므로
 	private final PaymentType type;
 	private final PaymentMethod method;
-	private final String orderId;
+	private final String orderId; // Note :: Long orderId 로 검색하는 것이 더 빠를 수 있음
 	private final Long memberId;
 	private final Money originAmount;
 	private final Money paidAmount;
@@ -23,17 +23,19 @@ public class Payment extends BaseDomainModel {
 
 	private PaymentStatus status;
 	private String paymentKey;
+	private String lastTransactionKey;
 	private String approveCode;
-	private LocalDateTime paidAt;
+	private LocalDateTime paidAt;// NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
+	private final LocalDateTime createdAt; // NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
 
 	// 상태 변경 시 발생한 이력들 (영속화 전까지 보관)
-	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>();
+	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>(); // Note BaseAggregateRoot 의 이벤트 스토어를 활용하도록 변경 // NOTE :: 이벤트라기 보다는 감사 로그, 히스토리에 가까우므로 분리 작업이 필요함
 
 	private Payment(Long id, String idempotencyKey, PaymentType type, PaymentMethod method,
 		String orderId, Long memberId,
 		Money originAmount, Money paidAmount, List<OrderItemSnapshot> orderItems,
-		PaymentStatus status, String paymentKey, String approveCode,
-		LocalDateTime paidAt
+		PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
+		LocalDateTime paidAt, LocalDateTime createdAt
 	) {
 		super(id);
 		this.idempotencyKey = idempotencyKey;
@@ -46,8 +48,10 @@ public class Payment extends BaseDomainModel {
 		this.orderItems = List.copyOf(orderItems);
 		this.status = status;
 		this.paymentKey = paymentKey;
+		this.lastTransactionKey = lastTransactionKey;
 		this.approveCode = approveCode;
 		this.paidAt = paidAt;
+		this.createdAt = createdAt;
 	}
 
 	// ========== 정적 팩토리 메서드 ========== //
@@ -311,12 +315,20 @@ public class Payment extends BaseDomainModel {
 		return paymentKey;
 	}
 
+	public String getLastTransactionKey() {
+		return lastTransactionKey;
+	}
+
 	public String getApproveCode() {
 		return approveCode;
 	}
 
 	public LocalDateTime getPaidAt() {
 		return paidAt;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
 	}
 
 	// ========== equals / hashCode ========== //
@@ -364,8 +376,10 @@ public class Payment extends BaseDomainModel {
 		private PaymentType type;
 		private PaymentMethod method;
 		private String paymentKey;
+		private String lastTransactionKey;
 		private String approveCode;
 		private LocalDateTime paidAt;
+		private LocalDateTime createdAt;
 
 		public Builder id(Long id) {
 			this.id = id;
@@ -422,6 +436,11 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
+		public Builder lastTransactionKey(String lastTransactionKey) {
+			this.lastTransactionKey = lastTransactionKey;
+			return this;
+		}
+
 		public Builder approveCode(String approveCode) {
 			this.approveCode = approveCode;
 			return this;
@@ -429,6 +448,11 @@ public class Payment extends BaseDomainModel {
 
 		public Builder paidAt(LocalDateTime paidAt) {
 			this.paidAt = paidAt;
+			return this;
+		}
+
+		public Builder createdAt(LocalDateTime createdAt) {
+			this.createdAt = createdAt;
 			return this;
 		}
 
@@ -440,8 +464,8 @@ public class Payment extends BaseDomainModel {
 				type, method,
 				orderId, memberId,
 				originAmount, paidAmount, orderItems,
-				status, paymentKey, approveCode,
-				paidAt
+				status, paymentKey, lastTransactionKey, approveCode,
+				paidAt, createdAt
 			);
 		}
 
@@ -533,6 +557,7 @@ public class Payment extends BaseDomainModel {
 			.paidAmount(paidAmount)
 			.orderItems(orderItems)
 			.status(PaymentStatus.PENDING)
+			.createdAt(LocalDateTime.now())
 			.build();
 	}
 }
