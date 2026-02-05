@@ -1,12 +1,12 @@
 package app.giftify.orderDemo.application.inbound.command;
 
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 
 import java.util.List;
 
 public record CreateOrderCommand(
         Long buyerId,
-        PaymentMethodType method,
+        PaymentMethod method,
         List<CreateOrderItemCommand> items
 ) {
 }

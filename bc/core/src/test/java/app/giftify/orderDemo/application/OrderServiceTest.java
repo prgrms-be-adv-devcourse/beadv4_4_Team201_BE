@@ -13,7 +13,7 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +59,7 @@ class OrderServiceTest {
     void setUp() {
         validCommand = new CreateOrderCommand(
                 1L,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 List.of(new CreateOrderItemCommand(
                         2L,
                         3L,
@@ -112,7 +112,7 @@ class OrderServiceTest {
     void placeOrder_fail_zeroPrice() {
         CreateOrderCommand command = new CreateOrderCommand(
                 1L,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 List.of(new CreateOrderItemCommand(
                         2L,
                         3L,
@@ -133,7 +133,7 @@ class OrderServiceTest {
     void placeOrder_fail_zeroAmount() {
         CreateOrderCommand command = new CreateOrderCommand(
                 1L,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 List.of(new CreateOrderItemCommand(
                         2L,
                         3L,
@@ -154,7 +154,7 @@ class OrderServiceTest {
     void placeOrder_fail_nullBuyer() {
         CreateOrderCommand command = new CreateOrderCommand(
                 null,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 List.of(new CreateOrderItemCommand(
                         2L,
                         3L,
@@ -200,7 +200,7 @@ class OrderServiceTest {
                 1L,
                 Money.of("10000"),
                 OrderStatus.CREATED,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now()
@@ -211,7 +211,7 @@ class OrderServiceTest {
                 2L,
                 Money.of("20000"),
                 OrderStatus.CREATED,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now()
