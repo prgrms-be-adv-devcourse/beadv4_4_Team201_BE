@@ -74,7 +74,7 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
         Product product = productRepositoryPort.findById(wishlistItem.getProductId())
                 .orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
 
-        if (product.getStatus() != ProductStatus.ACTIVE) {
+        if (product.getStatus() != ProductStatus.ACTIVE && product.getStock() <= 0) {
             throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
         }
     }
