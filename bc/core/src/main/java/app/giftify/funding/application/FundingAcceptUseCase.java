@@ -29,6 +29,7 @@ public class FundingAcceptUseCase {
         eventPublisher.publish(new FundingAcceptedEvent(
                 funding.getId(),
                 funding.getWishlistItemId(),
+                funding.getProductId(),
                 LocalDateTime.now()
         ));
 
