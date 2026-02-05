@@ -9,19 +9,24 @@ import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
+/**
+ * 결제 생성 커맨드.
+ *
+ * <p>{@code orderId}는 멱등성 키 역할도 겸합니다.
+ * 같은 orderId로 중복 결제 생성을 시도하면 기존 결제가 반환됩니다.</p>
+ */
 public record CreatePaymentCommand(
-	String idempotencyKey,
 	Long memberId,
-	String orderId,
+	String orderId,           // 멱등성 키 역할도 겸함
 	PaymentType type,
 	PaymentMethod method,
 	Money expectedAmount,
 	List<OrderItemSnapshot> orderItems
 ) {
 	public CreatePaymentCommand {
-		if (idempotencyKey == null || idempotencyKey.isBlank()) {
+		if (orderId == null || orderId.isBlank()) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[CreatePaymentCommand] idempotencyKey는 필수입니다.");
+				"[CreatePaymentCommand] orderId는 필수입니다.");
 		}
 
 		// POINT_CHARGE 유형이 아닌 경우에만 orderItems 검증

@@ -58,7 +58,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -84,8 +84,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(999L);
-			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(orderId);
+			assertThat(result.orderId()).isEqualTo(orderId);  // orderId가 멱등성 키 역할도 함
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.requiresPgApproval()).isTrue();
 
@@ -105,7 +104,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -133,8 +132,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
-			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(orderId);
+			assertThat(result.orderId()).isEqualTo(orderId);  // orderId가 멱등성 키 역할도 함
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.requiresPgApproval()).isTrue();
 			assertThat(result.walletInfo()).isNull();
@@ -155,7 +153,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -202,7 +200,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -234,8 +232,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
-			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(orderId);
+			assertThat(result.orderId()).isEqualTo(orderId);  // orderId가 멱등성 키 역할도 함
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.requiresPgApproval()).isFalse();
 			assertThat(result.walletInfo()).isNull();
@@ -262,7 +259,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -309,7 +306,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
 			);
@@ -343,8 +340,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
-			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(orderId);
+			assertThat(result.orderId()).isEqualTo(orderId);  // orderId가 멱등성 키 역할도 함
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.requiresPgApproval()).isFalse();
 			assertThat(result.hasInsufficientBalance()).isTrue();
@@ -366,7 +362,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -392,8 +388,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(999L);
-			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(orderId);
+			assertThat(result.orderId()).isEqualTo(orderId);  // orderId가 멱등성 키 역할도 함
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.requiresPgApproval()).isFalse();
 
@@ -418,7 +413,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.BANK_TRANSFER,
 				amount, orderItems
 			);
@@ -461,7 +456,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.VIRTUAL_ACCOUNT,
 				amount, orderItems
 			);
@@ -509,7 +504,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				orderId, memberId, orderId,
+				memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);

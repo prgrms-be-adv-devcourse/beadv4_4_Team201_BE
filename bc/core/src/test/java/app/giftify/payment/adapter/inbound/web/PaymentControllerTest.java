@@ -1,6 +1,5 @@
 package app.giftify.payment.adapter.inbound.web;
 
-import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -102,8 +101,7 @@ class PaymentControllerTest {
 
 			PaymentCreatedResult result = new PaymentCreatedResult(
 				1L,
-				providedOrderId,
-				"idempotency-key-123",
+				providedOrderId,  // orderId가 멱등성 키 역할도 함
 				PaymentStatus.PENDING,
 				true
 			);
@@ -118,43 +116,27 @@ class PaymentControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.result").value("SUCCESS"))
 				.andExpect(jsonPath("$.data.paymentId").value(1))
-				.andExpect(jsonPath("$.data.orderId").value(providedOrderId))
+				.andExpect(jsonPath("$.data.orderId").value(providedOrderId))  // 멱등성 키 역할도 함
 				.andExpect(jsonPath("$.data.amount").value(10000))
-				.andExpect(jsonPath("$.data.idempotencyKey").value("idempotency-key-123"))
 				.andExpect(jsonPath("$.data.status").value("PENDING"));
 
 			verify(createPaymentUseCase).create(any(CreatePaymentCommand.class));
 		}
 
 		@Test
-		@DisplayName("orderId를 제공하지 않으면 CHG-UUID 형식의 orderId를 생성한다")
-		void charge_WithoutOrderId_GeneratesOrderId() throws Exception {
-			// given
+		@DisplayName("orderId를 제공하지 않으면 400 에러를 반환한다 (orderId는 필수)")
+		void charge_WithoutOrderId_ReturnsBadRequest() throws Exception {
+			// given - orderId가 null인 요청
 			PaymentChargeRequest request = new PaymentChargeRequest(TEST_AMOUNT, null, null);
-
-			PaymentCreatedResult result = new PaymentCreatedResult(
-				1L,
-				"CHG-generated-uuid",
-				"idempotency-key-123",
-				PaymentStatus.PENDING,
-				true
-			);
-
-			given(createPaymentUseCase.create(any(CreatePaymentCommand.class))).willReturn(result);
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/charge")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.result").value("SUCCESS"))
-				.andExpect(jsonPath("$.data.paymentId").value(1))
-				.andExpect(jsonPath("$.data.orderId").value(startsWith("CHG-")))
-				.andExpect(jsonPath("$.data.amount").value(10000))
-				.andExpect(jsonPath("$.data.status").value("PENDING"));
+				.andExpect(status().isBadRequest());
 
-			verify(createPaymentUseCase).create(any(CreatePaymentCommand.class));
+			verify(createPaymentUseCase, never()).create(any(CreatePaymentCommand.class));
 		}
 
 		@Test
