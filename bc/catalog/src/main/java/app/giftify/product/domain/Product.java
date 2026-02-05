@@ -2,6 +2,7 @@ package app.giftify.product.domain;
 
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.event.product.ProductPriceUpdatedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import lombok.Builder;
@@ -68,15 +69,13 @@ public class Product extends BaseDomainModel {
     // 상품 판매 시작
     public void active() {
         transitionTo(ACTIVE);
-        registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId()));
+        registerEvent(new ProductSaleEnabledEvent(this.getId()));
     }
 
     // 상품 판매 중지
     public void inActive() {
         transitionTo(INACTIVE);
-        registerEvent(new ProductSaleDisabledEvent(
-                LocalDateTime.now(), this.getId()
-        ));
+        registerEvent(new ProductSaleDisabledEvent(this.getId()));
     }
 
     // 상품 상태 검증 todo Map<from,to> 상태 머신
@@ -119,6 +118,8 @@ public class Product extends BaseDomainModel {
 
     public void updatePrice(int newPrice) {
         this.price = newPrice;
+
+        registerEvent(new ProductPriceUpdatedEvent(this.getId(), newPrice));
     }
 
     // 상품 재고 수정 (판매자 수동)
@@ -127,10 +128,10 @@ public class Product extends BaseDomainModel {
         this.stock = newStock;
 
         if (beforeStock > 0 && newStock == 0 && this.status == ACTIVE) {
-            registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId()));
+            registerEvent(new ProductSaleDisabledEvent(this.getId()));
         }
         if (beforeStock == 0 && newStock > 0 && this.status == ACTIVE) {
-            registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId()));
+            registerEvent(new ProductSaleEnabledEvent(this.getId()));
         }
 
         return new StockChangeResult(beforeStock, this.stock, newStock - beforeStock);
@@ -144,7 +145,7 @@ public class Product extends BaseDomainModel {
         this.stock -= quantity;
 
         if (this.stock == 0 && this.status == ACTIVE)
-            registerEvent(new ProductSaleDisabledEvent(LocalDateTime.now(), this.getId()));
+            registerEvent(new ProductSaleDisabledEvent(this.getId()));
 
         return new StockChangeResult(beforeStock, this.stock, -quantity);
     }
@@ -155,7 +156,7 @@ public class Product extends BaseDomainModel {
         this.stock += quantity;
 
         if (beforeStock == 0 && this.status == ACTIVE)
-            registerEvent(new ProductSaleEnabledEvent(LocalDateTime.now(), this.getId()));
+            registerEvent(new ProductSaleEnabledEvent(this.getId()));
 
         return new StockChangeResult(beforeStock, this.stock, quantity);
     }

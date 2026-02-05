@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static app.giftify.wishlist.core.domain.WishlistItemStatus.NO_THANKS;
 import static app.giftify.wishlist.core.domain.WishlistItemStatus.PENDING;
 
 @Slf4j
@@ -110,7 +109,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
     /**
      * # 위시리스트아이템 수동 삭제
-     * - PENDING, NO_THANKS 상태일 때만 수동 삭제 가능
+     * - PENDING 상태일 때만 수동 삭제 가능
      */
     @Override
     @Transactional
@@ -153,7 +152,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     private void validateManualRemovable(WishlistItem item) {
         WishlistItemStatus status = item.getWishlistItemStatus();
 
-        if (status != PENDING && status != NO_THANKS) {
+        if (status != PENDING) {
             throw new WishlistItemNotRemovableException(status);
         }
     }
