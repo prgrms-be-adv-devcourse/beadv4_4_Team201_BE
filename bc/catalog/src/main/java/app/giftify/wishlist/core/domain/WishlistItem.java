@@ -144,10 +144,7 @@ public class WishlistItem extends BaseDomainModel {
             case REQUESTED_CONFIRM -> (
                     next == WishlistItemStatus.COMPLETED   // 수락
                             || next == WishlistItemStatus.PENDING     // 2주 경과로 원복
-                            || next == WishlistItemStatus.NO_THANKS   // 거절
             );
-
-            case NO_THANKS -> false;     // (정책) 일정 시간 후 스케줄러가 삭제만 수행
             case COMPLETED -> false;     // (정책) 완료 후 바로 삭제 or 히스토리로 이동
         };
     }
