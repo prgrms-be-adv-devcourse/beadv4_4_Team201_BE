@@ -16,7 +16,7 @@ public record Money(BigDecimal amount) {
 	}
 
 	public static Money of(long amount) {
-		return new Money(BigDecimal.valueOf(amount));
+		return new Money(new BigDecimal(String.valueOf(amount)));
 	}
 
 	public static Money of(String amount) {

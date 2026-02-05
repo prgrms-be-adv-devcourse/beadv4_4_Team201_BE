@@ -5,13 +5,13 @@ import app.giftify.shared.domain.vo.Money;
 
 /**
  * 주문 항목 DTO
- * @param targetId
+ * @param wishlistItemId
  * @param receiverId
  * @param amount
  * @param orderItemType
  */
 public record PlaceOrderItemRequest(
-        Long targetId,
+        Long wishlistItemId,
         Long receiverId,
         Money amount,
         OrderItemType orderItemType
