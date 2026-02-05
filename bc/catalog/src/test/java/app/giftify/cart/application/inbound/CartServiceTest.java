@@ -48,7 +48,7 @@ class CartServiceTest {
     private Long cartId = 1L;
 
     @Test
-    @DisplayName("펀딩 상품 추가 성공: 위시리스트 아이템(PENDING) + 상품(ACTIVE)")
+    @DisplayName("펀딩 상품 추가 성공: 위시리스트 아이템(PENDING) + 상품(ACTIVE) + 재고 있음")
     void addItem_Funding_Success() {
         // given
         Long wishlistItemId = 100L;
@@ -67,6 +67,7 @@ class CartServiceTest {
 
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
+        given(product.getStock()).willReturn(10); // 재고 있음
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
@@ -100,6 +101,39 @@ class CartServiceTest {
 
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.INACTIVE); // 실패 조건
+        // given(product.getStock()).willReturn(10); // 상태가 먼저 체크되므로 재고는 상관없을 수 있음
+        given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
+
+        AddCartItemCommand command = new AddCartItemCommand(
+                new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
+                amount
+        );
+
+        // when & then
+        assertThatThrownBy(() -> cartService.addItem(cartId, command))
+                .isInstanceOf(CartException.class);
+    }
+
+    @Test
+    @DisplayName("펀딩 상품 추가 실패: 재고 없음")
+    void addItem_Funding_Fail_OutOfStock() {
+        // given
+        Long wishlistItemId = 100L;
+        Long productId = 200L;
+        Money amount = Money.of(10000);
+
+        // Cart Mocking
+        Cart cart = Cart.create(memberId);
+        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+
+        WishlistItem wishlistItem = mock(WishlistItem.class);
+        given(wishlistItem.getProductId()).willReturn(productId);
+        given(wishlistItem.getWishlistItemStatus()).willReturn(WishlistItemStatus.PENDING);
+        given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.of(wishlistItem));
+
+        Product product = mock(Product.class);
+        given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
+        given(product.getStock()).willReturn(0); // 실패 조건: 재고 0
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         AddCartItemCommand command = new AddCartItemCommand(
