@@ -27,5 +27,5 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @PreAuthorize("hasRole('INTERNAL_SERVICE')")
-public @interface InternalApiOnly {
+public @interface InternalApiOnly { // FIXME :: API Key 를 통해 인증하는 방식으로 변경 필요
 }
