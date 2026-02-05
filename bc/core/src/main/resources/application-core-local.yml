@@ -2,3 +2,12 @@ payment:
   encryption:
     password: ${PAYMENT_ENCRYPTION_PASSWORD:local-dev-password-12345}
     salt: ${PAYMENT_ENCRYPTION_SALT:deadbeef12345678deadbeef12345678}
+
+
+tosspayments:
+  secret-key: ${TOSSPAYMENTS_SECRET_KEY}
+  api:
+    base-url: ${TOSSPAYMENTS_API_BASE_URL}
+
+internal-api:
+  base-url: http://localhost:8080

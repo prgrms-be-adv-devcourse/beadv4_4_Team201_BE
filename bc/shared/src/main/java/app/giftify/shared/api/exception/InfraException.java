@@ -1,0 +1,14 @@
+package app.giftify.shared.api.exception;
+
+/**
+ * 시스템이 일을 못한 것
+ */
+public class InfraException extends BaseException {
+    public InfraException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public InfraException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, errorCode.getMessage(), cause);
+    }
+}

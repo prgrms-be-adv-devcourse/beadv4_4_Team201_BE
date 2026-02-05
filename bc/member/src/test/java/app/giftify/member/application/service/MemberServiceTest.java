@@ -1,18 +1,12 @@
 package app.giftify.member.application.service;
 
-import app.giftify.member.adapter.in.web.dto.SignupRequest;
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
-import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.application.port.out.PreSignupPort;
-import app.giftify.member.domain.exception.DuplicateMemberException;
-import app.giftify.member.domain.member.Member;
-import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.member.domain.member.NicknameGenerator;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
-import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,15 +15,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import app.giftify.auth.application.TokenBlacklistService;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.out.MemberRepositoryPort;
+import app.giftify.member.domain.exception.DuplicateMemberException;
+import app.giftify.member.domain.exception.MemberNotFoundException;
+import app.giftify.member.domain.member.Member;
+import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.member.domain.member.NicknameGenerator;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -38,13 +36,13 @@ class MemberServiceTest {
     private MemberRepositoryPort memberRepositoryPort;
 
     @Mock
-    private PreSignupPort preSignupPort;
-
-    @Mock
     private EventPublisher eventPublisher;
 
     @Mock
     private NicknameGenerator nicknameGenerator;
+
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
 
     @InjectMocks
     private MemberService memberService;
@@ -106,7 +104,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("[회원 가입] 임시 정보를 통한 가입 성공 - signup")
+    @DisplayName("[프로필 업데이트] 기존 회원의 프로필 정보 업데이트 성공 - signup")
     void signup_Success() {
         // given
         String authSub = "auth0|12345";
@@ -116,10 +114,14 @@ class MemberServiceTest {
                 "010-1111-2222"
         );
 
-        PreSignup preSignup = new PreSignup(authSub, "pre@example.com", "Hong", "preNick");
+        Member existingMember = Member.builder()
+                .id(1L)
+                .authSub(authSub)
+                .email("test@example.com")
+                .nickname("autoNickname")
+                .build();
 
-        given(preSignupPort.findByAuthSub(authSub)).willReturn(Optional.of(preSignup));
-        given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.empty());
+        given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(existingMember));
         given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         // when
@@ -127,10 +129,28 @@ class MemberServiceTest {
 
         // then
         assertThat(result.getAuthSub()).isEqualTo(authSub);
-        assertThat(result.getEmail()).isEqualTo("pre@example.com");
-        assertThat(result.getNickname()).isEqualTo("preNick");
         assertThat(result.getBirthday()).isEqualTo(request.birthday());
-        verify(preSignupPort).deleteByAuthSub(authSub);
+        assertThat(result.getAddress()).isEqualTo(request.address());
+        assertThat(result.getPhoneNum()).isEqualTo(request.phoneNum());
+        verify(memberRepositoryPort).save(any(Member.class));
+    }
+
+    @Test
+    @DisplayName("[프로필 업데이트] 회원이 존재하지 않는 경우 예외 발생 - signup")
+    void signup_MemberNotFound() {
+        // given
+        String authSub = "auth0|notfound";
+        SignupRequest request = new SignupRequest(
+                LocalDate.of(1995, 1, 1),
+                "Seoul Gangnam",
+                "010-1111-2222"
+        );
+
+        given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> memberService.signup(authSub, request))
+                .isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -250,9 +270,9 @@ class MemberServiceTest {
         // given
         String authSub = "auth0|12345";
         Member member = Member.builder()
-                .authSub(authSub)
-                .status(MemberStatus.ACTIVE)
-                .build();
+            .authSub(authSub)
+            .status(MemberStatus.ACTIVE)
+            .build();
 
         given(memberRepositoryPort.findByAuthSub(authSub)).willReturn(Optional.of(member));
         given(memberRepositoryPort.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
@@ -263,6 +283,7 @@ class MemberServiceTest {
         // then
         assertThat(member.getStatus()).isEqualTo(MemberStatus.WITHDRAWN);
         verify(memberRepositoryPort).save(member);
+        verify(tokenBlacklistService).revokeAllUserTokens(authSub);
     }
 
     @Nested

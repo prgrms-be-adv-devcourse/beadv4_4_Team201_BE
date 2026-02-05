@@ -5,14 +5,13 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import app.giftify.auth.application.TokenBlacklistService;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
-import app.giftify.member.adapter.out.jpa.entity.PreSignup;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.application.port.out.PreSignupPort;
 import app.giftify.member.domain.exception.DuplicateMemberException;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
@@ -26,14 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class MemberService
 	implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
 
-	private final PreSignupPort preSignupPort;
 	private final MemberRepositoryPort memberRepositoryPort;
 	private final EventPublisher eventPublisher;
 	private final NicknameGenerator nicknameGenerator;
+	private final TokenBlacklistService tokenBlacklistService;
 
 	@Override
 	public Optional<Member> getMemberByAuthSub(String authSub) {
@@ -57,7 +56,7 @@ public class MemberService
 		String nickname = command.nickname();
 		if (nickname == null || nickname.isBlank()) {
 			nickname = nicknameGenerator.generate();
-			log.info("[Member] 닉네임 자동 생성: {}", nickname);
+			log.info("[MemberService] 닉네임 자동 생성: {}", nickname);
 		}
 
 		Member member = Member.builder()
@@ -84,30 +83,20 @@ public class MemberService
 	}
 
 	@Override
-	@Transactional
 	public Member signup(String authSub, SignupRequest request) {
-		PreSignup preSignup = preSignupPort.findByAuthSub(authSub)
-			.orElseThrow(() -> new RuntimeException("임시 회원 정보가 없습니다."));
+		Member member = memberRepositoryPort.findByAuthSub(authSub)
+			.orElseThrow(() -> new MemberNotFoundException(authSub));
 
-		RegisterCommand command = new RegisterCommand(
-			preSignup.getEmail(),
-			preSignup.getNickname(),
-			request.birthday(),
-			request.address(),
-			request.phoneNum(),
-			preSignup.getName(),
-			authSub
-		);
+		member.updateProfile(request.birthday(), request.address(), request.phoneNum());
 
-		Member member = registerMember(command);
+		Member updatedMember = memberRepositoryPort.save(member);
 
-		preSignupPort.deleteByAuthSub(authSub);
+		log.info("[MemberService] 프로필 정보 업데이트 완료: memberId={}", updatedMember.getId());
 
-		return member;
+		return updatedMember;
 	}
 
 	@Override
-	@Transactional
 	public Member updateMember(UpdateCommand command) {
 		Member member = memberRepositoryPort.findByAuthSub(command.authSub())
 			.orElseThrow(() -> new MemberNotFoundException(command.authSub()));
@@ -127,11 +116,12 @@ public class MemberService
 			)
 		);
 
+		log.info("[MemberService] 회원 정보 업데이트 완료: memberId={}", updatedMember.getId());
+
 		return updatedMember;
 	}
 
 	@Override
-	@Transactional
 	public void withdrawMember(String authSub) {
 		Member member = memberRepositoryPort.findByAuthSub(authSub)
 			.orElseThrow(() -> new MemberNotFoundException(authSub));
@@ -141,6 +131,11 @@ public class MemberService
 		member.withdraw();
 
 		memberRepositoryPort.save(member);
+
+		// 토큰 무효화 - 탈퇴 후 기존 토큰으로 API 호출 방지
+		tokenBlacklistService.revokeAllUserTokens(authSub);
+
+		log.info("[MemberService] 회원 탈퇴 및 토큰 무효화: authSub={}", authSub);
 	}
 
 	@Override

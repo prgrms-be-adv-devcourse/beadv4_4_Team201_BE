@@ -1,15 +1,18 @@
 package app.giftify.member.adapter.in.web;
 
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
+import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.dto.SignupRequest;
+import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
+import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.WithdrawMemberUseCase;
+import app.giftify.member.domain.exception.DuplicateMemberException;
+import app.giftify.member.domain.exception.MemberErrorCode;
+import app.giftify.member.domain.member.Member;
+import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.shared.domain.type.MemberRole;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,19 +28,16 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.util.Optional;
 
-import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
-import app.giftify.member.adapter.in.web.dto.SignupRequest;
-import app.giftify.member.application.port.in.GetMemberUseCase;
-import app.giftify.member.application.port.in.RegisterMemberUseCase;
-import app.giftify.member.application.port.in.UpdateMemberUseCase;
-import app.giftify.member.application.port.in.WithdrawMemberUseCase;
-import app.giftify.member.domain.exception.DuplicateMemberException;
-import app.giftify.member.domain.member.Member;
-import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
-import app.giftify.shared.domain.type.MemberRole;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
 class MemberControllerTest {
@@ -155,20 +155,20 @@ class MemberControllerTest {
         // given
         SignupRequest request = new SignupRequest(null, null, null);
         Member mockMember = Member.builder()
-            .id(1L)
-            .email("test@example.com")
-            .nickname("행복한고양이1234")
-            .authSub("auth0|test")
-            .build();
+                .id(1L)
+                .email("test@example.com")
+                .nickname("행복한고양이1234")
+                .authSub("auth0|test")
+                .build();
 
         given(registerMemberUseCase.signup(any(), any())).willReturn(mockMember);
 
         // when & then
         mockMvc.perform(post("/api/members/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isOk())  // 200 성공
-            .andExpect(jsonPath("$.nickname").exists());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())  // 200 성공
+                .andExpect(jsonPath("$.nickname").exists());
     }
 
     @Test
@@ -186,7 +186,7 @@ class MemberControllerTest {
         mockMvc.perform(post("/api/members/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().is(MemberErrorCode.DUPLICATE_MEMBER.getStatusCode()))
                 .andExpect(jsonPath("$.code").value("M201"))
                 .andExpect(jsonPath("$.message", containsString("이미 가입된 이메일입니다")));
     }

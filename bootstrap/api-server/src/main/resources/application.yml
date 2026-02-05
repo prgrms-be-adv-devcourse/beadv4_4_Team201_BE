@@ -5,6 +5,12 @@ spring:
   application:
     name: giftify-be
 
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: true
+
   profiles:
     # ⚠️ active 프로파일을 여기서 고정 X
     #
@@ -23,6 +29,8 @@ spring:
     group:
       local:
         - auth-local
+        - catalog-local
+        - core-local
         - money-local
         - member-local
         - funding-local
@@ -30,6 +38,8 @@ spring:
         - settlement-local
       dev:
         - auth-dev
+        - catalog-dev
+        - core-dev
         - money-dev
         - member-dev
         - funding-dev
@@ -37,6 +47,8 @@ spring:
         - settlement-dev
       prod:
         - auth-prod
+        - catalog-prod
+        - core-prod
         - money-prod
         - member-prod
         - funding-prod

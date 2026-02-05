@@ -18,35 +18,36 @@ import app.giftify.auth.adapter.inbound.web.dto.LoginRequest;
 import app.giftify.auth.adapter.inbound.web.dto.LoginResponse;
 import app.giftify.auth.application.AuthService;
 import app.giftify.auth.application.inbound.LoginUseCase;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v2/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthV2ApiSpec {
 
 	private final AuthService authService;
 	private final LoginUseCase loginUseCase;
 
+	/**
+	 * @deprecated 테스트용 페이지. 사용하지 마세요.
+	 */
+	@Deprecated(since = "v2", forRemoval = true)
+	@Hidden
 	@GetMapping("/")
 	public String publicPage() {
 		return "아무나 접근 가능한 페이지 입니다.";
 	}
 
-	// 기존 레거시 코드: OAuth2 리다이렉트용, Auth0 로그인 페이지로 리다이렉트
+	@Deprecated(since = "v2", forRemoval = true)
+	@Hidden
 	@GetMapping("/login")
 	public void login(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
 		response.sendRedirect("/oauth2/authorization/auth0");
 	}
 
-	/**
-	 * SPA SDK용 로그인 엔드포인트.
-	 * idToken을 검증하고 회원 정보와 가입 여부를 반환합니다.
-	 *
-	 * @param request idToken이 담긴 요청
-	 * @return 회원 정보와 isNewUser 플래그
-	 */
+	@Override
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(
 		@RequestBody @Valid LoginRequest request
@@ -67,8 +68,8 @@ public class AuthController {
 		return ResponseEntity.ok(response);
 	}
 
-	// [로그인 확인 및 토큰 반환]
-	// Auth0 로그인이 성공했는지 확인하고 발급된 Access Token을 반환합니다.
+	@Deprecated(since = "v2", forRemoval = true)
+	@Hidden
 	@GetMapping("/login-success")
 	public ResponseEntity<?> loginSuccess(
 		@AuthenticationPrincipal OidcUser principal,

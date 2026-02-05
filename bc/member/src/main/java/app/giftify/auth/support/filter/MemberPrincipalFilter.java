@@ -1,6 +1,8 @@
 package app.giftify.auth.support.filter;
 
 import app.giftify.auth.adapter.outbound.client.MemberApiClient;
+
+import java.util.Optional;
 import app.giftify.security.common.MemberAuthenticationToken;
 import app.giftify.security.common.MemberPrincipal;
 import app.giftify.shared.domain.vo.MemberInfo;
@@ -51,19 +53,28 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 		if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
 			String authSub = jwt.getSubject();
 
-			// 1. Optional<Member>를 ifPresent로 세련되게 처리
-			memberApiClient.getMemberByAuthSub(authSub).ifPresent(member -> {
-
-				// 2. 인증 객체 생성 (메서드 추출)
+			findMemberByAuthSub(authSub).ifPresent(member -> {
 				Authentication newAuth = createAuthentication(member);
 
-				// 3. SecurityContext 교체
 				SecurityContext context = SecurityContextHolder.createEmptyContext();
 				context.setAuthentication(newAuth);
 				SecurityContextHolder.setContext(context);
 
 				log.debug("[Filter] SecurityContext updated for Member ID: {}", member.memberId());
 			});
+		}
+	}
+
+	private Optional<MemberInfo> findMemberByAuthSub(String authSub) {
+		try {
+			var response = memberApiClient.getMemberByAuthSub(authSub);
+			if (response.getStatusCode().is2xxSuccessful()) {
+				return Optional.ofNullable(response.getBody());
+			}
+			return Optional.empty();
+		} catch (Exception e) {
+			log.debug("[MemberPrincipalFilter] Member not found for authSub: {}", authSub);
+			return Optional.empty();
 		}
 	}
 

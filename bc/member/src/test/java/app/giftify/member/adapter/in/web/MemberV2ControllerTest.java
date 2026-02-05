@@ -29,7 +29,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import app.giftify.member.application.port.in.GetMemberUseCase;
+import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
+import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
@@ -59,7 +61,13 @@ class MemberV2ControllerTest {
 	private GetMemberUseCase getMemberUseCase;
 
 	@MockitoBean
+	private RegisterMemberUseCase registerMemberUseCase;
+
+	@MockitoBean
 	private UpdateMemberUseCase updateMemberUseCase;
+
+	@MockitoBean
+	private WithdrawMemberUseCase withdrawMemberUseCase;
 
 	private static final String AUTH_SUB = "auth0|12345";
 
@@ -70,9 +78,10 @@ class MemberV2ControllerTest {
 		mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
 		mockMvc = MockMvcBuilders
-			.standaloneSetup(new MemberV2Controller(getMemberUseCase, updateMemberUseCase))
+			.standaloneSetup(new MemberV2Controller(getMemberUseCase, registerMemberUseCase, updateMemberUseCase, withdrawMemberUseCase))
 			.setControllerAdvice(new TestExceptionHandler())
-			.setMessageConverters(new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(mapper))
+			.setMessageConverters(
+				new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(mapper))
 			.setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
 				@Override
 				public boolean supportsParameter(MethodParameter parameter) {
@@ -271,6 +280,46 @@ class MemberV2ControllerTest {
 						.content(requestBody))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.nickname").value("새닉네임"));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("DELETE /api/v2/members/me")
+	class Given_Withdraw {
+
+		@Nested
+		@DisplayName("When 회원 탈퇴 요청")
+		class When_WithdrawRequest {
+
+			@Test
+			@DisplayName("Then 204 No Content 반환")
+			void Then_Returns204() throws Exception {
+				// given
+				willDoNothing().given(withdrawMemberUseCase).withdrawMember(AUTH_SUB);
+
+				// when & then
+				mockMvc.perform(delete("/api/v2/members/me"))
+					.andExpect(status().isNoContent());
+
+				verify(withdrawMemberUseCase).withdrawMember(AUTH_SUB);
+			}
+		}
+
+		@Nested
+		@DisplayName("When 존재하지 않는 회원 탈퇴 요청")
+		class When_MemberNotFound {
+
+			@Test
+			@DisplayName("Then 404 Not Found 반환")
+			void Then_Returns404() throws Exception {
+				// given
+				willThrow(new MemberNotFoundException(AUTH_SUB))
+					.given(withdrawMemberUseCase).withdrawMember(AUTH_SUB);
+
+				// when & then
+				mockMvc.perform(delete("/api/v2/members/me"))
+					.andExpect(status().isNotFound());
 			}
 		}
 	}

@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 @Table(
         name = "settlement_item",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_funding_type",
-                columnNames = {"funding_id", "type"}
+                name = "uk_target_id_type",
+                columnNames = {"target_id", "type"}
         )
 )
 @NoArgsConstructor
@@ -46,7 +46,7 @@ public class SettlementItem {
     private Long orderItemId;
 
     @Column(nullable = false)
-    private Long fundingId;
+    private Long targetId;
 
     // 회계적 증빙 / 정산 근거 관점에서 필요한 값
     @Column(nullable = false)
@@ -78,7 +78,7 @@ public class SettlementItem {
                            Long originId,
                            Long orderId,
                            Long orderItemId,
-                           Long fundingId,
+                           Long targetId,
                            String orderNumber,
                            LocalDateTime orderedAt,
                            LocalDateTime paidAt,
@@ -115,7 +115,7 @@ public class SettlementItem {
         this.originId = originId;
         this.orderId = orderId;
         this.orderItemId = orderItemId;
-        this.fundingId = fundingId;
+        this.targetId = targetId;
         this.orderNumber = orderNumber;
         this.orderedAt = orderedAt;
         this.paidAt = paidAt;
@@ -128,7 +128,7 @@ public class SettlementItem {
                            SettlementItemType type,
                            Long orderId,
                            Long orderItemId,
-                           Long fundingId,
+                           Long targetId,
                            String orderNumber,
                            LocalDateTime orderedAt,
                            LocalDateTime paidAt,
@@ -136,7 +136,7 @@ public class SettlementItem {
                            SettlementCore core,
                            LifeCycleMeta lifeCycleMeta) {
 
-        this(sellerId, type, null, orderId, orderItemId, fundingId, orderNumber, orderedAt, paidAt, confirmedAt, core, lifeCycleMeta);
+        this(sellerId, type, null, orderId, orderItemId, targetId, orderNumber, orderedAt, paidAt, confirmedAt, core, lifeCycleMeta);
     }
 
     public static SettlementItem createPaymentItem(SettlementSource source, SettlementCore core, LocalDateTime confirmedAt) {

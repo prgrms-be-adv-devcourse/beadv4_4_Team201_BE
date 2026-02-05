@@ -13,14 +13,14 @@ public class PaymentExceptionHandler {
 	@ExceptionHandler(PaymentException.class)
 	public ResponseEntity<ErrorResponse> handlePaymentException(PaymentException e) {
 		return ResponseEntity
-			.badRequest()
-			.body(new ErrorResponse(e.getErrorCode().getCode(), e.getMessage()));
+				.status(e.getErrorCode().getStatusCode())
+				.body(new ErrorResponse(e.getErrorCode().getCode(), e.getMessage()));
 	}
 
 	@ExceptionHandler(WalletException.class)
 	public ResponseEntity<ErrorResponse> handleWalletException(WalletException e) {
 		return ResponseEntity
-			.badRequest()
-			.body(new ErrorResponse(e.getErrorCode().getCode(), e.getMessage()));
+				.status(e.getErrorCode().getStatusCode())
+				.body(new ErrorResponse(e.getErrorCode().getCode(), e.getMessage()));
 	}
 }

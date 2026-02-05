@@ -1,0 +1,263 @@
+package app.giftify.orderDemo.application;
+
+import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
+import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
+import app.giftify.orderDemo.application.outbound.port.OrderRepository;
+import app.giftify.orderDemo.domain.Order;
+import app.giftify.orderDemo.domain.OrderItem;
+import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.orderDemo.domain.OrderStatus;
+import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderCreatedEvent;
+import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
+import app.giftify.shared.domain.type.OrderItemType;
+import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.Money;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
+    private EventPublisher eventPublisher;
+
+    @InjectMocks
+    private OrderService orderService;
+
+    private CreateOrderCommand validCommand;
+
+    @BeforeEach
+    void setUp() {
+        validCommand = new CreateOrderCommand(
+                1L,
+                PaymentMethodType.WALLET,
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.of("1000"),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.of("10000")
+                ))
+        );
+    }
+
+    @Test
+    @DisplayName("주문 생성 성공")
+    void placeOrder_success() {
+        List<OrderItem> orderItems = validCommand.items().stream()
+                .map(item -> OrderItem.create(
+                        item.targetId(),
+                        item.targetType(),
+                        item.orderItemType(),
+                        item.sellerId(),
+                        item.receiverId(),
+                        item.price(),
+                        item.amount()
+                ))
+                .toList();
+
+
+        Order order = Order.create(
+                validCommand.buyerId(),
+                orderItems,
+                validCommand.method()
+        );
+
+        given(orderRepository.save(any(Order.class))).willReturn(order);
+
+        OrderSnapshot snapshot = orderService.createOrder(validCommand);
+
+        assertNotNull(snapshot);
+        assertEquals(1, snapshot.orderItemSnapshots().size());
+        assertEquals(Money.of(1000L), snapshot.totalAmount()); // price * amount
+        assertEquals(OrderStatus.CREATED, snapshot.status());
+
+        verify(eventPublisher, times(1)).publish(argThat(OrderCreatedEvent.class::isInstance));
+        verify(eventPublisher, times(1)).publish(argThat(OrderItemCreatedEvent.class::isInstance));
+    }
+
+    @Test
+    @DisplayName("주문 생성 실패 - price 0")
+    void placeOrder_fail_zeroPrice() {
+        CreateOrderCommand command = new CreateOrderCommand(
+                1L,
+                PaymentMethodType.WALLET,
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.of("1000"),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.zero()
+                ))
+        );
+
+        assertThrows(DomainException.class,
+                () -> orderService.createOrder(command));
+    }
+
+    @Test
+    @DisplayName("주문 생성 실패 - amount 0")
+    void placeOrder_fail_zeroAmount() {
+        CreateOrderCommand command = new CreateOrderCommand(
+                1L,
+                PaymentMethodType.WALLET,
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.zero(),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.of("1000")
+                ))
+        );
+
+        assertThrows(DomainException.class,
+                () -> orderService.createOrder(command));
+    }
+
+    @Test
+    @DisplayName("주문 생성 실패 - null buyerId")
+    void placeOrder_fail_nullBuyer() {
+        CreateOrderCommand command = new CreateOrderCommand(
+                null,
+                PaymentMethodType.WALLET,
+                List.of(new CreateOrderItemCommand(
+                        2L,
+                        3L,
+                        Money.of("1000"),
+                        OrderItemType.FUNDING_GIFT,
+                        TargetType.FUNDING,
+                        4L,
+                        Money.of("10000")
+                ))
+        );
+
+        assertThrows(DomainException.class,
+                () -> orderService.createOrder(command));
+    }
+
+    @Test
+    @DisplayName("주문 생성 실패 - repository save 실패")
+    void placeOrder_fail_repositoryError() {
+        given(orderRepository.save(any(Order.class))).willThrow(new RuntimeException("DB Error"));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.createOrder(validCommand));
+
+        assertEquals("DB Error", ex.getMessage());
+    }
+
+    @Test
+    void getOrders_shouldReturnMappedOrderViews() {
+        // Given
+        Long memberId = 1L;
+        Pageable pageable = PageRequest.of(0, 2);
+
+        // 샘플 Order 엔티티 생성
+        Order order1 = mock(Order.class);
+        Order order2 = mock(Order.class);
+
+        MockedStatic<OrderSummary> orderViewMock = Mockito.mockStatic(OrderSummary.class);
+
+        // OrderView 반환용 가짜 OrderView
+        OrderSummary view1 = new OrderSummary(
+                1L,
+                "order_number1",
+                1L,
+                Money.of("10000"),
+                OrderStatus.CREATED,
+                PaymentMethodType.WALLET,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+        OrderSummary view2 = new OrderSummary(
+                2L,
+                "order_number2",
+                2L,
+                Money.of("20000"),
+                OrderStatus.CREATED,
+                PaymentMethodType.WALLET,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+
+        // OrderView.of(Order) 가 호출될 때도 필요하면 stubbing
+        orderViewMock.when(() -> OrderSummary.of(order1)).thenReturn(view1);
+        orderViewMock.when(() -> OrderSummary.of(order2)).thenReturn(view2);
+
+        Page<Order> orderPage = new PageImpl<>(List.of(order1, order2), pageable, 2);
+
+        when(orderRepository.getByBuyerId(memberId, pageable)).thenReturn(orderPage);
+
+        // When
+        Page<OrderSummary> result = orderService.getOrders(memberId, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+
+        assertThat(result.getContent().get(0)).isEqualTo(view1);
+        assertThat(result.getContent().get(1)).isEqualTo(view2);
+
+        assertThat(result.getNumber()).isZero();
+        assertThat(result.getSize()).isEqualTo(2);
+
+        verify(orderRepository, times(1)).getByBuyerId(memberId, pageable);
+    }
+
+    @Test
+    @DisplayName("getOrders: 주문 없음 → 빈 Page 반환")
+    void getOrders_shouldReturnEmptyPage_whenNoOrders() {
+        // Given
+        Long memberId = 1L;
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<Order> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(orderRepository.getByBuyerId(memberId, pageable)).thenReturn(emptyPage);
+
+        // When
+        Page<OrderSummary> result = orderService.getOrders(memberId, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty(); // 주문이 없으면 빈 리스트
+        assertThat(result.getTotalElements()).isZero();
+        verify(orderRepository, times(1)).getByBuyerId(memberId, pageable);
+    }
+}

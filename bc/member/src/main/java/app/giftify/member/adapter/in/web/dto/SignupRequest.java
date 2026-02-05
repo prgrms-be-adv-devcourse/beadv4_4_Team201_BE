@@ -8,8 +8,8 @@ import java.time.LocalDate;
  * 닉네임은 미입력 시 서버에서 자동 생성됩니다.
  */
 public record SignupRequest(
-	LocalDate birthday,
-	String address,
-	String phoneNum
+        LocalDate birthday,
+        String address,
+        String phoneNum
 ) {
 }
