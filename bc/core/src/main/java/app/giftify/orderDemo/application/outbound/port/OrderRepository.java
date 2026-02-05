@@ -10,4 +10,6 @@ public interface OrderRepository {
     Page<Order> getByBuyerId(Long buyerId, Pageable pageable);
 
     Order getById(Long orderId);
+
+    Order getByOrderNumber(String orderNumber);
 }

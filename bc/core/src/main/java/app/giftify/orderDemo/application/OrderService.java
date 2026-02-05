@@ -7,6 +7,7 @@ import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
+import app.giftify.orderDemo.application.inbound.vo.PaymentSnapshot;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -61,6 +62,57 @@ public class OrderService {
         publishOrderCreatedEvent(orderSnapshot);
 
         return orderSnapshot;
+    }
+
+    @Transactional
+    public void assignFundingToOrderItem(Long orderItemId, Long fundingId) {
+        OrderItem item = orderItemRepository.getOrderItemById(orderItemId);
+
+        item.updateTargetToFunding(fundingId);  // 이벤트 등록
+
+        // 트랜잭션 커밋 후 이벤트 발행
+        item.getOrder().pullEvents().forEach(eventPublisher::publish);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderSummary> getOrders(Long memberId, Pageable pageable) {
+        Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
+
+        return pages.map(OrderSummary::of);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetail getOrderDetail(Long memberId, Long orderId) {
+        Order order = orderRepository.getById(orderId);
+
+        validateOwner(memberId, order.getBuyerId());
+
+        OrderSummary summary = OrderSummary.of(order);
+        List<OrderItemDetail> itemDetails = getOrderItemDetails(order);
+
+        return new OrderDetail(summary, itemDetails);
+    }
+
+    @Transactional
+    public void markOrderAsPaid(String orderNumber, PaymentSnapshot snapshot) {
+        Order order = orderRepository.getByOrderNumber(orderNumber);
+
+        order.toPaid(snapshot.paymentKey(), snapshot.lastTransactionKey(), snapshot.createdAt());
+    }
+
+    private static void validateOwner(Long memberId, Long buyerId) {
+        if (!Objects.equals(buyerId, memberId)) {
+            throw new PolicyException(
+                    OrderErrorCode.ORDER_OWNER_MISMATCH,
+                    String.format("memberId = %d, orderId = %d", memberId, buyerId)
+            );
+        }
+    }
+
+    private static @NonNull List<OrderItemDetail> getOrderItemDetails(Order order) {
+        return order.getItems().stream()
+                .map(OrderItemDetail::of)
+                .toList();
     }
 
     private static void validateWishlistItemSnapshot(WishlistItemSnapshot snapshot) {
@@ -153,50 +205,6 @@ public class OrderService {
                         command.price(),
                         command.amount())
                 )
-                .toList();
-    }
-
-    @Transactional
-    public void assignFundingToOrderItem(Long orderItemId, Long fundingId) {
-        OrderItem item = orderItemRepository.getOrderItemById(orderItemId);
-
-        item.updateTargetToFunding(fundingId);  // 이벤트 등록
-
-        // 트랜잭션 커밋 후 이벤트 발행
-        item.getOrder().pullEvents().forEach(eventPublisher::publish);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<OrderSummary> getOrders(Long memberId, Pageable pageable) {
-        Page<Order> pages = orderRepository.getByBuyerId(memberId, pageable);
-
-        return pages.map(OrderSummary::of);
-    }
-
-    @Transactional(readOnly = true)
-    public OrderDetail getOrderDetail(Long memberId, Long orderId) {
-        Order order = orderRepository.getById(orderId);
-
-        validateOwner(memberId, order.getBuyerId());
-
-        OrderSummary summary = OrderSummary.of(order);
-        List<OrderItemDetail> itemDetails = getOrderItemDetails(order);
-
-        return new OrderDetail(summary, itemDetails);
-    }
-
-    private static void validateOwner(Long memberId, Long buyerId) {
-        if (!Objects.equals(buyerId, memberId)) {
-            throw new PolicyException(
-                    OrderErrorCode.ORDER_OWNER_MISMATCH,
-                    String.format("memberId = %d, orderId = %d", memberId, buyerId)
-            );
-        }
-    }
-
-    private static @NonNull List<OrderItemDetail> getOrderItemDetails(Order order) {
-        return order.getItems().stream()
-                .map(OrderItemDetail::of)
                 .toList();
     }
 }

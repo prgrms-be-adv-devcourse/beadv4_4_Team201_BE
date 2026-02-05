@@ -4,12 +4,15 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemReque
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
+import app.giftify.orderDemo.application.inbound.vo.PaymentSnapshot;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.OrderStatus;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
+import app.giftify.orderDemo.domain.fixture.OrderFixture;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
@@ -18,6 +21,7 @@ import app.giftify.shared.domain.vo.FundingSnapshot;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +41,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -219,5 +224,94 @@ class OrderServiceTest {
         assertThat(result.getContent()).isEmpty(); // 주문이 없으면 빈 리스트
         assertThat(result.getTotalElements()).isZero();
         verify(orderRepository, times(1)).getByBuyerId(memberId, pageable);
+    }
+
+    @Nested
+    @DisplayName("결제 완료 처리 (markOrderAsPaid)")
+    class MarkOrderAsPaid {
+
+        @Test
+        @DisplayName("성공: 주문을 조회하여 결제 완료 상태로 변경한다")
+        void success() {
+            // given
+            Order order = spy(OrderFixture.createOrderWithItems(1L, 2)); // 엔티티 메서드 호출 확인을 위해 spy 사용
+
+            String orderNumber = "orderNumber";
+
+            PaymentSnapshot snapshot = new PaymentSnapshot(
+                    1L,
+                    "PG_KEY_123",
+                    "TX_KEY_456",
+                    LocalDateTime.now()
+            );
+
+            given(orderRepository.getByOrderNumber(orderNumber)).willReturn(order);
+
+            // when
+            orderService.markOrderAsPaid(orderNumber, snapshot);
+
+            // then
+            // 1. 레포지토리 조회가 정확한 주문번호로 이루어졌는지 확인
+            verify(orderRepository).getByOrderNumber(orderNumber);
+
+            // 2. 엔티티의 toPaid 메서드가 스냅샷의 데이터로 호출되었는지 확인
+            verify(order).toPaid(snapshot.paymentKey(), snapshot.lastTransactionKey(), snapshot.createdAt());
+
+            // 3. 실제 상태가 변했는지 확인 (더티 체킹에 의해 반영될 상태)
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
+        }
+
+        @Test
+        @DisplayName("실패: 존재하지 않는 주문번호일 경우 예외가 발생한다")
+        void fail_not_found() {
+            // given
+            PaymentSnapshot snapshot = new PaymentSnapshot(
+                    1L,
+                    "PG_KEY_123",
+                    "TX_KEY_456",
+                    LocalDateTime.now()
+            );
+
+            String orderNumber = "orderNumber";
+
+            given(orderRepository.getByOrderNumber(orderNumber))
+                    .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.markOrderAsPaid(orderNumber, snapshot))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
+
+            // 조회가 실패했으므로 엔티티 로직은 실행되지 않아야 함을 검증
+            verify(orderRepository, never()).save(any());// save를 안 쓰는 구조라도 상호작용 없음 확인
+        }
+
+        @Test
+        @DisplayName("실패: 취소된 주문 등 결제 불가능한 상태일 경우 PolicyException이 발생한다")
+        void fail_invalid_status() {
+            // given
+            // 이미 취소된 주문 준비
+            Order cancelledOrder = OrderFixture.createOrderWithStatus(OrderStatus.CANCELED);
+            PaymentSnapshot snapshot = new PaymentSnapshot(
+                    1L,
+                    "PG_KEY_123",
+                    "TX_KEY_456",
+                    LocalDateTime.now()
+            );
+
+            String orderNumber = "orderNumber";
+
+            given(orderRepository.getByOrderNumber(orderNumber)).willReturn(cancelledOrder);
+
+            // when & then
+            assertThatThrownBy(() -> orderService.markOrderAsPaid(orderNumber, snapshot))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
+
+            // 상태가 변하지 않았는지 확인
+            assertThat(cancelledOrder.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        }
     }
 }
