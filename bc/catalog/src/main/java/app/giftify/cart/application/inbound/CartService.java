@@ -1,7 +1,9 @@
 package app.giftify.cart.application.inbound;
 
-import app.giftify.cart.application.outbound.CartRepository;
+import app.giftify.cart.adapter.inbound.CartResponse;
+import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
+import app.giftify.cart.core.domain.CartItem;
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
@@ -15,22 +17,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CartService implements AddCartItemUseCase, CartCreateUseCase {
-    private final CartRepository cartRepository;
+public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCartUseCase {
+    private final CartRepositoryPort cartRepositoryPort;
     private final ProductRepositoryPort productRepositoryPort;
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
 
     @Override
     public Cart createCart(Long memberId) {
-        return cartRepository.save(Cart.create(memberId));
+        return cartRepositoryPort.save(Cart.create(memberId));
     }
 
     @Override
-    public Cart addItem(Long memberId, AddCartItemCommand command) {
-        Cart cart = cartRepository.findByMemberId(memberId)
+    public Cart addItem(Long cartId, AddCartItemCommand command) {
+        Cart cart = cartRepositoryPort.findById(cartId)
                 .orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
         TargetType targetType = command.cartItemKey().targetType();
@@ -45,7 +50,7 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
                 command.amount()
         );
 
-        return cartRepository.save(cart);
+        return cartRepositoryPort.save(cart);
     }
 
     private void validateCartItem(TargetType targetType, Long targetId) {
@@ -80,5 +85,26 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase {
 
         // 원본 Product 상태 검증
         validateDirectPurchase(wishlistItem.getProductId());
+    }
+
+    // 카트 조회(아이템 목록)
+    @Override
+    public CartResponse getCart(Long cartId, Long memberId) {
+        Cart cart = cartRepositoryPort.findById(cartId)
+                .orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
+
+        if (!cart.getMemberId().equals(memberId)) { throw new CartException(CartErrorCode.FORBIDDEN); }
+
+        // 장바구니 아이템들의 상품ID 목록 추출
+        List<Long> productIds = cart.getItems().stream()
+                .map(CartItem::getTargetId)
+                .collect(Collectors.toList());
+
+        // 상품 정보 조회 및 Map으로 변환
+        Map<Long, Product> productMap = productRepositoryPort.findAllById(productIds)
+                .stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
+
+        return CartResponse.from(cart, productMap);
     }
 }
