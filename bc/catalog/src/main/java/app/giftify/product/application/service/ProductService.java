@@ -33,7 +33,7 @@ import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_F
 
 @Service
 @RequiredArgsConstructor
-public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase {
+public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase {
     private final ProductRepositoryPort productRepositoryPort;
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
@@ -161,6 +161,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         if (newStock != null && product.getStock() != newStock) {
             Product.StockChangeResult result = product.updateStock(newStock);
 
+            // todo 재고이력 저장 도메인에서 도메인이벤트 발행하기 and 어플리케이션 -> 어댑터 호출하고있음;;
             ProductStockHistory history = ProductStockHistory.manualAdjust(
                     product.getSellerId(),
                     product.getId(),
@@ -189,6 +190,26 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         return ProductUpdateResult.from(product);
     }
+
+    // 펀딩에 의한 재고 감소
+    @Override
+    public void decreaseStockByFunding(Long productid) {
+        Product product = productSupport.findById(productid);
+
+        Product.StockChangeResult result = product.decreaseStockByFunding();
+
+        // todo 재고이력 저장 도메인에서 도메인이벤트 발행하기 and 어플리케이션 -> 어댑터 호출하고있음;;
+        ProductStockHistory history = ProductStockHistory.manualAdjust(
+                product.getSellerId(),
+                product.getId(),
+                result.delta(),
+                result.beforeStock(),
+                result.afterStock()
+        );
+        productStockHistoryRepository.save(history);
+    }
+
+    /// ///  메서드 //////
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)
     // 컨트롤러에서 web Dto로 변환 (ProductDto)
