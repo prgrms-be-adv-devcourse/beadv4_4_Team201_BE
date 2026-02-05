@@ -58,7 +58,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -105,7 +105,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -155,7 +155,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -202,7 +202,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -262,7 +262,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -309,7 +309,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
 			);
@@ -366,7 +366,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -418,7 +418,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.BANK_TRANSFER,
 				amount, orderItems
 			);
@@ -461,7 +461,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.VIRTUAL_ACCOUNT,
 				amount, orderItems
 			);
@@ -509,7 +509,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreatePaymentCommand command = new CreatePaymentCommand(
-				memberId, orderId,
+				orderId, memberId, orderId,
 				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);

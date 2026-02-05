@@ -1,6 +1,7 @@
 package app.giftify.payment.adapter.inbound.web;
 
 import java.util.Collections;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,9 +47,11 @@ public class PaymentController implements PaymentV2ApiSpec {
 		log.info("[PaymentController] 결제 생성 요청. memberId={}, amount={}", memberId, request.amount());
 
 		String orderId = request.orderId() != null ? request.orderId() : "CHG-" + System.currentTimeMillis();
+		String idempotencyKey = UUID.randomUUID().toString(); // 주문이 없으므로 별도의 멱등성 키 생성 필요
 		var requestedAmount = Money.of(request.amount());
 
 		CreatePaymentCommand command = new CreatePaymentCommand(
+			idempotencyKey,
 			memberId,
 			orderId,
 			PaymentType.POINT_CHARGE,

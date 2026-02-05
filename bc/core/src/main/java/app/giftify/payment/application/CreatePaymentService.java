@@ -31,7 +31,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 	@Override
 	public PaymentCreatedResult create(CreatePaymentCommand command) {
 		// 1. 멱등성 체크 - 이미 존재하는 결제인지 확인
-		return paymentRepository.findByIdempotencyKey(command.getIdempotencyKey())
+		return paymentRepository.findByIdempotencyKey(command.idempotencyKey())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),
@@ -54,7 +54,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		// 3. Payment 생성
 		Payment payment = Payment.create(
 			context,
-			command.getIdempotencyKey(),
+			command.idempotencyKey(),
 			command.expectedAmount(),
 			command.expectedAmount(),  // paidAmount = originAmount (초기값)
 			command.orderItems()
@@ -63,7 +63,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		// 4. 저장
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. 내부 지갑 결제(예치금/포인트)면 즉시 처리
+		// 5. 내부 지갑 결제(예치금)면 즉시 처리
 		if (command.method().isWalletPayment()) {
 			return handleWalletPayment(savedPayment, command);
 		}
@@ -100,7 +100,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 			return PaymentCreatedResult.insufficientWalletBalance(
 				payment.getId(),
 				payment.getOrderId(),
-				command.getIdempotencyKey(),
+				command.idempotencyKey(),
 				result.requiredAmount(),
 				result.currentBalance()
 			);
