@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -103,7 +104,9 @@ class PaymentControllerTest {
 				1L,
 				providedOrderId,
 				PaymentStatus.PENDING,
-				true
+				null,
+				null,
+				LocalDateTime.now()
 			);
 
 			given(chargeDepositUseCase.charge(any(ChargeDepositCommand.class))).willReturn(result);
