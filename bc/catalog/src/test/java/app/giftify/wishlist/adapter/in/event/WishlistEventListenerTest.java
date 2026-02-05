@@ -148,7 +148,7 @@ class WishlistEventListenerTest {
         }
 
         @Test
-        @DisplayName("펀딩 거절 이벤트 - 위시리스트 아이템 상태가 NO_THANKS로 변경된다")
+        @DisplayName("펀딩 거절 이벤트 - 위시리스트 아이템 상태가 PENDING 으로 변경된다")
         void handleFundingCanceled_ChangesStatusToNoThanks() {
             // given
             Long wishlistItemId = 1L;
@@ -168,7 +168,7 @@ class WishlistEventListenerTest {
             listener.handleFundingCanceled(event);
 
             // then
-            assertThat(wishlistItem.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.NO_THANKS);
+            assertThat(wishlistItem.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.PENDING);
         }
 
         @Test
