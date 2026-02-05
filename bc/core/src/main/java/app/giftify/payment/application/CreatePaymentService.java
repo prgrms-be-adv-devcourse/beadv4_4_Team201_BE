@@ -13,6 +13,8 @@ import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentCreateContext;
+import app.giftify.payment.domain.PaymentErrorCode;
+import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
@@ -43,7 +45,9 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 				existing.getId(),
 				existing.getOrderId(),
 				existing.getStatus(),
-				requiresPgApproval(existing.getMethod())
+				existing.getPaymentKey(),
+				null,
+				existing.getCreatedAt()
 			))
 			.orElseGet(() -> createDepositChargePayment(command));
 	}
@@ -71,12 +75,13 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 		log.info("[Payment] 예치금 충전 결제 생성. paymentId={}, orderId={}, amount={}",
 			savedPayment.getId(), savedPayment.getOrderId(), command.amount());
 
-		// 예치금 충전은 항상 PG 승인 필요
 		return new PaymentCreatedResult(
 			savedPayment.getId(),
 			savedPayment.getOrderId(),
 			savedPayment.getStatus(),
-			true
+			savedPayment.getPaymentKey(),
+			null,
+			savedPayment.getCreatedAt()
 		);
 	}
 
@@ -90,7 +95,9 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 				existing.getId(),
 				existing.getOrderId(),
 				existing.getStatus(),
-				requiresPgApproval(existing.getMethod())
+				existing.getPaymentKey(),
+				null,
+				existing.getCreatedAt()
 			))
 			.orElseGet(() -> createFundingPayment(command));
 	}
@@ -127,7 +134,9 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			savedPayment.getId(),
 			savedPayment.getOrderId(),
 			savedPayment.getStatus(),
-			true
+			savedPayment.getPaymentKey(),
+			null,
+			savedPayment.getCreatedAt()
 		);
 	}
 
@@ -145,11 +154,10 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			log.warn("[Payment] 예치금 잔액 부족. paymentId={}, required={}, current={}",
 				payment.getId(), result.requiredAmount(), result.currentBalance());
 
-			return PaymentCreatedResult.insufficientWalletBalance(
-				payment.getId(),
-				payment.getOrderId(),
-				result.requiredAmount(),
-				result.currentBalance()
+			throw new PaymentException(
+				PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE,
+				String.format("필요 금액: %s, 현재 잔액: %s",
+					result.requiredAmount(), result.currentBalance())
 			);
 		}
 
@@ -160,14 +168,9 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			payment.getId(),
 			payment.getOrderId(),
 			PaymentStatus.PENDING,
-			false
+			payment.getPaymentKey(),
+			null,
+			payment.getCreatedAt()
 		);
-	}
-
-	//--------- 공통 헬퍼 메서드 ----------//
-
-	private boolean requiresPgApproval(PaymentMethod method) {
-		// 내부 지갑 결제(예치금)는 PG 승인 불필요
-		return !method.isWalletPayment();
 	}
 }

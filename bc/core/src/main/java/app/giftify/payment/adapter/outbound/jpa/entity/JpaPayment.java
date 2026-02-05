@@ -149,6 +149,7 @@ public class JpaPayment extends BaseJpaEntity {
 			.paymentKey(paymentKey)
 			.approveCode(approveCode)
 			.paidAt(paidAt)
+			.createdAt(super.getCreatedAt())
 			.build();
 	}
 
