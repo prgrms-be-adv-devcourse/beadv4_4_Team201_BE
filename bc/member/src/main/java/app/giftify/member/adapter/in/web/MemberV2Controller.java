@@ -22,7 +22,7 @@ import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentAuthSub;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +48,7 @@ public class MemberV2Controller implements MemberV2Api {
     @Override
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMe(
-            @AuthenticatedMember String authSub
+            @CurrentAuthSub String authSub
     ) {
         if (authSub == null) {
             return ResponseEntity.status(401).build();
@@ -65,7 +65,7 @@ public class MemberV2Controller implements MemberV2Api {
     @Override
     @PatchMapping("/me")
     public ResponseEntity<MemberResponse> updateMe(
-            @AuthenticatedMember String authSub,
+            @CurrentAuthSub String authSub,
             @RequestBody @Valid MemberUpdateRequest request
     ) {
         if (authSub == null) {
@@ -96,7 +96,7 @@ public class MemberV2Controller implements MemberV2Api {
     @Override
     @PostMapping("/signup")
     public ResponseEntity<MemberResponse> signup(
-            @AuthenticatedMember String authSub,
+            @CurrentAuthSub String authSub,
             @RequestBody @Valid SignupRequest request
     ) {
         if (authSub == null) {
@@ -118,7 +118,7 @@ public class MemberV2Controller implements MemberV2Api {
     @Override
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdraw(
-            @AuthenticatedMember String authSub
+            @CurrentAuthSub String authSub
     ) {
         if (authSub == null) {
             return ResponseEntity.status(401).build();

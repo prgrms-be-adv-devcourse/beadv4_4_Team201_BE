@@ -10,7 +10,7 @@ import app.giftify.member.domain.exception.InvalidNicknameException;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentAuthSub;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class MemberController {
     // Auth0 인증 정보(JWT)를 기반으로 가입여부 확인
     @GetMapping("/check-registration")
     public ResponseEntity<?> checkRegistration(
-            @AuthenticatedMember String authSub
+            @CurrentAuthSub String authSub
     ) {
         log.debug("[Controller] checkRegistration called with authSub: {}", authSub);
         if (authSub == null) {
@@ -59,7 +59,7 @@ public class MemberController {
     // 신규 회원 가입 (추가 정보 입력)
     @PostMapping("/signup")
     public ResponseEntity<Member> signup(
-            @AuthenticatedMember String authSub,
+            @CurrentAuthSub String authSub,
             @RequestBody @Valid SignupRequest request
     ) {
         if (authSub == null) {
@@ -75,7 +75,7 @@ public class MemberController {
     @Deprecated
     @GetMapping("/getMyInfo")
     public ResponseEntity<?> getMyInfo(
-            @AuthenticatedMember String authSub
+            @CurrentAuthSub String authSub
     ) {
         if (authSub == null) {
             return ResponseEntity.status(401).build();
@@ -90,7 +90,7 @@ public class MemberController {
     @Deprecated
     @PatchMapping("/updateMyInfo")
     public ResponseEntity<Member> updateMyInfo(
-            @AuthenticatedMember String authSub,
+            @CurrentAuthSub String authSub,
             @RequestBody @Valid MemberUpdateRequest request
     ) {
         if (authSub == null) {
@@ -119,7 +119,7 @@ public class MemberController {
     // 회원 탈퇴
     @DeleteMapping("/withdraw")
     public ResponseEntity<Void> withdraw(
-            @AuthenticatedMember String authSub
+            @CurrentAuthSub String authSub
     ) {
         if (authSub == null) {
             return ResponseEntity.status(401).build();

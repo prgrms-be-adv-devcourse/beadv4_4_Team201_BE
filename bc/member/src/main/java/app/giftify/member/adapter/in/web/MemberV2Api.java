@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import app.giftify.member.adapter.in.web.dto.MemberResponse;
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentAuthSub;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +38,7 @@ public interface MemberV2Api {
             content = @Content
     )
     ResponseEntity<MemberResponse> getMe(
-            @Parameter(hidden = true) @AuthenticatedMember String authSub
+            @Parameter(hidden = true) @CurrentAuthSub String authSub
     );
 
     @Operation(
@@ -68,7 +68,7 @@ public interface MemberV2Api {
             content = @Content
     )
     ResponseEntity<MemberResponse> updateMe(
-            @Parameter(hidden = true) @AuthenticatedMember String authSub,
+            @Parameter(hidden = true) @CurrentAuthSub String authSub,
             @RequestBody @Valid MemberUpdateRequest request
     );
 
@@ -102,7 +102,7 @@ public interface MemberV2Api {
             content = @Content
     )
     ResponseEntity<MemberResponse> signup(
-            @Parameter(hidden = true) @AuthenticatedMember String authSub,
+            @Parameter(hidden = true) @CurrentAuthSub String authSub,
             @RequestBody @Valid SignupRequest request
     );
 
@@ -136,6 +136,6 @@ public interface MemberV2Api {
             content = @Content
     )
     ResponseEntity<Void> withdraw(
-            @Parameter(hidden = true) @AuthenticatedMember String authSub
+            @Parameter(hidden = true) @CurrentAuthSub String authSub
     );
 }
