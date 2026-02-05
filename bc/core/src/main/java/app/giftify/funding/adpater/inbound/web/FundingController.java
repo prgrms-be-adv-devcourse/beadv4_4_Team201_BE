@@ -37,6 +37,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 펀딩 종료 처리
+    @Override
     @PutMapping("/{id}/close")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> closeFunding(@PathVariable Long id) {
         // TODO: 관리자 권한 체크 필요
@@ -45,6 +46,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 펀딩 만료 처리
+    @Override
     @PutMapping("/{id}/expire")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> expireFunding(@PathVariable Long id) {
         // TODO: 관리자 권한 체크 필요
@@ -53,6 +55,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 참여한 펀딩 단건 조회
+    @Override
     @GetMapping("/participated/{id}")
     public ResponseEntity<RsData<ContributeFundingResponseDto>> getParticipatedFunding(
             @PathVariable Long id,
@@ -63,6 +66,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 참여한 펀딩 목록 조회
+    @Override
     @GetMapping("participated/list")
     public ResponseEntity<RsData<PageResponse<ContributeFundingResponseDto>>> getParticipatedFundings(
             @RequestParam(defaultValue = "0") int page,
@@ -74,6 +78,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 펀딩 거절
+    @Override
     @PostMapping("/{id}/refuse")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> refuseFunding(
             @PathVariable Long id,
@@ -83,6 +88,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 펀딩 수락
+    @Override
     @PostMapping("/{id}/accept")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
             @PathVariable Long id,
@@ -92,6 +98,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 나의 펀딩 단건 조회
+    @Override
     @GetMapping("/my/{id}")
     public ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
             @PathVariable Long id,
@@ -101,6 +108,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 나의 펀딩 목록 조회
+    @Override
     @GetMapping("/my/list")
     public ResponseEntity<RsData<PageResponse<MyFundingSummaryDto>>> getMyFundings(
             @RequestParam(defaultValue = "0") int page,

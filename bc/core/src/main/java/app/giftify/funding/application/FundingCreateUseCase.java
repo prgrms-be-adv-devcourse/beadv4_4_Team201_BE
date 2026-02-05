@@ -24,7 +24,7 @@ public class FundingCreateUseCase {
     public FundingCreateResult createFunding(Long wishlistItemId) {
         WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(wishlistItemId);
         Integer targetAmount = snapshot.productPrice();
-        Long receiverId = snapshot.memberId();
+        Long receiverId = snapshot.wishlistOwnerId();
         Long productId = snapshot.productId();
 
         Funding funding = Funding.startFunding(wishlistItemId, productId, receiverId, targetAmount);

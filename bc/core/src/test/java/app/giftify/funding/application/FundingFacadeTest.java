@@ -3,7 +3,7 @@ package app.giftify.funding.application;
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.funding.domain.FundingStatus;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
