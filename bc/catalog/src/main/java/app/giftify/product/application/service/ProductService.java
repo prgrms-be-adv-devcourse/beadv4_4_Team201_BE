@@ -193,8 +193,21 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                         product.active();
                 }
                 case INACTIVE -> {
-                    if (product.getStatus() != INACTIVE)
+                    if (product.getStatus() != INACTIVE) {
+                        log.info("진행 중인 펀딩 확인 중 ...");
+                        // todo 펀딩 api call try-catch
+                        // todo 펀딩 api call return false
                         product.inActive();
+                        log.info("[판매 중지 변경 성공] 변경 완료");
+
+                        // todo 펀딩 api call return true
+                        log.info("[판매 중지 변경 실패] 진행 중인 펀딩이 있습니다.");
+                        /**
+                         * throw Exception
+                         * "펀딩이 진행 중인 상품이 있습니다.
+                         * 판매를 원하지 않으실 경우, 재고를 0으로 변경하세요."
+                         */
+                    }
                 }
             }
         }
@@ -206,6 +219,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 product.getName(),
                 product.getImageKey()
         ));
+        log.info("상품 정보가 업데이트 되었습니다.");
 
         return ProductUpdateResult.from(product);
     }
