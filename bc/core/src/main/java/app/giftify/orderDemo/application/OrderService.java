@@ -7,7 +7,7 @@ import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.inbound.vo.PaymentSnapshot;
+import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -94,10 +94,10 @@ public class OrderService {
     }
 
     @Transactional
-    public void markOrderAsPaid(String orderNumber, PaymentSnapshot snapshot) {
-        Order order = orderRepository.getByOrderNumber(orderNumber);
+    public void markOrderAsPaid(MarkOrderAsPaidCommand command) {
+        Order order = orderRepository.getByOrderNumber(command.orderNumber());
 
-        order.toPaid(snapshot.paymentKey(), snapshot.lastTransactionKey(), snapshot.createdAt());
+        order.toPaid(command.paymentKey(), command.lastTransactionKey(), command.createdAt());
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {

@@ -1,12 +1,17 @@
 package app.giftify.facade;
 
 import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.mapper.OrderItemSnapshotMapper;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.funding.application.FundingFacade;
 import app.giftify.orderDemo.application.OrderService;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
+import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -35,26 +40,41 @@ public class CoreFacade {
         CreateOrderCommand createOrderCommand = CreateOrderCommand.of(command);
 
         OrderSnapshot orderSnapshot = orderService.createOrder(createOrderCommand, fundingSnapshots);
-        // 위시리스트아이템 스냅샷 확보
-        // todo: api 요청을 통해 위시리스트 아이템 id로 스냅샷 반환
 
-        // 펀딩 조회
-        // todo: 펀딩 도메인은 위시리스트 아이템 식별자를 통해 펀딩 스냅샷 반환
+        CreateFundingPaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
+        PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);
 
-        // 주문 생성
-        // todo: 각 스냅샷을 통해 주문, 주문 아이템 생성
+        MarkOrderAsPaidCommand markOrderAsPaidCommand = new MarkOrderAsPaidCommand(
+                paymentResult.orderId(),
+                paymentResult.paymentKey(),
+                paymentResult.lastTransactionKey(),
+                paymentResult.createdAt()
+        );
+        orderService.markOrderAsPaid(markOrderAsPaidCommand);
 
-        // 결제 처리
-        // todo: 주문 객체를 통해 결제 처리
+        processFundingActions(orderSnapshot);
 
-        // 지갑 차감
-        // todo: 결제 객체를 통해 지갑 차감
+        return new PlaceOrderResult(orderSnapshot.orderId());
+    }
 
-        // todo: 결제, 주문, 주문 아이템, 펀딩 상태 변경
+    private void processFundingActions(OrderSnapshot orderSnapshot) {
+        orderSnapshot.orderItemSnapshots().forEach(item -> {
+            if (item.targetType() == TargetType.FUNDING) {
+                fundingFacade.contributeFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
+            } else if (item.targetType() == TargetType.FUNDING_PENDING) {
+                fundingFacade.startFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
+            }
+        });
+    }
 
-        // todo: (optional) 펀딩 생성
-
-        return null;
+    private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
+        return new CreateFundingPaymentCommand(
+                orderSnapshot.buyerId(),
+                orderSnapshot.orderNumber(),
+                orderSnapshot.paymentMethod(),
+                orderSnapshot.totalAmount(),
+                OrderItemSnapshotMapper.fromOrderDemoList(orderSnapshot.orderItemSnapshots())
+        );
     }
 
     // todo: FundingFacade에서 List로 반환하도록 수정 시 제거 예정

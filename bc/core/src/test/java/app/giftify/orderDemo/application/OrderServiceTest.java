@@ -4,7 +4,7 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemReque
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.inbound.vo.PaymentSnapshot;
+import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderSnapshot;
@@ -41,7 +41,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -238,8 +237,8 @@ class OrderServiceTest {
 
             String orderNumber = "orderNumber";
 
-            PaymentSnapshot snapshot = new PaymentSnapshot(
-                    1L,
+            MarkOrderAsPaidCommand command = new MarkOrderAsPaidCommand(
+                    "orderNumber",
                     "PG_KEY_123",
                     "TX_KEY_456",
                     LocalDateTime.now()
@@ -248,14 +247,14 @@ class OrderServiceTest {
             given(orderRepository.getByOrderNumber(orderNumber)).willReturn(order);
 
             // when
-            orderService.markOrderAsPaid(orderNumber, snapshot);
+            orderService.markOrderAsPaid(command);
 
             // then
             // 1. 레포지토리 조회가 정확한 주문번호로 이루어졌는지 확인
             verify(orderRepository).getByOrderNumber(orderNumber);
 
             // 2. 엔티티의 toPaid 메서드가 스냅샷의 데이터로 호출되었는지 확인
-            verify(order).toPaid(snapshot.paymentKey(), snapshot.lastTransactionKey(), snapshot.createdAt());
+            verify(order).toPaid(command.paymentKey(), command.lastTransactionKey(), command.createdAt());
 
             // 3. 실제 상태가 변했는지 확인 (더티 체킹에 의해 반영될 상태)
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
@@ -265,8 +264,8 @@ class OrderServiceTest {
         @DisplayName("실패: 존재하지 않는 주문번호일 경우 예외가 발생한다")
         void fail_not_found() {
             // given
-            PaymentSnapshot snapshot = new PaymentSnapshot(
-                    1L,
+            MarkOrderAsPaidCommand command = new MarkOrderAsPaidCommand(
+                    "orderNumber",
                     "PG_KEY_123",
                     "TX_KEY_456",
                     LocalDateTime.now()
@@ -278,7 +277,7 @@ class OrderServiceTest {
                     .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
 
             // when & then
-            assertThatThrownBy(() -> orderService.markOrderAsPaid(orderNumber, snapshot))
+            assertThatThrownBy(() -> orderService.markOrderAsPaid(command))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
@@ -293,8 +292,8 @@ class OrderServiceTest {
             // given
             // 이미 취소된 주문 준비
             Order cancelledOrder = OrderFixture.createOrderWithStatus(OrderStatus.CANCELED);
-            PaymentSnapshot snapshot = new PaymentSnapshot(
-                    1L,
+            MarkOrderAsPaidCommand command = new MarkOrderAsPaidCommand(
+                    "orderNumber",
                     "PG_KEY_123",
                     "TX_KEY_456",
                     LocalDateTime.now()
@@ -305,7 +304,7 @@ class OrderServiceTest {
             given(orderRepository.getByOrderNumber(orderNumber)).willReturn(cancelledOrder);
 
             // when & then
-            assertThatThrownBy(() -> orderService.markOrderAsPaid(orderNumber, snapshot))
+            assertThatThrownBy(() -> orderService.markOrderAsPaid(command))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
