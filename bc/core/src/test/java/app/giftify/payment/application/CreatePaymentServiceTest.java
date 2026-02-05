@@ -1,6 +1,6 @@
 package app.giftify.payment.application;
 
-import app.giftify.payment.application.inbound.CreatePaymentCommand;
+import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.OrderItemSnapshot;
@@ -57,9 +57,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
@@ -103,9 +103,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
@@ -152,9 +152,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
@@ -199,9 +199,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
@@ -258,9 +258,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
@@ -305,9 +305,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
 			);
 
@@ -361,9 +361,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
@@ -412,9 +412,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.BANK_TRANSFER,
+				PaymentMethod.BANK_TRANSFER,
 				amount, orderItems
 			);
 
@@ -455,9 +455,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.VIRTUAL_ACCOUNT,
+				PaymentMethod.VIRTUAL_ACCOUNT,
 				amount, orderItems
 			);
 
@@ -503,9 +503,9 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
 				memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
