@@ -25,8 +25,8 @@ import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.type.PaymentType;
@@ -75,7 +75,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -126,7 +126,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -174,7 +174,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(List.of())
@@ -218,7 +218,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(List.of())
@@ -270,7 +270,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -350,7 +350,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -401,7 +401,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)

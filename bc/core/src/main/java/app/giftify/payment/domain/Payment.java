@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 

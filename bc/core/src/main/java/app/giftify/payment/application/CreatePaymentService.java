@@ -9,8 +9,8 @@ import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentCreateContext;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.wallet.application.inbound.DeductWalletCommand;
 import app.giftify.wallet.application.inbound.DeductWalletResult;
 import app.giftify.wallet.application.inbound.DeductWalletUseCase;
@@ -31,7 +31,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 	@Override
 	public PaymentCreatedResult create(CreatePaymentCommand command) {
 		// 1. 멱등성 체크 - 이미 존재하는 결제인지 확인
-		return paymentRepository.findByIdempotencyKey(command.idempotencyKey())
+		return paymentRepository.findByIdempotencyKey(command.getIdempotencyKey())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),
@@ -54,7 +54,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		// 3. Payment 생성
 		Payment payment = Payment.create(
 			context,
-			command.idempotencyKey(),
+			command.getIdempotencyKey(),
 			command.expectedAmount(),
 			command.expectedAmount(),  // paidAmount = originAmount (초기값)
 			command.orderItems()
@@ -63,8 +63,8 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		// 4. 저장
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. WALLET 결제면 즉시 처리
-		if (command.method() == PaymentMethod.WALLET) {
+		// 5. 내부 지갑 결제(예치금/포인트)면 즉시 처리
+		if (command.method().isWalletPayment()) {
 			return handleWalletPayment(savedPayment, command);
 		}
 
@@ -79,8 +79,8 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 	}
 
 	private boolean requiresPgApproval(PaymentMethod method) {
-		// WALLET 결제는 PG 승인 불필요
-		return method != PaymentMethod.WALLET;
+		// 내부 지갑 결제(예치금/포인트)는 PG 승인 불필요
+		return !method.isWalletPayment();
 	}
 
 	private PaymentCreatedResult handleWalletPayment(Payment payment, CreatePaymentCommand command) {
@@ -100,7 +100,7 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 			return PaymentCreatedResult.insufficientWalletBalance(
 				payment.getId(),
 				payment.getOrderId(),
-				command.idempotencyKey(),
+				command.getIdempotencyKey(),
 				result.requiredAmount(),
 				result.currentBalance()
 			);

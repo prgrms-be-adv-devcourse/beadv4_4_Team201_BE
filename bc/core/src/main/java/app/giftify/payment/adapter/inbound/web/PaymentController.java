@@ -1,9 +1,6 @@
 package app.giftify.payment.adapter.inbound.web;
 
 import java.util.Collections;
-import java.util.UUID;
-
-import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,11 +19,12 @@ import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.CreatePaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,12 +45,10 @@ public class PaymentController implements PaymentV2ApiSpec {
 	) {
 		log.info("[PaymentController] 결제 생성 요청. memberId={}, amount={}", memberId, request.amount());
 
-		String orderId = request.orderId() != null ? request.orderId() : "CHG-" + UUID.randomUUID();
-		String idempotencyKey = UUID.randomUUID().toString();
+		String orderId = request.orderId() != null ? request.orderId() : "CHG-" + System.currentTimeMillis();
 		var requestedAmount = Money.of(request.amount());
 
 		CreatePaymentCommand command = new CreatePaymentCommand(
-			idempotencyKey,
 			memberId,
 			orderId,
 			PaymentType.POINT_CHARGE,
