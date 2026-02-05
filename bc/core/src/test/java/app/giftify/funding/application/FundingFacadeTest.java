@@ -40,12 +40,12 @@ class FundingFacadeTest {
         Integer amount = 10000;
 
         Funding funding = mock(Funding.class);
-        WishlistItemSnapshot snapshot = new WishlistItemSnapshot(wishlistItemId, 10L, "Product", 50000, 100L);
+        WishlistItemSnapshot snapshot = new WishlistItemSnapshot(wishlistItemId, 10L, "Product", 50000, 100L, 10L);
         FundingCreateResult createResult = new FundingCreateResult(funding, snapshot);
 
         given(fundingCreateUseCase.createFunding(wishlistItemId)).willReturn(createResult);
         given(fundingContributeUseCase.contribute(wishlistItemId, participantId, amount)).willReturn(funding);
-        
+
         given(funding.getId()).willReturn(100L);
         given(funding.getTargetAmount()).willReturn(50000);
         given(funding.getCurrentAmount()).willReturn(amount);
