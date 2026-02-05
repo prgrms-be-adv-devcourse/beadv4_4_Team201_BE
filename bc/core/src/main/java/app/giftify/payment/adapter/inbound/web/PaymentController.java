@@ -1,7 +1,5 @@
 package app.giftify.payment.adapter.inbound.web;
 
-import java.util.Collections;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,17 +10,15 @@ import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeResponse;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmResponse;
+import app.giftify.payment.application.inbound.ChargeDepositCommand;
+import app.giftify.payment.application.inbound.ChargeDepositUseCase;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
 import app.giftify.payment.application.inbound.ConfirmPaymentResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
-import app.giftify.payment.application.inbound.CreatePaymentCommand;
-import app.giftify.payment.application.inbound.CreatePaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v2/payments")
 @RequiredArgsConstructor
 public class PaymentController implements PaymentV2ApiSpec {
-	private final CreatePaymentUseCase createPaymentUseCase;
+	private final ChargeDepositUseCase chargeDepositUseCase;
 	private final ConfirmPaymentUseCase confirmPaymentUseCase;
 	private final QueryPaymentUseCase queryPaymentUseCase;
 
@@ -43,22 +39,19 @@ public class PaymentController implements PaymentV2ApiSpec {
 		@CurrentMemberId Long memberId,
 		@Valid @RequestBody PaymentChargeRequest request
 	) {
-		log.info("[PaymentController] 결제 생성 요청. memberId={}, amount={}, orderId={}",
+		log.info("[PaymentController] 예치금 충전 요청. memberId={}, amount={}, orderId={}",
 			memberId, request.amount(), request.orderId());
 
 		var requestedAmount = Money.of(request.amount());
 
 		// orderId가 멱등성 키 역할을 함 (프론트에서 생성하여 전송)
-		CreatePaymentCommand command = new CreatePaymentCommand(
+		ChargeDepositCommand command = new ChargeDepositCommand(
 			memberId,
-			request.orderId(),        // 프론트에서 보낸 orderId = 멱등성 키
-			PaymentType.POINT_CHARGE,
-			PaymentMethod.CARD,
-			requestedAmount,
-			Collections.emptyList()
+			request.orderId(),
+			requestedAmount
 		);
 
-		PaymentCreatedResult result = createPaymentUseCase.create(command);
+		PaymentCreatedResult result = chargeDepositUseCase.charge(command);
 
 		return ResponseEntity.ok(RsData.success(
 			PaymentChargeResponse.from(result, requestedAmount))
