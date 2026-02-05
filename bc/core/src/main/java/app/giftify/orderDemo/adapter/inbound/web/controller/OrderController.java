@@ -38,9 +38,7 @@ public class OrderController implements OrderControllerSpec {
 
         PlaceOrderResult response = coreFacade.placeOrder(command);
 
-        // todo: 응답 객체 생성 구현
-
-        return null;
+        return ResponseEntity.ok(RsData.success(response));
     }
 
     @GetMapping
