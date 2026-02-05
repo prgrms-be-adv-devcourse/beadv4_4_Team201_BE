@@ -25,8 +25,8 @@ import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.type.PaymentType;
@@ -75,7 +75,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -126,7 +126,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -150,11 +150,11 @@ class WalletDeductedEventHandlerTest {
 	}
 
 	@Nested
-	@DisplayName("POINT_CHARGE 타입 결제 처리")
+	@DisplayName("DEPOSIT_CHARGE(예치금 충전) 타입 결제 처리")
 	class PointChargePaymentTests {
 
 		@Test
-		@DisplayName("POINT_CHARGE 결제가 완료되면 PaymentPaidEvent를 발행한다")
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 PaymentPaidEvent를 발행한다")
 		void handle_PublishesPaymentPaidEvent_WhenPaymentTypeIsPointCharge() {
 			// given
 			Long paymentId = 2L;
@@ -173,8 +173,8 @@ class WalletDeductedEventHandlerTest {
 				.idempotencyKey("idem-key-456")
 				.memberId(memberId)
 				.orderId(orderId)
-				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.WALLET)
+				.type(PaymentType.DEPOSIT_CHARGE)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(List.of())
@@ -194,11 +194,11 @@ class WalletDeductedEventHandlerTest {
 			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
 			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
 			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.POINT_CHARGE);
+			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 		}
 
 		@Test
-		@DisplayName("POINT_CHARGE 결제 완료 시 Payment 상태가 PAID로 변경된다")
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제 완료 시 Payment 상태가 PAID로 변경된다")
 		void handle_UpdatesPaymentStatusToPaid_WhenPointChargePayment() {
 			// given
 			Long paymentId = 2L;
@@ -217,8 +217,8 @@ class WalletDeductedEventHandlerTest {
 				.idempotencyKey("idem-key-456")
 				.memberId(memberId)
 				.orderId(orderId)
-				.type(PaymentType.POINT_CHARGE)
-				.method(PaymentMethod.WALLET)
+				.type(PaymentType.DEPOSIT_CHARGE)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(List.of())
@@ -270,7 +270,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -350,7 +350,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
@@ -401,7 +401,7 @@ class WalletDeductedEventHandlerTest {
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)

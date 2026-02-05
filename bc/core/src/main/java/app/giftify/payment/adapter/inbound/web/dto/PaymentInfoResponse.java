@@ -1,8 +1,8 @@
 package app.giftify.payment.adapter.inbound.web.dto;
 
 import app.giftify.payment.application.inbound.InternalPaymentResult;
-import app.giftify.payment.domain.PaymentMethod;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 

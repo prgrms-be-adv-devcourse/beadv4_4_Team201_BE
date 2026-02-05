@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -485,8 +486,8 @@ public class Payment extends BaseDomainModel {
 					"[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
 			}
 
-			// POINT_CHARGE가 아닌 경우에만 orderItems 검증
-			if (type != PaymentType.POINT_CHARGE) {
+			// DEPOSIT_CHARGE(예치금 충전)가 아닌 경우에만 orderItems 검증
+			if (type != PaymentType.DEPOSIT_CHARGE) {
 				if (orderItems == null || orderItems.isEmpty()) {
 					throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 						"[Payment] orderItems는 필수입니다.");
