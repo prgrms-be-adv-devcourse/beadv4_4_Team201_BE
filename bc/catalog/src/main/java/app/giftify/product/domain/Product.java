@@ -137,7 +137,29 @@ public class Product extends BaseDomainModel {
         return new StockChangeResult(beforeStock, this.stock, newStock - beforeStock);
     }
 
-    // 상품 재고 감소
+    // 펀딩에 의한 상품 재고 감소
+    public StockChangeResult decreaseStockByFunding() {
+        int beforeStock = this.stock;
+        --this.stock;
+
+        if (this.stock == 0 && this.status == ACTIVE)
+            registerEvent(new ProductSaleDisabledEvent(this.getId()));
+
+        return new StockChangeResult(beforeStock, this.stock, -1);
+    }
+
+    // 펀딩에 의한 상품 재고 추가 (반품 등등)
+    public StockChangeResult increaseStockByFunding() {
+        int beforeStock = this.stock;
+        ++this.stock;
+
+        if (beforeStock == 0 && this.status == ACTIVE)
+            registerEvent(new ProductSaleEnabledEvent(this.getId()));
+
+        return new StockChangeResult(beforeStock, this.stock, 1);
+    }
+
+    // 일반 주문에 의한 상품 재고 감소
     public StockChangeResult decreaseStock(int quantity) {
         if (this.stock < quantity)
             throw new ProductException(PRODUCT_OUT_OF_STOCK);
@@ -150,7 +172,7 @@ public class Product extends BaseDomainModel {
         return new StockChangeResult(beforeStock, this.stock, -quantity);
     }
 
-    // 상품 재고 추가
+    // 일반 주문에 의한 상품 재고 추가 (반품 등등)
     public StockChangeResult increaseStock(int quantity) {
         int beforeStock = this.stock;
         this.stock += quantity;
