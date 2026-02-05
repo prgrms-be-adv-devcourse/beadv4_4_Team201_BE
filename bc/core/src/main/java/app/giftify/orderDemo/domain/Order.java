@@ -2,6 +2,7 @@ package app.giftify.orderDemo.domain;
 
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.BaseAggregateRoot;
 import app.giftify.shared.domain.type.PaymentMethodType;
 import app.giftify.shared.domain.vo.Money;
@@ -139,5 +140,25 @@ public class Order extends BaseAggregateRoot {
                 .createdAt(createdAt)
                 .orderItemSnapshots(itemSnapshots)
                 .build();
+    }
+
+    public void toPaid(String paymentKey, String lastTransactionKey, LocalDateTime paidAt) {
+        if (this.status == OrderStatus.PAID) {
+            return;
+        }
+
+        if (status != OrderStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
+            );
+        }
+
+        this.paymentKey = paymentKey;
+        this.lastTransactionKey = lastTransactionKey;
+        this.paidAt = paidAt;
+        this.status = OrderStatus.PAID;
+
+        items.forEach(OrderItem::toPaid);
     }
 }

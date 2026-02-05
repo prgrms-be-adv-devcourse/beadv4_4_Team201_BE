@@ -25,7 +25,9 @@ public enum OrderErrorCode implements ErrorCode {
     ORDER_ITEM_NOT_ASSOCIATED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ORDER-113", "주문 아이템이 주문과 연결되지 않았습니다."),
     INVALID_ORDER_TYPE(HttpStatus.BAD_REQUEST.value(), "ORDER-114", "유효하지 않은 주문 타입입니다."),
 
-    ORDER_OWNER_MISMATCH(HttpStatus.FORBIDDEN.value(), "ORDER-115", "주문 소유자 불일치로 접근 권한이 없습니다.");
+    ORDER_OWNER_MISMATCH(HttpStatus.FORBIDDEN.value(), "ORDER-115", "주문 소유자 불일치로 접근 권한이 없습니다."),
+
+    INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT.value(), "ORDER-116", "잘못된 상태 변경 요청입니다.");
 
     private final int statusCode;
     private final String code;
