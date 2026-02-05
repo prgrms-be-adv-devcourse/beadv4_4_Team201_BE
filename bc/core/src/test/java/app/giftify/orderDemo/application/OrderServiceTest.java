@@ -12,7 +12,7 @@ import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import app.giftify.shared.domain.vo.Money;
@@ -69,7 +69,7 @@ class OrderServiceTest {
 
     private final CreateOrderCommand command = new CreateOrderCommand(
             buyerId,
-            PaymentMethodType.WALLET,
+            PaymentMethod.DEPOSIT,
             List.of(itemRequest)
     );
 
@@ -78,7 +78,8 @@ class OrderServiceTest {
             productId,
             "productName",
             200000,
-            200L
+            200L,
+            2002L
     );
 
     @Test
@@ -159,7 +160,7 @@ class OrderServiceTest {
                 1L,
                 Money.of("10000"),
                 OrderStatus.CREATED,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now()
@@ -170,7 +171,7 @@ class OrderServiceTest {
                 2L,
                 Money.of("20000"),
                 OrderStatus.CREATED,
-                PaymentMethodType.WALLET,
+                PaymentMethod.DEPOSIT,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now()
