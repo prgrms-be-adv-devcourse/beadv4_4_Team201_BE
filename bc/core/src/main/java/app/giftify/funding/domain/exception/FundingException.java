@@ -5,11 +5,11 @@ import app.giftify.shared.api.exception.ErrorCode;
 
 public class FundingException extends DomainException {
 
-    public FundingException(ErrorCode errorCode) {
+    public FundingException(FundingErrorCode errorCode) {
         super(errorCode);
     }
 
-    public FundingException(ErrorCode errorCode, String message) {
+    public FundingException(FundingErrorCode errorCode, String message) {
         super(errorCode, message);
     }
 
