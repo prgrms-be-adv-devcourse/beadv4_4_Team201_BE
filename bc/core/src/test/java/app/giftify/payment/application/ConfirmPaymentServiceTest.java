@@ -68,7 +68,7 @@ class ConfirmPaymentServiceTest {
 				.originAmount(Money.of(10000))
 				.paidAmount(Money.of(10000))
 				.orderItems(List.of(
-					new OrderItemSnapshot("item-1", "Test Item", Money.of(10000), 1, Money.of(10000), 1L)
+					new OrderItemSnapshot(1L, Money.of(10000), 1L)
 				))
 				.status(PaymentStatus.PENDING)
 				.build();

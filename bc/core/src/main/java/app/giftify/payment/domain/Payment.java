@@ -446,60 +446,60 @@ public class Payment extends BaseDomainModel {
 		}
 
 		private void validate() {
-			// 필수 필드 검증
-			if (idempotencyKey == null || idempotencyKey.isBlank()) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] idempotencyKey는 필수입니다.");
-			}
-			if (orderId == null || orderId.isBlank()) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] orderId는 필수입니다.");
-			}
-			if (memberId == null) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] memberId는 필수입니다.");
-			}
-			if (type == null) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] type은 필수입니다.");
-			}
-			if (method == null) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] method는 필수입니다.");
-			}
-			if (originAmount == null) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] originAmount는 필수입니다.");
-			}
-			if (paidAmount == null) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] paidAmount는 필수입니다.");
-			}
-			if (status == null) {
-				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-					"[Payment] status는 필수입니다.");
-			}
+			validateRequiredFields();
+			validateAmountInvariant();
+			validateOrderItemsIfRequired();
+		}
 
-			// 금액 불변식 검증
+		private void validateRequiredFields() {
+			requireNonBlank(idempotencyKey, "idempotencyKey");
+			requireNonBlank(orderId, "orderId");
+			requireNonNull(memberId, "memberId");
+			requireNonNull(type, "type");
+			requireNonNull(method, "method");
+			requireNonNull(originAmount, "originAmount");
+			requireNonNull(paidAmount, "paidAmount");
+			requireNonNull(status, "status");
+		}
+
+		private void requireNonBlank(String value, String fieldName) {
+			if (value == null || value.isBlank()) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] " + fieldName + "는 필수입니다.");
+			}
+		}
+
+		private void requireNonNull(Object value, String fieldName) {
+			if (value == null) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] " + fieldName + "는 필수입니다.");
+			}
+		}
+
+		private void validateAmountInvariant() {
 			if (paidAmount.isGreaterThan(originAmount)) {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
 			}
+		}
 
-			// DEPOSIT_CHARGE(예치금 충전)가 아닌 경우에만 orderItems 검증
-			if (type != PaymentType.DEPOSIT_CHARGE) {
-				if (orderItems == null || orderItems.isEmpty()) {
-					throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-						"[Payment] orderItems는 필수입니다.");
-				}
+		private void validateOrderItemsIfRequired() {
+			if (type == PaymentType.DEPOSIT_CHARGE) {
+				return;
+			}
 
-				Money itemsTotal = orderItems.stream()
-					.map(OrderItemSnapshot::subtotal)
-					.reduce(Money.zero(), Money::plus);
-				if (!itemsTotal.equals(originAmount)) {
-					throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-						"[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
-				}
+			if (orderItems == null || orderItems.isEmpty()) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] orderItems는 필수입니다.");
+			}
+
+			Money itemsTotal = orderItems.stream()
+				.map(OrderItemSnapshot::amount)
+				.reduce(Money.zero(), Money::plus);
+
+			if (!itemsTotal.equals(originAmount)) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
 			}
 		}
 	}
