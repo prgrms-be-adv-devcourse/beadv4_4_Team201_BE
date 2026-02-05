@@ -40,7 +40,7 @@ public record CreateFundingPaymentCommand(
 
 		// 실제 금액 계산 및 검증
 		Money itemsTotal = orderItems.stream()
-			.map(OrderItemSnapshot::subtotal)
+			.map(OrderItemSnapshot::amount)
 			.reduce(Money.zero(), Money::plus);
 
 		if (!itemsTotal.equals(expectedAmount)) {
