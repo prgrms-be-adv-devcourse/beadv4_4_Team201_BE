@@ -5,11 +5,15 @@ import java.math.BigDecimal;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.shared.domain.vo.Money;
 
+/**
+ * 예치금 충전 응답 DTO.
+ *
+ * <p>{@code orderId}는 Toss SDK 호출 시 필요하며, 멱등성 키 역할도 겸합니다.</p>
+ */
 public record PaymentChargeResponse(
 	Long paymentId,
-	String orderId,
-	BigDecimal amount,              // 프론트엔드 Toss SDK에서 필요 !!
-	String idempotencyKey,
+	String orderId,             // Toss SDK 필수 + 멱등성 키
+	BigDecimal amount,
 	String status
 ) {
 	public static PaymentChargeResponse from(PaymentCreatedResult result, Money paidAmount) {
@@ -17,7 +21,6 @@ public record PaymentChargeResponse(
 			result.paymentId(),
 			result.orderId(),
 			paidAmount.amount(),
-			result.idempotencyKey(),
 			result.status().name()
 		);
 	}

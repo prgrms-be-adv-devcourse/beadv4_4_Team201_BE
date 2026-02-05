@@ -87,7 +87,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		// 6. 상태 변경 (도메인 메서드)
 		payment.markAsPaid(
 			encryptedPaymentKey,
-			null,
+			null, // NOTE :: 승인번호는 환불/취소시에 필요할 수 있지만, paymentKey로도 일부분 가능함. TossConfirmResult 에서 approveNumber 를 받아오는 것으로 개선 가능
 			paidAt,
 			command.paymentKey()
 		);
@@ -95,7 +95,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		// 7. 저장 (uncommittedHistory 포함)
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 8. 이벤트 발행 (Wallet BC가 POINT_CHARGE 시 수신하여 지갑 충전)
+		// 8. 이벤트 발행 (Wallet BC가 DEPOSIT_CHARGE 시 수신하여 예치금 충전)
 		eventPublisher.publish(new PaymentConfirmedEvent(
 			savedPayment.getId(),
 			savedPayment.getMemberId(),
