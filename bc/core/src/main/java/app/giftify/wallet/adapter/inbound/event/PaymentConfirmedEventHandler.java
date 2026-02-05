@@ -13,13 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Payment 결제 완료 이벤트를 수신하여 Wallet 충전을 처리하는 핸들러.
  * <p>
- * PaymentType.POINT_CHARGE 타입의 결제가 완료되면
- * WalletService.charge()를 호출하여 지갑 잔액을 증가시킵니다.
+ * PaymentType.DEPOSIT_CHARGE 타입의 결제가 완료되면
+ * WalletService.charge()를 호출하여 예치금 잔액을 증가시킵니다.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentConfirmedEvnetHandler {
+public class PaymentConfirmedEventHandler {
 	private final ChargeWalletUseCase chargeWalletUseCase;
 
 	/**
@@ -30,11 +30,11 @@ public class PaymentConfirmedEvnetHandler {
 	 */
 	@ApplicationModuleListener
 	public void handle(PaymentConfirmedEvent event) {
-		if (event.getPaymentType() != PaymentType.POINT_CHARGE) {
+		if (event.getPaymentType() != PaymentType.DEPOSIT_CHARGE) {
 			return;
 		}
 
-		log.info("[PaymentConfirmedEvnetHandler] POINT_CHARGE 결제 완료. memberId={}, orderId={}, amount={}",
+		log.info("[PaymentConfirmedEventHandler] 예치금 충전 결제 완료. memberId={}, orderId={}, amount={}",
 			event.getMemberId(), event.getOrderId(), event.getPaidAmount());
 
 		ChargeWalletCommand command = new ChargeWalletCommand(
@@ -45,7 +45,7 @@ public class PaymentConfirmedEvnetHandler {
 
 		chargeWalletUseCase.charge(command);
 
-		log.info("[PaymentConfirmedEvnetHandler] 지갑 충전 완료. memberId={}, amount={}",
+		log.info("[PaymentConfirmedEventHandler] 예치금 충전 완료. memberId={}, amount={}",
 			event.getMemberId(), event.getPaidAmount());
 	}
 }
