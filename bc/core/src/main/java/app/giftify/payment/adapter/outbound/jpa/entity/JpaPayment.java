@@ -67,6 +67,9 @@ public class JpaPayment extends BaseJpaEntity {
 	@Column(name = "payment_key", length = 255)
 	private String paymentKey;
 
+	@Column(name = "last_transaction_key", length = 255)
+	private String lastTransactionKey;
+
 	@Column(name = "approve_code", length = 255)
 	private String approveCode;
 
@@ -84,6 +87,7 @@ public class JpaPayment extends BaseJpaEntity {
 		String orderItemsJson,
 		PaymentStatus status,
 		String paymentKey,
+		String lastTransactionKey,
 		String approveCode,
 		LocalDateTime paidAt
 	) {
@@ -97,6 +101,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.orderItemsJson = orderItemsJson;
 		this.status = status;
 		this.paymentKey = paymentKey;
+		this.lastTransactionKey = lastTransactionKey;
 		this.approveCode = approveCode;
 		this.paidAt = paidAt;
 	}
@@ -121,6 +126,7 @@ public class JpaPayment extends BaseJpaEntity {
 			orderItemsJson,
 			payment.getStatus(),
 			payment.getPaymentKey(),
+			payment.getLastTransactionKey(),
 			payment.getApproveCode(),
 			payment.getPaidAt()
 		);
@@ -147,14 +153,17 @@ public class JpaPayment extends BaseJpaEntity {
 			.orderItems(java.util.Arrays.asList(orderItems))
 			.status(status)
 			.paymentKey(paymentKey)
+			.lastTransactionKey(lastTransactionKey)
 			.approveCode(approveCode)
 			.paidAt(paidAt)
+			.createdAt(super.getCreatedAt())
 			.build();
 	}
 
 	public void updateFrom(Payment payment, String orderItemsJson) {
 		this.status = payment.getStatus();
 		this.paymentKey = payment.getPaymentKey();
+		this.lastTransactionKey = payment.getLastTransactionKey();
 		this.approveCode = payment.getApproveCode();
 		this.paidAt = payment.getPaidAt();
 		this.orderItemsJson = orderItemsJson;
