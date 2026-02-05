@@ -23,9 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static app.giftify.wishlist.core.domain.WishlistItemStatus.NO_THANKS;
 import static app.giftify.wishlist.core.domain.WishlistItemStatus.PENDING;
 
 @Slf4j
@@ -110,13 +112,13 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
     /**
      * # 위시리스트아이템 수동 삭제
-     * - PENDING, NO_THANKS 상태일 때만 수동 삭제 가능
+     * - PENDING 상태일 때만 수동 삭제 가능
      */
     @Override
     @Transactional
     public void removeWishlistItem(WishlistItemRemoveCommand command) {
-        Wishlist wishlist = wishlistSupport.getByMemberId(command.memberId());
-        WishlistItem wishlistItem = wishlistSupport.getByWishlistIdAndProductId(wishlist.getId(), command.productId());
+        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(command.memberId());
+        WishlistItem wishlistItem = wishlistSupport.getWishlistItemByWishlistIdAndProductId(wishlist.getId(), command.productId());
 
         validateManualRemovable(wishlistItem); // 상태 확인
         wishlistItemRepositoryPort.delete(wishlistItem);
@@ -124,18 +126,60 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
         // todo 장바구니아이템 상태 변경
     }
 
-    /**
-     * 위시리스트아이템 스냅샷 조회
-     */
     @Override
     @Transactional(readOnly = true)
     public WishlistItemSnapshot getSnapshot(Long wishlistItemId) {
         WishlistItem wishlistItem = wishlistSupport.getWishlistItemById(wishlistItemId);
         Product product = productSupport.findById(wishlistItem.getProductId());
+        Wishlist wishlist = wishlistSupport.getWishlistById(wishlistItem.getWishlistId());
 
         return new WishlistItemSnapshot(
-                wishlistItem.getId(), product.getId(), product.getName(), product.getPrice(), product.getSellerId()
+                wishlistItem.getId(), product.getId(), product.getName(), product.getPrice(), product.getSellerId(), wishlist.getMemberId()
         );
+    }
+
+    /**
+     * 위시리스트아이템 스냅샷 조회
+     * - 단건 펀딩, 복수 펀딩 모두 사용
+     * - Map : O(1)로 매핑 가능 (조회 3번)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<WishlistItemSnapshot> getSnapshotList(List<Long> wishlistItemIds) {
+
+        // 1. get wishlistItem (요청 순서 보장용 Map 변환)
+        Map<Long, WishlistItem> wishlistItemMap = wishlistSupport.getWishlistItemListById(wishlistItemIds).stream()
+                .collect(Collectors.toMap(WishlistItem::getId, Function.identity()));
+
+        // 2. get product
+        List<Long> productIds = wishlistItemMap.values().stream().map(WishlistItem::getProductId).distinct().toList();
+        List<Product> productList = productSupport.findAllById(productIds);
+        productSupport.validatePurchasable(productList); // 상품 검증 (ACTIVE && 재고!=0)
+
+        Map<Long, Product> productMap = productList.stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+
+        // 3. get wishlist
+        List<Long> wishlistIds = wishlistItemMap.values().stream().map(WishlistItem::getWishlistId).distinct().toList();
+        Map<Long, Wishlist> wishlistMap = wishlistSupport.getWishlistAllById(wishlistIds).stream()
+                .collect(Collectors.toMap(Wishlist::getId, Function.identity()));
+
+        // 4. 요청 순서대로 스냅샷 생성 및 return
+        return wishlistItemIds.stream() //리스트 순회
+                .map(id -> {
+                    WishlistItem item = wishlistItemMap.get(id);
+                    Product product = productMap.get(item.getProductId());
+                    Wishlist wishlist = wishlistMap.get(item.getWishlistId());
+                    return new WishlistItemSnapshot(
+                            item.getId(),
+                            product.getId(),
+                            product.getName(),
+                            product.getPrice(),
+                            product.getSellerId(),
+                            wishlist.getMemberId()
+                    );
+                })
+                .toList();
     }
 
     // memberId로 Wishlist 조회 없으면 생성
@@ -153,7 +197,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     private void validateManualRemovable(WishlistItem item) {
         WishlistItemStatus status = item.getWishlistItemStatus();
 
-        if (status != PENDING && status != NO_THANKS) {
+        if (status != PENDING) {
             throw new WishlistItemNotRemovableException(status);
         }
     }

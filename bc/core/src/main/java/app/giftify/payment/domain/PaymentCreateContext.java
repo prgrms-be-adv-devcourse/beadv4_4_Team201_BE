@@ -1,5 +1,6 @@
 package app.giftify.payment.domain;
 
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 
 /**

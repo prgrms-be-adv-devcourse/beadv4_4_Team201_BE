@@ -1,18 +1,17 @@
 package app.giftify.shared.domain.event.product;
 
-import java.time.LocalDateTime;
-
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
+// todo : 추후 재입고 알림 이벤트 등에 사용
 public class ProductSaleEnabledEvent extends BaseDomainEvent {
-	private final Long productId;
+    private final Long productId;
 
-	public ProductSaleEnabledEvent(LocalDateTime occurredAt, Long productId) {
-		super(occurredAt);
-		this.productId = productId;
-	}
+    public ProductSaleEnabledEvent(Long productId) {
+        super();
+        this.productId = productId;
+    }
 
-	public Long getProductId() {
-		return productId;
-	}
+    public Long getProductId() {
+        return productId;
+    }
 }
