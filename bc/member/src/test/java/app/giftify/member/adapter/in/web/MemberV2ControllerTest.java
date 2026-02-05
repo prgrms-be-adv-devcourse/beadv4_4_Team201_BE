@@ -35,7 +35,7 @@ import app.giftify.member.application.port.in.WithdrawMemberUseCase;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentAuthSub;
 
 @WebMvcTest(MemberV2Controller.class)
 class MemberV2ControllerTest {
@@ -85,7 +85,7 @@ class MemberV2ControllerTest {
 			.setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
 				@Override
 				public boolean supportsParameter(MethodParameter parameter) {
-					return parameter.hasParameterAnnotation(AuthenticatedMember.class);
+					return parameter.hasParameterAnnotation(CurrentAuthSub.class);
 				}
 
 				@Override

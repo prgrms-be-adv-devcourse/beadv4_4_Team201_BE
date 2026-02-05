@@ -10,7 +10,7 @@ import app.giftify.member.domain.exception.DuplicateMemberException;
 import app.giftify.member.domain.exception.MemberErrorCode;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentAuthSub;
 import app.giftify.shared.domain.type.MemberRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +69,7 @@ class MemberControllerTest {
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
                     @Override
                     public boolean supportsParameter(MethodParameter parameter) {
-                        return parameter.hasParameterAnnotation(AuthenticatedMember.class);
+                        return parameter.hasParameterAnnotation(CurrentAuthSub.class);
                     }
 
                     @Override
