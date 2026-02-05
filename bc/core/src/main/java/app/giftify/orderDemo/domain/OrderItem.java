@@ -57,6 +57,7 @@ public class OrderItem {
     private Money amount;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
 
     @Column
