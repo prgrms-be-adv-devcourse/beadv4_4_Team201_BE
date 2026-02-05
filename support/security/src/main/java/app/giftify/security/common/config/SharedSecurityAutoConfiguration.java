@@ -25,39 +25,33 @@ public class SharedSecurityAutoConfiguration {
     private String clientId;
 
     /**
-     * JwtDecoder for access tokens (validates API audience)
-     * Marked as @Primary for Spring Security's OAuth2 Resource Server
+     * Access token용 JwtDecoder (API audience 검증).
+     * Spring Security OAuth2 Resource Server가 자동으로 사용.
      */
     @Bean
     @Primary
     @ConditionalOnMissingBean
     public JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuer);
-
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-
-        jwtDecoder.setJwtValidator(withAudience);
-
-        return jwtDecoder;
+        return createJwtDecoder(audience);
     }
 
     /**
-     * JwtDecoder for id_tokens (validates client_id as audience)
-     * Used for login endpoint where frontend sends id_token from Auth0
+     * ID token용 JwtDecoder (client_id를 audience로 검증).
+     * 로그인 시 프론트엔드가 보낸 id_token 검증에 사용.
      */
     @Bean
     public JwtDecoder idTokenDecoder() {
+        return createJwtDecoder(clientId);
+    }
+
+    private JwtDecoder createJwtDecoder(String expectedAudience) {
         NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuer);
 
-        // id_tokens have client_id as audience, not the API audience
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(clientId);
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(expectedAudience);
+        OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> combinedValidator = new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator);
 
-        jwtDecoder.setJwtValidator(withAudience);
-
+        jwtDecoder.setJwtValidator(combinedValidator);
         return jwtDecoder;
     }
 }
