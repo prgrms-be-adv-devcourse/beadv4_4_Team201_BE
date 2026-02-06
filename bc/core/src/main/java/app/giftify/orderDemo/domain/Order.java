@@ -2,8 +2,9 @@ package app.giftify.orderDemo.domain;
 
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.BaseAggregateRoot;
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,7 +50,7 @@ public class Order extends BaseAggregateRoot {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private PaymentMethodType paymentMethod;
+    private PaymentMethod paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -80,7 +81,7 @@ public class Order extends BaseAggregateRoot {
     public static Order create(
             Long buyerId,
             List<OrderItem> items,
-            PaymentMethodType paymentMethod
+            PaymentMethod paymentMethod
     ) {
         if (buyerId == null) throw new DomainException(OrderErrorCode.INVALID_BUYER_ID);
         if (items == null || items.isEmpty()) throw new DomainException(OrderErrorCode.INVALID_ORDER_ITEM);
@@ -131,13 +132,34 @@ public class Order extends BaseAggregateRoot {
                 .toList();
 
         return OrderSnapshot.builder()
+                .orderId(id)
                 .orderNumber(orderNumber)
                 .buyerId(buyerId)
+                .orderItemSnapshots(itemSnapshots)
+                .totalAmount(totalAmount)
                 .paymentMethod(paymentMethod)
                 .status(status)
-                .totalAmount(totalAmount)
                 .createdAt(createdAt)
-                .orderItemSnapshots(itemSnapshots)
                 .build();
+    }
+
+    public void toPaid(String paymentKey, String lastTransactionKey, LocalDateTime paidAt) {
+        if (this.status == OrderStatus.PAID) {
+            return;
+        }
+
+        if (status != OrderStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
+            );
+        }
+
+        this.paymentKey = paymentKey;
+        this.lastTransactionKey = lastTransactionKey;
+        this.paidAt = paidAt;
+        this.status = OrderStatus.PAID;
+
+        items.forEach(OrderItem::toPaid);
     }
 }

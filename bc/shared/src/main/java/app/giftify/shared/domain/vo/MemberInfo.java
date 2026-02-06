@@ -28,4 +28,24 @@ public record MemberInfo(
 			memberId, authSub, role, email, nickname
 		);
 	}
+
+	/**
+	 * 미가입 사용자용 MemberInfo 생성.
+	 * Auth0 인증은 완료했지만 서비스 회원가입은 하지 않은 상태.
+	 *
+	 * @param authSub Auth0 고유 식별자 (JWT subject)
+	 * @return memberId가 null인 MemberInfo
+	 */
+	public static MemberInfo forUnregistered(String authSub) {
+		return new MemberInfo(null, authSub, null, null, null);
+	}
+
+	/**
+	 * 가입된 회원인지 확인.
+	 *
+	 * @return memberId가 존재하면 true
+	 */
+	public boolean isRegistered() {
+		return memberId != null;
+	}
 }

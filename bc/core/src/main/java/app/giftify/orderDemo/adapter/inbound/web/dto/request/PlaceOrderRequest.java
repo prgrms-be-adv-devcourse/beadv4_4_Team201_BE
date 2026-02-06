@@ -1,6 +1,6 @@
 package app.giftify.orderDemo.adapter.inbound.web.dto.request;
 
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 
 import java.util.List;
 
@@ -10,6 +10,6 @@ import java.util.List;
  */
 public record PlaceOrderRequest(
         List<PlaceOrderItemRequest> items,
-        PaymentMethodType method
+        PaymentMethod method
 ) {
 }

@@ -1,6 +1,6 @@
 package app.giftify.cart.adapter.inbound;
 
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +32,6 @@ public interface CartV2ApiSpec {
 	})
 	ResponseEntity<RsData<CartResponse>> getCart(
 		@PathVariable Long cartId,
-		@AuthenticatedMember Long memberId
+		@CurrentMemberId Long memberId
 	);
 }

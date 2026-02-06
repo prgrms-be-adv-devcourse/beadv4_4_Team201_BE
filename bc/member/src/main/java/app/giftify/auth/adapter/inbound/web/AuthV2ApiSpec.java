@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import app.giftify.auth.adapter.inbound.web.dto.LoginRequest;
 import app.giftify.auth.adapter.inbound.web.dto.LoginResponse;
@@ -127,5 +128,38 @@ public interface AuthV2ApiSpec {
 	)
 	ResponseEntity<?> getMyInfo(
 		@Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt
+	);
+
+	@Operation(
+		summary = "토큰 갱신",
+		description = """
+			Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
+
+			**주의**: Auth0 SPA SDK를 사용하는 경우, SDK의 `getAccessTokenSilently()`를 사용하세요.
+			이 API는 서버 사이드 토큰 갱신이 필요한 경우에만 사용합니다.
+			"""
+	)
+	@ApiResponse(
+		responseCode = "200",
+		description = "갱신 성공",
+		content = @Content(
+			examples = @ExampleObject(
+				value = """
+					{
+					  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+					  "token_type": "Bearer",
+					  "expires_in": 86400
+					}
+					"""
+			)
+		)
+	)
+	@ApiResponse(
+		responseCode = "400",
+		description = "유효하지 않은 Refresh Token",
+		content = @Content
+	)
+	ResponseEntity<?> refreshToken(
+		@Parameter(description = "Refresh Token") @RequestParam String token
 	);
 }

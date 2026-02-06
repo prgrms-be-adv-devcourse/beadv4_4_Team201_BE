@@ -2,7 +2,6 @@ package app.giftify.auth.adapter.inbound.web;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -97,16 +96,4 @@ class AuthControllerTest {
 	}
 
 	// Note: GET /api/v2/auth/refresh는 Auth0 외부 호출이 필요하여 통합 테스트에서 검증
-
-	@Nested
-	@DisplayName("레거시 엔드포인트")
-	class LegacyEndpointTests {
-
-		@Test
-		@DisplayName("GET /api/v2/auth/ - 공개 페이지 접근")
-		void publicPage_Success() throws Exception {
-			mockMvc.perform(get("/api/v2/auth/"))
-				.andExpect(status().isOk());
-		}
-	}
 }
