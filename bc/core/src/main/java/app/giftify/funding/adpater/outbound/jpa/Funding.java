@@ -132,6 +132,10 @@ public class Funding extends BaseJpaEntity {
     public boolean isAchieved() { return this.currentAmount.equals(this.targetAmount); }
 
     public void refuse() {
+        if (this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
+            throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
+        }
+
         if (this.getStatus() != FundingStatus.ACHIEVED) {
             throw new FundingException(FundingErrorCode.NOT_ACHIEVED);
         }
@@ -140,9 +144,14 @@ public class Funding extends BaseJpaEntity {
     }
 
     public void accept() {
+        if (this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
+            throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
+        }
+
         if (this.getStatus() != FundingStatus.ACHIEVED) {
             throw new FundingException(FundingErrorCode.NOT_ACHIEVED);
         }
+
         this.status = FundingStatus.ACCEPTED;
         this.closedAt = LocalDateTime.now();
     }

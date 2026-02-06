@@ -1,5 +1,6 @@
 package app.giftify.cart.adapter.inbound;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,7 @@ public class CartController implements CartV2ApiSpec {
 
 	@Override
 	@PostMapping("/{cartId}")
-	public ResponseEntity<RsData<Void>> addItem(@PathVariable Long cartId, @RequestBody CartItemRequest request) {
+	public ResponseEntity<RsData<Void>> addItem(@PathVariable("cartId") Long cartId, @RequestBody CartItemRequest request) {
 		CartItemAddResult result = cartService.addItem(cartId, new AddCartItemCommand(
 			new CartItemKey(request.targetType(), request.targetId()),
 			Money.of(request.amount())
@@ -39,14 +40,14 @@ public class CartController implements CartV2ApiSpec {
 
 	@Override
 	@GetMapping("/{cartId}")
-	public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable Long cartId, @CurrentMemberId Long memberId) {
+	public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable("cartId") Long cartId, @Parameter(hidden = true) @CurrentMemberId Long memberId) {
 		CartResponse response = cartService.getCart(cartId, memberId);
 		return ResponseEntity.ok(RsData.success(response));
 	}
 
 	@Override
 	@GetMapping
-	public ResponseEntity<RsData<CartResponse>> getMyCart(@CurrentMemberId Long memberId) {
+	public ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId) {
 		CartResponse response = cartService.getMyCart(memberId);
 		return ResponseEntity.ok(RsData.success(response));
 	}
