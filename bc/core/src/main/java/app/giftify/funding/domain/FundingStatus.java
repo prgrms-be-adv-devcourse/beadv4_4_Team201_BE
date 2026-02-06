@@ -1,4 +1,4 @@
-package app.giftify.shared.domain.type;
+package app.giftify.funding.domain;
 
 public enum FundingStatus {
     IN_PROGRESS,    // 펀딩 진행 중

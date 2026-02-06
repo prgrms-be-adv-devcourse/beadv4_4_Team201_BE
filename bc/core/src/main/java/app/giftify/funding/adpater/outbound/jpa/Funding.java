@@ -1,8 +1,8 @@
 package app.giftify.funding.adpater.outbound.jpa;
 
+import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,6 +30,9 @@ public class Funding extends BaseJpaEntity {
     private Long productId;
 
     @Column(nullable = false)
+    private Long receiverId;
+
+    @Column(nullable = false)
     private Integer targetAmount;       // 상품 원가 (목표액)
 
     @Column(nullable = false)
@@ -49,17 +52,18 @@ public class Funding extends BaseJpaEntity {
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
 
-    private Funding(Long wishlistItemId, Integer productPrice, Long productId) {
+    private Funding(Long wishlistItemId, Long productId, Long receiverId, Integer productPrice) {
         this.wishlistItemId = wishlistItemId;
-        this.targetAmount = productPrice;
         this.productId = productId;
+        this.receiverId = receiverId;
+        this.targetAmount = productPrice;
         this.currentAmount = 0;
         this.status = FundingStatus.IN_PROGRESS;
         this.deadline = LocalDateTime.now().plusDays(15);
     }
 
-    public static Funding startFunding(Long wishlistItemId, Integer targetAmount, Long productId) {
-        return new Funding(wishlistItemId, targetAmount, productId);
+    public static Funding startFunding(Long wishlistItemId, Long productId, Long receiverId, Integer targetAmount) {
+        return new Funding(wishlistItemId, productId, receiverId, targetAmount);
     }
 
     public static void validateLeastAmount(Integer amount) {
@@ -121,13 +125,11 @@ public class Funding extends BaseJpaEntity {
         this.closedAt = LocalDateTime.now();
     }
 
-    public boolean isExpired(LocalDateTime now) {return now.isAfter(this.deadline); }
+    public boolean isExpired(LocalDateTime now) { return now.isAfter(this.deadline); }
 
-    public boolean isExpired() {return LocalDateTime.now().isAfter(this.deadline); }
+    public boolean isExpired() { return LocalDateTime.now().isAfter(this.deadline); }
 
-    public boolean isAchieved() {
-        return this.currentAmount.equals(this.targetAmount);
-    }
+    public boolean isAchieved() { return this.currentAmount.equals(this.targetAmount); }
 
     public void refuse() {
         if (this.getStatus() != FundingStatus.ACHIEVED) {
@@ -143,5 +145,9 @@ public class Funding extends BaseJpaEntity {
         }
         this.status = FundingStatus.ACCEPTED;
         this.closedAt = LocalDateTime.now();
+    }
+
+    public void validateReceiver(Long memberId) {
+        if (!memberId.equals(this.getReceiverId())) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
     }
 }

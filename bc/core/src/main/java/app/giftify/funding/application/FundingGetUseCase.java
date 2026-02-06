@@ -1,14 +1,17 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
-import app.giftify.funding.domain.exception.FundingErrorCode;
-import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.funding.adpater.inbound.dto.ContributeFundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
+import app.giftify.funding.adpater.inbound.dto.MyFundingSummaryDto;
+import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
+import app.giftify.funding.domain.FundingStatus;
+import app.giftify.funding.domain.exception.FundingErrorCode;
+import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +74,7 @@ public class FundingGetUseCase {
     /**
      * 내가 참여한 펀딩 단건 조회
      */
-    public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
+    public ContributeFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
         Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + fundingId)
         );
@@ -88,28 +91,60 @@ public class FundingGetUseCase {
         Integer myContribution = participantMemberRepository.findTotalAmountByFundingIdAndParticipantId(fundingId, memberId)
                 .orElse(0);
 
-        return MyFundingResponseDto.fromEntity(funding, myContribution, snapshot);
+        return ContributeFundingResponseDto.fromEntity(funding, myContribution, snapshot);
     }
 
     /**
      * 내가 참여한 펀딩 목록 조회
      */
-    public PageResponse<MyFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
+    public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, pageable);
 
-        List<MyFundingResponseDto> contents =
+        List<ContributeFundingResponseDto> contents =
                 myFundingInfoPage.getContent().stream()
                         .map(info -> {
                             Funding funding = info.funding();
 
                             WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
 
-                            return MyFundingResponseDto.fromEntity(funding, info.myContribution(), snapshot);
+                            return ContributeFundingResponseDto.fromEntity(funding, info.myContribution(), snapshot);
                         })
                         .collect(Collectors.toList());
 
         return PageResponse.of(contents, page, size, myFundingInfoPage.getTotalElements());
+    }
+
+    /**
+     * 나의 펀딩 단건 조회
+     */
+    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
+        Funding funding = fundingRepository.findById(id).orElseThrow(() ->
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + id));
+
+        funding.validateReceiver(memberId);
+
+        if (funding.isAchieved()) {
+            List<FundingParticipantMember> participants = participantMemberRepository.findByFundingId(id);
+
+            return MyFundingResponseDto.fromAchievedFunding(funding, participants);
+        }
+
+        return MyFundingResponseDto.fromEntity(funding);
+    }
+
+    /**
+     * 나의 펀딩 리스트 조회
+     */
+    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverId(memberId, pageable);
+        List<MyFundingSummaryDto> contents = fundingPage.getContent().stream()
+                .map(funding -> MyFundingSummaryDto.fromEntity(funding))
+                .collect(Collectors.toList());
+
+        return PageResponse.of(contents, page, size, fundingPage.getTotalElements());
     }
 }

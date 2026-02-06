@@ -54,7 +54,7 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
     }
 
     private void validateFundingTarget(TargetType targetType) {
-        if (targetType != TargetType.FUNDING_PENDING) {
+        if (targetType != TargetType.FUNDING_PENDING && targetType != TargetType.FUNDING) {
             throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
         }
     }

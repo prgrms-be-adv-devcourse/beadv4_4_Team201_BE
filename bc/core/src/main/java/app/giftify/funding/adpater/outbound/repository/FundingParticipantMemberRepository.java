@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FundingParticipantMemberRepository extends JpaRepository<FundingParticipantMember, Long> {
@@ -29,4 +30,6 @@ public interface FundingParticipantMemberRepository extends JpaRepository<Fundin
     Page<MyFundingInfo> findAllMyFundingInfos(@Param("memberId") Long memberId, Pageable pageable);
 
     FundingParticipantMember findByFundingAndParticipantId(Funding funding, Long participantId);
+
+    List<FundingParticipantMember> findByFundingId(Long id);
 }
