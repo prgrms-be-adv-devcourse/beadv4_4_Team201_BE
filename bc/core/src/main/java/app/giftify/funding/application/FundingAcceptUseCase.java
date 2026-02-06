@@ -32,6 +32,7 @@ public class FundingAcceptUseCase {
                 funding.getId(),
                 funding.getWishlistItemId(),
                 funding.getProductId(),
+                funding.getReceiverId(),
                 LocalDateTime.now()
         ));
 
