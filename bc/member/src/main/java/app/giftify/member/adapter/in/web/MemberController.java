@@ -1,5 +1,19 @@
 package app.giftify.member.adapter.in.web;
 
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
@@ -15,12 +29,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-import java.util.Optional;
 
 // 사용자의 가입 상태 확인 및 회원가입 API
 @RestController
@@ -36,7 +44,7 @@ public class MemberController {
     private final WithdrawMemberUseCase withdrawMemberUseCase;
 
     // Auth0 인증 정보(JWT)를 기반으로 가입여부 확인
-    @GetMapping("/check-registration")
+    @GetMapping("/check-registration") // TODO V2 컨트롤러로 옮기기
     public ResponseEntity<?> checkRegistration(
             @CurrentAuthSub String authSub
     ) {

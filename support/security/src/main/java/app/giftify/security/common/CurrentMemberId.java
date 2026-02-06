@@ -23,6 +23,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-@AuthenticationPrincipal(expression = "memberId")
+@AuthenticationPrincipal(expression = "memberId") // TODO 컨트롤러 측에서 sellerId 등으로 받을 수 있게 매핑하기 // noSonar
 public @interface CurrentMemberId {
 }

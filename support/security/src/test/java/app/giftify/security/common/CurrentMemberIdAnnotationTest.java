@@ -45,6 +45,12 @@ class CurrentMemberIdAnnotationTest {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
 
+	private void setUpUnregisteredAuthentication(String authSub) {
+		MemberPrincipal principal = MemberPrincipal.forUnregistered(authSub);
+		MemberAuthenticationToken authentication = new MemberAuthenticationToken(principal);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
 	@Nested
 	@DisplayName("@CurrentMemberId")
 	class CurrentMemberIdTests {
@@ -127,6 +133,47 @@ class CurrentMemberIdAnnotationTest {
 			mockMvc.perform(get("/test/auth-sub-nullable"))
 				.andExpect(status().isOk())
 				.andExpect(content().string("null"));
+		}
+	}
+
+	@Nested
+	@DisplayName("미가입 사용자 (Auth0 인증 완료, 서비스 미가입)")
+	class UnregisteredUserTests {
+
+		@Test
+		@DisplayName("미가입 사용자의 authSub가 정상 주입된다")
+		void injectsAuthSubForUnregisteredUser() throws Exception {
+			// given
+			setUpUnregisteredAuthentication("auth0|unregistered-user");
+
+			// when & then
+			mockMvc.perform(get("/test/auth-sub"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("auth0|unregistered-user"));
+		}
+
+		@Test
+		@DisplayName("미가입 사용자의 memberId는 null이다")
+		void returnsNullMemberIdForUnregisteredUser() throws Exception {
+			// given
+			setUpUnregisteredAuthentication("auth0|unregistered-user");
+
+			// when & then
+			mockMvc.perform(get("/test/member-id-nullable"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("null"));
+		}
+
+		@Test
+		@DisplayName("미가입 사용자도 MemberPrincipal 타입이다 (SpEL 평가 성공)")
+		void unregisteredUserHasMemberPrincipal() throws Exception {
+			// given
+			setUpUnregisteredAuthentication("google-oauth2|new-user");
+
+			// when & then - SpEL 평가가 실패하면 예외 발생
+			mockMvc.perform(get("/test/auth-sub"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("google-oauth2|new-user"));
 		}
 	}
 
