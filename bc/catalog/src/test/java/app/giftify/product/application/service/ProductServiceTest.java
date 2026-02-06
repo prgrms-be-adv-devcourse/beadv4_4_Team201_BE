@@ -7,6 +7,7 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.never;
@@ -83,8 +85,8 @@ class ProductServiceTest {
 
         // then
         assertThat(product.getStock()).isEqualTo(0);
-        assertThat(product.pullEvents()).hasSize(1);
         verify(productRepositoryPort).save(product);
+        verify(eventPublisher).publish(any(ProductSaleDisabledEvent.class));
     }
 
     @Test
