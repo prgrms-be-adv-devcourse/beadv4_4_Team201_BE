@@ -2,7 +2,6 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
@@ -23,7 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FundingCreateUseCase {
 
-    private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
     private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
 
@@ -49,8 +47,6 @@ public class FundingCreateUseCase {
             Funding funding = Funding.startFunding(snapshot.originalWishlistItemId(), snapshot.productPrice(), snapshot.productId());
             results.add(new FundingCreateResult(funding, snapshot));
 
-
-            // WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
             eventPublisher.publish(new FundingCreatedEvent(
                     funding.getId(),
                     funding.getWishlistItemId()

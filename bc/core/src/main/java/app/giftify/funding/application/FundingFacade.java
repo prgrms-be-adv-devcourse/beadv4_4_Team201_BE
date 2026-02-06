@@ -1,9 +1,7 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
-import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
-import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
+import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.vo.FundingSnapshot;
@@ -12,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -33,12 +32,21 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer amount) {
-        // Funding 생성 (기여금 0원의 빈 펀딩)
-        FundingCreateResult result = fundingCreateUseCase.createFunding(wishlistItemId);
+    public List<FundingResponseDto> startFunding(FundingStartRequest request) {
+
+        List<Long> wishlistItemIds = request.items().stream()
+                .map(FundingItemRequest::wishlistItemId)
+                .toList();
+
+        /**
+         * 복수 Funding 생성 (기여금 0원의 빈 펀딩)
+         * Key : wishlistItemId
+         * Value : Funding
+          */
+        List<FundingCreateResult> created = fundingCreateUseCase.createFunding(wishlistItemIds);
 
         // 펀딩 기여(변경된 funding 받기)
-        Funding fundingAfterContribute = fundingContributeUseCase.contribute(wishlistItemId, participantId, amount);
+        Map<Long, Funding> fundingMap = fundingContributeUseCase.contribute(request.participantId(), request.items())
 
         return FundingResponseDto.fromEntity(fundingAfterContribute, result.wishlistItemSnapshot());
     }
