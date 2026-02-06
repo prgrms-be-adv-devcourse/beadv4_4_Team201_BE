@@ -28,4 +28,11 @@ public class WishlistItemJpaEntity extends BaseJpaEntity {
     private WishlistItemStatus wishlistItemStatus;
 
     private LocalDateTime addedAt;
+
+    public WishlistItemJpaEntity(Long id, Long wishlistId, Long productId, WishlistItemStatus status) {
+        super(id);
+        this.wishlistId = wishlistId;
+        this.productId = productId;
+        this.wishlistItemStatus = status;
+    }
 }
