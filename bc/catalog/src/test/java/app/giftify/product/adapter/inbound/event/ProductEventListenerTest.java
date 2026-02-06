@@ -32,7 +32,7 @@ class ProductEventListenerTest {
         // given
         Long productId = 1L;
         FundingAcceptedEvent event = new FundingAcceptedEvent(
-                100L, 200L, productId, LocalDateTime.now()
+                100L, 200L, productId, 3L, LocalDateTime.now()
         );
 
         // when
@@ -48,7 +48,7 @@ class ProductEventListenerTest {
         // given
         Long productId = 999L;
         FundingAcceptedEvent event = new FundingAcceptedEvent(
-                100L, 200L, productId, LocalDateTime.now()
+                100L, 200L, productId, 3L, LocalDateTime.now()
         );
         doThrow(new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND))
                 .when(decreaseProductStockUseCase).decreaseStockByFunding(productId);
