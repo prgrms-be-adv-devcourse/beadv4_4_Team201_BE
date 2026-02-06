@@ -8,18 +8,21 @@ public class FundingAcceptedEvent extends BaseDomainEvent {
     private final Long fundingId;
     private final Long wishlistItemId;
     private final Long productId;
+    private final Long receiverId;
     private final LocalDateTime confirmedAt;
 
     public FundingAcceptedEvent(
             Long fundingId,
             Long wishlistItemId,
             Long productId,
+            Long receiverId,
             LocalDateTime confirmedAt
     ) {
         super();
         this.fundingId = fundingId;
         this.wishlistItemId = wishlistItemId;
         this.productId = productId;
+        this.receiverId = receiverId;
         this.confirmedAt = confirmedAt;
     }
 
@@ -37,12 +40,15 @@ public class FundingAcceptedEvent extends BaseDomainEvent {
         return confirmedAt;
     }
 
+    public Long getReceiverId() { return receiverId; }
+
     @Override
     public String toString() {
         return "FundingAcceptedEvent{" +
                 "fundingId=" + fundingId +
                 ", wishlistItemId=" + wishlistItemId +
                 ", productId=" + productId +
+                ", receiverId=" + receiverId +
                 ", confirmedAt=" + confirmedAt +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
