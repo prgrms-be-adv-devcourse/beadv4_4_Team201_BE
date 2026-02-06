@@ -30,6 +30,10 @@ public final class RsData<T> {
         return new RsData<>(Result.FAIL, null, message, errorCode);
     }
 
+    public static <T> RsData<T> failWithType(String message, String errorCode) {
+        return new RsData<>(Result.FAIL, null, message, errorCode);
+    }
+
     public Result getResult() {
         return result;
     }

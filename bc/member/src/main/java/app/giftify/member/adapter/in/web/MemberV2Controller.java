@@ -1,8 +1,5 @@
 package app.giftify.member.adapter.in.web;
 
-import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.member.adapter.in.web.dto.MemberResponse;
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
+import app.giftify.member.adapter.in.web.dto.NicknameCheckResponse;
+import app.giftify.member.adapter.in.web.dto.RegistrationStatusResponse;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
@@ -26,6 +25,8 @@ import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.security.common.CurrentAuthSub;
+import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.response.RsData;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -46,43 +47,54 @@ public class MemberV2Controller implements MemberV2Api {
     private final UpdateMemberUseCase updateMemberUseCase;
     private final WithdrawMemberUseCase withdrawMemberUseCase;
 
+    // ========== 가입된 회원 전용 (memberId 사용) ==========
+
     /**
      * 내 정보 조회.
+     *
+     * @param memberId DB의 회원 PK (MemberPrincipalFilter에서 주입)
      */
     @Override
     @GetMapping("/me")
-    public ResponseEntity<MemberResponse> getMe(
-            @CurrentAuthSub String authSub
+    public ResponseEntity<RsData<MemberResponse>> getMe(
+            @CurrentMemberId Long memberId
     ) {
-        if (authSub == null) {
-            return ResponseEntity.status(401).build();
+        if (memberId == null) {
+            // 미가입 사용자가 호출한 경우
+            throw new MemberNotFoundException("[MemberV2Controller] 미가입 사용자입니다.");
         }
 
-        return getMemberUseCase.getMemberByAuthSub(authSub)
-                .map(member -> ResponseEntity.ok(MemberResponse.from(member)))
-                .orElseThrow(() -> new MemberNotFoundException(authSub));
+        Member member = getMemberUseCase.getMemberById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+
+        return ResponseEntity.ok(RsData.success(MemberResponse.from(member)));
     }
 
     /**
      * 회원 정보 수정.
+     *
+     * @param memberId DB의 회원 PK (MemberPrincipalFilter에서 주입)
      */
     @Override
     @PatchMapping("/me")
-    public ResponseEntity<MemberResponse> updateMe(
-            @CurrentAuthSub String authSub,
+    public ResponseEntity<RsData<MemberResponse>> updateMe(
+            @CurrentMemberId Long memberId,
             @RequestBody @Valid MemberUpdateRequest request
     ) {
-        if (authSub == null) {
-            return ResponseEntity.status(401).build();
+        if (memberId == null) {
+            throw new MemberNotFoundException("[MemberV2Controller] 미가입 사용자입니다.");
         }
 
-        Optional<Member> memberOpt = getMemberUseCase.getMemberByAuthSub(authSub);
-        if (memberOpt.isPresent() && memberOpt.get().getStatus() != MemberStatus.ACTIVE) {
-            return ResponseEntity.status(403).build();
+        Member member = getMemberUseCase.getMemberById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+
+        if (member.getStatus() != MemberStatus.ACTIVE) {
+            return ResponseEntity.status(403)
+                    .body(RsData.failWithType("탈퇴한 회원은 정보를 수정할 수 없습니다.", "MEMBER_WITHDRAWN"));
         }
 
         UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
-                authSub,
+                member.getAuthSub(),  // authSub는 member에서 추출
                 request.password(),
                 request.nickname(),
                 request.address(),
@@ -91,78 +103,99 @@ public class MemberV2Controller implements MemberV2Api {
         );
 
         Member updatedMember = updateMemberUseCase.updateMember(command);
-        return ResponseEntity.ok(MemberResponse.from(updatedMember));
-    }
-
-    /**
-     * 회원가입 (추가 정보 입력).
-     */
-    @Override
-    @PostMapping("/signup")
-    public ResponseEntity<MemberResponse> signup(
-            @CurrentAuthSub String authSub,
-            @RequestBody @Valid SignupRequest request
-    ) {
-        if (authSub == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        // 이미 가입된 회원인지 확인
-        if (getMemberUseCase.getMemberByAuthSub(authSub).isPresent()) {
-            return ResponseEntity.status(409).build();
-        }
-
-        Member member = registerMemberUseCase.signup(authSub, request);
-        return ResponseEntity.ok(MemberResponse.from(member));
+        return ResponseEntity.ok(RsData.success(MemberResponse.from(updatedMember)));
     }
 
     /**
      * 회원 탈퇴.
+     *
+     * @param memberId DB의 회원 PK (MemberPrincipalFilter에서 주입)
      */
     @Override
     @DeleteMapping("/me")
-    public ResponseEntity<Void> withdraw(
-            @CurrentAuthSub String authSub
+    public ResponseEntity<RsData<Void>> withdraw(
+            @CurrentMemberId Long memberId
     ) {
-        if (authSub == null) {
-            return ResponseEntity.status(401).build();
+        if (memberId == null) {
+            throw new MemberNotFoundException("[MemberV2Controller] 미가입 사용자입니다.");
         }
 
-        withdrawMemberUseCase.withdrawMember(authSub);
+        Member member = getMemberUseCase.getMemberById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+
+        withdrawMemberUseCase.withdrawMember(member.getAuthSub());
 
         return ResponseEntity.noContent().build();
     }
 
+    // ========== 미가입 사용자도 호출 가능 (authSub 사용) ==========
+
+    /**
+     * 회원가입 (추가 정보 입력).
+     *
+     * @param authSub Auth0 식별자 (미가입 사용자도 값 있음)
+     */
+    @Override
+    @PostMapping("/signup")
+    public ResponseEntity<RsData<MemberResponse>> signup(
+            @CurrentAuthSub String authSub,
+            @RequestBody @Valid SignupRequest request
+    ) {
+        if (authSub == null) {
+            return ResponseEntity.status(401)
+                    .body(RsData.failWithType("인증 정보가 누락되었습니다.", "AUTH_REQUIRED"));
+        }
+
+        // 이미 가입된 회원인지 확인
+        if (getMemberUseCase.getMemberByAuthSub(authSub).isPresent()) {
+            return ResponseEntity.status(409)
+                    .body(RsData.failWithType("이미 가입된 회원입니다.", "MEMBER_ALREADY_EXISTS"));
+        }
+
+        Member member = registerMemberUseCase.signup(authSub, request);
+        return ResponseEntity.ok(RsData.success(MemberResponse.from(member)));
+    }
+
     /**
      * 가입 여부 확인.
+     *
+     * @param authSub Auth0 식별자 (미가입 사용자도 값 있음)
      */
     @Override
     @GetMapping("/check-registration")
-    public ResponseEntity<?> checkRegistration(
+    public ResponseEntity<RsData<RegistrationStatusResponse>> checkRegistration(
             @CurrentAuthSub String authSub
     ) {
-        log.debug("[Controller] checkRegistration called with authSub: {}", authSub);
+        log.debug("[MemberV2Controller] checkRegistration called with authSub: {}", authSub);
+
         if (authSub == null) {
-            return ResponseEntity.status(401).body(Map.of("message", "인증 정보(JWT)가 누락되었습니다."));
+            return ResponseEntity.status(401)
+                    .body(RsData.failWithType("인증 정보(JWT)가 누락되었습니다.", "AUTH_REQUIRED"));
         }
 
         return getMemberUseCase.getMemberByAuthSub(authSub)
                 .map(member -> {
-                    log.debug("[Controller] Member found for authSub: {}", authSub);
-                    return ResponseEntity.ok().body((Object) MemberResponse.from(member));
+                    log.debug("[MemberV2Controller] Member found for authSub: {}", authSub);
+                    return ResponseEntity.ok(
+                            RsData.success(RegistrationStatusResponse.registered(MemberResponse.from(member)))
+                    );
                 })
                 .orElseGet(() -> {
-                    log.debug("[Controller] Member NOT found for authSub: {}", authSub);
-                    return ResponseEntity.ok().body(Map.of("status", "NOT_REGISTERED"));
+                    log.debug("[MemberV2Controller] Member NOT found for authSub: {}", authSub);
+                    return ResponseEntity.ok(
+                            RsData.success(RegistrationStatusResponse.notRegistered())
+                    );
                 });
     }
+
+    // ========== 인증 불필요 ==========
 
     /**
      * 닉네임 중복 확인.
      */
     @Override
     @GetMapping("/check/nickname")
-    public ResponseEntity<?> checkNickname(
+    public ResponseEntity<RsData<NicknameCheckResponse>> checkNickname(
             @RequestParam(name = "nickname") @NotBlank String nickname
     ) {
         if (nickname.isBlank()) {
@@ -170,6 +203,8 @@ public class MemberV2Controller implements MemberV2Api {
         }
 
         boolean duplicated = getMemberUseCase.isNicknameDuplicated(nickname);
-        return ResponseEntity.ok(Map.of("status", duplicated ? "DUPLICATED" : "AVAILABLE"));
+        return ResponseEntity.ok(
+                RsData.success(NicknameCheckResponse.of(nickname, duplicated))
+        );
     }
 }

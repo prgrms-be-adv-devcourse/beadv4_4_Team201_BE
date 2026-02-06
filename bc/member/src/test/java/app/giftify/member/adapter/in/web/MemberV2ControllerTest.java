@@ -36,6 +36,7 @@ import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.security.common.CurrentAuthSub;
+import app.giftify.security.common.CurrentMemberId;
 
 @WebMvcTest(MemberV2Controller.class)
 class MemberV2ControllerTest {
@@ -70,6 +71,7 @@ class MemberV2ControllerTest {
 	private WithdrawMemberUseCase withdrawMemberUseCase;
 
 	private static final String AUTH_SUB = "auth0|12345";
+	private static final Long MEMBER_ID = 1L;
 
 	@BeforeEach
 	void setUp() {
@@ -82,18 +84,34 @@ class MemberV2ControllerTest {
 			.setControllerAdvice(new TestExceptionHandler())
 			.setMessageConverters(
 				new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(mapper))
-			.setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
-				@Override
-				public boolean supportsParameter(MethodParameter parameter) {
-					return parameter.hasParameterAnnotation(CurrentAuthSub.class);
-				}
+			.setCustomArgumentResolvers(
+				// @CurrentAuthSub resolver
+				new HandlerMethodArgumentResolver() {
+					@Override
+					public boolean supportsParameter(MethodParameter parameter) {
+						return parameter.hasParameterAnnotation(CurrentAuthSub.class);
+					}
 
-				@Override
-				public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-					NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-					return AUTH_SUB;
+					@Override
+					public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+						NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+						return AUTH_SUB;
+					}
+				},
+				// @CurrentMemberId resolver
+				new HandlerMethodArgumentResolver() {
+					@Override
+					public boolean supportsParameter(MethodParameter parameter) {
+						return parameter.hasParameterAnnotation(CurrentMemberId.class);
+					}
+
+					@Override
+					public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+						NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+						return MEMBER_ID;
+					}
 				}
-			})
+			)
 			.build();
 	}
 
@@ -121,19 +139,20 @@ class MemberV2ControllerTest {
 					.authSub(AUTH_SUB)
 					.build();
 
-				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(member));
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.of(member));
 
 				// when & then
 				mockMvc.perform(get("/api/v2/members/me"))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.id").value(1))
-					.andExpect(jsonPath("$.email").value("test@example.com"))
-					.andExpect(jsonPath("$.nickname").value("테스터"))
-					.andExpect(jsonPath("$.birthday").value("1990-01-01"))
-					.andExpect(jsonPath("$.address").value("서울시 강남구"))
-					.andExpect(jsonPath("$.phoneNum").value("010-1234-5678"))
-					.andExpect(jsonPath("$.name").value("홍길동"))
-					.andExpect(jsonPath("$.status").value("ACTIVE"));
+					.andExpect(jsonPath("$.result").value("SUCCESS"))
+					.andExpect(jsonPath("$.data.id").value(1))
+					.andExpect(jsonPath("$.data.email").value("test@example.com"))
+					.andExpect(jsonPath("$.data.nickname").value("테스터"))
+					.andExpect(jsonPath("$.data.birthday").value("1990-01-01"))
+					.andExpect(jsonPath("$.data.address").value("서울시 강남구"))
+					.andExpect(jsonPath("$.data.phoneNum").value("010-1234-5678"))
+					.andExpect(jsonPath("$.data.name").value("홍길동"))
+					.andExpect(jsonPath("$.data.status").value("ACTIVE"));
 			}
 		}
 
@@ -145,7 +164,7 @@ class MemberV2ControllerTest {
 			@DisplayName("Then 404 에러 반환")
 			void Then_Returns404() throws Exception {
 				// given
-				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.empty());
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.empty());
 
 				// when & then
 				mockMvc.perform(get("/api/v2/members/me"))
@@ -183,7 +202,7 @@ class MemberV2ControllerTest {
 					.authSub(AUTH_SUB)
 					.build();
 
-				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingMember));
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.of(existingMember));
 				given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
 
 				String requestBody = """
@@ -200,10 +219,11 @@ class MemberV2ControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.nickname").value("새닉네임"))
-					.andExpect(jsonPath("$.address").value("부산시 해운대구"))
-					.andExpect(jsonPath("$.phoneNum").value("010-9999-8888"))
-					.andExpect(jsonPath("$.name").value("김철수"));
+					.andExpect(jsonPath("$.result").value("SUCCESS"))
+					.andExpect(jsonPath("$.data.nickname").value("새닉네임"))
+					.andExpect(jsonPath("$.data.address").value("부산시 해운대구"))
+					.andExpect(jsonPath("$.data.phoneNum").value("010-9999-8888"))
+					.andExpect(jsonPath("$.data.name").value("김철수"));
 
 				verify(updateMemberUseCase).updateMember(any(UpdateMemberUseCase.UpdateCommand.class));
 			}
@@ -223,7 +243,7 @@ class MemberV2ControllerTest {
 					.authSub(AUTH_SUB)
 					.build();
 
-				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(withdrawnMember));
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.of(withdrawnMember));
 
 				String requestBody = """
 					{
@@ -265,7 +285,7 @@ class MemberV2ControllerTest {
 					.authSub(AUTH_SUB)
 					.build();
 
-				given(getMemberUseCase.getMemberByAuthSub(AUTH_SUB)).willReturn(Optional.of(existingMember));
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.of(existingMember));
 				given(updateMemberUseCase.updateMember(any())).willReturn(updatedMember);
 
 				String requestBody = """
@@ -279,7 +299,8 @@ class MemberV2ControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.nickname").value("새닉네임"));
+					.andExpect(jsonPath("$.result").value("SUCCESS"))
+					.andExpect(jsonPath("$.data.nickname").value("새닉네임"));
 			}
 		}
 	}
@@ -296,6 +317,12 @@ class MemberV2ControllerTest {
 			@DisplayName("Then 204 No Content 반환")
 			void Then_Returns204() throws Exception {
 				// given
+				Member member = Member.builder()
+					.id(MEMBER_ID)
+					.authSub(AUTH_SUB)
+					.build();
+
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.of(member));
 				willDoNothing().given(withdrawMemberUseCase).withdrawMember(AUTH_SUB);
 
 				// when & then
@@ -314,8 +341,7 @@ class MemberV2ControllerTest {
 			@DisplayName("Then 404 Not Found 반환")
 			void Then_Returns404() throws Exception {
 				// given
-				willThrow(new MemberNotFoundException(AUTH_SUB))
-					.given(withdrawMemberUseCase).withdrawMember(AUTH_SUB);
+				given(getMemberUseCase.getMemberById(MEMBER_ID)).willReturn(Optional.empty());
 
 				// when & then
 				mockMvc.perform(delete("/api/v2/members/me"))
