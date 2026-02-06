@@ -2,6 +2,7 @@ package app.giftify.funding.adpater.inbound.web;
 
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.application.FundingFacade;
+import app.giftify.security.common.CurrentMemberId;
 import app.giftify.security.common.context.AuthenticatedMember;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.api.response.RsData;
@@ -59,7 +60,7 @@ public class FundingController implements FundingV2ApiSpec {
     @GetMapping("/participated/{id}")
     public ResponseEntity<RsData<ContributeFundingResponseDto>> getParticipatedFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId
+            @Parameter(hidden = true) @CurrentMemberId Long memberId
     ) {
         ContributeFundingResponseDto funding = fundingFacade.getParticipatedFunding(id, memberId);
         return ResponseEntity.ok(RsData.success(funding));
@@ -71,7 +72,7 @@ public class FundingController implements FundingV2ApiSpec {
     public ResponseEntity<RsData<PageResponse<ContributeFundingResponseDto>>> getParticipatedFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId
+            @Parameter(hidden = true) @CurrentMemberId Long memberId
     ) {
         PageResponse<ContributeFundingResponseDto> fundings = fundingFacade.getParticipatedFundings(page, size, memberId);
         return ResponseEntity.ok(RsData.success(fundings));
@@ -82,7 +83,7 @@ public class FundingController implements FundingV2ApiSpec {
     @PostMapping("/{id}/refuse")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> refuseFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
         FundingCompleteResponseDto funding = fundingFacade.refuseFunding(id, memberId);
         return ResponseEntity.ok(RsData.success(funding));
     }
@@ -92,7 +93,7 @@ public class FundingController implements FundingV2ApiSpec {
     @PostMapping("/{id}/accept")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
         FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id, memberId);
         return ResponseEntity.ok(RsData.success(funding));
     }
@@ -102,7 +103,7 @@ public class FundingController implements FundingV2ApiSpec {
     @GetMapping("/my/{id}")
     public ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
         MyFundingResponseDto funding = fundingFacade.getMyFunding(id, memberId);
         return ResponseEntity.ok(RsData.success(funding));
     }
@@ -113,7 +114,7 @@ public class FundingController implements FundingV2ApiSpec {
     public ResponseEntity<RsData<PageResponse<MyFundingSummaryDto>>> getMyFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId) {
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
         PageResponse<MyFundingSummaryDto> fundings = fundingFacade.getMyFundings(page, size, memberId);
         return ResponseEntity.ok(RsData.success(fundings));
     }
