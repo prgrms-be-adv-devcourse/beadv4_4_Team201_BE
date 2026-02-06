@@ -183,6 +183,7 @@ public class Product extends BaseDomainModel {
         return new StockChangeResult(beforeStock, this.stock, quantity);
     }
 
+    // todo StockChangeResult 도메인 엔티티 분리하여 도메인으로 들고오기
     public record StockChangeResult(int beforeStock, int afterStock, int delta) {
     }
 }
