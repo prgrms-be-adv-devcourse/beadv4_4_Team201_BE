@@ -148,6 +148,6 @@ public class Funding extends BaseJpaEntity {
     }
 
     public void validateReceiver(Long memberId) {
-        if (memberId != this.getReceiverId()) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
+        if (!memberId.equals(this.getReceiverId())) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
     }
 }
