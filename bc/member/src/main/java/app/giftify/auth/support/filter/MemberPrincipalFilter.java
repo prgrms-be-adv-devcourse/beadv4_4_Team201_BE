@@ -1,8 +1,16 @@
 package app.giftify.auth.support.filter;
 
-import app.giftify.auth.adapter.outbound.client.MemberApiClient;
-
+import java.io.IOException;
 import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import app.giftify.auth.adapter.outbound.client.MemberApiClient;
 import app.giftify.security.common.MemberAuthenticationToken;
 import app.giftify.security.common.MemberPrincipal;
 import app.giftify.shared.domain.vo.MemberInfo;
@@ -12,14 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Slf4j
 @Component
@@ -35,7 +35,7 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 		try {
 			enrichSecurityContext();
 		} catch (Exception e) {
-			log.warn("Failed to enrich SecurityContext with MemberPrincipal", e);
+			log.warn("[MemberPrincipalFilter] MemberPrincipal을 통항 SecurityContext 보강에 실패하였습니다.", e);
 		}
 
 		filterChain.doFilter(request, response);
@@ -53,15 +53,19 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 		if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
 			String authSub = jwt.getSubject();
 
-			findMemberByAuthSub(authSub).ifPresent(member -> {
-				Authentication newAuth = createAuthentication(member);
+			// 회원 조회: 있으면 MemberInfo, 없으면 미가입자용 MemberInfo
+			MemberInfo memberInfo = findMemberByAuthSub(authSub)
+				.orElseGet(() -> MemberInfo.forUnregistered(authSub));
 
-				SecurityContext context = SecurityContextHolder.createEmptyContext();
-				context.setAuthentication(newAuth);
-				SecurityContextHolder.setContext(context);
+			MemberPrincipal principal = MemberPrincipal.from(memberInfo);
+			Authentication newAuth = new MemberAuthenticationToken(principal);
 
-				log.debug("[Filter] SecurityContext updated for Member ID: {}", member.memberId());
-			});
+			SecurityContext context = SecurityContextHolder.createEmptyContext();
+			context.setAuthentication(newAuth);
+			SecurityContextHolder.setContext(context);
+
+			log.debug("[Filter] SecurityContext updated - registered: {}, authSub: {}",
+				memberInfo.isRegistered(), authSub);
 		}
 	}
 
