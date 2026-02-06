@@ -125,15 +125,4 @@ public class AuthService extends OidcUserService {
             throw new OAuth2AuthenticationException("토큰 검증에 실패했습니다.");
         }
     }
-
-    // [access_token 검증 메서드]
-    // API 엔드포인트에서 access_token을 검증할 때 사용합니다.
-    public Jwt decodeAndValidateAccessToken(String token) {
-        try {
-            return jwtDecoder.decode(token);
-        } catch (JwtException e) {
-            log.error("Access Token validation failed", e);
-            throw new OAuth2AuthenticationException("토큰 검증에 실패했습니다.");
-        }
-    }
 }

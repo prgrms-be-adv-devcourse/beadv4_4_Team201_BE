@@ -4,7 +4,7 @@ import app.giftify.cart.application.inbound.AddCartItemCommand;
 import app.giftify.cart.application.inbound.CartService;
 import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.CartItemKey;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class CartController implements CartV2ApiSpec {
 
     @Override
     @GetMapping("/{cartId}")
-    public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable Long cartId, @AuthenticatedMember Long memberId) {
+    public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable Long cartId, @CurrentMemberId Long memberId) {
         CartResponse response = cartService.getCart(cartId, memberId);
         return ResponseEntity.ok(RsData.success(response));
     }
