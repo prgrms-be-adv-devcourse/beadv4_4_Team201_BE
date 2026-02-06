@@ -13,8 +13,10 @@ public enum FundingErrorCode implements ErrorCode {
     IS_NOT_EXPIRED (HttpStatus.BAD_REQUEST.value(), "F007", "펀딩 기한이 만료되지 않았습니다. ID: %d"),
     FORBIDDEN (HttpStatus.FORBIDDEN.value(), "F008", "해당 펀딩에 대한 권한이 없습니다"),
     NOT_ACHIEVED (HttpStatus.BAD_REQUEST.value(), "F009", "목표 달성된 펀딩이 아닙니다. ID: %d"),
+    DUPLICATED_WISHLIST_ITEM (HttpStatus.CONFLICT.value(), "F010", "중복된 위시리스트 아이템이 포함되어 있습니다."),
 
-    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F100", "외부 API 오류입니다.");
+    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F100", "외부 API 오류입니다."),
+    SNAPSHOT_INCONSISTENCY(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F101", "위시리스트 아이템 스냅샷 데이터가 일관되지 않습니다.");
 
     private final int statusCode;
     private final String code;
