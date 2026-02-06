@@ -3,7 +3,6 @@ package app.giftify.funding.adpater.inbound.web;
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.application.FundingFacade;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.security.common.context.AuthenticatedMember;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Parameter;

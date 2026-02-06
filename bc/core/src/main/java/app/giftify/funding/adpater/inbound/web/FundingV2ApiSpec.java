@@ -1,7 +1,7 @@
 package app.giftify.funding.adpater.inbound.web;
 
 import app.giftify.funding.adpater.inbound.dto.*;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,7 +57,7 @@ public interface FundingV2ApiSpec {
     })
     ResponseEntity<RsData<ContributeFundingResponseDto>> getParticipatedFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId
+            @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
     @Operation(summary = "참여한 펀딩 목록 조회", description = "회원이 참여한 펀딩 목록을 페이지 단위로 조회합니다.")
@@ -68,7 +68,7 @@ public interface FundingV2ApiSpec {
     ResponseEntity<RsData<PageResponse<ContributeFundingResponseDto>>> getParticipatedFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId
+            @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
     @Operation(summary = "펀딩 거절",description = "수령자가 펀딩을 거절 처리합니다.")
@@ -80,7 +80,7 @@ public interface FundingV2ApiSpec {
     })
     ResponseEntity<RsData<FundingCompleteResponseDto>> refuseFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId);
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "펀딩 수락",description = "수령자가 펀딩을 수락 처리합니다.")
     @ApiResponses({
@@ -91,7 +91,7 @@ public interface FundingV2ApiSpec {
     })
     ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId);
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "나의 펀딩 단건 조회",description = "수령자가 본인의 단건 펀딩 정보를 조회합니다.")
     @ApiResponses({
@@ -101,7 +101,7 @@ public interface FundingV2ApiSpec {
     })
     ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
             @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId);
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "나의 펀딩 목록 조회",description = "수령자가 본인의 펀딩 목록을 페이지 단위로 조회합니다.")
     @ApiResponses({
@@ -111,6 +111,6 @@ public interface FundingV2ApiSpec {
     ResponseEntity<RsData<PageResponse<MyFundingSummaryDto>>> getMyFundings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @Parameter(hidden = true) @AuthenticatedMember Long memberId);
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
 }
