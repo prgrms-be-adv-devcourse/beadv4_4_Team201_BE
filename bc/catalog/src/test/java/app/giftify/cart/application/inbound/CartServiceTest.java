@@ -83,6 +83,41 @@ class CartServiceTest {
     }
 
     @Test
+    @DisplayName("펀딩 상품 추가 성공: 위시리스트 아이템(IN_PROGRESS) + 상품(ACTIVE) + 재고 있음")
+    void addItem_FundingInProgress_Success() {
+        // given
+        Long wishlistItemId = 101L; // 다른 ID 사용
+        Long productId = 201L;
+        Money amount = Money.of(10000);
+
+        // Cart Mocking
+        Cart cart = Cart.create(memberId);
+        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+        given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        WishlistItem wishlistItem = mock(WishlistItem.class);
+        given(wishlistItem.getProductId()).willReturn(productId);
+        given(wishlistItem.getWishlistItemStatus()).willReturn(WishlistItemStatus.IN_PROGRESS); // IN_PROGRESS 상태
+        given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.of(wishlistItem));
+
+        Product product = mock(Product.class);
+        given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
+        given(product.getStock()).willReturn(10); // 재고 있음
+        given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
+
+        AddCartItemCommand command = new AddCartItemCommand(
+                new CartItemKey(TargetType.FUNDING, wishlistItemId), // FUNDING 타입
+                amount
+        );
+
+        // when
+        CartItemAddResult result = cartService.addItem(cartId, command);
+
+        // then
+        assertThat(result).isEqualTo(CartItemAddResult.ADDED);
+    }
+
+    @Test
     @DisplayName("펀딩 상품 추가 실패: 상품이 ACTIVE가 아님")
     void addItem_Funding_Fail_ProductInactive() {
         // given
