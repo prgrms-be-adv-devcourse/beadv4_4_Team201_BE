@@ -21,14 +21,14 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "200", description = "펀딩 조회 성공"),
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
-    ResponseEntity<RsData<FundingResponseDto>> getFunding(@PathVariable Long id);
+    ResponseEntity<RsData<FundingResponseDto>> getFunding(@PathVariable("id") Long id);
 
     @Operation(summary = "펀딩 목록 조회", description = "페이지 단위로 전체 펀딩 목록을 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "펀딩 목록 조회 성공")
     })
     ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFundings(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
     );
 
     @Operation(summary = "펀딩 종료", description = "관리자가 펀딩을 종료 처리합니다.")
@@ -38,7 +38,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "403", description = "관리자 권한 없음 (F008)"),
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
-    ResponseEntity<RsData<FundingCompleteResponseDto>> closeFunding(@PathVariable Long id);
+    ResponseEntity<RsData<FundingCompleteResponseDto>> closeFunding(@PathVariable("id") Long id);
 
     @Operation(summary = "펀딩 만료 처리", description = "관리자가 펀딩을 만료 처리합니다.")
     @ApiResponses({
@@ -47,7 +47,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "403", description = "관리자 권한 없음 (F008)"),
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
-    ResponseEntity<RsData<FundingCompleteResponseDto>> expireFunding(@PathVariable Long id);
+    ResponseEntity<RsData<FundingCompleteResponseDto>> expireFunding(@PathVariable("id") Long id);
 
     @Operation(summary = "참여한 펀딩 단건 조회", description = "회원이 참여한 펀딩을 펀딩 ID로 조회합니다.")
     @ApiResponses({
@@ -56,7 +56,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)")
     })
     ResponseEntity<RsData<ContributeFundingResponseDto>> getParticipatedFunding(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
@@ -66,8 +66,8 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "403", description = "회원 접근 권한 없음 (F008)")
     })
     ResponseEntity<RsData<PageResponse<ContributeFundingResponseDto>>> getParticipatedFundings(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
@@ -79,7 +79,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     ResponseEntity<RsData<FundingCompleteResponseDto>> refuseFunding(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "펀딩 수락",description = "수령자가 펀딩을 수락 처리합니다.")
@@ -90,7 +90,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "나의 펀딩 단건 조회",description = "수령자가 본인의 단건 펀딩 정보를 조회합니다.")
@@ -100,7 +100,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
     ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "나의 펀딩 목록 조회",description = "수령자가 본인의 펀딩 목록을 페이지 단위로 조회합니다.")
@@ -109,8 +109,8 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "403", description = "수령자 권한 없음 (F008)")
     })
     ResponseEntity<RsData<PageResponse<MyFundingSummaryDto>>> getMyFundings(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
 }
