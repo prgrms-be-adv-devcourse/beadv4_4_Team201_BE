@@ -1,5 +1,19 @@
 package app.giftify.cart.application.inbound;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import app.giftify.cart.adapter.inbound.CartResponse;
 import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
@@ -14,20 +28,6 @@ import app.giftify.shared.domain.vo.Money;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class CartServiceTest {
@@ -44,8 +44,8 @@ class CartServiceTest {
     @Mock
     private WishlistItemRepositoryPort wishlistItemRepositoryPort;
 
-    private Long memberId = 1L;
-    private Long cartId = 1L;
+    private final Long memberId = 1L;
+    private final Long cartId = 1L;
 
     @Test
     @DisplayName("펀딩 상품 추가 성공: 위시리스트 아이템(PENDING) + 상품(ACTIVE) + 재고 있음")
@@ -244,6 +244,33 @@ class CartServiceTest {
 
         // when & then
         assertThatThrownBy(() -> cartService.getCart(cartId, memberId))
+                .isInstanceOf(CartException.class);
+    }
+
+    @Test
+    @DisplayName("내 장바구니 조회 성공")
+    void getMyCart_Success() {
+        // given
+        Cart cart = Cart.create(memberId);
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
+
+        // when
+        CartResponse response = cartService.getMyCart(memberId);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.memberId()).isEqualTo(memberId);
+        assertThat(response.items()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("내 장바구니 조회 실패: 장바구니 없음")
+    void getMyCart_Fail_NotFound() {
+        // given
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> cartService.getMyCart(memberId))
                 .isInstanceOf(CartException.class);
     }
 }
