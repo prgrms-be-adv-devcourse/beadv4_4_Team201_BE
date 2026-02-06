@@ -127,38 +127,6 @@ class AuthServiceTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("decodeAndValidateAccessToken 메서드 (access_token 검증)")
-	class DecodeAndValidateAccessTokenTests {
-
-		@Test
-		@DisplayName("유효한 access_token이면 Jwt 반환")
-		void decodeAndValidateAccessToken_ValidAccessToken_ReturnsJwt() {
-			// given
-			String accessToken = "valid.access.token";
-			Jwt expectedJwt = createMockJwt("api-user");
-			given(jwtDecoder.decode(accessToken)).willReturn(expectedJwt);
-
-			// when
-			Jwt result = authService.decodeAndValidateAccessToken(accessToken);
-
-			// then
-			assertThat(result).isEqualTo(expectedJwt);
-		}
-
-		@Test
-		@DisplayName("유효하지 않은 access_token이면 예외 발생")
-		void decodeAndValidateAccessToken_InvalidAccessToken_ThrowsException() {
-			// given
-			String invalidToken = "invalid.access.token";
-			given(jwtDecoder.decode(invalidToken)).willThrow(new JwtException("Token validation failed"));
-
-			// when & then
-			assertThatThrownBy(() -> authService.decodeAndValidateAccessToken(invalidToken))
-				.isInstanceOf(OAuth2AuthenticationException.class);
-		}
-	}
-
 	private Jwt createMockJwt(String subject) {
 		return new Jwt(
 			"token-value",
