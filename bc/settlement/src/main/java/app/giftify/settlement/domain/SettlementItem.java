@@ -18,7 +18,13 @@ import java.time.LocalDateTime;
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_target_id_type",
                 columnNames = {"target_id", "type"}
-        )
+        ),
+        indexes = {
+                @Index(
+                        name = "idx_settlement_validation",
+                        columnList = "status, expectedDate, id"
+                )
+        }
 )
 @NoArgsConstructor
 @Getter
@@ -66,6 +72,9 @@ public class SettlementItem {
 
     @Embedded
     private LifeCycleMeta lifeCycleMeta;
+
+    @Column(nullable = false)
+    private int retryCount = 0;
 
     @CreatedDate
     private LocalDateTime createdAt;
