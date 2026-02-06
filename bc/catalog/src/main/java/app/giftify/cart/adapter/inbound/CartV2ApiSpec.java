@@ -1,5 +1,6 @@
 package app.giftify.cart.adapter.inbound;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ public interface CartV2ApiSpec {
 		@ApiResponse(responseCode = "401", description = "인증 실패")
 	})
 	ResponseEntity<RsData<Void>> addItem(
-		@PathVariable Long cartId,
+		@PathVariable("cartId") Long cartId,
 		@RequestBody CartItemRequest request
 	);
 	
@@ -31,8 +32,8 @@ public interface CartV2ApiSpec {
 		@ApiResponse(responseCode = "401", description = "인증 실패")
 	})
 	ResponseEntity<RsData<CartResponse>> getCart(
-		@PathVariable Long cartId,
-		@CurrentMemberId Long memberId
+		@PathVariable("cartId") Long cartId,
+		@Parameter(hidden = true) @CurrentMemberId Long memberId
 	);
 
 	@Operation(summary = "내 장바구니 조회", description = "현재 로그인한 회원의 장바구니를 조회합니다.")
@@ -41,5 +42,5 @@ public interface CartV2ApiSpec {
 		@ApiResponse(responseCode = "401", description = "인증 실패"),
 		@ApiResponse(responseCode = "404", description = "장바구니 없음")
 	})
-	ResponseEntity<RsData<CartResponse>> getMyCart(@CurrentMemberId Long memberId);
+	ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
