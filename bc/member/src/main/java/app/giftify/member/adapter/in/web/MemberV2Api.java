@@ -2,6 +2,7 @@ package app.giftify.member.adapter.in.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import app.giftify.member.adapter.in.web.dto.MemberResponse;
 import app.giftify.member.adapter.in.web.dto.MemberUpdateRequest;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 @Tag(name = "Member V2", description = "회원 정보 관리 API (v2)")
 public interface MemberV2Api {
@@ -137,5 +139,45 @@ public interface MemberV2Api {
     )
     ResponseEntity<Void> withdraw(
             @Parameter(hidden = true) @CurrentAuthSub String authSub
+    );
+
+    @Operation(
+            summary = "가입 여부 확인",
+            description = """
+                    Auth0 인증 후 서비스 회원가입 여부를 확인합니다.
+
+                    **응답**:
+                    - 가입된 회원: 회원 정보 반환
+                    - 미가입 사용자: `{"status": "NOT_REGISTERED"}` 반환
+                    """
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공"
+    )
+    @ApiResponse(
+            responseCode = "401",
+            description = "인증 토큰 누락 또는 유효하지 않음",
+            content = @Content
+    )
+    ResponseEntity<?> checkRegistration(
+            @Parameter(hidden = true) @CurrentAuthSub String authSub
+    );
+
+    @Operation(
+            summary = "닉네임 중복 확인",
+            description = "입력한 닉네임이 이미 사용 중인지 확인합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "확인 완료"
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "닉네임이 비어있음",
+            content = @Content
+    )
+    ResponseEntity<?> checkNickname(
+            @Parameter(description = "확인할 닉네임") @RequestParam(name = "nickname") @NotBlank String nickname
     );
 }

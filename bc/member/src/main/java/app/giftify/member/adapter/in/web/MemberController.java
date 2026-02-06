@@ -43,8 +43,11 @@ public class MemberController {
     private final UpdateMemberUseCase updateMemberUseCase;
     private final WithdrawMemberUseCase withdrawMemberUseCase;
 
-    // Auth0 인증 정보(JWT)를 기반으로 가입여부 확인
-    @GetMapping("/check-registration") // TODO V2 컨트롤러로 옮기기
+    /**
+     * @deprecated V2 API로 이동됨. {@link MemberV2Controller#checkRegistration} 사용.
+     */
+    @Deprecated(since = "v2", forRemoval = true)
+    @GetMapping("/check-registration")
     public ResponseEntity<?> checkRegistration(
             @CurrentAuthSub String authSub
     ) {
@@ -64,7 +67,10 @@ public class MemberController {
                 });
     }
 
-    // 신규 회원 가입 (추가 정보 입력)
+    /**
+     * @deprecated V2 API로 이동됨. {@link MemberV2Controller#signup} 사용.
+     */
+    @Deprecated(since = "v2", forRemoval = true)
     @PostMapping("/signup")
     public ResponseEntity<Member> signup(
             @CurrentAuthSub String authSub,
@@ -79,8 +85,10 @@ public class MemberController {
         return ResponseEntity.ok(member);
     }
 
-    // 내 정보 조회
-    @Deprecated
+    /**
+     * @deprecated V2 API로 이동됨. {@link MemberV2Controller#getMe} 사용.
+     */
+    @Deprecated(since = "v2", forRemoval = true)
     @GetMapping("/getMyInfo")
     public ResponseEntity<?> getMyInfo(
             @CurrentAuthSub String authSub
@@ -94,8 +102,10 @@ public class MemberController {
                 .orElseThrow(() -> new MemberNotFoundException(authSub));
     }
 
-    // 회원 정보 수정
-    @Deprecated
+    /**
+     * @deprecated V2 API로 이동됨. {@link MemberV2Controller#updateMe} 사용.
+     */
+    @Deprecated(since = "v2", forRemoval = true)
     @PatchMapping("/updateMyInfo")
     public ResponseEntity<Member> updateMyInfo(
             @CurrentAuthSub String authSub,
@@ -124,7 +134,10 @@ public class MemberController {
         return ResponseEntity.ok(updatedMember);
     }
 
-    // 회원 탈퇴
+    /**
+     * @deprecated V2 API로 이동됨. {@link MemberV2Controller#withdraw} 사용.
+     */
+    @Deprecated(since = "v2", forRemoval = true)
     @DeleteMapping("/withdraw")
     public ResponseEntity<Void> withdraw(
             @CurrentAuthSub String authSub
@@ -138,6 +151,10 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * @deprecated V2 API로 이동됨. {@link MemberV2Controller#checkNickname} 사용.
+     */
+    @Deprecated(since = "v2", forRemoval = true)
     @GetMapping("/check/nickname")
     public ResponseEntity<?> checkNickname(
             @RequestParam(name = "nickname") @NotBlank String nickname

@@ -1,5 +1,6 @@
 package app.giftify.member.adapter.in.web;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.member.adapter.in.web.dto.MemberResponse;
@@ -19,11 +21,13 @@ import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.application.port.in.UpdateMemberUseCase;
 import app.giftify.member.application.port.in.WithdrawMemberUseCase;
+import app.giftify.member.domain.exception.InvalidNicknameException;
 import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.security.common.CurrentAuthSub;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -127,5 +131,45 @@ public class MemberV2Controller implements MemberV2Api {
         withdrawMemberUseCase.withdrawMember(authSub);
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 가입 여부 확인.
+     */
+    @Override
+    @GetMapping("/check-registration")
+    public ResponseEntity<?> checkRegistration(
+            @CurrentAuthSub String authSub
+    ) {
+        log.debug("[Controller] checkRegistration called with authSub: {}", authSub);
+        if (authSub == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "인증 정보(JWT)가 누락되었습니다."));
+        }
+
+        return getMemberUseCase.getMemberByAuthSub(authSub)
+                .map(member -> {
+                    log.debug("[Controller] Member found for authSub: {}", authSub);
+                    return ResponseEntity.ok().body((Object) MemberResponse.from(member));
+                })
+                .orElseGet(() -> {
+                    log.debug("[Controller] Member NOT found for authSub: {}", authSub);
+                    return ResponseEntity.ok().body(Map.of("status", "NOT_REGISTERED"));
+                });
+    }
+
+    /**
+     * 닉네임 중복 확인.
+     */
+    @Override
+    @GetMapping("/check/nickname")
+    public ResponseEntity<?> checkNickname(
+            @RequestParam(name = "nickname") @NotBlank String nickname
+    ) {
+        if (nickname.isBlank()) {
+            throw new InvalidNicknameException();
+        }
+
+        boolean duplicated = getMemberUseCase.isNicknameDuplicated(nickname);
+        return ResponseEntity.ok(Map.of("status", duplicated ? "DUPLICATED" : "AVAILABLE"));
     }
 }
