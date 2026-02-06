@@ -88,7 +88,7 @@ public class ProductController implements ProductV2ApiSpec {
     }
 
     // 상품 단건 조회
-    @GetMapping("/detail/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<RsData<ProductDto>> getProduct(
             @PathVariable("id") Long id
     ) {
