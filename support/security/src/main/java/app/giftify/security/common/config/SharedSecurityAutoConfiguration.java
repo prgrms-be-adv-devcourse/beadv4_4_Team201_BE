@@ -1,24 +1,19 @@
 package app.giftify.security.common.config;
 
-import app.giftify.security.common.resolver.AuthenticatedMemberArgumentResolver;
 import app.giftify.security.common.validator.AudienceValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.context.annotation.Import;
-
-import java.util.List;
 
 @AutoConfiguration
 @Import(SharedSecurityConfig.class)
-public class SharedSecurityAutoConfiguration implements WebMvcConfigurer {
+public class SharedSecurityAutoConfiguration {
 
     @Value("${auth0.audience}")
     private String audience;
@@ -30,44 +25,33 @@ public class SharedSecurityAutoConfiguration implements WebMvcConfigurer {
     private String clientId;
 
     /**
-     * JwtDecoder for access tokens (validates API audience)
-     * Marked as @Primary for Spring Security's OAuth2 Resource Server
+     * Access token용 JwtDecoder (API audience 검증).
+     * Spring Security OAuth2 Resource Server가 자동으로 사용.
      */
     @Bean
     @Primary
     @ConditionalOnMissingBean
     public JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuer);
-
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-
-        jwtDecoder.setJwtValidator(withAudience);
-
-        return jwtDecoder;
+        return createJwtDecoder(audience);
     }
 
     /**
-     * JwtDecoder for id_tokens (validates client_id as audience)
-     * Used for login endpoint where frontend sends id_token from Auth0
+     * ID token용 JwtDecoder (client_id를 audience로 검증).
+     * 로그인 시 프론트엔드가 보낸 id_token 검증에 사용.
      */
     @Bean
     public JwtDecoder idTokenDecoder() {
-        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuer);
-
-        // id_tokens have client_id as audience, not the API audience
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(clientId);
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-
-        jwtDecoder.setJwtValidator(withAudience);
-
-        return jwtDecoder;
+        return createJwtDecoder(clientId);
     }
 
-    @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new AuthenticatedMemberArgumentResolver());
+    private JwtDecoder createJwtDecoder(String expectedAudience) {
+        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuer);
+
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(expectedAudience);
+        OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> combinedValidator = new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator);
+
+        jwtDecoder.setJwtValidator(combinedValidator);
+        return jwtDecoder;
     }
 }
