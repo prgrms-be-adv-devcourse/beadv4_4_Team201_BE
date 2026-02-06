@@ -81,9 +81,4 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 			return Optional.empty();
 		}
 	}
-
-	private Authentication createAuthentication(MemberInfo member) {
-		MemberPrincipal principal = MemberPrincipal.from(member);
-		return new MemberAuthenticationToken(principal);
-	}
 }
