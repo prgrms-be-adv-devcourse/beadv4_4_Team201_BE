@@ -1,7 +1,7 @@
 package app.giftify.product.application.service;
 
-import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistory;
 import app.giftify.product.adapter.outbound.jpa.repository.ProductStockHistoryRepository;
+import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
@@ -28,6 +27,9 @@ class ProductServiceTest {
 
     @Mock
     private ProductStockHistoryRepository productStockHistoryRepository;
+
+    @Mock
+    private ProductRepositoryPort productRepositoryPort;
 
     @Mock
     private EventPublisher eventPublisher;
@@ -56,7 +58,7 @@ class ProductServiceTest {
 
         // then
         assertThat(product.getStock()).isEqualTo(4);
-        verify(productStockHistoryRepository).save(any(ProductStockHistory.class));
+        verify(productRepositoryPort).save(product);
     }
 
     @Test
@@ -81,7 +83,7 @@ class ProductServiceTest {
         // then
         assertThat(product.getStock()).isEqualTo(0);
         assertThat(product.pullEvents()).hasSize(1);
-        verify(productStockHistoryRepository).save(any(ProductStockHistory.class));
+        verify(productRepositoryPort).save(product);
     }
 
     @Test

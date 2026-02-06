@@ -3,7 +3,6 @@ package app.giftify.product.application.service;
 import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
-import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistory;
 import app.giftify.product.adapter.outbound.jpa.repository.ProductStockHistoryRepository;
 import app.giftify.product.application.port.in.*;
 import app.giftify.product.application.port.out.MyProductSearchCommand;
@@ -160,16 +159,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         Integer newStock = requestDto.stock();
         if (newStock != null && product.getStock() != newStock) {
             Product.StockChangeResult result = product.updateStock(newStock);
-
-            // todo 재고이력 저장 도메인에서 도메인이벤트 발행하기 and 어플리케이션 -> 어댑터 호출하고있음;;
-            ProductStockHistory history = ProductStockHistory.manualAdjust(
-                    product.getSellerId(),
-                    product.getId(),
-                    result.delta(),
-                    result.beforeStock(),
-                    result.afterStock()
-            );
-            productStockHistoryRepository.save(history);
+            // todo 재고 이력 저장 이벤트 호출 new event(result) - AFTER_COMMIT
         }
 
         var status = requestDto.status();
@@ -197,19 +187,10 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         Product product = productSupport.findById(productid);
 
         Product.StockChangeResult result = product.decreaseStockByFunding();
+        productRepositoryPort.save(product);
 
-        // todo 재고이력 저장 도메인에서 도메인이벤트 발행하기 and 어플리케이션 -> 어댑터 호출하고있음;;
-        ProductStockHistory history = ProductStockHistory.manualAdjust(
-                product.getSellerId(),
-                product.getId(),
-                result.delta(),
-                result.beforeStock(),
-                result.afterStock()
-        );
-        productStockHistoryRepository.save(history);
+        // todo 재고 이력 저장 이벤트 호출 new event(result) - AFTER_COMMIT
     }
-
-    /// ///  메서드 //////
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)
     // 컨트롤러에서 web Dto로 변환 (ProductDto)
