@@ -55,7 +55,7 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/actuator/health/**",
                         "/error",
-                        "/api/v2/products/{id}",
+                        "/api/v2/products/detail/{id:\\d+}",
                         "/api/v2/products/search"
                 )
                 .csrf(AbstractHttpConfigurer::disable)
