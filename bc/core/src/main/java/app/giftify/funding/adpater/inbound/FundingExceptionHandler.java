@@ -19,12 +19,13 @@ public class FundingExceptionHandler {
     @ExceptionHandler(FundingException.class)
     public ResponseEntity<?> handleFundingException(FundingException e) {
         FundingErrorCode errorCode = (FundingErrorCode) e.getErrorCode();
+        String message = e.getMessage() != null ? e.getMessage() : errorCode.getMessage();
         
         return ResponseEntity
                 .status(errorCode.getStatusCode())
                 .body(Map.of(
                         "code", errorCode.getCode(),
-                        "message", e.getMessage()  // 포맷팅된 메시지 (예: "펀딩을 찾을 수 없습니다. ID: 123")
+                        "message", message  // 포맷팅된 메시지 (예: "펀딩을 찾을 수 없습니다. ID: 123")
                 ));
     }
 }
