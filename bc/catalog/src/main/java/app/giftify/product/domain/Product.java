@@ -137,8 +137,10 @@ public class Product extends BaseDomainModel {
         return new StockChangeResult(beforeStock, this.stock, newStock - beforeStock);
     }
 
-    // 펀딩에 의한 상품 재고 감소
+    // 펀딩에 의한 상품 재고 감소 todo 동시성 제어
     public StockChangeResult decreaseStockByFunding() {
+        validateStockForFunding();
+
         int beforeStock = this.stock;
         --this.stock;
 
@@ -159,10 +161,10 @@ public class Product extends BaseDomainModel {
         return new StockChangeResult(beforeStock, this.stock, 1);
     }
 
-    // 일반 주문에 의한 상품 재고 감소
+    // 일반 주문에 의한 상품 재고 감소 todo 동시성 제어
     public StockChangeResult decreaseStock(int quantity) {
-        if (this.stock < quantity)
-            throw new ProductException(PRODUCT_OUT_OF_STOCK);
+        validateStockForOrder(quantity);
+
         int beforeStock = this.stock;
         this.stock -= quantity;
 
@@ -185,5 +187,17 @@ public class Product extends BaseDomainModel {
 
     // todo StockChangeResult 도메인 엔티티 분리하여 도메인으로 들고오기
     public record StockChangeResult(int beforeStock, int afterStock, int delta) {
+    }
+
+    // 펀딩 재고 검증: 펀딩은 항상 1개 차감이므로 재고가 1 미만이면 불가
+    private void validateStockForFunding() {
+        if (this.stock < 1)
+            throw new ProductException(PRODUCT_OUT_OF_STOCK);
+    }
+
+    // 일반 주문 재고 검증: 주문 수량만큼 재고가 있어야 함
+    private void validateStockForOrder(int quantity) {
+        if (this.stock < quantity)
+            throw new ProductException(PRODUCT_OUT_OF_STOCK);
     }
 }

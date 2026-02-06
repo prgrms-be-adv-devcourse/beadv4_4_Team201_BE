@@ -189,6 +189,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         Product.StockChangeResult result = product.decreaseStockByFunding();
         productRepositoryPort.save(product);
 
+        product.pullEvents().forEach(eventPublisher::publish);
         // todo 재고 이력 저장 이벤트 호출 new event(result) - AFTER_COMMIT
     }
 

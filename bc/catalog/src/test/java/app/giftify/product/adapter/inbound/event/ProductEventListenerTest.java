@@ -43,6 +43,22 @@ class ProductEventListenerTest {
     }
 
     @Test
+    @DisplayName("펀딩 수락 이벤트 처리 중 재고가 부족하면 예외가 전파된다")
+    void handleFundingAccepted_OutOfStock() {
+        // given
+        Long productId = 1L;
+        FundingAcceptedEvent event = new FundingAcceptedEvent(
+                100L, 200L, productId, 3L, LocalDateTime.now()
+        );
+        doThrow(new ProductException(ProductErrorCode.PRODUCT_OUT_OF_STOCK))
+                .when(decreaseProductStockUseCase).decreaseStockByFunding(productId);
+
+        // when & then
+        assertThatThrownBy(() -> productEventListener.handleFundingAccepted(event))
+                .isInstanceOf(ProductException.class);
+    }
+
+    @Test
     @DisplayName("펀딩 수락 이벤트 처리 중 상품이 존재하지 않으면 예외가 전파된다")
     void handleFundingAccepted_ProductNotFound() {
         // given
