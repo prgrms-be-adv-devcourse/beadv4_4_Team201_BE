@@ -1,6 +1,5 @@
 package app.giftify.payment.adapter.inbound.web;
 
-import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -8,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,11 +31,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
 import app.giftify.payment.adapter.inbound.web.exception.PaymentExceptionHandler;
+import app.giftify.payment.application.inbound.ChargeDepositCommand;
+import app.giftify.payment.application.inbound.ChargeDepositUseCase;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
 import app.giftify.payment.application.inbound.ConfirmPaymentResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
-import app.giftify.payment.application.inbound.CreatePaymentCommand;
-import app.giftify.payment.application.inbound.CreatePaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
 import app.giftify.payment.domain.PaymentErrorCode;
@@ -52,7 +52,7 @@ class PaymentControllerTest {
 	private ObjectMapper objectMapper;
 
 	@Mock
-	private CreatePaymentUseCase createPaymentUseCase;
+	private ChargeDepositUseCase chargeDepositUseCase;
 
 	@Mock
 	private ConfirmPaymentUseCase confirmPaymentUseCase;
@@ -68,7 +68,7 @@ class PaymentControllerTest {
 		objectMapper = new ObjectMapper();
 		mockMvc = MockMvcBuilders
 			.standaloneSetup(new PaymentController(
-				createPaymentUseCase,
+				chargeDepositUseCase,
 				confirmPaymentUseCase,
 				queryPaymentUseCase
 			))
@@ -90,25 +90,26 @@ class PaymentControllerTest {
 	}
 
 	@Nested
-	@DisplayName("charge 메서드")
+	@DisplayName("charge 메서드 (예치금 충전)")
 	class ChargeTests {
 
 		@Test
-		@DisplayName("orderId를 제공하면 해당 orderId로 결제를 생성한다")
+		@DisplayName("orderId를 제공하면 해당 orderId로 예치금 충전 결제를 생성한다")
 		void charge_WithProvidedOrderId_Success() throws Exception {
 			// given
-			String providedOrderId = "ORDER-123456";
+			String providedOrderId = "CHG-123456";
 			PaymentChargeRequest request = new PaymentChargeRequest(TEST_AMOUNT, providedOrderId, null);
 
 			PaymentCreatedResult result = new PaymentCreatedResult(
 				1L,
 				providedOrderId,
-				"idempotency-key-123",
 				PaymentStatus.PENDING,
-				true
+				null,
+				null,
+				LocalDateTime.now()
 			);
 
-			given(createPaymentUseCase.create(any(CreatePaymentCommand.class))).willReturn(result);
+			given(chargeDepositUseCase.charge(any(ChargeDepositCommand.class))).willReturn(result);
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/charge")
@@ -120,41 +121,25 @@ class PaymentControllerTest {
 				.andExpect(jsonPath("$.data.paymentId").value(1))
 				.andExpect(jsonPath("$.data.orderId").value(providedOrderId))
 				.andExpect(jsonPath("$.data.amount").value(10000))
-				.andExpect(jsonPath("$.data.idempotencyKey").value("idempotency-key-123"))
 				.andExpect(jsonPath("$.data.status").value("PENDING"));
 
-			verify(createPaymentUseCase).create(any(CreatePaymentCommand.class));
+			verify(chargeDepositUseCase).charge(any(ChargeDepositCommand.class));
 		}
 
 		@Test
-		@DisplayName("orderId를 제공하지 않으면 CHG-UUID 형식의 orderId를 생성한다")
-		void charge_WithoutOrderId_GeneratesOrderId() throws Exception {
-			// given
+		@DisplayName("orderId를 제공하지 않으면 400 에러를 반환한다 (orderId는 필수)")
+		void charge_WithoutOrderId_ReturnsBadRequest() throws Exception {
+			// given - orderId가 null인 요청
 			PaymentChargeRequest request = new PaymentChargeRequest(TEST_AMOUNT, null, null);
-
-			PaymentCreatedResult result = new PaymentCreatedResult(
-				1L,
-				"CHG-generated-uuid",
-				"idempotency-key-123",
-				PaymentStatus.PENDING,
-				true
-			);
-
-			given(createPaymentUseCase.create(any(CreatePaymentCommand.class))).willReturn(result);
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/charge")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.result").value("SUCCESS"))
-				.andExpect(jsonPath("$.data.paymentId").value(1))
-				.andExpect(jsonPath("$.data.orderId").value(startsWith("CHG-")))
-				.andExpect(jsonPath("$.data.amount").value(10000))
-				.andExpect(jsonPath("$.data.status").value("PENDING"));
+				.andExpect(status().isBadRequest());
 
-			verify(createPaymentUseCase).create(any(CreatePaymentCommand.class));
+			verify(chargeDepositUseCase, never()).charge(any(ChargeDepositCommand.class));
 		}
 
 		@Test
@@ -170,14 +155,14 @@ class PaymentControllerTest {
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 
-			verify(createPaymentUseCase, never()).create(any(CreatePaymentCommand.class));
+			verify(chargeDepositUseCase, never()).charge(any(ChargeDepositCommand.class));
 		}
 
 		@Test
 		@DisplayName("null 금액으로 요청하면 400 에러를 반환한다")
 		void charge_WithNullAmount_ReturnsBadRequest() throws Exception {
 			// given
-			String requestJson = "{\"orderId\":\"ORDER-123\",\"paymentType\":null}";
+			String requestJson = "{\"orderId\":\"CHG-123\",\"paymentType\":null}";
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/charge")
@@ -186,7 +171,7 @@ class PaymentControllerTest {
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 
-			verify(createPaymentUseCase, never()).create(any(CreatePaymentCommand.class));
+			verify(chargeDepositUseCase, never()).charge(any(ChargeDepositCommand.class));
 		}
 	}
 
@@ -200,7 +185,7 @@ class PaymentControllerTest {
 			// given
 			Long paymentId = 1L;
 			String paymentKey = "toss-payment-key-123";
-			String orderId = "ORDER-123456";
+			String orderId = "CHG-123456";
 
 			PaymentConfirmRequest request = new PaymentConfirmRequest(
 				paymentId,
@@ -233,7 +218,7 @@ class PaymentControllerTest {
 			// given
 			Long paymentId = 1L;
 			String paymentKey = "toss-payment-key-123";
-			String orderId = "ORDER-123456";
+			String orderId = "CHG-123456";
 			String errorCode = "INVALID_CARD";
 			String errorMessage = "카드 정보가 올바르지 않습니다";
 
@@ -268,7 +253,7 @@ class PaymentControllerTest {
 			// given
 			Long paymentId = 999L;
 			String paymentKey = "toss-payment-key-123";
-			String orderId = "ORDER-123456";
+			String orderId = "CHG-123456";
 
 			PaymentConfirmRequest request = new PaymentConfirmRequest(
 				paymentId,
@@ -296,7 +281,7 @@ class PaymentControllerTest {
 			// given
 			Long paymentId = 1L;
 			String paymentKey = "toss-payment-key-123";
-			String orderId = "ORDER-123456";
+			String orderId = "CHG-123456";
 			BigDecimal requestAmount = BigDecimal.valueOf(5000);
 
 			PaymentConfirmRequest request = new PaymentConfirmRequest(
@@ -325,7 +310,7 @@ class PaymentControllerTest {
 			// given
 			Long paymentId = 1L;
 			String paymentKey = "toss-payment-key-123";
-			String orderId = "ORDER-123456";
+			String orderId = "CHG-123456";
 
 			PaymentConfirmRequest request = new PaymentConfirmRequest(
 				paymentId,
@@ -351,7 +336,7 @@ class PaymentControllerTest {
 		@DisplayName("필수 필드가 누락되면 400 에러를 반환한다")
 		void confirm_MissingRequiredFields_ReturnsBadRequest() throws Exception {
 			// given
-			String requestJson = "{\"paymentKey\":\"key\",\"orderId\":\"ORDER-123\"}";
+			String requestJson = "{\"paymentKey\":\"key\",\"orderId\":\"CHG-123\"}";
 
 			// when & then
 			mockMvc.perform(post("/api/v2/payments/confirm")

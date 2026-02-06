@@ -1,14 +1,16 @@
 package app.giftify.payment.application;
 
-import app.giftify.payment.application.inbound.CreatePaymentCommand;
-import app.giftify.payment.application.inbound.PaymentCreatedResult;
-import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.*;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.wallet.application.inbound.DeductWalletCommand;
-import app.giftify.wallet.application.inbound.DeductWalletResult;
-import app.giftify.wallet.application.inbound.DeductWalletUseCase;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,13 +20,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.domain.OrderItemSnapshot;
+import app.giftify.payment.domain.Payment;
+import app.giftify.payment.domain.PaymentErrorCode;
+import app.giftify.payment.domain.PaymentException;
+import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.shared.domain.vo.Money;
+import app.giftify.wallet.application.inbound.DeductWalletCommand;
+import app.giftify.wallet.application.inbound.DeductWalletResult;
+import app.giftify.wallet.application.inbound.DeductWalletUseCase;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CreatePaymentService 테스트")
@@ -44,26 +53,25 @@ class CreatePaymentServiceTest {
 	class CreateTests {
 
 		@Test
-		@DisplayName("멱등성 키가 일치하는 기존 결제가 있으면 해당 결제를 반환한다")
+		@DisplayName("멱등성 키(orderId)가 일치하는 기존 결제가 있으면 해당 결제를 반환한다")
 		void create_ReturnsExistingPayment_WhenIdempotencyKeyMatches() {
 			// given
-			String idempotencyKey = "idem-key-123";
 			Long memberId = 1L;
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+				memberId, orderId,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
 			Payment existingPayment = Payment.builder()
 				.id(999L)
-				.idempotencyKey(idempotencyKey)
+				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -74,7 +82,7 @@ class CreatePaymentServiceTest {
 				.status(PaymentStatus.PENDING)
 				.build();
 
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
+			given(paymentRepository.findByIdempotencyKey(orderId))
 				.willReturn(Optional.of(existingPayment));
 
 			// when
@@ -83,9 +91,10 @@ class CreatePaymentServiceTest {
 			// then
 			assertThat(result.paymentId()).isEqualTo(999L);
 			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(result.requiresPgApproval()).isTrue();
+			assertThat(result.paymentKey()).isNull();
+			assertThat(result.lastTransactionKey()).isNull();
+			assertThat(result.createdAt()).isNull();
 
 			verify(paymentRepository, never()).save(any());
 			verify(deductWalletUseCase, never()).deductForPayment(any());
@@ -95,23 +104,23 @@ class CreatePaymentServiceTest {
 		@DisplayName("CARD 결제를 정상적으로 생성한다")
 		void create_CreatesNewCardPayment_Successfully() {
 			// given
-			String idempotencyKey = "idem-key-123";
 			Long memberId = 1L;
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+				memberId, orderId,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
+			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
 			Payment savedPayment = Payment.builder()
 				.id(1L)
-				.idempotencyKey(idempotencyKey)
+				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -120,9 +129,10 @@ class CreatePaymentServiceTest {
 				.paidAmount(amount)
 				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
+				.createdAt(createdAt)
 				.build();
 
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
+			given(paymentRepository.findByIdempotencyKey(orderId))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
@@ -133,97 +143,55 @@ class CreatePaymentServiceTest {
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
 			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(result.requiresPgApproval()).isTrue();
-			assertThat(result.walletInfo()).isNull();
+			assertThat(result.paymentKey()).isNull();
+			assertThat(result.lastTransactionKey()).isNull();
+			assertThat(result.createdAt()).isEqualTo(createdAt);
 
 			verify(paymentRepository).save(any(Payment.class));
 			verify(deductWalletUseCase, never()).deductForPayment(any());
 		}
-
-		@Test
-		@DisplayName("CARD 결제는 PG 승인이 필요하다")
-		void create_CardPayment_RequiresPgApproval() {
-			// given
-			String idempotencyKey = "idem-key-123";
-			Long memberId = 1L;
-			String orderId = "order-123";
-			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
-			);
-
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
-				amount, orderItems
-			);
-
-			Payment savedPayment = Payment.builder()
-				.id(1L)
-				.idempotencyKey(idempotencyKey)
-				.orderId(orderId)
-				.memberId(memberId)
-				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.CARD)
-				.originAmount(amount)
-				.paidAmount(amount)
-				.orderItems(orderItems)
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
-				.willReturn(Optional.empty());
-			given(paymentRepository.save(any(Payment.class)))
-				.willReturn(savedPayment);
-
-			// when
-			PaymentCreatedResult result = createPaymentService.create(command);
-
-			// then
-			assertThat(result.requiresPgApproval()).isTrue();
-		}
 	}
 
 	@Nested
-	@DisplayName("WALLET 결제")
+	@DisplayName("DEPOSIT(예치금) 결제")
 	class WalletPaymentTests {
 
 		@Test
-		@DisplayName("WALLET 결제를 정상적으로 생성하고 지갑 차감을 호출한다")
+		@DisplayName("DEPOSIT 결제를 정상적으로 생성하고 지갑 차감을 호출한다")
 		void create_CreatesNewWalletPayment_AndCallsWalletDeduction() {
 			// given
-			String idempotencyKey = "idem-key-123";
 			Long memberId = 1L;
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.WALLET,
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+				memberId, orderId,
+				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
+			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
 			Payment savedPayment = Payment.builder()
 				.id(1L)
-				.idempotencyKey(idempotencyKey)
+				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
+				.createdAt(createdAt)
 				.build();
 
 			DeductWalletResult walletResult = DeductWalletResult.success(100L, Money.of(5000));
 
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
+			given(paymentRepository.findByIdempotencyKey(orderId))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
@@ -236,10 +204,10 @@ class CreatePaymentServiceTest {
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
 			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(result.requiresPgApproval()).isFalse();
-			assertThat(result.walletInfo()).isNull();
+			assertThat(result.paymentKey()).isNull();
+			assertThat(result.lastTransactionKey()).isNull();
+			assertThat(result.createdAt()).isEqualTo(createdAt);
 
 			ArgumentCaptor<DeductWalletCommand> commandCaptor = ArgumentCaptor.forClass(DeductWalletCommand.class);
 			verify(deductWalletUseCase).deductForPayment(commandCaptor.capture());
@@ -252,78 +220,30 @@ class CreatePaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("WALLET 결제는 PG 승인이 필요하지 않다")
-		void create_WalletPayment_DoesNotRequirePgApproval() {
+		@DisplayName("지갑 잔액이 부족하면 예외를 던진다")
+		void create_ThrowsException_WhenWalletBalanceInsufficient() {
 			// given
-			String idempotencyKey = "idem-key-123";
-			Long memberId = 1L;
-			String orderId = "order-123";
-			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
-			);
-
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.WALLET,
-				amount, orderItems
-			);
-
-			Payment savedPayment = Payment.builder()
-				.id(1L)
-				.idempotencyKey(idempotencyKey)
-				.orderId(orderId)
-				.memberId(memberId)
-				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
-				.originAmount(amount)
-				.paidAmount(amount)
-				.orderItems(orderItems)
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			DeductWalletResult walletResult = DeductWalletResult.success(100L, Money.of(5000));
-
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
-				.willReturn(Optional.empty());
-			given(paymentRepository.save(any(Payment.class)))
-				.willReturn(savedPayment);
-			given(deductWalletUseCase.deductForPayment(any(DeductWalletCommand.class)))
-				.willReturn(walletResult);
-
-			// when
-			PaymentCreatedResult result = createPaymentService.create(command);
-
-			// then
-			assertThat(result.requiresPgApproval()).isFalse();
-		}
-
-		@Test
-		@DisplayName("지갑 잔액이 부족하면 부족한 금액 정보를 반환한다")
-		void create_ReturnsInsufficientBalanceInfo_WhenWalletBalanceInsufficient() {
-			// given
-			String idempotencyKey = "idem-key-123";
 			Long memberId = 1L;
 			String orderId = "order-123";
 			Money requiredAmount = Money.of(10000);
 			Money currentBalance = Money.of(3000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.WALLET,
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+				memberId, orderId,
+				PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
 			);
 
 			Payment savedPayment = Payment.builder()
 				.id(1L)
-				.idempotencyKey(idempotencyKey)
+				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(requiredAmount)
 				.paidAmount(requiredAmount)
 				.orderItems(orderItems)
@@ -334,61 +254,53 @@ class CreatePaymentServiceTest {
 				100L, requiredAmount, currentBalance
 			);
 
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
+			given(paymentRepository.findByIdempotencyKey(orderId))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 			given(deductWalletUseCase.deductForPayment(any(DeductWalletCommand.class)))
 				.willReturn(walletResult);
 
-			// when
-			PaymentCreatedResult result = createPaymentService.create(command);
-
-			// then
-			assertThat(result.paymentId()).isEqualTo(1L);
-			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
-			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(result.requiresPgApproval()).isFalse();
-			assertThat(result.hasInsufficientBalance()).isTrue();
-			assertThat(result.walletInfo()).isNotNull();
-			assertThat(result.walletInfo().requiredAmount()).isEqualTo(requiredAmount);
-			assertThat(result.walletInfo().currentBalance()).isEqualTo(currentBalance);
-			assertThat(result.walletInfo().shortfall()).isEqualTo(Money.of(7000));
+			// when & then
+			assertThatThrownBy(() -> createPaymentService.create(command))
+				.isInstanceOf(PaymentException.class)
+				.satisfies(thrown -> {
+					PaymentException exception = (PaymentException) thrown;
+					assertThat(exception.getErrorCode()).isEqualTo(PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE);
+				});
 		}
 
 		@Test
-		@DisplayName("기존 WALLET 결제를 반환할 때는 PG 승인이 필요하지 않다")
-		void create_ReturnsExistingWalletPayment_WithoutPgApproval() {
+		@DisplayName("기존 DEPOSIT 결제가 있으면 해당 결제를 반환한다")
+		void create_ReturnsExistingWalletPayment() {
 			// given
-			String idempotencyKey = "idem-key-123";
 			Long memberId = 1L;
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.WALLET,
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+				memberId, orderId,
+				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
 			Payment existingPayment = Payment.builder()
 				.id(999L)
-				.idempotencyKey(idempotencyKey)
+				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.WALLET)
+				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
 				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
+			given(paymentRepository.findByIdempotencyKey(orderId))
 				.willReturn(Optional.of(existingPayment));
 
 			// when
@@ -397,104 +309,12 @@ class CreatePaymentServiceTest {
 			// then
 			assertThat(result.paymentId()).isEqualTo(999L);
 			assertThat(result.orderId()).isEqualTo(orderId);
-			assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(result.requiresPgApproval()).isFalse();
+			assertThat(result.paymentKey()).isNull();
+			assertThat(result.lastTransactionKey()).isNull();
+			assertThat(result.createdAt()).isNull();
 
 			verify(paymentRepository, never()).save(any());
-			verify(deductWalletUseCase, never()).deductForPayment(any());
-		}
-	}
-
-	@Nested
-	@DisplayName("다양한 결제 수단")
-	class VariousPaymentMethodTests {
-
-		@Test
-		@DisplayName("BANK_TRANSFER 결제는 PG 승인이 필요하다")
-		void create_BankTransferPayment_RequiresPgApproval() {
-			// given
-			String idempotencyKey = "idem-key-123";
-			Long memberId = 1L;
-			String orderId = "order-123";
-			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
-			);
-
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.BANK_TRANSFER,
-				amount, orderItems
-			);
-
-			Payment savedPayment = Payment.builder()
-				.id(1L)
-				.idempotencyKey(idempotencyKey)
-				.orderId(orderId)
-				.memberId(memberId)
-				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.BANK_TRANSFER)
-				.originAmount(amount)
-				.paidAmount(amount)
-				.orderItems(orderItems)
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
-				.willReturn(Optional.empty());
-			given(paymentRepository.save(any(Payment.class)))
-				.willReturn(savedPayment);
-
-			// when
-			PaymentCreatedResult result = createPaymentService.create(command);
-
-			// then
-			assertThat(result.requiresPgApproval()).isTrue();
-			verify(deductWalletUseCase, never()).deductForPayment(any());
-		}
-
-		@Test
-		@DisplayName("VIRTUAL_ACCOUNT 결제는 PG 승인이 필요하다")
-		void create_VirtualAccountPayment_RequiresPgApproval() {
-			// given
-			String idempotencyKey = "idem-key-123";
-			Long memberId = 1L;
-			String orderId = "order-123";
-			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
-			);
-
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.VIRTUAL_ACCOUNT,
-				amount, orderItems
-			);
-
-			Payment savedPayment = Payment.builder()
-				.id(1L)
-				.idempotencyKey(idempotencyKey)
-				.orderId(orderId)
-				.memberId(memberId)
-				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.VIRTUAL_ACCOUNT)
-				.originAmount(amount)
-				.paidAmount(amount)
-				.orderItems(orderItems)
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
-				.willReturn(Optional.empty());
-			given(paymentRepository.save(any(Payment.class)))
-				.willReturn(savedPayment);
-
-			// when
-			PaymentCreatedResult result = createPaymentService.create(command);
-
-			// then
-			assertThat(result.requiresPgApproval()).isTrue();
 			verify(deductWalletUseCase, never()).deductForPayment(any());
 		}
 	}
@@ -507,23 +327,22 @@ class CreatePaymentServiceTest {
 		@DisplayName("Payment 저장 시 올바른 값이 전달된다")
 		void create_SavesPaymentWithCorrectValues() {
 			// given
-			String idempotencyKey = "idem-key-123";
 			Long memberId = 1L;
 			String orderId = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot("item-1", "상품1", Money.of(10000), 1, Money.of(10000), 100L)
+				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreatePaymentCommand command = new CreatePaymentCommand(
-				idempotencyKey, memberId, orderId,
-				PaymentType.FUNDING, PaymentMethod.CARD,
+			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+				memberId, orderId,
+				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
 			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
 
-			given(paymentRepository.findByIdempotencyKey(idempotencyKey))
+			given(paymentRepository.findByIdempotencyKey(orderId))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(paymentCaptor.capture()))
 				.willAnswer(invocation -> {
@@ -547,7 +366,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			Payment capturedPayment = paymentCaptor.getValue();
-			assertThat(capturedPayment.getIdempotencyKey()).isEqualTo(idempotencyKey);
+			assertThat(capturedPayment.getIdempotencyKey()).isEqualTo(orderId);
 			assertThat(capturedPayment.getOrderId()).isEqualTo(orderId);
 			assertThat(capturedPayment.getMemberId()).isEqualTo(memberId);
 			assertThat(capturedPayment.getType()).isEqualTo(PaymentType.FUNDING);

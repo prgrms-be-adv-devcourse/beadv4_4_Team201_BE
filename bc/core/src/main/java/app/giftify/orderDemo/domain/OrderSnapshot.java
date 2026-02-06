@@ -1,6 +1,6 @@
 package app.giftify.orderDemo.domain;
 
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
 import lombok.Builder;
 
@@ -14,7 +14,7 @@ public record OrderSnapshot(
         Long buyerId,
         List<OrderItemSnapshot> orderItemSnapshots,
         Money totalAmount,
-        PaymentMethodType paymentMethod,
+        PaymentMethod paymentMethod,
         OrderStatus status,
         LocalDateTime createdAt
 ) {

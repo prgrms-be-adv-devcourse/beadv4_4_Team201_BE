@@ -1,16 +1,23 @@
 package app.giftify.payment.application;
 
+import java.util.Collections;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.giftify.payment.application.inbound.CreatePaymentCommand;
-import app.giftify.payment.application.inbound.CreatePaymentUseCase;
+import app.giftify.payment.application.inbound.ChargeDepositCommand;
+import app.giftify.payment.application.inbound.ChargeDepositUseCase;
+import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.CreateFundingPaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentCreateContext;
-import app.giftify.payment.domain.PaymentMethod;
+import app.giftify.payment.domain.PaymentErrorCode;
+import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.wallet.application.inbound.DeductWalletCommand;
 import app.giftify.wallet.application.inbound.DeductWalletResult;
 import app.giftify.wallet.application.inbound.DeductWalletUseCase;
@@ -19,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @Transactional
-public class CreatePaymentService implements CreatePaymentUseCase {
+public class CreatePaymentService implements ChargeDepositUseCase, CreateFundingPaymentUseCase {
 	private final PaymentRepository paymentRepository;
 	private final DeductWalletUseCase deductWalletUseCase;
 
@@ -28,62 +35,112 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		this.deductWalletUseCase = deductWalletUseCase;
 	}
 
+	//--------- ChargeDepositUseCase 구현 - 예치금 충전 ----------//
+
 	@Override
-	public PaymentCreatedResult create(CreatePaymentCommand command) {
-		// 1. 멱등성 체크 - 이미 존재하는 결제인지 확인
-		return paymentRepository.findByIdempotencyKey(command.idempotencyKey())
+	public PaymentCreatedResult charge(ChargeDepositCommand command) {
+		// 1. 멱등성 체크 - orderId로 이미 존재하는 결제인지 확인
+		return paymentRepository.findByIdempotencyKey(command.orderId())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),
-				existing.getIdempotencyKey(),
 				existing.getStatus(),
-				requiresPgApproval(existing.getMethod())
+				existing.getPaymentKey(),
+				existing.getLastTransactionKey(),
+				existing.getCreatedAt()
 			))
-			.orElseGet(() -> createNewPayment(command));
+			.orElseGet(() -> createDepositChargePayment(command));
 	}
 
-	private PaymentCreatedResult createNewPayment(CreatePaymentCommand command) {
-		// 2. PaymentCreateContext 생성
+	private PaymentCreatedResult createDepositChargePayment(ChargeDepositCommand command) {
+		// PaymentCreateContext 생성 - 예치금 충전은 항상 DEPOSIT_CHARGE + CARD
 		PaymentCreateContext context = new PaymentCreateContext(
 			command.memberId(),
 			command.orderId(),
-			command.type(),
-			command.method()
+			PaymentType.DEPOSIT_CHARGE,
+			PaymentMethod.CARD
 		);
 
-		// 3. Payment 생성
+		// Payment 생성 - orderItems 없음
 		Payment payment = Payment.create(
 			context,
-			command.idempotencyKey(),
-			command.expectedAmount(),
-			command.expectedAmount(),  // paidAmount = originAmount (초기값)
-			command.orderItems()
+			command.orderId(),
+			command.amount(),
+			command.amount(),
+			Collections.emptyList()
 		);
 
-		// 4. 저장
 		Payment savedPayment = paymentRepository.save(payment);
 
-		// 5. WALLET 결제면 즉시 처리
-		if (command.method() == PaymentMethod.WALLET) {
-			return handleWalletPayment(savedPayment, command);
-		}
+		log.info("[Payment] 예치금 충전 결제 생성. paymentId={}, orderId={}, amount={}",
+			savedPayment.getId(), savedPayment.getOrderId(), command.amount());
 
-		// 6. PG 결제는 기존 플로우
 		return new PaymentCreatedResult(
 			savedPayment.getId(),
 			savedPayment.getOrderId(),
-			savedPayment.getIdempotencyKey(),
 			savedPayment.getStatus(),
-			true
+			savedPayment.getPaymentKey(),
+			savedPayment.getLastTransactionKey(),
+			savedPayment.getCreatedAt()
 		);
 	}
 
-	private boolean requiresPgApproval(PaymentMethod method) {
-		// WALLET 결제는 PG 승인 불필요
-		return method != PaymentMethod.WALLET;
+	//--------- CreateFundingPaymentUseCase 구현 - 펀딩 결제 ----------//
+
+	@Override
+	public PaymentCreatedResult create(CreateFundingPaymentCommand command) {
+		// 1. 멱등성 체크 - orderId로 이미 존재하는 결제인지 확인
+		return paymentRepository.findByIdempotencyKey(command.orderId())
+			.map(existing -> new PaymentCreatedResult(
+				existing.getId(),
+				existing.getOrderId(),
+				existing.getStatus(),
+				existing.getPaymentKey(),
+				existing.getLastTransactionKey(),
+				existing.getCreatedAt()
+			))
+			.orElseGet(() -> createFundingPayment(command));
 	}
 
-	private PaymentCreatedResult handleWalletPayment(Payment payment, CreatePaymentCommand command) {
+	private PaymentCreatedResult createFundingPayment(CreateFundingPaymentCommand command) {
+		// PaymentCreateContext 생성
+		PaymentCreateContext context = new PaymentCreateContext(
+			command.memberId(),
+			command.orderId(),
+			command.getType(),  // 항상 FUNDING -> 내부에 메서드 미리 준비해놓음
+			command.method()
+		);
+
+		// Payment 생성
+		Payment payment = Payment.create(
+			context,
+			command.orderId(),
+			command.expectedAmount(),
+			command.expectedAmount(),
+			command.orderItems()
+		);
+
+		Payment savedPayment = paymentRepository.save(payment);
+
+		// 내부 지갑 결제(예치금)면 즉시 처리
+		if (command.method().isWalletPayment()) {
+			return handleWalletPaymentForFunding(savedPayment, command);
+		}
+
+		log.info("[Payment] 펀딩 결제 생성. paymentId={}, orderId={}, amount={}",
+			savedPayment.getId(), savedPayment.getOrderId(), command.expectedAmount());
+
+		return new PaymentCreatedResult(
+			savedPayment.getId(),
+			savedPayment.getOrderId(),
+			savedPayment.getStatus(),
+			savedPayment.getPaymentKey(),
+			savedPayment.getLastTransactionKey(),
+			savedPayment.getCreatedAt()
+		);
+	}
+
+	private PaymentCreatedResult handleWalletPaymentForFunding(Payment payment, CreateFundingPaymentCommand command) {
 		DeductWalletCommand deductCommand = new DeductWalletCommand(
 			command.memberId(),
 			payment.getId(),
@@ -94,27 +151,26 @@ public class CreatePaymentService implements CreatePaymentUseCase {
 		DeductWalletResult result = deductWalletUseCase.deductForPayment(deductCommand);
 
 		if (!result.success()) {
-			log.warn("[Payment] 지갑 잔액 부족. paymentId={}, required={}, current={}",
+			log.warn("[Payment] 예치금 잔액 부족. paymentId={}, required={}, current={}",
 				payment.getId(), result.requiredAmount(), result.currentBalance());
 
-			return PaymentCreatedResult.insufficientWalletBalance(
-				payment.getId(),
-				payment.getOrderId(),
-				command.idempotencyKey(),
-				result.requiredAmount(),
-				result.currentBalance()
+			throw new PaymentException(
+				PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE,
+				String.format("필요 금액: %s, 현재 잔액: %s",
+					result.requiredAmount(), result.currentBalance())
 			);
 		}
 
-		log.info("[Payment] WALLET 결제 요청 완료. paymentId={}, walletId={}",
+		log.info("[Payment] 예치금 결제 요청 완료. paymentId={}, walletId={}",
 			payment.getId(), result.walletId());
 
 		return new PaymentCreatedResult(
 			payment.getId(),
 			payment.getOrderId(),
-			payment.getIdempotencyKey(),
 			PaymentStatus.PENDING,
-			false
+			payment.getPaymentKey(),
+			payment.getLastTransactionKey(),
+			payment.getCreatedAt()
 		);
 	}
 }

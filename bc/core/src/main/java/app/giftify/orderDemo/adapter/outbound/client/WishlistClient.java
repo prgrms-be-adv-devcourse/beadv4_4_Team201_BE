@@ -9,5 +9,5 @@ import org.springframework.web.service.annotation.HttpExchange;
 public interface WishlistClient {
 
     @GetExchange(url = "/items/{wishlistItemId}/snapshot")
-    WishlistItemSnapshot getWishlistItemSnapshot(@PathVariable("wishlistItemId") Long wishlistId);
+    WishlistItemSnapshot getWishlistItemSnapshot(@PathVariable("wishlistItemId") Long wishlistItemId);
 }

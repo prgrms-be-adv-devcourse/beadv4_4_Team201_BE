@@ -1,17 +1,33 @@
 package app.giftify.facade;
 
 import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.mapper.OrderItemSnapshotMapper;
 import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.funding.application.FundingFacade;
 import app.giftify.orderDemo.application.OrderService;
+import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
+import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
+import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.payment.application.CreatePaymentService;
+import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class CoreFacade {
 
     private final OrderService orderService;
+    private final FundingFacade fundingFacade;
+    private final CreatePaymentService createPaymentService;
 
     /**
      * 트랜잭션 하나로 묶고
@@ -19,25 +35,54 @@ public class CoreFacade {
      */
     @Transactional
     public PlaceOrderResult placeOrder(PlaceOrderCommand command) {
-        // 위시리스트아이템 스냅샷 확보
-        // todo: api 요청을 통해 위시리스트 아이템 id로 스냅샷 반환
+        List<FundingSnapshot> fundingSnapshots = getFundingSnapshots(command);
 
-        // 펀딩 조회
-        // todo: 펀딩 도메인은 위시리스트 아이템 식별자를 통해 펀딩 스냅샷 반환
+        CreateOrderCommand createOrderCommand = CreateOrderCommand.of(command);
 
-        // 주문 생성
-        // todo: 각 스냅샷을 통해 주문, 주문 아이템 생성
+        OrderSnapshot orderSnapshot = orderService.createOrder(createOrderCommand, fundingSnapshots);
 
-        // 결제 처리
-        // todo: 주문 객체를 통해 결제 처리
+        CreateFundingPaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
+        PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);
 
-        // 지갑 차감
-        // todo: 결제 객체를 통해 지갑 차감
+        MarkOrderAsPaidCommand markOrderAsPaidCommand = new MarkOrderAsPaidCommand(
+                paymentResult.orderId(),
+                paymentResult.paymentKey(),
+                paymentResult.lastTransactionKey(),
+                paymentResult.createdAt()
+        );
+        orderService.markOrderAsPaid(markOrderAsPaidCommand);
 
-        // todo: 결제, 주문, 주문 아이템, 펀딩 상태 변경
+        processFundingActions(orderSnapshot);
 
-        // todo: (optional) 펀딩 생성
-
-        return null;
+        return new PlaceOrderResult(orderSnapshot.orderId());
     }
+
+    private void processFundingActions(OrderSnapshot orderSnapshot) {
+        orderSnapshot.orderItemSnapshots().forEach(item -> {
+            if (item.targetType() == TargetType.FUNDING) {
+                fundingFacade.contributeFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
+            } else if (item.targetType() == TargetType.FUNDING_PENDING) {
+                fundingFacade.startFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
+            }
+        });
+    }
+
+    private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
+        return new CreateFundingPaymentCommand(
+                orderSnapshot.buyerId(),
+                orderSnapshot.orderNumber(),
+                orderSnapshot.paymentMethod(),
+                orderSnapshot.totalAmount(),
+                OrderItemSnapshotMapper.fromOrderDemoList(orderSnapshot.orderItemSnapshots())
+        );
+    }
+
+    // todo: FundingFacade에서 List로 반환하도록 수정 시 제거 예정
+    private @NonNull List<FundingSnapshot> getFundingSnapshots(PlaceOrderCommand command) {
+        return command.items().stream()
+                .map(itemRequest -> fundingFacade.getSnapshot(itemRequest.wishlistItemId())) // Optional<FundingSnapshot> 반환
+                .flatMap(Optional::stream) // 값이 있는 것만 꺼내고 빈 것은 제거
+                .toList();
+    }
+
 }

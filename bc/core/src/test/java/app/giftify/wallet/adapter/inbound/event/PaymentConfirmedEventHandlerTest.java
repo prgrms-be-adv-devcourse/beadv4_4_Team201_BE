@@ -24,21 +24,21 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PaymentConfirmedEvnetHandler 테스트")
+@DisplayName("PaymentConfirmedEventHandler 테스트")
 class PaymentConfirmedEventHandlerTest {
 
 	@Mock
 	private ChargeWalletUseCase chargeWalletUseCase;
 
 	@InjectMocks
-	private PaymentConfirmedEvnetHandler eventHandler;
+	private PaymentConfirmedEventHandler eventHandler;
 
 	@Nested
 	@DisplayName("handle 메서드")
 	class HandleTests {
 
 		@Test
-		@DisplayName("POINT_CHARGE 타입 결제이면 지갑을 충전한다")
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 타입 결제이면 예치금을 충전한다")
 		void handle_PointChargePayment_ChargesWallet() {
 			// given
 			Long paymentId = 1L;
@@ -48,7 +48,7 @@ class PaymentConfirmedEventHandlerTest {
 			LocalDateTime paidAt = LocalDateTime.now();
 
 			PaymentConfirmedEvent event = new PaymentConfirmedEvent(
-				paymentId, memberId, orderId, PaymentType.POINT_CHARGE, amount, paidAt
+				paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE, amount, paidAt
 			);
 
 			ChargeWalletResult chargeResult = new ChargeWalletResult(1L, memberId, amount, amount, orderId);
