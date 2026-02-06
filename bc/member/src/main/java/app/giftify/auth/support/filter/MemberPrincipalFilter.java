@@ -3,6 +3,7 @@ package app.giftify.auth.support.filter;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,13 +30,13 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 	private final MemberApiClient memberApiClient;
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest request,
-									HttpServletResponse response,
-									FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(@NonNull HttpServletRequest request,
+									@NonNull HttpServletResponse response,
+									@NonNull FilterChain filterChain) throws ServletException, IOException {
 		try {
 			enrichSecurityContext();
 		} catch (Exception e) {
-			log.warn("[MemberPrincipalFilter] MemberPrincipal을 통항 SecurityContext 보강에 실패하였습니다.", e);
+			log.warn("[MemberPrincipalFilter] MemberPrincipal을 통한 SecurityContext 보강에 실패하였습니다.", e);
 		}
 
 		filterChain.doFilter(request, response);
@@ -50,23 +51,33 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 	private void enrichSecurityContext() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-		if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-			String authSub = jwt.getSubject();
-
-			// 회원 조회: 있으면 MemberInfo, 없으면 미가입자용 MemberInfo
-			MemberInfo memberInfo = findMemberByAuthSub(authSub)
-				.orElseGet(() -> MemberInfo.forUnregistered(authSub));
-
-			MemberPrincipal principal = MemberPrincipal.from(memberInfo);
-			Authentication newAuth = new MemberAuthenticationToken(principal);
-
-			SecurityContext context = SecurityContextHolder.createEmptyContext();
-			context.setAuthentication(newAuth);
-			SecurityContextHolder.setContext(context);
-
-			log.debug("[Filter] SecurityContext updated - registered: {}, authSub: {}",
-				memberInfo.isRegistered(), authSub);
+		if (auth == null) {
+			log.debug("[MemberPrincipalFilter] SecurityContext 정보가 없습니다. - skipping enrichment");
+			return;
 		}
+
+		if (!(auth.getPrincipal() instanceof Jwt jwt)) {
+			Object principal = auth.getPrincipal();
+			log.debug("[MemberPrincipalFilter] Principal 이 Jwt 가 아닙니다. (type: {}) - skipping enrichment",
+				principal != null ? principal.getClass().getSimpleName() : "null");
+			return;
+		}
+
+		String authSub = jwt.getSubject();
+
+		// 회원 조회: 있으면 MemberInfo, 없으면 미가입자용 MemberInfo
+		MemberInfo memberInfo = findMemberByAuthSub(authSub)
+			.orElseGet(() -> MemberInfo.forUnregistered(authSub));
+
+		MemberPrincipal principal = MemberPrincipal.from(memberInfo);
+		Authentication newAuth = new MemberAuthenticationToken(principal);
+
+		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		context.setAuthentication(newAuth);
+		SecurityContextHolder.setContext(context);
+
+		log.debug("[MemberPrincipalFilter] SecurityContext 업데이트 - registered: {}, authSub: {}",
+			memberInfo.isRegistered(), authSub);
 	}
 
 	private Optional<MemberInfo> findMemberByAuthSub(String authSub) {
@@ -77,7 +88,7 @@ public class MemberPrincipalFilter extends OncePerRequestFilter {
 			}
 			return Optional.empty();
 		} catch (Exception e) {
-			log.debug("[MemberPrincipalFilter] Member not found for authSub: {}", authSub);
+			log.debug("[MemberPrincipalFilter] authSub에서 Member를 추출할수 없었습니다. : {}", authSub);
 			return Optional.empty();
 		}
 	}
