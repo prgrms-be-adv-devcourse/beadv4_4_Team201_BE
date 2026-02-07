@@ -25,7 +25,7 @@ public interface PublicWishlistV2ApiSpec {
 	})
 	ResponseEntity<RsData<List<MemberWishlistSummaryResponse>>> search(
 		@Parameter(description = "닉네임 검색어 (부분 일치)", required = false, example = "chan")
-		@RequestParam(required = false) String nickname
+		@RequestParam(value = "nickname", required = false) String nickname
 	);
 
 	@Operation(summary = "타인의 공개 위시리스트 상세 조회",
@@ -35,6 +35,6 @@ public interface PublicWishlistV2ApiSpec {
 	})
 	ResponseEntity<RsData<PublicWishlistResponse>> getPublicWishlist(
 		@Parameter(description = "조회 대상 회원 ID", required = true, example = "1")
-		@PathVariable Long memberId
+		@PathVariable("memberId") Long memberId
 	);
 }

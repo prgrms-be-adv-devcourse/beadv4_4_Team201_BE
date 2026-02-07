@@ -35,7 +35,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
 	// 공개 피드 검색
 	@GetMapping("/search")
 	public ResponseEntity<RsData<List<MemberWishlistSummaryResponse>>> search(
-		@RequestParam(required = false) String nickname
+		@RequestParam(value = "nickname", required = false) String nickname
 	) {
 		// 멤버 조회
 		var members = (nickname == null || nickname.isBlank())
@@ -59,7 +59,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
 	// 타인의 PUBLIC 위시리스트 상세
 	@GetMapping("/{memberId}")
 	public ResponseEntity<RsData<PublicWishlistResponse>> getPublicWishlist(
-		@PathVariable Long memberId
+		@PathVariable("memberId") Long memberId
 	) {
 		List<WishlistItem> items = getPublicWishlistUseCase.getPublicWishlistItems(memberId);
 		if (items.isEmpty()) {
