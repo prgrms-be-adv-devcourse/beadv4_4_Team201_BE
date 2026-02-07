@@ -56,6 +56,25 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
 		return result;
 	}
 
+	@Override
+	public CartItemAddResult addItemToMyCart(Long memberId, AddCartItemCommand command) {
+		Cart cart = cartRepositoryPort.findByMemberId(memberId)
+			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
+
+		// 타입 검증
+		TargetType targetType = command.cartItemKey().targetType();
+		validateFundingTarget(targetType);
+
+		// 펀딩 구매 검증
+		Long wishlistItemId = command.cartItemKey().targetId();
+		validateFundingPurchase(wishlistItemId);
+
+		CartItemAddResult result = cart.addItem(targetType, wishlistItemId, command.amount());
+		cartRepositoryPort.save(cart);
+
+		return result;
+	}
+
 	private void validateFundingTarget(TargetType targetType) {
 		if (targetType != TargetType.FUNDING_PENDING && targetType != TargetType.FUNDING) {
 			throw new CartException(CartErrorCode.INVALID_TARGET_TYPE);
