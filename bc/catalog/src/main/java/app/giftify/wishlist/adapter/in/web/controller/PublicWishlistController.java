@@ -27,9 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/v2/wishlists")
 @RequiredArgsConstructor
-public class PublicWishlistController {
+public class PublicWishlistController implements PublicWishlistV2ApiSpec {
 	private final GetPublicWishlistUseCase getPublicWishlistUseCase;
-	private final MemberRepository memberRepository;  // MEMBER_REPLICA
+	private final MemberRepository memberRepository;
 	private final ProductSupport productSupport;
 
 	// 공개 피드 검색
