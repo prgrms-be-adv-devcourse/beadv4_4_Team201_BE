@@ -1,5 +1,7 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistResponse;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
@@ -34,6 +37,12 @@ public class WishlistController {
 		@CurrentMemberId Long memberId
 	) {
 		return ResponseEntity.ok(WishlistResponse.from(getWishlistUseCase.getOrCreateWishlistByMemberId(memberId)));
+	}
+
+	// PUBLIC 위시리스트 조회
+	public ResponseEntity<RsData<List<WishlistResponse>>> getPublicWishList() {
+
+		return null;
 	}
 
 	// 위시리스트 설정 변경
