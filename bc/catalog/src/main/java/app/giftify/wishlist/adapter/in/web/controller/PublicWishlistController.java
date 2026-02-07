@@ -33,6 +33,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
 	private final ProductSupport productSupport;
 
 	// 공개 피드 검색
+	@Override
 	@GetMapping("/search")
 	public ResponseEntity<RsData<List<MemberWishlistSummaryResponse>>> search(
 		@RequestParam(value = "nickname", required = false) String nickname
@@ -57,6 +58,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
 	}
 
 	// 타인의 PUBLIC 위시리스트 상세
+	@Override
 	@GetMapping("/{memberId}")
 	public ResponseEntity<RsData<PublicWishlistResponse>> getPublicWishlist(
 		@PathVariable("memberId") Long memberId
