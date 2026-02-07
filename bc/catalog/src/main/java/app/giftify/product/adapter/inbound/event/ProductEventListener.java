@@ -21,7 +21,5 @@ public class ProductEventListener {
 
         decreaseProductStockUseCase.decreaseStockByFunding(productId);
         log.info("[product] 상품 재고 차감 완료 | productId: {}", productId);
-
-        // todo 재고 이력 저장 이벤트 호출 new event(result) - AFTER_COMMIT
     }
 }

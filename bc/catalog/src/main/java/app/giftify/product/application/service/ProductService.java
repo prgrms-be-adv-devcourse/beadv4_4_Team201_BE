@@ -182,9 +182,10 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     }
 
     // 펀딩에 의한 재고 감소
+    @Transactional
     @Override
-    public void decreaseStockByFunding(Long productid) {
-        Product product = productSupport.findById(productid);
+    public void decreaseStockByFunding(Long productId) {
+        Product product = productSupport.findById(productId);
 
         Product.StockChangeResult result = product.decreaseStockByFunding();
         productRepositoryPort.save(product);
