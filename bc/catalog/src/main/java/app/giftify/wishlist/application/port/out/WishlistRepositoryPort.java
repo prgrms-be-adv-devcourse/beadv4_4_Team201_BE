@@ -1,9 +1,10 @@
 package app.giftify.wishlist.application.port.out;
 
-import app.giftify.wishlist.core.domain.Wishlist;
-
 import java.util.List;
 import java.util.Optional;
+
+import app.giftify.wishlist.core.domain.Visibility;
+import app.giftify.wishlist.core.domain.Wishlist;
 
 public interface WishlistRepositoryPort {
 
@@ -18,4 +19,9 @@ public interface WishlistRepositoryPort {
 
     // wishlistIds 로 위시리스트 리스트 조회
     List<Wishlist> findAllById(List<Long> wishlistIds);
+
+    // 특정 사용자의 공개 위시리스트 조회 (개발용)
+    Optional<Wishlist> findByMemberIdAndVisibility(Long memberId, Visibility visibility);
+
+    List<Wishlist> findByMemberIdInAndVisibility(List<Long> memberIds, Visibility visibility);
 }
