@@ -36,7 +36,7 @@ class WishlistAdapterTest {
 			.memberId(memberId)
 			.visibility(Visibility.PUBLIC)
 			.build();
-		given(wishlistRepository.findById(memberId)).willReturn(Optional.of(entity));
+		given(wishlistRepository.findByMemberId(memberId)).willReturn(Optional.of(entity));
 
 		Optional<Wishlist> result = wishlistAdapter.findByMemberId(memberId);
 
