@@ -1,9 +1,8 @@
 package app.giftify.product.application.port.in;
 
-import app.giftify.product.adapter.inbound.web.requestDto.StockHistorySearchDto;
-import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.product.domain.ProductStockHistory;
+import org.springframework.data.domain.Page;
 
 public interface ProductStockHistoryUseCase {
-    PageResponse<StockHistoryDto> searchStockHistories(Long sellerId, StockHistorySearchDto searchDto);
+    Page<ProductStockHistory> searchStockHistories(Long sellerId, StockHistorySearchCommand searchCommand);
 }

@@ -1,11 +1,15 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
-import app.giftify.product.adapter.inbound.web.requestDto.*;
+import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
+import app.giftify.product.adapter.inbound.web.requestDto.ProductCreateRequestDto;
+import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
+import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
 import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
 import app.giftify.product.application.port.in.*;
+import app.giftify.product.domain.ProductStockHistory;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.paging.PageResponse;
@@ -13,6 +17,7 @@ import app.giftify.shared.api.response.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -130,15 +135,29 @@ public class ProductController implements ProductV2ApiSpec {
     }
 
     // (판매자) 재고 이력 조회
-    @GetMapping("/my/stock-histories")
+    @GetMapping("/stock-histories/my")
     @PreAuthorize("hasRole('SELLER')")
     @Override
     public ResponseEntity<RsData<PageResponse<StockHistoryDto>>> searchStockHistories(
             @CurrentMemberId Long sellerId,
-            @Valid @ModelAttribute StockHistorySearchDto searchDto
+            @Valid @ModelAttribute StockHistorySearchCommand searchCommand
     ) {
-        PageResponse<StockHistoryDto> stockHistories = productStockHistoryUseCase.searchStockHistories(sellerId,
-                searchDto);
-        return ResponseEntity.ok(RsData.success(stockHistories));
+        Page<ProductStockHistory> stockHistories = productStockHistoryUseCase.searchStockHistories(sellerId,
+                searchCommand);
+        Page<StockHistoryDto> stockHistoryDtoPage = stockHistories.map(StockHistoryDto::from);
+
+        PageResponse<StockHistoryDto> result = PageResponse.of(
+                stockHistoryDtoPage.getContent(),
+                stockHistoryDtoPage.getNumber(),
+                stockHistoryDtoPage.getSize(),
+                stockHistoryDtoPage.getTotalElements()
+        );
+        return ResponseEntity.ok(RsData.success(result));
     }
+
+    /**
+     * TODO 관리자 메뉴
+     * 관리자 재고 이력 조회
+     * 관리자 재고 수정
+     */
 }
