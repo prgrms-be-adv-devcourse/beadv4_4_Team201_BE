@@ -27,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCartUseCase {
+public class CartService
+	implements AddCartItemUseCase, CartCreateUseCase, GetCartUseCase, RemoveCartItemUseCase, ClearCartUseCase {
 	private final CartRepositoryPort cartRepositoryPort;
 	private final ProductRepositoryPort productRepositoryPort;
 	private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
@@ -134,5 +135,23 @@ public class CartService implements AddCartItemUseCase, CartCreateUseCase, GetCa
 			.collect(Collectors.toMap(Product::getId, product -> product));
 
 		return CartResponse.from(cart, productMap);
+	}
+
+	// 내 카트에서 상품 제거
+	@Override
+	public void removeItem(Long memberId, TargetType targetType, Long targetId) {
+		Cart cart = cartRepositoryPort.findByMemberId(memberId)
+			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
+		cart.removeItem(targetType, targetId);
+		cartRepositoryPort.save(cart);
+	}
+
+	// 내 카트 전체 비우기
+	@Override
+	public void clearCart(Long memberId) {
+		Cart cart = cartRepositoryPort.findByMemberId(memberId)
+			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
+		cart.clearItems();
+		cartRepositoryPort.save(cart);
 	}
 }
