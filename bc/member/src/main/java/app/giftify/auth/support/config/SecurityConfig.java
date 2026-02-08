@@ -59,7 +59,7 @@ public class SecurityConfig {
 				"/api/v2/products/{id:\\d+}",
 				"/api/v2/products/search",
 				"/api/v2/wishlists/search",
-				"/api/v2/wishlists/*"
+				"/api/v2/wishlists/*" // NOTE :: 단일 세그먼트 전체 공개 주의, wishlistController apiV2 올릴 때 수정하여 다시 확인하기
 			)
 			.csrf(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
