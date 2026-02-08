@@ -273,4 +273,73 @@ class CartServiceTest {
         assertThatThrownBy(() -> cartService.getMyCart(memberId))
                 .isInstanceOf(CartException.class);
     }
+
+    @Test
+    @DisplayName("장바구니 아이템 삭제 성공")
+    void removeItem_Success() {
+        // given
+        Cart cart = Cart.create(memberId);
+        cart.addItem(TargetType.FUNDING_PENDING, 100L, Money.of(10000));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
+        given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        cartService.removeItem(memberId, TargetType.FUNDING_PENDING, 100L);
+
+        // then
+        assertThat(cart.getItemCount()).isZero();
+        then(cartRepository).should().save(cart);
+    }
+
+    @Test
+    @DisplayName("장바구니 아이템 삭제 실패: 장바구니 없음")
+    void removeItem_Fail_CartNotFound() {
+        // given
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> cartService.removeItem(memberId, TargetType.FUNDING_PENDING, 100L))
+                .isInstanceOf(CartException.class);
+    }
+
+    @Test
+    @DisplayName("장바구니 아이템 삭제 실패: 아이템 없음")
+    void removeItem_Fail_ItemNotFound() {
+        // given
+        Cart cart = Cart.create(memberId);
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
+
+        // when & then
+        assertThatThrownBy(() -> cartService.removeItem(memberId, TargetType.FUNDING_PENDING, 999L))
+                .isInstanceOf(CartException.class);
+    }
+
+    @Test
+    @DisplayName("장바구니 비우기 성공")
+    void clearCart_Success() {
+        // given
+        Cart cart = Cart.create(memberId);
+        cart.addItem(TargetType.FUNDING_PENDING, 100L, Money.of(10000));
+        cart.addItem(TargetType.FUNDING, 200L, Money.of(20000));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
+        given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        cartService.clearCart(memberId);
+
+        // then
+        assertThat(cart.getItemCount()).isZero();
+        then(cartRepository).should().save(cart);
+    }
+
+    @Test
+    @DisplayName("장바구니 비우기 실패: 장바구니 없음")
+    void clearCart_Fail_CartNotFound() {
+        // given
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> cartService.clearCart(memberId))
+                .isInstanceOf(CartException.class);
+    }
 }
