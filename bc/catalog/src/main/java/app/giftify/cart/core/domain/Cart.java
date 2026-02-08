@@ -1,15 +1,15 @@
 package app.giftify.cart.core.domain;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 장바구니란 무엇인가,
@@ -64,6 +64,12 @@ public class Cart extends BaseDomainModel {
         }
 
         items.remove(key);
+    }
+    /*
+    장바구니 전체 비우기
+     */
+    public void clearItems() {
+        items.clear();
     }
 
     public Long getMemberId() { return memberId; }
