@@ -1,7 +1,9 @@
 package app.giftify.cart.adapter.inbound;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +16,7 @@ import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.CartItemKey;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +41,6 @@ public class CartController implements CartV2ApiSpec {
 		}
 		return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
 	}
-
-
 
 	@Override
 	@PostMapping
@@ -71,5 +72,38 @@ public class CartController implements CartV2ApiSpec {
 	public ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId) {
 		CartResponse response = cartService.getMyCart(memberId);
 		return ResponseEntity.ok(RsData.success(response));
+	}
+
+	@Override
+	@PatchMapping("/items")
+	public ResponseEntity<RsData<Void>> updateItemAmount(
+		@CurrentMemberId Long memberId,
+		@RequestBody CartItemRequest request
+	) {
+		cartService.addItemToMyCart(memberId, new AddCartItemCommand(
+			new CartItemKey(request.targetType(), request.targetId()),
+			Money.of(request.amount())
+		));
+		return ResponseEntity.ok(RsData.success(null));
+	}
+
+	@Override
+	@DeleteMapping("/items/{targetType}/{targetId}")
+	public ResponseEntity<RsData<Void>> removeItem(
+		@CurrentMemberId Long memberId,
+		@PathVariable(value = "targetType") TargetType targetType,
+		@PathVariable(value = "targetId") Long targetId
+	) {
+		cartService.removeItem(memberId, targetType, targetId);
+		return ResponseEntity.ok(RsData.success(null));
+	}
+
+	@Override
+	@DeleteMapping
+	public ResponseEntity<RsData<Void>> clearCart(
+		@CurrentMemberId Long memberId
+	) {
+		cartService.clearCart(memberId);
+		return ResponseEntity.ok(RsData.success(null));
 	}
 }

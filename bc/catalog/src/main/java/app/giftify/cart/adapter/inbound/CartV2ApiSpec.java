@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.shared.domain.type.TargetType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -54,4 +55,27 @@ public interface CartV2ApiSpec {
 		@ApiResponse(responseCode = "404", description = "장바구니 없음")
 	})
 	ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+	@Operation(summary = "장바구니 아이템 금액 수정")
+	@ApiResponse(responseCode = "200", description = "수정 성공")
+	ResponseEntity<RsData<Void>> updateItemAmount(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId,
+		@RequestBody CartItemRequest request
+	);
+
+	@Operation(summary = "장바구니 아이템 삭제")
+	@ApiResponse(responseCode = "200", description = "삭제 성공")
+	ResponseEntity<RsData<Void>> removeItem(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId,
+		@Parameter(description = "타겟 타입", example = "FUNDING_PENDING")
+		@PathVariable(value = "targetType") TargetType targetType,
+		@Parameter(description = "타겟 ID", example = "1")
+		@PathVariable(value = "targetId") Long targetId
+	);
+
+	@Operation(summary = "장바구니 비우기")
+	@ApiResponse(responseCode = "200", description = "비우기 성공")
+	ResponseEntity<RsData<Void>> clearCart(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId
+	);
 }
