@@ -5,6 +5,8 @@ import app.giftify.product.application.port.out.ProductStockHistoryRepositoryPor
 import app.giftify.product.domain.ProductStockHistory;
 import app.giftify.product.domain.StockChangeResult;
 import app.giftify.product.domain.StockChangeType;
+import app.giftify.product.domain.exception.ProductErrorCode;
+import app.giftify.shared.api.exception.InfraException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,9 +20,10 @@ import org.springframework.data.domain.PageImpl;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductStockHistoryServiceTest {
@@ -96,6 +99,34 @@ class ProductStockHistoryServiceTest {
         assertThat(saved.getBeforeStock()).isEqualTo(4);
         assertThat(saved.getAfterStock()).isEqualTo(5);
         assertThat(saved.getChangeType()).isEqualTo(StockChangeType.ORDER_REFUNDED);
+    }
+
+    @Test
+    @DisplayName("재고 이력 생성 실패 - InfraException 발생 시 예외가 전파된다 (재시도 대상)")
+    void createStockHistory_InfraException() {
+        // given
+        StockChangeResult result = new StockChangeResult(
+                10L, 1L, 5, 4, -1, StockChangeType.ORDER_COMPLETED
+        );
+        willThrow(new InfraException(ProductErrorCode.PRODUCT_NOT_FOUND))
+                .given(stockHistoryRepositoryPort).save(any(ProductStockHistory.class));
+
+        // when & then
+        assertThatThrownBy(() -> productStockHistoryService.createStockHistory(result))
+                .isInstanceOf(InfraException.class);
+    }
+
+    @Test
+    @DisplayName("재고 이력 생성 최종 실패 - @Recover 메서드가 예외 없이 실행된다")
+    void recoverCreateStockHistory_DoesNotThrow() {
+        // given
+        StockChangeResult result = new StockChangeResult(
+                10L, 1L, 5, 4, -1, StockChangeType.ORDER_COMPLETED
+        );
+        InfraException exception = new InfraException(ProductErrorCode.PRODUCT_NOT_FOUND);
+
+        // when & then - recover 메서드는 로그만 남기고 예외를 던지지 않는다
+        productStockHistoryService.recoverCreateStockHistory(exception, result);
     }
 
     @Test
