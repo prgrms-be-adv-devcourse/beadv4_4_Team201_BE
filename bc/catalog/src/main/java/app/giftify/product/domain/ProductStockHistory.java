@@ -29,53 +29,6 @@ public class ProductStockHistory extends BaseDomainModel {
         this.beforeStock = beforeStock;
         this.afterStock = afterStock;
         this.changeType = changeType;
-        this.createdAt = createdAt;
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
     }
-
-    // 주문 차감 이력 생성 case
-    public static ProductStockHistory orderDeduct(
-            Long sellerId, Long productId, int quantity, int beforeStock, int afterStock
-    ) {
-        return ProductStockHistory.builder()
-                .sellerId(sellerId)
-                .productId(productId)
-                .delta(-quantity)
-                .beforeStock(beforeStock)
-                .afterStock(afterStock)
-                .changeType(StockChangeType.ORDER_COMPLETED)
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
-
-    // 재고 복원 이력 생성 case
-    public static ProductStockHistory orderRestore(
-            Long sellerId, Long productId, int quantity, int beforeStock, int afterStock
-    ) {
-        return ProductStockHistory.builder()
-                .sellerId(sellerId)
-                .productId(productId)
-                .delta(quantity)
-                .beforeStock(beforeStock)
-                .afterStock(afterStock)
-                .changeType(StockChangeType.ORDER_REFUNDED)
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
-
-    // 판매자 수동 재고 변경 이력 생성 case
-    public static ProductStockHistory manualAdjust(
-            Long sellerId, Long productId, int delta, int beforeStock, int afterStock
-    ) {
-        return ProductStockHistory.builder()
-                .sellerId(sellerId)
-                .productId(productId)
-                .delta(delta)
-                .beforeStock(beforeStock)
-                .afterStock(afterStock)
-                .changeType(StockChangeType.MANUAL_SELLER)
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
-
-    // todo 관리자 수동 재고 번경 이력 생성 case
 }
