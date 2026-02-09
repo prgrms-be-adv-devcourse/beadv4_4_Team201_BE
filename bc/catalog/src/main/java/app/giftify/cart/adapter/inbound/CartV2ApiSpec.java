@@ -1,12 +1,14 @@
 package app.giftify.cart.adapter.inbound;
 
-import app.giftify.security.common.context.AuthenticatedMember;
-import app.giftify.shared.api.response.RsData;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.response.RsData;
+import app.giftify.shared.domain.type.TargetType;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,17 +23,59 @@ public interface CartV2ApiSpec {
 		@ApiResponse(responseCode = "401", description = "인증 실패")
 	})
 	ResponseEntity<RsData<Void>> addItem(
-		@PathVariable Long cartId,
+		@PathVariable("cartId") Long cartId,
 		@RequestBody CartItemRequest request
 	);
-	
+
+	@Operation(summary = "내 장바구니에 상품 추가", description = "내 장바구니에 상품 또는 펀딩을 장바구니에 추가합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "추가 성공"),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청 (유효하지 않은 targetType 또는 targetId)"),
+		@ApiResponse(responseCode = "401", description = "인증 실패")
+	})
+	ResponseEntity<RsData<Void>> addItemToMyCart(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId,
+		@RequestBody CartItemRequest request
+	);
+
 	@Operation(summary = "장바구니 조회", description = "특정 회원의 장바구니를 조회합니다.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "조회 성공"),
 		@ApiResponse(responseCode = "401", description = "인증 실패")
 	})
 	ResponseEntity<RsData<CartResponse>> getCart(
-		@PathVariable Long cartId,
-		@AuthenticatedMember Long memberId
+		@PathVariable("cartId") Long cartId,
+		@Parameter(hidden = true) @CurrentMemberId Long memberId
+	);
+
+	@Operation(summary = "내 장바구니 조회", description = "현재 로그인한 회원의 장바구니를 조회합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "조회 성공"),
+		@ApiResponse(responseCode = "401", description = "인증 실패"),
+		@ApiResponse(responseCode = "404", description = "장바구니 없음")
+	})
+	ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+	@Operation(summary = "장바구니 아이템 금액 수정")
+	@ApiResponse(responseCode = "200", description = "수정 성공")
+	ResponseEntity<RsData<Void>> updateItemAmount(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId,
+		@RequestBody CartItemRequest request
+	);
+
+	@Operation(summary = "장바구니 아이템 삭제")
+	@ApiResponse(responseCode = "200", description = "삭제 성공")
+	ResponseEntity<RsData<Void>> removeItem(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId,
+		@Parameter(description = "타겟 타입", example = "FUNDING_PENDING")
+		@PathVariable(value = "targetType") TargetType targetType,
+		@Parameter(description = "타겟 ID", example = "1")
+		@PathVariable(value = "targetId") Long targetId
+	);
+
+	@Operation(summary = "장바구니 비우기")
+	@ApiResponse(responseCode = "200", description = "비우기 성공")
+	ResponseEntity<RsData<Void>> clearCart(
+		@Parameter(hidden = true) @CurrentMemberId Long memberId
 	);
 }

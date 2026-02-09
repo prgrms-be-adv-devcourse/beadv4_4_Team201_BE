@@ -14,6 +14,7 @@ public enum FundingErrorCode implements ErrorCode {
     FORBIDDEN (HttpStatus.FORBIDDEN.value(), "F008", "해당 펀딩에 대한 권한이 없습니다"),
     NOT_ACHIEVED (HttpStatus.BAD_REQUEST.value(), "F009", "목표 달성된 펀딩이 아닙니다. ID: %d"),
     DUPLICATED_WISHLIST_ITEM (HttpStatus.CONFLICT.value(), "F010", "중복된 위시리스트 아이템이 포함되어 있습니다."),
+    ALREADY_DECIDED (HttpStatus.BAD_REQUEST.value(), "F011", "이미 수락 또는 거절된 펀딩입니다. ID: %d"),
 
     EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F100", "외부 API 오류입니다."),
     SNAPSHOT_INCONSISTENCY(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F101", "위시리스트 아이템 스냅샷 데이터가 일관되지 않습니다.");

@@ -3,8 +3,6 @@ package app.giftify.product.application.service;
 import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
-import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistory;
-import app.giftify.product.adapter.outbound.jpa.repository.ProductStockHistoryRepository;
 import app.giftify.product.application.port.in.*;
 import app.giftify.product.application.port.out.MyProductSearchCommand;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
@@ -33,11 +31,10 @@ import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_F
 
 @Service
 @RequiredArgsConstructor
-public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase {
+public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase {
     private final ProductRepositoryPort productRepositoryPort;
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
-    private final ProductStockHistoryRepository productStockHistoryRepository;
     private final ProductSupport productSupport;
 
     // 상품 생성 (판매자)
@@ -159,16 +156,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         Integer newStock = requestDto.stock();
         if (newStock != null && product.getStock() != newStock) {
-            Product.StockChangeResult result = product.updateStock(newStock);
-
-            ProductStockHistory history = ProductStockHistory.manualAdjust(
-                    product.getSellerId(),
-                    product.getId(),
-                    result.delta(),
-                    result.beforeStock(),
-                    result.afterStock()
-            );
-            productStockHistoryRepository.save(history);
+            product.updateStock(newStock);
         }
 
         var status = requestDto.status();
@@ -188,6 +176,18 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         product.pullEvents().forEach(eventPublisher::publish); // 기록된 도메인 이벤트를 발행
 
         return ProductUpdateResult.from(product);
+    }
+
+    // 펀딩에 의한 재고 감소
+    @Transactional
+    @Override
+    public void decreaseStockByFunding(Long productId) {
+        Product product = productSupport.findById(productId);
+
+        product.decreaseStockByFunding();
+        productRepositoryPort.save(product);
+
+        product.pullEvents().forEach(eventPublisher::publish);
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)

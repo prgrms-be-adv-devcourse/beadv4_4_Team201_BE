@@ -1,40 +1,109 @@
 package app.giftify.cart.adapter.inbound;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.giftify.cart.application.inbound.AddCartItemCommand;
 import app.giftify.cart.application.inbound.CartService;
 import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.CartItemKey;
-import app.giftify.security.common.context.AuthenticatedMember;
+import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v2/carts")
 @RequiredArgsConstructor
 public class CartController implements CartV2ApiSpec {
-    private final CartService cartService;
+	private final CartService cartService;
 
-    @Override
-    @PostMapping("/{cartId}")
-    public ResponseEntity<RsData<Void>> addItem(@PathVariable Long cartId, @RequestBody CartItemRequest request) {
-        CartItemAddResult result = cartService.addItem(cartId, new AddCartItemCommand(
-                new CartItemKey(request.targetType(), request.targetId()),
-                Money.of(request.amount())
-        ));
+	@Override
+	@PostMapping("/{cartId}")
+	public ResponseEntity<RsData<Void>> addItem(@PathVariable("cartId") Long cartId,
+		@RequestBody CartItemRequest request) {
+		CartItemAddResult result = cartService.addItem(cartId, new AddCartItemCommand(
+			new CartItemKey(request.targetType(), request.targetId()),
+			Money.of(request.amount())
+		));
 
-        if (result == CartItemAddResult.UPDATED) {
-            return ResponseEntity.ok(RsData.success(null, "이미 장바구니에 있는 펀딩으로 가격이 수정되었습니다."));
-        }
-        return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
-    }
+		if (result == CartItemAddResult.UPDATED) {
+			return ResponseEntity.ok(RsData.success(null, "이미 장바구니에 있는 펀딩으로 가격이 수정되었습니다."));
+		}
+		return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
+	}
 
-    @Override
-    @GetMapping("/{cartId}")
-    public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable Long cartId, @AuthenticatedMember Long memberId) {
-        CartResponse response = cartService.getCart(cartId, memberId);
-        return ResponseEntity.ok(RsData.success(response));
-    }
+	@Override
+	@PostMapping
+	public ResponseEntity<RsData<Void>> addItemToMyCart(
+		@CurrentMemberId Long memberId,
+		@RequestBody CartItemRequest request
+	) {
+		CartItemAddResult result = cartService.addItemToMyCart(memberId, new AddCartItemCommand(
+			new CartItemKey(request.targetType(), request.targetId()),
+			Money.of(request.amount())
+		));
+
+		if (result == CartItemAddResult.UPDATED) {
+			return ResponseEntity.ok(RsData.success(null, "이미 장바구니에 있는 펀딩으로 가격이 수정되었습니다."));
+		}
+		return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
+	}
+
+	@Override
+	@GetMapping("/{cartId}")
+	public ResponseEntity<RsData<CartResponse>> getCart(@PathVariable("cartId") Long cartId,
+		@Parameter(hidden = true) @CurrentMemberId Long memberId) {
+		CartResponse response = cartService.getCart(cartId, memberId);
+		return ResponseEntity.ok(RsData.success(response));
+	}
+
+	@Override
+	@GetMapping
+	public ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId) {
+		CartResponse response = cartService.getMyCart(memberId);
+		return ResponseEntity.ok(RsData.success(response));
+	}
+
+	@Override
+	@PatchMapping("/items")
+	public ResponseEntity<RsData<Void>> updateItemAmount(
+		@CurrentMemberId Long memberId,
+		@RequestBody CartItemRequest request
+	) {
+		cartService.addItemToMyCart(memberId, new AddCartItemCommand(
+			new CartItemKey(request.targetType(), request.targetId()),
+			Money.of(request.amount())
+		));
+		return ResponseEntity.ok(RsData.success(null));
+	}
+
+	@Override
+	@DeleteMapping("/items/{targetType}/{targetId}")
+	public ResponseEntity<RsData<Void>> removeItem(
+		@CurrentMemberId Long memberId,
+		@PathVariable(value = "targetType") TargetType targetType,
+		@PathVariable(value = "targetId") Long targetId
+	) {
+		cartService.removeItem(memberId, targetType, targetId);
+		return ResponseEntity.ok(RsData.success(null));
+	}
+
+	@Override
+	@DeleteMapping
+	public ResponseEntity<RsData<Void>> clearCart(
+		@CurrentMemberId Long memberId
+	) {
+		cartService.clearCart(memberId);
+		return ResponseEntity.ok(RsData.success(null));
+	}
 }

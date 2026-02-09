@@ -71,9 +71,9 @@ ALTER TABLE cart
 -- 6. WISHLIST (위시리스트)
 -- -----------------------------------------------------------------------------
 INSERT INTO wishlist (id, member_id, visibility, created_at, updated_at, created_by, updated_by)
-VALUES (1, 1, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (2, 2, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 3, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+VALUES (1, 1, 'PUBLIC', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 2, 'PUBLIC', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 3, 'PUBLIC', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (4, 4, 'PRIVATE', NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE wishlist
@@ -104,11 +104,15 @@ ALTER TABLE product
 -- -----------------------------------------------------------------------------
 -- 8. WISHLIST_ITEM (위시리스트 아이템) - Optional
 -- -----------------------------------------------------------------------------
-INSERT INTO wishlist_item (id, wishlist_id, product_id, wishlist_item_status, created_at, updated_at, created_by,
-                           updated_by)
-VALUES (1, 1, 1, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (2, 1, 2, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 2, 3, 'PENDING', NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+INSERT INTO wishlist_item (id, wishlist_id, product_id, wishlist_item_status, added_at, created_at, updated_at,
+                           created_by, updated_by)
+VALUES (1, 1, 1, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 1, 2, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 2, 3, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 2, 4, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (5, 2, 5, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (6, 3, 1, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (7, 3, 3, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE wishlist_item
     ALTER COLUMN id RESTART WITH 100;
@@ -162,9 +166,9 @@ ALTER TABLE order_item_v2
 --   - ID 4: admin-giftify@team201.dev (ADMIN, 관리자)
 -- Wallets: 4개 (각 회원당 1개, 테스트용 잔액 포함)
 -- Carts: 4개 (각 회원당 1개)
--- Wishlists: 4개 (각 회원당 1개)
+-- Wishlists: 4개 (PUBLIC 3, PRIVATE 1)
 -- Products: 10개 (ACTIVE 5, DRAFT 5) - seller_id=3
--- WishlistItems: 3개 (테스트용)
+-- WishlistItems: 7개 (멤버1: 2개, 멤버2: 3개, 멤버3: 2개)
 -- Orders: 3개 (PAID 1, CONFIRMED 1, CREATED 1) - buyer_id=2
 -- OrderItems: 3개 (주문당 1개)
 -- =============================================================================

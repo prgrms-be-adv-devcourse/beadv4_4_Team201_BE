@@ -5,6 +5,9 @@ import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
 import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.funding.adpater.inbound.FundingCreateResult;
+import app.giftify.funding.adpater.inbound.dto.*;
+import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
@@ -60,12 +63,12 @@ public class FundingFacade {
     }
 
     @Transactional(readOnly = true)
-    public MyFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
+    public ContributeFundingResponseDto getParticipatedFunding(Long fundingId, Long memberId) {
         return fundingGetUseCase.getParticipatedFunding(fundingId, memberId);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<MyFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
+    public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
         return fundingGetUseCase.getParticipatedFundings(page, size, memberId);
     }
 
@@ -85,13 +88,23 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingCompleteResponseDto refuseFunding(Long id) {
-        return fundingRefuseUseCase.refuseFunding(id);
+    public FundingCompleteResponseDto refuseFunding(Long id, Long memberId) {
+        return fundingRefuseUseCase.refuseFunding(id, memberId);
     }
 
     @Transactional
-    public FundingCompleteResponseDto acceptFunding(Long id) {
-        return fundingAcceptUseCase.acceptFunding(id);
+    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
+        return fundingAcceptUseCase.acceptFunding(id, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
+        return fundingGetUseCase.getMyFunding(id, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
+        return fundingGetUseCase.getMyFundings(page, size, memberId);
     }
 
 //    @Transactional
