@@ -1,5 +1,6 @@
 package app.giftify.product.domain;
 
+import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.product.ProductPriceUpdatedEvent;
@@ -7,6 +8,7 @@ import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import static app.giftify.product.domain.ProductStatus.*;
 import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Getter
+@Slf4j
 public class Product extends BaseDomainModel {
     private final Long sellerId;
     private String name;
@@ -123,7 +126,7 @@ public class Product extends BaseDomainModel {
     }
 
     // 상품 재고 수정 (판매자 수동)
-    public StockChangeResult updateStock(int newStock) {
+    public void updateStock(int newStock) {
         int beforeStock = this.stock;
         this.stock = newStock;
 
@@ -134,11 +137,11 @@ public class Product extends BaseDomainModel {
             registerEvent(new ProductSaleEnabledEvent(this.getId()));
         }
 
-        return new StockChangeResult(beforeStock, this.stock, newStock - beforeStock);
+        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, newStock - beforeStock, StockChangeType.MANUAL_SELLER);
     }
 
     // 펀딩에 의한 상품 재고 감소 todo 동시성 제어
-    public StockChangeResult decreaseStockByFunding() {
+    public void decreaseStockByFunding() {
         validateStockForFunding();
 
         int beforeStock = this.stock;
@@ -147,22 +150,22 @@ public class Product extends BaseDomainModel {
         if (this.stock == 0 && this.status == ACTIVE)
             registerEvent(new ProductSaleDisabledEvent(this.getId()));
 
-        return new StockChangeResult(beforeStock, this.stock, -1);
+        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_COMPLETED);
     }
 
     // 펀딩에 의한 상품 재고 추가 (반품 등등)
-    public StockChangeResult increaseStockByFunding() {
+    public void increaseStockByFunding() {
         int beforeStock = this.stock;
         ++this.stock;
 
         if (beforeStock == 0 && this.status == ACTIVE)
             registerEvent(new ProductSaleEnabledEvent(this.getId()));
 
-        return new StockChangeResult(beforeStock, this.stock, 1);
+        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_REFUNDED);
     }
 
     // 일반 주문에 의한 상품 재고 감소 todo 동시성 제어
-    public StockChangeResult decreaseStock(int quantity) {
+    public void decreaseStock(int quantity) {
         validateStockForOrder(quantity);
 
         int beforeStock = this.stock;
@@ -171,33 +174,45 @@ public class Product extends BaseDomainModel {
         if (this.stock == 0 && this.status == ACTIVE)
             registerEvent(new ProductSaleDisabledEvent(this.getId()));
 
-        return new StockChangeResult(beforeStock, this.stock, -quantity);
+        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_COMPLETED);
     }
 
     // 일반 주문에 의한 상품 재고 추가 (반품 등등)
-    public StockChangeResult increaseStock(int quantity) {
+    public void increaseStock(int quantity) {
         int beforeStock = this.stock;
         this.stock += quantity;
 
         if (beforeStock == 0 && this.status == ACTIVE)
             registerEvent(new ProductSaleEnabledEvent(this.getId()));
 
-        return new StockChangeResult(beforeStock, this.stock, quantity);
-    }
-
-    // todo StockChangeResult 도메인 엔티티 분리하여 도메인으로 들고오기
-    public record StockChangeResult(int beforeStock, int afterStock, int delta) {
+        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_REFUNDED);
     }
 
     // 펀딩 재고 검증: 펀딩은 항상 1개 차감이므로 재고가 1 미만이면 불가
     private void validateStockForFunding() {
-        if (this.stock < 1)
+        if (this.stock < 1) {
+            log.error("[product] 상품 재고 부족으로 재고 차감 불가");
             throw new ProductException(PRODUCT_OUT_OF_STOCK);
+        }
     }
 
     // 일반 주문 재고 검증: 주문 수량만큼 재고가 있어야 함
     private void validateStockForOrder(int quantity) {
-        if (this.stock < quantity)
+        if (this.stock < quantity) {
+            log.error("[product] 상품 재고 부족으로 재고 차감 불가");
             throw new ProductException(PRODUCT_OUT_OF_STOCK);
+        }
+    }
+
+    private void registerStockUpdatedEvent(
+            Long sellerId,
+            Long productId,
+            int beforeStock,
+            int afterStock,
+            int delta,
+            StockChangeType changeType
+    ) {
+        StockChangeResult result = new StockChangeResult(sellerId, productId, beforeStock, afterStock, delta, changeType);
+        registerEvent(new ProductStockUpdatedEvent(result));
     }
 }

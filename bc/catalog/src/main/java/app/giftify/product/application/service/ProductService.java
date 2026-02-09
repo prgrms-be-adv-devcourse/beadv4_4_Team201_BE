@@ -3,7 +3,6 @@ package app.giftify.product.application.service;
 import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
-import app.giftify.product.adapter.outbound.jpa.repository.ProductStockHistoryRepository;
 import app.giftify.product.application.port.in.*;
 import app.giftify.product.application.port.out.MyProductSearchCommand;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
@@ -36,7 +35,6 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     private final ProductRepositoryPort productRepositoryPort;
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
-    private final ProductStockHistoryRepository productStockHistoryRepository;
     private final ProductSupport productSupport;
 
     // 상품 생성 (판매자)
@@ -158,8 +156,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         Integer newStock = requestDto.stock();
         if (newStock != null && product.getStock() != newStock) {
-            Product.StockChangeResult result = product.updateStock(newStock);
-            // todo 재고 이력 저장 이벤트 호출 new event(result) - AFTER_COMMIT
+            product.updateStock(newStock);
         }
 
         var status = requestDto.status();
@@ -187,11 +184,10 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     public void decreaseStockByFunding(Long productId) {
         Product product = productSupport.findById(productId);
 
-        Product.StockChangeResult result = product.decreaseStockByFunding();
+        product.decreaseStockByFunding();
         productRepositoryPort.save(product);
 
         product.pullEvents().forEach(eventPublisher::publish);
-        // todo 재고 이력 저장 이벤트 호출 new event(result) - AFTER_COMMIT
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)
