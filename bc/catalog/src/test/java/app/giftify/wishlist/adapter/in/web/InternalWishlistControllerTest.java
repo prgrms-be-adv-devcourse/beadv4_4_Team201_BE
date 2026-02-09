@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,9 +48,9 @@ public class InternalWishlistControllerTest {
     void getSnapshot_Success() throws Exception {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L);
-        List<WishlistItemSnapshot> snapshots = List.of(
-                new WishlistItemSnapshot(1L, 100L, "테스트 상품1", 10000, 5L, 77L),
-                new WishlistItemSnapshot(2L, 101L, "테스트 상품2", 20000, 5L, 77L)
+        Map<Long, WishlistItemSnapshot> snapshots = Map.of(
+                1L, new WishlistItemSnapshot(1L, 100L, "테스트 상품1", 10000, 5L, 77L),
+                2L, new WishlistItemSnapshot(2L, 101L, "테스트 상품2", 20000, 5L, 77L)
         );
         given(getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds)).willReturn(snapshots);
 
@@ -58,14 +59,14 @@ public class InternalWishlistControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[1, 2]"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].originalWishlistItemId").value(1))
-                .andExpect(jsonPath("$[0].productId").value(100))
-                .andExpect(jsonPath("$[0].productName").value("테스트 상품1"))
-                .andExpect(jsonPath("$[0].productPrice").value(10000))
-                .andExpect(jsonPath("$[0].sellerId").value(5))
-                .andExpect(jsonPath("$[0].wishlistOwnerId").value(77))
-                .andExpect(jsonPath("$[1].originalWishlistItemId").value(2))
-                .andExpect(jsonPath("$[1].productName").value("테스트 상품2"));
+                .andExpect(jsonPath("$.1.originalWishlistItemId").value(1))
+                .andExpect(jsonPath("$.1.productId").value(100))
+                .andExpect(jsonPath("$.1.productName").value("테스트 상품1"))
+                .andExpect(jsonPath("$.1.productPrice").value(10000))
+                .andExpect(jsonPath("$.1.sellerId").value(5))
+                .andExpect(jsonPath("$.1.wishlistOwnerId").value(77))
+                .andExpect(jsonPath("$.2.originalWishlistItemId").value(2))
+                .andExpect(jsonPath("$.2.productName").value("테스트 상품2"));
     }
 
     @Test
