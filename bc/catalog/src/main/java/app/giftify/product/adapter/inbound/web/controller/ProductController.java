@@ -39,7 +39,7 @@ public class ProductController implements ProductV2ApiSpec {
     private final ProductApproveUseCase productApproveUseCase;
     private final ProductRejectUseCase productRejectUseCase;
     private final ProductUpdateUseCase productUpdateUseCase;
-    private final ProductStockHistoryUseCase productStockHistoryUseCase;
+    private final StockHistorySearchUseCase stockHistorySearchUseCase;
 
     // 상품 등록
     @PostMapping
@@ -142,8 +142,10 @@ public class ProductController implements ProductV2ApiSpec {
             @CurrentMemberId Long sellerId,
             @Valid @ModelAttribute StockHistorySearchCommand searchCommand
     ) {
-        Page<ProductStockHistory> stockHistories = productStockHistoryUseCase.searchStockHistories(sellerId,
-                searchCommand);
+        Page<ProductStockHistory> stockHistories = stockHistorySearchUseCase.searchStockHistories(
+                sellerId,
+                searchCommand
+        );
         Page<StockHistoryDto> stockHistoryDtoPage = stockHistories.map(StockHistoryDto::from);
 
         PageResponse<StockHistoryDto> result = PageResponse.of(
