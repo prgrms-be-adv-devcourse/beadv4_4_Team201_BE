@@ -37,4 +37,30 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
             nativeQuery = true
     )
     List<AmountSummaryProjection> findSettlementSumByOrderIds(@Param("orderIds") List<Long> orderIds);
+
+    @Query("""
+        SELECT MIN(s.orderId)
+        FROM SettlementItem s
+        WHERE s.lifeCycleMeta.status = :status
+          AND s.createdAt < :cutOffDateTime
+          AND s.retryCount < :retryLimit
+    """)
+    Long findMinOrderId(
+            @Param("status") SettlementItemStatus status,
+            @Param("cutOffDateTime") LocalDateTime cutOffDateTime,
+            @Param("retryLimit") int retryLimit
+    );
+
+    @Query("""
+        SELECT MAX(s.orderId)
+        FROM SettlementItem s
+        WHERE s.lifeCycleMeta.status = :status
+          AND s.createdAt < :cutOffDateTime
+          AND s.retryCount < :retryLimit
+    """)
+    Long findMaxOrderId(
+            @Param("status") SettlementItemStatus status,
+            @Param("cutOffDateTime") LocalDateTime cutOffDateTime,
+            @Param("retryLimit") int retryLimit
+    );
 }

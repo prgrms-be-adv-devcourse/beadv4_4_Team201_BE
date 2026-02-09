@@ -16,4 +16,8 @@ public interface SettlementItemRepository {
     List<Long> findPendingOrderIds(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 
     List<AmountSummaryProjection> getSettlementSumByOrderIds(List<Long> orderIds);
+
+    Long getMinOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
+
+    Long getMaxOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 }

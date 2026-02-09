@@ -40,4 +40,14 @@ public class SettlementItemAdapter implements SettlementItemRepository {
     public List<AmountSummaryProjection> getSettlementSumByOrderIds(List<Long> orderIds) {
         return jpaSettlementItemRepository.findSettlementSumByOrderIds(orderIds);
     }
+
+    @Override
+    public Long getMinOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit) {
+        return jpaSettlementItemRepository.findMinOrderId(status, cutOffDateTime, retryLimit);
+    }
+
+    @Override
+    public Long getMaxOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit) {
+        return jpaSettlementItemRepository.findMaxOrderId(status, cutOffDateTime, retryLimit);
+    }
 }

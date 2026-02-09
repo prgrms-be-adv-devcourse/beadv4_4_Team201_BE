@@ -2,7 +2,6 @@ package app.giftify.settlement.adapter.outbound.batch;
 
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.SettlementItemStatus;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;
@@ -11,9 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -34,30 +31,32 @@ public class OrderIdPartitioner implements Partitioner {
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
-        List<Long> orderIds = settlementItemRepository.findPendingOrderIds(
-                SettlementItemStatus.PENDING,
-                cutOffDateTime,
-                retryLimit
+        Long minOrderId = settlementItemRepository.getMinOrderId(
+                SettlementItemStatus.PENDING, cutOffDateTime, retryLimit
+        );
+        Long maxOrderId = settlementItemRepository.getMaxOrderId(
+                SettlementItemStatus.PENDING, cutOffDateTime, retryLimit
         );
 
-        return partitionOrderIds(orderIds);
-    }
-
-    private @NonNull Map<String, ExecutionContext> partitionOrderIds(List<Long> orderIds) {
         Map<String, ExecutionContext> partitions = new LinkedHashMap<>();
+        if (minOrderId == null || maxOrderId == null) {
+            return partitions; // 처리할 데이터 없음
+        }
 
+        long fromId = minOrderId;
         int partitionIndex = 0;
-        for (int i = 0; i < orderIds.size(); i += orderPerPartition) {
-            List<Long> partitionOrderIds = orderIds.subList(
-                    i,
-                    Math.min(i + orderPerPartition, orderIds.size())
-            );
+
+        while (fromId <= maxOrderId) {
+            long toId = Math.min(fromId + orderPerPartition - 1, maxOrderId);
 
             ExecutionContext context = new ExecutionContext();
-            context.put("orderIds", new ArrayList<>(partitionOrderIds));
+            context.putLong("minOrderId", fromId);
+            context.putLong("maxOrderId", toId);
 
             partitions.put("partition-" + partitionIndex++, context);
+            fromId = toId + 1;
         }
+
         return partitions;
     }
 }

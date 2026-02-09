@@ -26,7 +26,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -55,10 +54,11 @@ public class ValidationBatchConfig {
     public Step validationStep() {
         return new StepBuilder("validationStep", jobRepository)
                 .<SettlementItem, SettlementQueue>chunk(chunkSize, transactionManager)
-                .reader(settlementItemReader(null, null, null))
+                .reader(settlementItemReader(null, null, null, null))
                 .processor(validationProcessor(null))
                 .writer(validationWriter())
                 .listener(validationBulkLoadListener)
+                .faultTolerant()
                 .build();
     }
 
@@ -86,7 +86,8 @@ public class ValidationBatchConfig {
     @Bean
     @StepScope
     public JpaPagingItemReader<SettlementItem> settlementItemReader(
-            @Value("#{stepExecutionContext['orderIds']}") List<Long> orderIds,
+            @Value("#{stepExecutionContext['minOrderId']}") Long minOrderId,
+            @Value("#{stepExecutionContext['maxOrderId']}") Long maxOrderId,
             @Value("#{jobParameters['cutOffDateTime']}") LocalDateTime cutOffDateTime,
             @Value("#{jobParameters['retryLimit']}") Long retryLimit
     ) {
@@ -95,14 +96,16 @@ public class ValidationBatchConfig {
                 .entityManagerFactory(emf)
                 .queryString("""
                     SELECT s FROM SettlementItem s
-                    WHERE (s.lifeCycleMeta.status = 'PENDING'
+                    WHERE s.orderId BETWEEN :minOrderId AND :maxOrderId
+                      AND (s.lifeCycleMeta.status = 'PENDING'
                            OR (s.lifeCycleMeta.status = 'FAIL' AND s.retryCount < :retryLimit))
                       AND s.createdAt < :cutOffDateTime
                 """)
                 .parameterValues(Map.of(
-                        "orderIds", orderIds,
-                        "retryLimit", retryLimit
-                        , "cutOffDateTime", cutOffDateTime
+                        "minOrderId", minOrderId,
+                        "maxOrderId", maxOrderId,
+                        "retryLimit", retryLimit,
+                        "cutOffDateTime", cutOffDateTime
                 ))
                 .pageSize(chunkSize)
                 .build();
