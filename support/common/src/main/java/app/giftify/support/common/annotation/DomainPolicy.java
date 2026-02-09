@@ -1,7 +1,8 @@
 package app.giftify.support.common.annotation;
 
 import app.giftify.shared.domain.type.DomainPolicyType;
-import app.giftify.support.common.validator.DomainPolicyValidator;
+import app.giftify.support.common.validator.DomainPolicyValidatorForLong;
+import app.giftify.support.common.validator.DomainPolicyValidatorForMoney;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -13,7 +14,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({ FIELD, PARAMETER, ANNOTATION_TYPE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = DomainPolicyValidator.class)
+@Constraint(validatedBy = {
+        DomainPolicyValidatorForMoney.class,
+        DomainPolicyValidatorForLong.class
+})
 public @interface DomainPolicy {
 
     DomainPolicyType value();

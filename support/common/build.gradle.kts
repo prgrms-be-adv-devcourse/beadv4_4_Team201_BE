@@ -6,6 +6,9 @@ dependencies {
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.validation)
 
+    testImplementation(libs.archunit)
+    testImplementation(libs.spring.boot.starter.test)
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 }

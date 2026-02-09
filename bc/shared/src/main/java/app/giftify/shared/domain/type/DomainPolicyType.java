@@ -13,11 +13,11 @@ public enum DomainPolicyType {
         this.messageTemplate = messageTemplate;
     }
 
-    public long min() {
+    public long getMin() {
         return min;
     }
 
-    public String message(long min) {
+    public String getMessage() {
         return String.format(messageTemplate, min);
     }
 }
