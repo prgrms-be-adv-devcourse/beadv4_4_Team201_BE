@@ -108,7 +108,7 @@ class SettlementItemServiceTest {
         assertThat(saved.getOrderedAt()).isEqualTo(orderedAt);
         assertThat(saved.getPaidAt()).isEqualTo(paidAt);
         assertThat(saved.getConfirmedAt()).isEqualTo(confirmedAt);
-        assertThat(saved.getLifeCycleMeta().getStatus()).isEqualTo(SettlementItemStatus.READY);
+        assertThat(saved.getLifeCycleMeta().getStatus()).isEqualTo(SettlementItemStatus.PENDING);
         assertThat(saved.getLifeCycleMeta().getExpectedDate())
             .isEqualTo(LocalDate.of(2024, 2, 1));
 

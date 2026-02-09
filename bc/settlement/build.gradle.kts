@@ -21,6 +21,9 @@ dependencies {
     implementation("org.springframework.retry:spring-retry:2.0.2")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
+    // batch
+    implementation("org.springframework.boot:spring-boot-starter-batch")
+
     // Test
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.modulith.test)
@@ -28,4 +31,5 @@ dependencies {
     testImplementation(libs.archunit)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
+    testImplementation("org.springframework.batch:spring-batch-test")
 }
