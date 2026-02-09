@@ -1,6 +1,5 @@
 package app.giftify.product.domain;
 
-import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.product.ProductPriceUpdatedEvent;
@@ -17,41 +16,46 @@ import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Getter
 public class Product extends BaseDomainModel {
-    private final Long sellerId;
-    private String name;
-    private String description;
-    private int price;
-    private int stock;
-    private ProductStatus status;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
+	private final Long sellerId;
+	private String name;
+	private String description;
+	private int price;
+	private int stock;
+	private ProductStatus status;
+	private ProductCategory category;
+	private String imageKey;
+	private final LocalDateTime createdAt;
+	private final LocalDateTime updatedAt;
 
-    @Builder
-    public Product(Long id, Long sellerId, String name, String description, int price, int stock, ProductStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        super(id);
-        validateCreation(sellerId, name, description, price, stock);
-        this.sellerId = sellerId;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.status = (status == null) ? DRAFT : status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+	@Builder
+	public Product(Long id, Long sellerId, String name, String description, int price, int stock, ProductStatus status,
+		ProductCategory category, String imageKey, LocalDateTime createdAt, LocalDateTime updatedAt) {
+		super(id);
+		validateCreation(sellerId, name, description, price, stock);
+		this.sellerId = sellerId;
+		this.name = name;
+		this.description = description;
+		this.price = price;
+		this.stock = stock;
+		this.status = (status == null) ? DRAFT : status;
+		this.category = category;
+		this.imageKey = imageKey;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+	}
 
-    private static void validateCreation(Long sellerId, String name, String description, int price, int stock) {
-        if (sellerId == null)
-            throw new ProductException(PRODUCT_SELLER_REQUIRED);
-        if (!StringUtils.hasText(name))
-            throw new ProductException(INVALID_PRODUCT_NAME);
-        if (!StringUtils.hasText(description))
-            throw new ProductException(INVALID_PRODUCT_DESCRIPTION);
-        if (price <= 0)
-            throw new ProductException(INVALID_PRODUCT_PRICE);
-        if (stock < 0)
-            throw new ProductException(INVALID_PRODUCT_STOCK);
-    }
+	private static void validateCreation(Long sellerId, String name, String description, int price, int stock) {
+		if (sellerId == null)
+			throw new ProductException(PRODUCT_SELLER_REQUIRED);
+		if (!StringUtils.hasText(name))
+			throw new ProductException(INVALID_PRODUCT_NAME);
+		if (!StringUtils.hasText(description))
+			throw new ProductException(INVALID_PRODUCT_DESCRIPTION);
+		if (price <= 0)
+			throw new ProductException(INVALID_PRODUCT_PRICE);
+		if (stock < 0)
+			throw new ProductException(INVALID_PRODUCT_STOCK);
+	}
 
     /**
      * 상품 상태 변경
