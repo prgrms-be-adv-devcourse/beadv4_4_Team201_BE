@@ -35,11 +35,6 @@ public class ValidationBatchConfig {
 
     @Value("${settlement.batch.chunk-size}")
     private int chunkSize;
-    @Value("${settlement.batch.max-retry-count}")
-    private int maxRetryCount;
-
-    @Value("#{jobParameters['cutOffDateTime']}")
-    private LocalDateTime cutOffDateTime;
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
@@ -60,7 +55,7 @@ public class ValidationBatchConfig {
     public Step validationStep() {
         return new StepBuilder("validationStep", jobRepository)
                 .<SettlementItem, SettlementQueue>chunk(chunkSize, transactionManager)
-                .reader(settlementItemReader(null))
+                .reader(settlementItemReader(null, null, null))
                 .processor(validationProcessor(null))
                 .writer(validationWriter())
                 .listener(validationBulkLoadListener)
@@ -91,7 +86,9 @@ public class ValidationBatchConfig {
     @Bean
     @StepScope
     public JpaPagingItemReader<SettlementItem> settlementItemReader(
-            @Value("#{stepExecutionContext['orderIds']}") List<Long> orderIds
+            @Value("#{stepExecutionContext['orderIds']}") List<Long> orderIds,
+            @Value("#{jobParameters['cutOffDateTime']}") LocalDateTime cutOffDateTime,
+            @Value("#{jobParameters['retryLimit']}") Long retryLimit
     ) {
         return new JpaPagingItemReaderBuilder<SettlementItem>()
                 .name("settlementItemReader")
@@ -99,12 +96,12 @@ public class ValidationBatchConfig {
                 .queryString("""
                     SELECT s FROM SettlementItem s
                     WHERE (s.lifeCycleMeta.status = 'PENDING'
-                           OR (s.lifeCycleMeta.status = 'FAIL' AND s.retryCount < :maxRetryCount))
+                           OR (s.lifeCycleMeta.status = 'FAIL' AND s.retryCount < :retryLimit))
                       AND s.createdAt < :cutOffDateTime
                 """)
                 .parameterValues(Map.of(
                         "orderIds", orderIds,
-                        "maxRetryCount", maxRetryCount
+                        "retryLimit", retryLimit
                         , "cutOffDateTime", cutOffDateTime
                 ))
                 .pageSize(chunkSize)
