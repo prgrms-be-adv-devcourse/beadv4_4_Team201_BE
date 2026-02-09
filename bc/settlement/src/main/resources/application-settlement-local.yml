@@ -2,5 +2,6 @@ settlement:
   batch:
     # 검증 기준 시간 (새벽 1시)
     validation-cut-off-time: "01:00:00"
-    chunk-size: 100
+    chunk-size: 30
     max-retry-count: 3
+    order-per-partition: 10

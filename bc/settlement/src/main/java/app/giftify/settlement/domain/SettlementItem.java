@@ -20,10 +20,10 @@ import java.time.LocalDateTime;
                 columnNames = {"target_id", "type"}
         ),
         indexes = {
-                @Index(
-                        name = "idx_settlement_validation",
-                        columnList = "status, expectedDate, id"
-                )
+                @Index(name = "idx_settlement_status_created_retry",
+                        columnList = "status, created_at, retry_count"),
+                @Index(name = "idx_settlement_order_id",
+                        columnList = "order_id")
         }
 )
 @NoArgsConstructor
@@ -172,10 +172,18 @@ public class SettlementItem {
         );
     }
 
-    // todo: 추후 기능 추가
-//    public void start() { this.lifeCycleMeta = lifeCycleMeta.start(); }
-//    public void complete(LocalDateTime at) { this.lifeCycleMeta = lifeCycleMeta.complete(at); }
-//    public void cancel(LocalDateTime at) { this.lifeCycleMeta = lifeCycleMeta.cancel(at); }
+    public void fail() {
+        lifeCycleMeta = lifeCycleMeta.fail();
+        this.retryCount++;
+    }
+
+    public void ready() {
+        lifeCycleMeta = this.lifeCycleMeta.ready();
+    }
+
+    public void manual() {
+        lifeCycleMeta = lifeCycleMeta.manual();
+    }
 
     private void validateTimeSequence(LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt) {
         if (paidAt.isBefore(orderedAt)) {

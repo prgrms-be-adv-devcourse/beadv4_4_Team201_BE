@@ -58,6 +58,24 @@ public class LifeCycleMeta {
                 );
         }
 
+        public LifeCycleMeta fail() {
+                return new LifeCycleMeta(
+                        SettlementItemStatus.FAIL,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
+                );
+        }
+
+        public LifeCycleMeta manual() {
+                return new LifeCycleMeta(
+                        SettlementItemStatus.MANUAL_CHECK,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
+                );
+        }
+
         // 익월 정산
         private static LocalDate calculateExpectedDate(LocalDateTime confirmedAt) {
                 return confirmedAt.toLocalDate()
