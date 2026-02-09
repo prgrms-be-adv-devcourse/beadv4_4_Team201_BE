@@ -11,9 +11,9 @@ public class ProductStockHistory extends BaseDomainModel {
     private final Long sellerId;
     private final Long productId;
     private final StockChangeType changeType;
-    private final int delta;
-    private final int beforeStock;
-    private final int afterStock;
+    private final int delta; // 재고 변화량 (-5, +10, -1 등)
+    private final int beforeStock; // 변경 전 재고량
+    private final int afterStock; // 변경 후 재고량
     private final LocalDateTime createdAt;
 
     @Builder
