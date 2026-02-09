@@ -7,6 +7,8 @@ import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepositor
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.*;
 import app.giftify.settlement.domain.exception.InfraException;
+import app.giftify.shared.api.AmountSummaryProjection;
+import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
@@ -14,6 +16,10 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +60,16 @@ public class SettlementItemService {
     public void recover(InfraException e, InitializeSettlementItemCommand command) {
         log.error("[SettlementItemService] 재시도 실패, fundingId={}, message={}",
                 command.fundingId(), e.getMessage(), e);
+    }
+
+    public Map<Long, Money> getTotalAmounts(List<Long> orderIds) {
+        List<AmountSummaryProjection> projections = settlementItemRepository.getSettlementSumByOrderIds(orderIds);
+
+        return projections.stream()
+                .collect(Collectors.toMap(
+                        AmountSummaryProjection::orderId,
+                        p -> Money.of(p.totalAmount())
+                ));
     }
 
     private SettlementSource fetchSettlementSource(InitializeSettlementItemCommand command) {
