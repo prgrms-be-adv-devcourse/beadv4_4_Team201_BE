@@ -8,7 +8,6 @@ import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -17,7 +16,6 @@ import static app.giftify.product.domain.ProductStatus.*;
 import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Getter
-@Slf4j
 public class Product extends BaseDomainModel {
     private final Long sellerId;
     private String name;
@@ -191,7 +189,6 @@ public class Product extends BaseDomainModel {
     // 펀딩 재고 검증: 펀딩은 항상 1개 차감이므로 재고가 1 미만이면 불가
     private void validateStockForFunding() {
         if (this.stock < 1) {
-            log.error("[product] 상품 재고 부족으로 재고 차감 불가");
             throw new ProductException(PRODUCT_OUT_OF_STOCK);
         }
     }
@@ -199,7 +196,6 @@ public class Product extends BaseDomainModel {
     // 일반 주문 재고 검증: 주문 수량만큼 재고가 있어야 함
     private void validateStockForOrder(int quantity) {
         if (this.stock < quantity) {
-            log.error("[product] 상품 재고 부족으로 재고 차감 불가");
             throw new ProductException(PRODUCT_OUT_OF_STOCK);
         }
     }
