@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -135,9 +136,9 @@ public class ValidationBatchConfig {
     public Step cleanupSettlementQueueStep(EntityManagerFactory emf) {
         return new StepBuilder("cleanupSettlementQueueStep", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    EntityManager em = emf.createEntityManager();
-                    em.createQuery("DELETE FROM SettlementQueue").executeUpdate();
-                    em.close();
+                    EntityManager em = EntityManagerFactoryUtils
+                            .getTransactionalEntityManager(emf);
+                    em.createNativeQuery("TRUNCATE TABLE settlement_queue").executeUpdate();
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
