@@ -1,10 +1,9 @@
 package app.giftify.auth.adapter.inbound.web;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import app.giftify.auth.application.AuthService;
 import app.giftify.auth.application.inbound.LoginUseCase;
 import app.giftify.shared.domain.type.MemberRole;
 import app.giftify.shared.domain.vo.MemberInfo;
@@ -23,16 +21,14 @@ import app.giftify.shared.domain.vo.MemberInfo;
 class AuthControllerTest {
 
 	private MockMvc mockMvc;
-	private AuthService authService;
 	private LoginUseCase loginUseCase;
 
 	@BeforeEach
 	void setUp() {
-		authService = org.mockito.Mockito.mock(AuthService.class);
 		loginUseCase = org.mockito.Mockito.mock(LoginUseCase.class);
 
 		mockMvc = MockMvcBuilders
-			.standaloneSetup(new AuthController(authService, loginUseCase))
+			.standaloneSetup(new AuthController(loginUseCase))
 			.build();
 	}
 
@@ -94,6 +90,4 @@ class AuthControllerTest {
 				.andExpect(status().isBadRequest());
 		}
 	}
-
-	// Note: GET /api/v2/auth/refresh는 Auth0 외부 호출이 필요하여 통합 테스트에서 검증
 }

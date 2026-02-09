@@ -84,7 +84,9 @@ public class WishlistEventListener {
         WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
                 .orElseThrow(WishlistNotFoundException::new);
 
-        log.info("{} | productId: {}", message, wishlistItem.getProductId());
+        log.info("{} | wishlistItemId: {}", message, wishlistItem.getId());
         wishlistItem.changeStatus(next);
+
+        wishlistItemRepositoryPort.save(wishlistItem);
     }
 }
