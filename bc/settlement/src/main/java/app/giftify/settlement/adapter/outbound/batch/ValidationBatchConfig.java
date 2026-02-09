@@ -1,7 +1,9 @@
 package app.giftify.settlement.adapter.outbound.batch;
 
+import app.giftify.settlement.adapter.inbound.event.ValidationJobListener;
 import app.giftify.settlement.domain.SettlementItem;
 import app.giftify.settlement.domain.SettlementQueue;
+import app.giftify.settlement.domain.exception.InfraException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +11,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -34,17 +35,20 @@ public class ValidationBatchConfig {
 
     @Value("${settlement.batch.chunk-size}")
     private int chunkSize;
+    @Value("${settlement.batch.retry-limit}")
+    private int retryLimit;
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final EntityManagerFactory emf;
     private final OrderIdPartitioner orderIdPartitioner;
     private final ValidationBulkLoadListener validationBulkLoadListener;
+    private final ValidationJobListener validationJobListener;
 
     @Bean
     public Job validationJob() {
         return new JobBuilder("validationJob", jobRepository)
-                .incrementer(new RunIdIncrementer())
+                .listener(validationJobListener)
                 .start(validationPartitionStep())
                 .next(cleanupSettlementQueueStep(emf))
                 .build();
@@ -54,11 +58,13 @@ public class ValidationBatchConfig {
     public Step validationStep() {
         return new StepBuilder("validationStep", jobRepository)
                 .<SettlementItem, SettlementQueue>chunk(chunkSize, transactionManager)
-                .reader(settlementItemReader(null, null, null, null))
+                .reader(settlementItemReader(null, null, null))
                 .processor(validationProcessor(null))
                 .writer(validationWriter())
                 .listener(validationBulkLoadListener)
                 .faultTolerant()
+                .retry(InfraException.class)
+                .retryLimit(retryLimit)
                 .build();
     }
 
@@ -88,8 +94,7 @@ public class ValidationBatchConfig {
     public JpaPagingItemReader<SettlementItem> settlementItemReader(
             @Value("#{stepExecutionContext['minOrderId']}") Long minOrderId,
             @Value("#{stepExecutionContext['maxOrderId']}") Long maxOrderId,
-            @Value("#{jobParameters['cutOffDateTime']}") LocalDateTime cutOffDateTime,
-            @Value("#{jobParameters['retryLimit']}") Long retryLimit
+            @Value("#{jobParameters['cutOffDateTime']}") LocalDateTime cutOffDateTime
     ) {
         return new JpaPagingItemReaderBuilder<SettlementItem>()
                 .name("settlementItemReader")
