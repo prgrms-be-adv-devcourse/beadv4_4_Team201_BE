@@ -18,14 +18,6 @@ public class InternalWishlistController {
 
     private final GetWishlistItemSnapshotUseCase getWishlistItemSnapshotUseCase;
 
-    // 위시리스트 아이템 스냅샷 조회
-//    @GetMapping("/items/{wishlistItemId}/snapshot")
-//    public WishlistItemSnapshot getSnapshot(
-//            @PathVariable("wishlistItemId") Long wishlistItemId
-//    ) {
-//        return getWishlistItemSnapshotUseCase.getSnapshot(wishlistItemId);
-//    }
-
     @PostMapping("/items/snapshots")
     public Map<Long, WishlistItemSnapshot> getSnapshotList(
             @RequestBody List<Long> wishlistItemIds

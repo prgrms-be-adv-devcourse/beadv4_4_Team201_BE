@@ -126,18 +126,6 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
         // todo 장바구니아이템 상태 변경
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public WishlistItemSnapshot getSnapshot(Long wishlistItemId) {
-//        WishlistItem wishlistItem = wishlistSupport.getWishlistItemById(wishlistItemId);
-//        Product product = productSupport.findById(wishlistItem.getProductId());
-//        Wishlist wishlist = wishlistSupport.getWishlistById(wishlistItem.getWishlistId());
-//
-//        return new WishlistItemSnapshot(
-//                wishlistItem.getId(), product.getId(), product.getName(), product.getPrice(), product.getSellerId(), wishlist.getMemberId()
-//        );
-//    }
-
     /**
      * 위시리스트아이템 스냅샷 조회
      * - 단건 펀딩, 복수 펀딩 모두 사용
