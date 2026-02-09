@@ -105,9 +105,9 @@ public class Funding extends BaseJpaEntity {
         }
     }
 
-    public void expire() {
+    public boolean expire(LocalDateTime now) {
         if (this.status != FundingStatus.IN_PROGRESS) {
-            return; // 이미 종료됨 → 멱등
+            return false; // 이미 종료됨 → 멱등
         }
 
         if (!isExpired()) {
@@ -115,7 +115,8 @@ public class Funding extends BaseJpaEntity {
         }
 
         this.status = FundingStatus.EXPIRED;
-        this.closedAt = LocalDateTime.now();
+        this.closedAt = now;
+        return true;
     }
 
     public void close() {

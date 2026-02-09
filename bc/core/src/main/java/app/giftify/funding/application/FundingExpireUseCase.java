@@ -27,13 +27,15 @@ public class FundingExpireUseCase {
 
         Integer currentAmount = funding.getCurrentAmount();
 
-        funding.expire();
+        boolean expired = funding.expire(LocalDateTime.now());
 
-        eventPublisher.publish(new FundingExpiredEvent(
-                funding.getId(),
-                funding.getWishlistItemId(),
-                currentAmount
-        ));
+        if (expired) {
+            eventPublisher.publish(new FundingExpiredEvent(
+                    funding.getId(),
+                    funding.getWishlistItemId(),
+                    currentAmount
+            ));
+        }
 
         return new FundingCompleteResponseDto(
                 funding.getId(),
@@ -56,13 +58,15 @@ public class FundingExpireUseCase {
         for (Funding funding : expiredFundings) {
             Integer currentAmount = funding.getCurrentAmount();
 
-            funding.expire();
+            boolean expired = funding.expire(now);
 
-            eventPublisher.publish(new FundingExpiredEvent(
-                    funding.getId(),
-                    funding.getWishlistItemId(),
-                    currentAmount
-            ));
+            if (expired) {
+                eventPublisher.publish(new FundingExpiredEvent(
+                        funding.getId(),
+                        funding.getWishlistItemId(),
+                        currentAmount
+                ));
+            }
         }
 
         return expiredFundings.stream()
