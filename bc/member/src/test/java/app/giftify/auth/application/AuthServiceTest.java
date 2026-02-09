@@ -1,5 +1,11 @@
 package app.giftify.auth.application;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+
+import java.time.Instant;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -7,25 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 
-import java.time.Instant;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService 테스트")
 class AuthServiceTest {
-
-	@Mock
-	private ApplicationEventPublisher eventPublisher;
 
 	@Mock
 	private JwtDecoder jwtDecoder;
@@ -37,7 +32,7 @@ class AuthServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		authService = new AuthService(eventPublisher, jwtDecoder, idTokenDecoder);
+		authService = new AuthService(jwtDecoder, idTokenDecoder);
 	}
 
 	@Nested

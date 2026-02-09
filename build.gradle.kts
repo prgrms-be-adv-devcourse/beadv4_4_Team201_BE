@@ -89,6 +89,10 @@ subprojects {
             }
         }
 
+        tasks.withType<JavaCompile> {
+            options.compilerArgs.add("-parameters")
+        }
+
         // Spring Boot BOM 적용 (버전 관리)
         the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
             imports {
