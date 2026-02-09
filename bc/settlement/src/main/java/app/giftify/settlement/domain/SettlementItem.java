@@ -18,7 +18,13 @@ import java.time.LocalDateTime;
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_target_id_type",
                 columnNames = {"target_id", "type"}
-        )
+        ),
+        indexes = {
+                @Index(name = "idx_settlement_status_created_retry",
+                        columnList = "status, created_at, retry_count"),
+                @Index(name = "idx_settlement_order_id",
+                        columnList = "order_id")
+        }
 )
 @NoArgsConstructor
 @Getter
@@ -66,6 +72,9 @@ public class SettlementItem {
 
     @Embedded
     private LifeCycleMeta lifeCycleMeta;
+
+    @Column(nullable = false)
+    private int retryCount = 0;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -159,14 +168,22 @@ public class SettlementItem {
                 source.getPaidAt(),
                 confirmedAt,
                 core,
-                LifeCycleMeta.ready(confirmedAt)
+                LifeCycleMeta.pending(confirmedAt)
         );
     }
 
-    // todo: 추후 기능 추가
-//    public void start() { this.lifeCycleMeta = lifeCycleMeta.start(); }
-//    public void complete(LocalDateTime at) { this.lifeCycleMeta = lifeCycleMeta.complete(at); }
-//    public void cancel(LocalDateTime at) { this.lifeCycleMeta = lifeCycleMeta.cancel(at); }
+    public void fail() {
+        lifeCycleMeta = lifeCycleMeta.fail();
+        this.retryCount++;
+    }
+
+    public void ready() {
+        lifeCycleMeta = this.lifeCycleMeta.ready();
+    }
+
+    public void manual() {
+        lifeCycleMeta = lifeCycleMeta.manual();
+    }
 
     private void validateTimeSequence(LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt) {
         if (paidAt.isBefore(orderedAt)) {
