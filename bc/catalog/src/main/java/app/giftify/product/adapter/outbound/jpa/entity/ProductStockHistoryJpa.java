@@ -4,11 +4,13 @@ import app.giftify.product.domain.StockChangeType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Immutable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Immutable
 @Table(name = "PRODUCT_STOCK_HISTORY")
 @Getter
 @Builder
