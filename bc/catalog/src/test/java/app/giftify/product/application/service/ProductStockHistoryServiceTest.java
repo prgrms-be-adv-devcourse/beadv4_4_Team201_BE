@@ -5,8 +5,6 @@ import app.giftify.product.application.port.out.ProductStockHistoryRepositoryPor
 import app.giftify.product.domain.ProductStockHistory;
 import app.giftify.product.domain.StockChangeResult;
 import app.giftify.product.domain.StockChangeType;
-import app.giftify.product.domain.exception.ProductErrorCode;
-import app.giftify.shared.api.exception.InfraException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +12,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.QueryTimeoutException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -102,18 +103,18 @@ class ProductStockHistoryServiceTest {
     }
 
     @Test
-    @DisplayName("재고 이력 생성 실패 - InfraException 발생 시 예외가 전파된다 (재시도 대상)")
-    void createStockHistory_InfraException() {
+    @DisplayName("재고 이력 생성 실패 - TransientDataAccessException 발생 시 예외가 전파된다 (재시도 대상)")
+    void createStockHistory_TransientDataAccessException() {
         // given
         StockChangeResult result = new StockChangeResult(
                 10L, 1L, 5, 4, -1, StockChangeType.ORDER_COMPLETED
         );
-        willThrow(new InfraException(ProductErrorCode.PRODUCT_NOT_FOUND))
+        willThrow(new QueryTimeoutException("DB query timeout"))
                 .given(stockHistoryRepositoryPort).save(any(ProductStockHistory.class));
 
         // when & then
         assertThatThrownBy(() -> productStockHistoryService.createStockHistory(result))
-                .isInstanceOf(InfraException.class);
+                .isInstanceOf(TransientDataAccessException.class);
     }
 
     @Test
@@ -123,7 +124,7 @@ class ProductStockHistoryServiceTest {
         StockChangeResult result = new StockChangeResult(
                 10L, 1L, 5, 4, -1, StockChangeType.ORDER_COMPLETED
         );
-        InfraException exception = new InfraException(ProductErrorCode.PRODUCT_NOT_FOUND);
+        DataAccessException exception = new QueryTimeoutException("DB query timeout");
 
         // when & then - recover 메서드는 로그만 남기고 예외를 던지지 않는다
         productStockHistoryService.recoverCreateStockHistory(exception, result);
