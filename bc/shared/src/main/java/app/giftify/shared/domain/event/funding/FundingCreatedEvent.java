@@ -11,11 +11,13 @@ import java.time.LocalDateTime;
 public class FundingCreatedEvent extends BaseDomainEvent {
     private final Long fundingId;
     private final Long wishlistItemId;
+    private final Long orderItemId;
 
-    public FundingCreatedEvent(Long fundingId, Long wishlistItemId) {
+    public FundingCreatedEvent(Long fundingId, Long wishlistItemId, Long orderItemId) {
         super();
         this.fundingId = fundingId;
         this.wishlistItemId = wishlistItemId;
+        this.orderItemId = orderItemId;
     }
 
     public Long getFundingId() {
@@ -26,15 +28,18 @@ public class FundingCreatedEvent extends BaseDomainEvent {
         return wishlistItemId;
     }
 
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
+
     @Override
     public String toString() {
         return "FundingCreatedEvent{" +
                 "fundingId=" + fundingId +
                 ", wishlistItemId=" + wishlistItemId +
+                ", orderItemId=" + orderItemId +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';
     }
 }
-
-

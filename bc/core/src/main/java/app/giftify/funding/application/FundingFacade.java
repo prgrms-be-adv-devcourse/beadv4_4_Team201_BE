@@ -1,16 +1,18 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.FundingCreateResult;
-import app.giftify.funding.adpater.inbound.dto.*;
-import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
+import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
+import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
+import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
+import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 
@@ -32,28 +34,19 @@ public class FundingFacade {
     }
 
     @Transactional
-    public List<FundingResponseDto> startFunding(FundingStartRequest request) {
-
-        List<Long> wishlistItemIds = request.items().stream()
-                .map(FundingItemRequest::wishlistItemId)
-                .toList();
-
-        /**
-         * 복수 Funding 생성 (기여금 0원의 빈 펀딩)
-         * Key : wishlistItemId
-         * Value : Funding
-          */
-        List<FundingCreateResult> created = fundingCreateUseCase.createFunding(wishlistItemIds);
-
-        // 펀딩 기여(변경된 funding 받기)
-        Map<Long, Funding> fundingMap = fundingContributeUseCase.contribute(request.participantId(), request.items())
-
-        return FundingResponseDto.fromEntity(fundingAfterContribute, result.wishlistItemSnapshot());
+    public void processFundingActions(OrderSnapshot orderSnapshot) {
+        orderSnapshot.orderItemSnapshots().forEach(item -> {
+            if (item.targetType() == TargetType.FUNDING_PENDING) {
+                fundingCreateUseCase.createFunding(orderSnapshot);
+            } else if (item.targetType() == TargetType.FUNDING) {
+                contributeFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
+            }
+        });
     }
 
     @Transactional
-    public void contributeFunding(Long fundingId, Long participantId, Integer amount) {
-        fundingContributeUseCase.contribute(fundingId, participantId, amount);
+    public void contributeFunding(Long fundingId, List<FundingContributeRequest> requests) {
+        fundingContributeUseCase.contribute(fundingId, requests);
     }
 
     @Transactional(readOnly = true)

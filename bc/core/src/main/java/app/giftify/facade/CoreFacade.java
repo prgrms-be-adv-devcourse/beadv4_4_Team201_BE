@@ -11,7 +11,6 @@ import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
 import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -52,19 +51,9 @@ public class CoreFacade {
         );
         orderService.markOrderAsPaid(markOrderAsPaidCommand);
 
-        processFundingActions(orderSnapshot);
+        fundingFacade.processFundingActions(orderSnapshot);
 
         return new PlaceOrderResult(orderSnapshot.orderId());
-    }
-
-    private void processFundingActions(OrderSnapshot orderSnapshot) {
-        orderSnapshot.orderItemSnapshots().forEach(item -> {
-            if (item.targetType() == TargetType.FUNDING) {
-                fundingFacade.contributeFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
-            } else if (item.targetType() == TargetType.FUNDING_PENDING) {
-                fundingFacade.startFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
-            }
-        });
     }
 
     private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
