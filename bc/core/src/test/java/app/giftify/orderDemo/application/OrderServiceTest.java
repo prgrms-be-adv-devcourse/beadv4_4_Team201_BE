@@ -3,8 +3,8 @@ package app.giftify.orderDemo.application;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
-import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
+import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderSnapshot;
@@ -38,6 +38,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -77,20 +78,25 @@ class OrderServiceTest {
             List.of(itemRequest)
     );
 
-    private final WishlistItemSnapshot wishlistItemSnapshot = new WishlistItemSnapshot(
+    private final Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = Map.of(
             wishlistItemId,
-            productId,
-            "productName",
-            200000,
-            200L,
-            2002L
+            new WishlistItemSnapshot(
+                    wishlistItemId,
+                    productId,
+                    "productName",
+                    200000,
+                    200L,
+                    2002L
+            )
     );
+
+    private final List<Long> wishlistItemIds = List.of(wishlistItemId);
 
     @Test
     @DisplayName("일반 선물 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
     void createOrder_success_normalGift() {
         // given
-        given(wishlistClient.getWishlistItemSnapshot(wishlistItemId)).willReturn(wishlistItemSnapshot);
+        given(wishlistClient.getSnapshotList(wishlistItemIds)).willReturn(wishlistItemSnapshotMap);
 
         // 저장 로직 모킹 (ID와 Number가 포함된 Order 반환)
         given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
@@ -107,7 +113,7 @@ class OrderServiceTest {
         assertThat(result.orderItemSnapshots()).hasSize(1);
 
         // 3. 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
-        verify(wishlistClient, times(1)).getWishlistItemSnapshot(wishlistItemId);
+        verify(wishlistClient, times(1)).getSnapshotList(wishlistItemIds);
         verify(orderRepository, times(1)).save(any(Order.class));
         verify(eventPublisher, atLeastOnce()).publish(any());
     }
@@ -117,12 +123,12 @@ class OrderServiceTest {
     void createOrder_fail_snapshotNotFound() {
         // given
         // 존재하지 않는 맵 상황 시뮬레이션 (빈 리스트 반환)
-        given(wishlistClient.getWishlistItemSnapshot(wishlistItemId)).willReturn(null);
+        given(wishlistClient.getSnapshotList(wishlistItemIds)).willReturn(null);
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(command, List.of()))
                 .isInstanceOf(DomainException.class)
-                .hasFieldOrPropertyWithValue("errorCode", OrderErrorCode.WISHLIST_ITEM_SNAPSHOT_NOT_FOUND);
+                .hasFieldOrPropertyWithValue("errorCode", OrderErrorCode.SNAPSHOTS_NOT_FOUND);
     }
 
     @Test
@@ -133,7 +139,7 @@ class OrderServiceTest {
 
         FundingSnapshot fundingSnapshot = new FundingSnapshot(fundingId, wishlistItemId);
 
-        given(wishlistClient.getWishlistItemSnapshot(wishlistItemId)).willReturn(wishlistItemSnapshot);
+        given(wishlistClient.getSnapshotList(wishlistItemIds)).willReturn(wishlistItemSnapshotMap);
         given(orderRepository.save(any(Order.class))).willAnswer(inv -> inv.getArgument(0));
 
         // when
