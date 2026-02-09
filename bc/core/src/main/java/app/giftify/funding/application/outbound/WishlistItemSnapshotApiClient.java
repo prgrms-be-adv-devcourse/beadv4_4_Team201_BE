@@ -11,11 +11,11 @@ import java.util.List;
 @HttpExchange
 public interface WishlistItemSnapshotApiClient {
 
-    @GetExchange("/api/wishlist/items/{wishlistItemId}/snapshot")
+    @GetExchange("/api/internal/wishlist/items/{wishlistItemId}/snapshot")
     WishlistItemSnapshot getSnapshot(
             @PathVariable Long wishlistItemId
     );
 
-    @GetExchange("/api/wishlist/items/snapshots")
+    @GetExchange("/api/internal/wishlist/items/snapshots")
     List<WishlistItemSnapshot> getSnapshotList(@RequestBody List<Long> wishlistItemIds);
 }
