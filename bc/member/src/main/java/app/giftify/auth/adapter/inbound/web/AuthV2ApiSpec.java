@@ -1,15 +1,11 @@
 package app.giftify.auth.adapter.inbound.web;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import app.giftify.auth.adapter.inbound.web.dto.LoginRequest;
 import app.giftify.auth.adapter.inbound.web.dto.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -88,78 +84,5 @@ public interface AuthV2ApiSpec {
 	)
 	ResponseEntity<LoginResponse> login(
 		@RequestBody @Valid LoginRequest request
-	);
-
-	@Operation(
-		summary = "내 인증 정보 조회",
-		description = """
-			JWT Access Token의 클레임 정보를 반환합니다.
-
-			**용도**:
-			- 토큰 유효성 확인
-			- Auth0 클레임 정보 확인 (sub, email, permissions 등)
-
-			**주의**: 회원 정보 조회는 `GET /api/v2/members/me`를 사용하세요.
-			"""
-	)
-	@ApiResponse(
-		responseCode = "200",
-		description = "조회 성공",
-		content = @Content(
-			examples = @ExampleObject(
-				value = """
-					{
-					  "sub": "auth0|abc123",
-					  "email": "user@example.com",
-					  "email_verified": true,
-					  "iss": "https://your-tenant.auth0.com/",
-					  "aud": "your-api-identifier",
-					  "iat": 1706698800,
-					  "exp": 1706785200
-					}
-					"""
-			)
-		)
-	)
-	@ApiResponse(
-		responseCode = "401",
-		description = "유효하지 않은 토큰",
-		content = @Content
-	)
-	ResponseEntity<?> getMyInfo(
-		@Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt
-	);
-
-	@Operation(
-		summary = "토큰 갱신",
-		description = """
-			Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
-
-			**주의**: Auth0 SPA SDK를 사용하는 경우, SDK의 `getAccessTokenSilently()`를 사용하세요.
-			이 API는 서버 사이드 토큰 갱신이 필요한 경우에만 사용합니다.
-			"""
-	)
-	@ApiResponse(
-		responseCode = "200",
-		description = "갱신 성공",
-		content = @Content(
-			examples = @ExampleObject(
-				value = """
-					{
-					  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-					  "token_type": "Bearer",
-					  "expires_in": 86400
-					}
-					"""
-			)
-		)
-	)
-	@ApiResponse(
-		responseCode = "400",
-		description = "유효하지 않은 Refresh Token",
-		content = @Content
-	)
-	ResponseEntity<?> refreshToken(
-		@Parameter(description = "Refresh Token") @RequestParam String token
 	);
 }
