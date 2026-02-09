@@ -45,7 +45,7 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
 
     // Retry
-    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 }
 

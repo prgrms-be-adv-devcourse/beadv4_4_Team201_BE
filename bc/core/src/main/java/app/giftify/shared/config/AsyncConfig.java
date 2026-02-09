@@ -11,14 +11,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
-@Slf4j
-@Configuration
-@EnableAsync // NOTE 문제가 있음. api-server 하나로 돌리면 다른 모듈에 동일 설정이 생기는 순간 서로 충돌 남
 /**
  * @EnableAsync와 TaskExecutor 빈이 api-server에 딱 하나만 있으니까, 어떤 모듈에서 @Async를 쓰든 전부 그 AsyncConfig의 스레드풀을 공유합니다. 충돌 없습니다.
  * 같은 JVM이니까 bootstrap에서 등록한 TaskExecutor 빈을 자동으로 사용합니다.
  * 만약 모듈별로 다른 스레드풀이 필요하다면, 빈 이름을 다르게 해서 @Async("catalogExecutor") 식으로 지정하면 됩니다.
  */
+@Slf4j
+@Configuration
+@EnableAsync // NOTE 문제가 있음. api-server 하나로 돌리면 다른 모듈에 동일 설정이 생기는 순간 서로 충돌 남
 public class AsyncConfig implements AsyncConfigurer {
 
     @Override
