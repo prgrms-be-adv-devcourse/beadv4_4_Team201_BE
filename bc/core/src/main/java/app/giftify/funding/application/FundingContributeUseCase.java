@@ -22,7 +22,7 @@ public class FundingContributeUseCase {
     private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
     private final EventPublisher eventPublisher;
 
-    public List<Funding> contribute(Long participantId, List<FundingContributeRequest> requests) {
+    public List<Funding> contribute(List<FundingContributeRequest> requests, Long participantId) {
         List<Funding> result = new ArrayList<>();
 
         for (FundingContributeRequest request : requests) {

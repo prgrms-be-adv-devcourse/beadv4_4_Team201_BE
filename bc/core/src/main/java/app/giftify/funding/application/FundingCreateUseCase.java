@@ -44,7 +44,8 @@ public class FundingCreateUseCase {
         List<FundingCreateResult> results = new ArrayList<>();
 
         for (OrderItemSnapshot item : fundingItems) {
-            Funding funding = Funding.startFunding(item.targetId(), item.price().amount().intValueExact(), item.targetId());
+            Funding funding = Funding.startFunding(item.targetId(), item.receiverId(), , // fixme : 오더스냅샷에 productId 추가?
+                   , item.price().amount().intValueExact());
             results.add(new FundingCreateResult(funding, item));
 
             eventPublisher.publish(new FundingCreatedEvent(

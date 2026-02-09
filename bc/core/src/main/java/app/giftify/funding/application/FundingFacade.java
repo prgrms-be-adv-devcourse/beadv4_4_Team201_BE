@@ -1,13 +1,8 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
-import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
-import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
-import app.giftify.orderDemo.domain.OrderSnapshot;
-import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
@@ -16,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -36,20 +33,33 @@ public class FundingFacade {
         return getFundingSnapshotUseCase.getSnapshot(wishlistItemId);
     }
 
-    @Transactional
-    public void processFundingActions(OrderSnapshot orderSnapshot) {
-        orderSnapshot.orderItemSnapshots().forEach(item -> {
-            if (item.targetType() == TargetType.FUNDING_PENDING) {
-                fundingCreateUseCase.createFunding(orderSnapshot);
-            } else if (item.targetType() == TargetType.FUNDING) {
-                contributeFunding(item.targetId(), orderSnapshot.buyerId(), item.amount().amount().intValueExact());
-            }
-        });
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getFundingIdMapByWishlistItemIds(List<Long> wishlistItemIds) {
+        return getFundingSnapshotUseCase.getFundingIdMapByWishlistItemIds(wishlistItemIds);
     }
 
     @Transactional
-    public void contributeFunding(Long fundingId, List<FundingContributeRequest> requests) {
-        fundingContributeUseCase.contribute(fundingId, requests);
+    public void processFundingActions(OrderSnapshot orderSnapshot) {
+        // 펀딩 생성 처리 -> OrderSnapshot에 포함된 주문 아이템들 중 'FUNDING_PENDING' 타입이 하나라도 있는지 확인
+        if (orderSnapshot.orderItemSnapshots().stream().anyMatch(item -> item.targetType() == TargetType.FUNDING_PENDING)) {
+            fundingCreateUseCase.createFunding(orderSnapshot);
+        }
+
+        // 펀딩 기여 처리
+        List<FundingContributeRequest> contributeRequests = orderSnapshot.orderItemSnapshots().stream()
+                .filter(item -> item.targetType() == TargetType.FUNDING)
+                .map(item -> new FundingContributeRequest(item.targetId(), item.amount().amount().intValueExact()))
+                .collect(Collectors.toList());
+
+        // 'FUNDING' 타입의 아이템이 하나 이상 있어서 기여 요청 리스트가 비어있지 않다면 펀딩 기여 메서드 호출
+        if (!contributeRequests.isEmpty()) {
+            contributeFunding(contributeRequests, orderSnapshot.buyerId());
+        }
+    }
+
+    @Transactional
+    public List<Funding> contributeFunding(List<FundingContributeRequest> requests, Long participantId) {
+        return fundingContributeUseCase.contribute(requests, participantId);
     }
 
     @Transactional(readOnly = true)
@@ -88,23 +98,13 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingCompleteResponseDto refuseFunding(Long id, Long memberId) {
-        return fundingRefuseUseCase.refuseFunding(id, memberId);
+    public FundingCompleteResponseDto refuseFunding(Long id) {
+        return fundingRefuseUseCase.refuseFunding(id);
     }
 
     @Transactional
-    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
-        return fundingAcceptUseCase.acceptFunding(id, memberId);
-    }
-
-    @Transactional(readOnly = true)
-    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
-        return fundingGetUseCase.getMyFunding(id, memberId);
-    }
-
-    @Transactional(readOnly = true)
-    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
-        return fundingGetUseCase.getMyFundings(page, size, memberId);
+    public FundingCompleteResponseDto acceptFunding(Long id) {
+        return fundingAcceptUseCase.acceptFunding(id);
     }
 
 //    @Transactional
