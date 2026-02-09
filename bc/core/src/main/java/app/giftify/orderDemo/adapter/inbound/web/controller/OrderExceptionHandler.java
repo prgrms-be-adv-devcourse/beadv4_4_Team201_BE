@@ -19,7 +19,7 @@ public class OrderExceptionHandler {
     public ResponseEntity<RsData<Void>> handleBusinessException(BusinessException ex) {
         ErrorCode errorCode = ex.getErrorCode();
 
-        log.warn("[OrderExceptionHandler] errorCode={}, message={}", errorCode.getCode(), ex.getMessage(), ex);
+        log.warn("errorCode={}, message={}", errorCode.getCode(), ex.getMessage(), ex);
 
         RsData<Void> body = RsData.fail(errorCode.getCode(), errorCode.getMessage());
 
@@ -31,7 +31,7 @@ public class OrderExceptionHandler {
     public ResponseEntity<RsData<Void>> handleInfraException(InfraException ex) {
         ErrorCode errorCode = ex.getErrorCode();
 
-        log.error("[OrderExceptionHandler] errorCode={}, message={}", errorCode.getCode(), ex.getMessage(), ex);
+        log.error("errorCode={}, message={}", errorCode.getCode(), ex.getMessage(), ex);
 
         RsData<Void> body = RsData.fail(errorCode.getCode(), SERVER_ERROR_MESSAGE);
 

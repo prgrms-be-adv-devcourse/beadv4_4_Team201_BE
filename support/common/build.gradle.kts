@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":bc:shared"))
     // Minimal Spring
     implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.validation)
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

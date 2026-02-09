@@ -15,6 +15,8 @@ dependencies {
     implementation(project(":bc:shared"))
     implementation(project(":support:security"))
     implementation(project(":support:jpa"))
+    implementation(project(":support:common"))
+
     // Spring Boot Starters
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)

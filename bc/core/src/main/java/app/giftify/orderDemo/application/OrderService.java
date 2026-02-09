@@ -7,7 +7,7 @@ import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
+import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
@@ -22,6 +22,7 @@ import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
@@ -44,7 +45,7 @@ public class OrderService {
     private final WishlistClient wishlistClient;
 
     @Transactional
-    public OrderSnapshot createOrder(CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
+    public OrderSnapshot createOrder(@Valid CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
         Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = requestWishlistItemSnapshots(command.itemRequests());
 
         Map<Long, Long> fundingIdMap = mapFundingIdByWishlistItemId(fundingSnapshots);
@@ -93,7 +94,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void markOrderAsPaid(MarkOrderAsPaidCommand command) {
+    public void markOrderAsPaid(@Valid MarkOrderAsPaidCommand command) {
         Order order = orderRepository.getByOrderNumber(command.orderNumber());
 
         order.toPaid(command.paymentKey(), command.lastTransactionKey(), command.createdAt());
