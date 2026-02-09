@@ -1,8 +1,8 @@
 package app.giftify.product.adapter.outbound.jpa.repository;
 
-import app.giftify.product.adapter.inbound.web.requestDto.StockHistorySearchDto;
-import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistory;
-import app.giftify.product.adapter.outbound.jpa.entity.QProductStockHistory;
+import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistoryJpa;
+import app.giftify.product.adapter.outbound.jpa.entity.QProductStockHistoryJpa;
+import app.giftify.product.application.port.in.StockHistorySearchCommand;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,35 +21,35 @@ public class ProductStockHistoryRepositoryImpl implements ProductStockHistoryQue
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ProductStockHistory> searchStockHistories(Long sellerId, StockHistorySearchDto searchDto) {
-        QProductStockHistory history = QProductStockHistory.productStockHistory;
+    public Page<ProductStockHistoryJpa> searchStockHistories(Long sellerId, StockHistorySearchCommand searchCommand) {
+        QProductStockHistoryJpa history = QProductStockHistoryJpa.productStockHistoryJpa;
         BooleanBuilder where = new BooleanBuilder();
 
         // 판매자 ID 필수
         where.and(history.sellerId.eq(sellerId));
 
         // 상품 ID 필터 (선택)
-        if (searchDto.getProductId() != null) {
-            where.and(history.productId.eq(searchDto.getProductId()));
+        if (searchCommand.productId() != null) {
+            where.and(history.productId.eq(searchCommand.productId()));
         }
 
         // 변경 타입 필터 (선택)
-        if (searchDto.getChangeType() != null) {
-            where.and(history.changeType.eq(searchDto.getChangeType()));
+        if (searchCommand.changeType() != null) {
+            where.and(history.changeType.eq(searchCommand.changeType()));
         }
 
         // 기간 필터 (선택)
-        if (searchDto.getFromDate() != null) {
-            where.and(history.createdAt.goe(searchDto.getFromDate().atStartOfDay()));
+        if (searchCommand.fromDate() != null) {
+            where.and(history.createdAt.goe(searchCommand.fromDate().atStartOfDay()));
         }
-        if (searchDto.getToDate() != null) {
-            where.and(history.createdAt.loe(searchDto.getToDate().atTime(LocalTime.MAX)));
+        if (searchCommand.toDate() != null) {
+            where.and(history.createdAt.loe(searchCommand.toDate().atTime(LocalTime.MAX)));
         }
 
-        int page = searchDto.getPage();
-        int size = searchDto.getSize();
+        int page = searchCommand.page();
+        int size = searchCommand.size();
 
-        List<ProductStockHistory> content = queryFactory
+        List<ProductStockHistoryJpa> content = queryFactory
                 .selectFrom(history)
                 .where(where)
                 .orderBy(history.createdAt.desc())

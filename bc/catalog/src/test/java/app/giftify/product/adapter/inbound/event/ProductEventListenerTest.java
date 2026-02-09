@@ -1,6 +1,10 @@
 package app.giftify.product.adapter.inbound.event;
 
 import app.giftify.product.application.port.in.DecreaseProductStockUseCase;
+import app.giftify.product.application.port.in.StockHistoryCreateUseCase;
+import app.giftify.product.domain.StockChangeResult;
+import app.giftify.product.domain.StockChangeType;
+import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductErrorCode;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
@@ -22,6 +26,9 @@ class ProductEventListenerTest {
 
     @Mock
     private DecreaseProductStockUseCase decreaseProductStockUseCase;
+
+    @Mock
+    private StockHistoryCreateUseCase stockHistoryCreateUseCase;
 
     @InjectMocks
     private ProductEventListener productEventListener;
@@ -72,5 +79,21 @@ class ProductEventListenerTest {
         // when & then
         assertThatThrownBy(() -> productEventListener.handleFundingAccepted(event))
                 .isInstanceOf(ProductException.class);
+    }
+
+    @Test
+    @DisplayName("재고 변경 이벤트를 받으면 재고 이력을 생성한다")
+    void handleStockUpdated_Success() {
+        // given
+        StockChangeResult result = new StockChangeResult(
+                10L, 1L, 5, 4, -1, StockChangeType.ORDER_COMPLETED
+        );
+        ProductStockUpdatedEvent event = new ProductStockUpdatedEvent(result);
+
+        // when
+        productEventListener.handleStockUpdated(event);
+
+        // then
+        verify(stockHistoryCreateUseCase).createStockHistory(result);
     }
 }

@@ -18,4 +18,6 @@ public class ProductSearchDto {
 
     @Min(value = 1, message = "size must be >= 1")
     private int size = 20;
+
+    // todo dto->command
 }
