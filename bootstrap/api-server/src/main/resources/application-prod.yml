@@ -1,4 +1,5 @@
 spring:
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -12,6 +13,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: g7app
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: "0"
+    locations: classpath:db/migration
+    schemas: g7app
+    default-schema: g7app
+    create-schemas: true
 
   data:
     redis:
@@ -19,6 +32,13 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       timeout: 2000ms
+
+  batch:
+    jdbc:
+      initialize-schema: never   # Batch 메타데이터 테이블 직접 생성 필요
+    job:
+      enabled: false              # 기동 시 배치 잡 자동 실행 방지
+
 
 logging:
   level:
