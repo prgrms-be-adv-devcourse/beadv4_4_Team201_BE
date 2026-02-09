@@ -126,17 +126,17 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
         // todo 장바구니아이템 상태 변경
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public WishlistItemSnapshot getSnapshot(Long wishlistItemId) {
-        WishlistItem wishlistItem = wishlistSupport.getWishlistItemById(wishlistItemId);
-        Product product = productSupport.findById(wishlistItem.getProductId());
-        Wishlist wishlist = wishlistSupport.getWishlistById(wishlistItem.getWishlistId());
-
-        return new WishlistItemSnapshot(
-                wishlistItem.getId(), product.getId(), product.getName(), product.getPrice(), product.getSellerId(), wishlist.getMemberId()
-        );
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public WishlistItemSnapshot getSnapshot(Long wishlistItemId) {
+//        WishlistItem wishlistItem = wishlistSupport.getWishlistItemById(wishlistItemId);
+//        Product product = productSupport.findById(wishlistItem.getProductId());
+//        Wishlist wishlist = wishlistSupport.getWishlistById(wishlistItem.getWishlistId());
+//
+//        return new WishlistItemSnapshot(
+//                wishlistItem.getId(), product.getId(), product.getName(), product.getPrice(), product.getSellerId(), wishlist.getMemberId()
+//        );
+//    }
 
     /**
      * 위시리스트아이템 스냅샷 조회
@@ -145,7 +145,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
      */
     @Override
     @Transactional(readOnly = true)
-    public List<WishlistItemSnapshot> getSnapshotList(List<Long> wishlistItemIds) {
+    public Map<Long, WishlistItemSnapshot> getSnapshotList(List<Long> wishlistItemIds) {
 
         // 1. get wishlistItem (요청 순서 보장용 Map 변환)
         Map<Long, WishlistItem> wishlistItemMap = wishlistSupport.getWishlistItemListById(wishlistItemIds).stream()
@@ -164,22 +164,25 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
         Map<Long, Wishlist> wishlistMap = wishlistSupport.getWishlistAllById(wishlistIds).stream()
                 .collect(Collectors.toMap(Wishlist::getId, Function.identity()));
 
-        // 4. 요청 순서대로 스냅샷 생성 및 return
-        return wishlistItemIds.stream() //리스트 순회
-                .map(id -> {
-                    WishlistItem item = wishlistItemMap.get(id);
-                    Product product = productMap.get(item.getProductId());
-                    Wishlist wishlist = wishlistMap.get(item.getWishlistId());
-                    return new WishlistItemSnapshot(
-                            item.getId(),
-                            product.getId(),
-                            product.getName(),
-                            product.getPrice(),
-                            product.getSellerId(),
-                            wishlist.getMemberId()
-                    );
-                })
-                .toList();
+
+        // 4. wishlistItemId를 key로 스냅샷 Map 생성 및 return
+        return wishlistItemIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        id -> {
+                            WishlistItem item = wishlistItemMap.get(id);
+                            Product product = productMap.get(item.getProductId());
+                            Wishlist wishlist = wishlistMap.get(item.getWishlistId());
+                            return new WishlistItemSnapshot(
+                                    item.getId(),
+                                    product.getId(),
+                                    product.getName(),
+                                    product.getPrice(),
+                                    product.getSellerId(),
+                                    wishlist.getMemberId()
+                            );
+                        }
+                ));
     }
 
     // memberId로 Wishlist 조회 없으면 생성

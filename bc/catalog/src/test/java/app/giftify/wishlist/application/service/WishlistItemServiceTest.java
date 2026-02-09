@@ -26,6 +26,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -243,18 +244,18 @@ class WishlistItemServiceTest {
         given(wishlistSupport.getWishlistAllById(List.of(WISHLIST_ID))).willReturn(List.of(wishlist));
 
         // when
-        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
+        Map<Long, WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).originalWishlistItemId()).isEqualTo(1L);
-        assertThat(result.get(0).productId()).isEqualTo(100L);
-        assertThat(result.get(0).productName()).isEqualTo("테스트 상품1");
-        assertThat(result.get(0).productPrice()).isEqualTo(10000);
-        assertThat(result.get(0).sellerId()).isEqualTo(5L);
-        assertThat(result.get(0).wishlistOwnerId()).isEqualTo(MEMBER_ID);
-        assertThat(result.get(1).originalWishlistItemId()).isEqualTo(2L);
-        assertThat(result.get(1).productName()).isEqualTo("테스트 상품2");
+        assertThat(result.get(1L).originalWishlistItemId()).isEqualTo(1L);
+        assertThat(result.get(1L).productId()).isEqualTo(100L);
+        assertThat(result.get(1L).productName()).isEqualTo("테스트 상품1");
+        assertThat(result.get(1L).productPrice()).isEqualTo(10000);
+        assertThat(result.get(1L).sellerId()).isEqualTo(5L);
+        assertThat(result.get(1L).wishlistOwnerId()).isEqualTo(MEMBER_ID);
+        assertThat(result.get(2L).originalWishlistItemId()).isEqualTo(2L);
+        assertThat(result.get(2L).productName()).isEqualTo("테스트 상품2");
     }
 
     @Test
@@ -364,15 +365,15 @@ class WishlistItemServiceTest {
         given(wishlistSupport.getWishlistAllById(List.of(WISHLIST_ID))).willReturn(List.of(wishlist));
 
         // when
-        List<WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
+        Map<Long, WishlistItemSnapshot> result = wishlistItemService.getSnapshotList(wishlistItemIds);
 
-        // then - 결과 순서: [3, 1, 2] (요청 순서와 동일해야 함)
+        // then - key로 직접 접근하여 올바른 스냅샷이 매핑되었는지 검증
         assertThat(result).hasSize(3);
-        assertThat(result.get(0).originalWishlistItemId()).isEqualTo(3L);
-        assertThat(result.get(0).productName()).isEqualTo("상품3");
-        assertThat(result.get(1).originalWishlistItemId()).isEqualTo(1L);
-        assertThat(result.get(1).productName()).isEqualTo("상품1");
-        assertThat(result.get(2).originalWishlistItemId()).isEqualTo(2L);
-        assertThat(result.get(2).productName()).isEqualTo("상품2");
+        assertThat(result.get(3L).originalWishlistItemId()).isEqualTo(3L);
+        assertThat(result.get(3L).productName()).isEqualTo("상품3");
+        assertThat(result.get(1L).originalWishlistItemId()).isEqualTo(1L);
+        assertThat(result.get(1L).productName()).isEqualTo("상품1");
+        assertThat(result.get(2L).originalWishlistItemId()).isEqualTo(2L);
+        assertThat(result.get(2L).productName()).isEqualTo("상품2");
     }
 }
