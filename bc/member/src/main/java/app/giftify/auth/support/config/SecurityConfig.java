@@ -49,7 +49,7 @@ public class SecurityConfig {
 	public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.securityMatcher(
-				"/api/internal",
+				"/api/internal/**",
 				"/api/v2/auth/login",
 				"/api/v2/home",
 				"/api/auth/login",
