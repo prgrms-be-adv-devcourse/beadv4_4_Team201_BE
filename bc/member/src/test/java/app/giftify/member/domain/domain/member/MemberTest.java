@@ -1,14 +1,14 @@
 package app.giftify.member.domain.domain.member;
 
-import app.giftify.member.domain.exception.MemberStatusException;
-import app.giftify.member.domain.member.Member;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import app.giftify.member.domain.exception.MemberStatusException;
+import app.giftify.member.domain.member.Member;
 
 class MemberTest {
 
@@ -63,11 +63,10 @@ class MemberTest {
         Member member = Member.create("e", "n", LocalDate.now(), "a", "p", "name", "s");
 
         // when
-        member.updateInfo("newNick", "newPass", "newAddr", "newPhone", "newName");
+        member.updateInfo("newNick", "newAddr", "newPhone", "newName");
 
         // then
         assertThat(member.getNickname()).isEqualTo("newNick");
-        assertThat(member.getPassword()).isEqualTo("newPass");
         assertThat(member.getAddress()).isEqualTo("newAddr");
         assertThat(member.getPhoneNum()).isEqualTo("newPhone");
         assertThat(member.getName()).isEqualTo("newName");
