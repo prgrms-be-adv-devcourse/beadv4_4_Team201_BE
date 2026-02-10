@@ -11,6 +11,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -51,13 +52,16 @@ public class IdempotencyManager {
             throw e;
         } catch (Exception e) {
             log.error("인프라 예외 발생 - Key: {}, Error: {}", key, e.getMessage());
-            throw new InfraException(InfraErrorCode.UNKNOWN_INFRA_ERROR);
+            throw new InfraException(InfraErrorCode.UNKNOWN_INFRA_ERROR, "멱등성 검증 중 시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         }
     }
 
-    public String getStoredHash(String key) {
+    public Optional<String> getStoredHash(String key) {
         Object value = redisTemplate.opsForValue().get(key);
-        return value != null ? value.toString() : null;
+
+        String hash = value != null ? value.toString() : null;
+
+        return Optional.ofNullable(hash);
     }
 
     /**
