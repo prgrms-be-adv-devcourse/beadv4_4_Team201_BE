@@ -29,6 +29,7 @@ public class FundingFacade {
     private final FundingAcceptUseCase fundingAcceptUseCase;
     private final GetFundingSnapshotUseCase getFundingSnapshotUseCase;
 
+    // todo : 쓰이는 곳에서 아래 Map으로 바뀌면 제거 예정
     @Transactional(readOnly = true)
     public Optional<FundingSnapshot> getSnapshot(Long wishlistItemId) {
         return getFundingSnapshotUseCase.getSnapshot(wishlistItemId);
@@ -36,7 +37,7 @@ public class FundingFacade {
 
     @Transactional(readOnly = true)
     public Map<Long, Long> getFundingIdMapByWishlistItemIds(List<Long> wishlistItemIds) {
-        return getFundingSnapshotUseCase.getFundingIdMapByWishlistItemIds(wishlistItemIds);
+        return getFundingSnapshotUseCase.getFundingSnapshotsByWishlistItemIds(wishlistItemIds);
     }
 
     @Transactional
@@ -99,13 +100,23 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingCompleteResponseDto refuseFunding(Long id) {
-        return fundingRefuseUseCase.refuseFunding(id);
+    public FundingCompleteResponseDto refuseFunding(Long id, Long memberId) {
+        return fundingRefuseUseCase.refuseFunding(id, memberId);
     }
 
     @Transactional
-    public FundingCompleteResponseDto acceptFunding(Long id) {
-        return fundingAcceptUseCase.acceptFunding(id);
+    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
+        return fundingAcceptUseCase.acceptFunding(id, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
+        return fundingGetUseCase.getMyFunding(id, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
+        return fundingGetUseCase.getMyFundings(page, size, memberId);
     }
 
 //    @Transactional

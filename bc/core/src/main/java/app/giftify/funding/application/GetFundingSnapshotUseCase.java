@@ -22,7 +22,7 @@ public class GetFundingSnapshotUseCase {
                 .map(funding -> new FundingSnapshot(funding.getId(), funding.getWishlistItemId()));
     }
 
-    public Map<Long, Long> getFundingIdMapByWishlistItemIds(List<Long> wishlistItemIds) {
+    public Map<Long, Long> getFundingSnapshotsByWishlistItemIds(List<Long> wishlistItemIds) {
         return fundingRepository.findAllByWishlistItemIdIn(wishlistItemIds).stream()
                 .filter(funding -> funding.getStatus() == FundingStatus.IN_PROGRESS)
                 .collect(Collectors.toMap(
