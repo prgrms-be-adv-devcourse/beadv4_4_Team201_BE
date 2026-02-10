@@ -95,7 +95,6 @@ public class MemberV2Controller implements MemberV2Api {
 
         UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
                 member.getAuthSub(),  // authSub는 member에서 추출
-                request.password(),
                 request.nickname(),
                 request.address(),
                 request.phoneNum(),
