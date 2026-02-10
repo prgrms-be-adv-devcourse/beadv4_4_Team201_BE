@@ -51,7 +51,7 @@ class ProductServiceTest {
                 .stock(5)
                 .status(ProductStatus.ACTIVE)
                 .build();
-        given(productSupport.findById(productId)).willReturn(product);
+        given(productSupport.findByIdForUpdate(productId)).willReturn(product);
 
         // when
         productService.decreaseStockByFunding(productId);
@@ -76,7 +76,7 @@ class ProductServiceTest {
                 .stock(1)
                 .status(ProductStatus.ACTIVE)
                 .build();
-        given(productSupport.findById(productId)).willReturn(product);
+        given(productSupport.findByIdForUpdate(productId)).willReturn(product);
 
         // when
         productService.decreaseStockByFunding(productId);
@@ -101,7 +101,7 @@ class ProductServiceTest {
                 .stock(0)
                 .status(ProductStatus.ACTIVE)
                 .build();
-        given(productSupport.findById(productId)).willReturn(product);
+        given(productSupport.findByIdForUpdate(productId)).willReturn(product);
 
         // when & then
         assertThatThrownBy(() -> productService.decreaseStockByFunding(productId))
@@ -115,7 +115,7 @@ class ProductServiceTest {
     void decreaseStockByFunding_ProductNotFound() {
         // given
         Long productId = 999L;
-        given(productSupport.findById(productId))
+        given(productSupport.findByIdForUpdate(productId))
                 .willThrow(new ProductException(app.giftify.product.domain.exception.ProductErrorCode.PRODUCT_NOT_FOUND));
 
         // when & then
