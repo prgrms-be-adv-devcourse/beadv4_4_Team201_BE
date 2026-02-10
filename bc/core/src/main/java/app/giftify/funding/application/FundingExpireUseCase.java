@@ -27,13 +27,15 @@ public class FundingExpireUseCase {
 
         Integer currentAmount = funding.getCurrentAmount();
 
-        funding.expire();
+        boolean expired = funding.expire(LocalDateTime.now());
 
-        eventPublisher.publish(new FundingExpiredEvent(
-                funding.getId(),
-                funding.getWishlistItemId(),
-                currentAmount
-        ));
+        if (expired) {
+            eventPublisher.publish(new FundingExpiredEvent(
+                    funding.getId(),
+                    funding.getWishlistItemId(),
+                    currentAmount
+            ));
+        }
 
         return new FundingCompleteResponseDto(
                 funding.getId(),
@@ -44,8 +46,7 @@ public class FundingExpireUseCase {
     }
 
     // 전체 펀딩 만료 처리 (배치/스케줄러용)
-    public List<FundingCompleteResponseDto> expireExpiredFundings() {
-        LocalDateTime now = LocalDateTime.now();
+    public List<FundingCompleteResponseDto> expireExpiredFundings(LocalDateTime now) {
 
         //fixme: 데이터양이많아질경우
         List<Funding> expiredFundings = fundingRepository.findByDeadlineAfterAndStatusIn(
@@ -56,13 +57,15 @@ public class FundingExpireUseCase {
         for (Funding funding : expiredFundings) {
             Integer currentAmount = funding.getCurrentAmount();
 
-            funding.expire();
+            boolean expired = funding.expire(now);
 
-            eventPublisher.publish(new FundingExpiredEvent(
-                    funding.getId(),
-                    funding.getWishlistItemId(),
-                    currentAmount
-            ));
+            if (expired) {
+                eventPublisher.publish(new FundingExpiredEvent(
+                        funding.getId(),
+                        funding.getWishlistItemId(),
+                        currentAmount
+                ));
+            }
         }
 
         return expiredFundings.stream()

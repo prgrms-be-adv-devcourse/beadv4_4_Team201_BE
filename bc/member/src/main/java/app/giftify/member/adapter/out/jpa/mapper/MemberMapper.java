@@ -29,7 +29,6 @@ public class MemberMapper {
         return MemberJpaEntity.builder()
                 .id(domain.getId())
                 .email(domain.getEmail())
-                .password(domain.getPassword())
                 .nickname(domain.getNickname())
                 .birthday(domain.getBirthday())
                 .role(domain.getRole())
