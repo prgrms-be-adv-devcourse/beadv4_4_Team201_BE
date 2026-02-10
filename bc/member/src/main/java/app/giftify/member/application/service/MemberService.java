@@ -103,7 +103,7 @@ public class MemberService
 
 		member.validateActiveStatus();
 
-		member.updateInfo(command.nickname(), command.password(), command.address(), command.phoneNum(),
+		member.updateInfo(command.nickname(), command.address(), command.phoneNum(),
 			command.name());
 
 		Member updatedMember = memberRepositoryPort.save(member);

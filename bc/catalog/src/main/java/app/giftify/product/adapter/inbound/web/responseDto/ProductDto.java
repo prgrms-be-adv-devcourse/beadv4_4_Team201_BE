@@ -1,10 +1,11 @@
 package app.giftify.product.adapter.inbound.web.responseDto;
 
+import java.time.LocalDateTime;
+
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.domain.Product;
-
-import java.time.LocalDateTime;
+import app.giftify.product.domain.ProductCategory;
 
 public record ProductDto(
         Long id,
@@ -12,6 +13,8 @@ public record ProductDto(
         String name,
         String description,
         int price,
+        ProductCategory category,
+        String imageKey,
         LocalDateTime createdAt
 ) {
     public static ProductDto from(ProductJpa productJpa, String sellerNickname) {
@@ -24,6 +27,8 @@ public record ProductDto(
                 productJpa.getName(),
                 productJpa.getDescription(),
                 productJpa.getPrice(),
+                productJpa.getCategory(),
+                productJpa.getImageKey(),
                 productJpa.getCreatedAt()
         );
     }
@@ -38,6 +43,8 @@ public record ProductDto(
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
+                product.getCategory(),
+                product.getImageKey(),
                 product.getCreatedAt()
         );
     }
@@ -52,6 +59,8 @@ public record ProductDto(
                 result.name(),
                 result.description(),
                 result.price(),
+                result.category(),
+                result.imageKey(),
                 result.createdAt()
         );
     }

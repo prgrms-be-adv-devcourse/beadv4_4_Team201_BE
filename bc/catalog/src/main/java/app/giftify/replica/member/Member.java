@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "MEMBER_REPLICA")
 @Getter
 @NoArgsConstructor
-public class Member {
+public class Member { // NOTE CatalogMember 등으로 이름 바꾸기
     @Id
     private Long id;
     private String nickname;
