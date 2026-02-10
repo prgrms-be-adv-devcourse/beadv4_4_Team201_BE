@@ -1,6 +1,7 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
+import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
 import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.domain.FundingStatus;
@@ -12,11 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import java.util.List;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,11 +35,13 @@ class FundingFacadeTest {
         Long fundingId = 100L;
         Long participantId = 2L;
         Integer amount = 5000;
+        FundingContributeRequest request = new FundingContributeRequest(fundingId, amount);
+        List<FundingContributeRequest> requests = List.of(request);
 
         // when
-        fundingFacade.contributeFunding(fundingId, participantId, amount);
+        fundingFacade.contributeFunding(requests, participantId);
 
         // then
-        verify(fundingContributeUseCase).contribute(fundingId, participantId, amount);
+        verify(fundingContributeUseCase).contribute(requests, participantId);
     }
 }
