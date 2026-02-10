@@ -19,6 +19,7 @@ dependencies {
 
     testImplementation(libs.archunit)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(testFixtures(project(":support:common")))
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
