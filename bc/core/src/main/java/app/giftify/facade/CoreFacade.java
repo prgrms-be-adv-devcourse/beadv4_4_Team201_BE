@@ -50,11 +50,13 @@ public class CoreFacade {
                 paymentResult.createdAt()
         );
         orderService.markOrderAsPaid(markOrderAsPaidCommand);
+
         fundingFacade.processFundingActions(orderSnapshot);
 
         return new PlaceOrderResult(orderSnapshot.orderId());
     }
 
+    // todo: 추후 Funding 도메인 책임으로 전환
     private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
         return new CreateFundingPaymentCommand(
                 orderSnapshot.buyerId(),
