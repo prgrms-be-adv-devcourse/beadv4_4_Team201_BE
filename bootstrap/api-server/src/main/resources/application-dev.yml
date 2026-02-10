@@ -6,6 +6,8 @@ spring:
     username: ${DB_USERNAME:giftify}
     password: ${DB_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET search_path TO public, g7app
 
   data:
     redis:
