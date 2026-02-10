@@ -83,7 +83,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingCreatedEvent event = new FundingCreatedEvent(
-                    100L, wishlistItemId
+                    100L, wishlistItemId, LocalDateTime.now().plusDays(7)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
