@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,8 +94,8 @@ public class FundingFacade {
     }
 
     @Transactional
-    public List<FundingCompleteResponseDto> expireExpiredFundings() {
-        return fundingExpireUseCase.expireExpiredFundings();
+    public List<FundingCompleteResponseDto> expireExpiredFundings(LocalDateTime now ) {
+        return fundingExpireUseCase.expireExpiredFundings(now);
     }
 
     @Transactional

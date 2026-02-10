@@ -6,7 +6,7 @@ import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.funding.application.FundingFacade;
 import app.giftify.orderDemo.application.OrderService;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
-import app.giftify.orderDemo.application.inbound.vo.MarkOrderAsPaidCommand;
+import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
 import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;

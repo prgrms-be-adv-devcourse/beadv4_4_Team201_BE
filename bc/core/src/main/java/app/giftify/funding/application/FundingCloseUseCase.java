@@ -1,6 +1,7 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
@@ -9,6 +10,8 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import static app.giftify.funding.domain.exception.FundingErrorCode.ALREADY_TERMINATED;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ public class FundingCloseUseCase {
     public FundingCompleteResponseDto closeFunding(Long id) {
         Funding funding = fundingRepository.findById(id)
             .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
+
+        if (funding.getStatus() == FundingStatus.CLOSED || funding.isExpired()) {
+            throw new FundingException(ALREADY_TERMINATED);
+        }
 
         funding.close();
 
