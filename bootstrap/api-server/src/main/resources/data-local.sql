@@ -258,19 +258,19 @@ INSERT INTO payment (id, idempotency_key, type, method, order_id, member_id,
 VALUES
     (1, 'idem-20260205-0001', 'FUNDING', 'CARD',
      'ORD-20260205-A1B2C3D4E5F6-20260205170000', 2,
-     359000.00, 359000.00, '[{"targetId":1,"amount":359000}]', 'PAID',
+     359000.00, 359000.00, '[{"targetId":1,"amount":{"amount":359000},"sellerId":3}]', 'PAID',
      'toss_pk_20260205_0001', 'toss_tx_20260205_0001', 'approve_001', '2026-02-05 17:05:00',
      '2026-02-05 17:00:00', '2026-02-05 17:05:00', 'SYSTEM', 'SYSTEM'),
 
     (2, 'idem-20260205-0002', 'FUNDING', 'CARD',
      'ORD-20260205-B2C3D4E5F6G7-20260205171000', 2,
-     23000.00, 23000.00, '[{"targetId":2,"amount":23000}]', 'PAID',
+     23000.00, 23000.00, '[{"targetId":2,"amount":{"amount":23000},"sellerId":3}]', 'PAID',
      'toss_pk_20260205_0002', 'toss_tx_20260205_0002', 'approve_002', '2026-02-05 17:15:00',
      '2026-02-05 17:10:00', '2026-02-05 17:15:00', 'SYSTEM', 'SYSTEM'),
 
     (3, 'idem-20260208-0004', 'FUNDING', 'KAKAO_PAY',
      'ORD-20260208-D4E5F6G7H8I9-20260208140000', 6,
-     448000.00, 448000.00, '[{"targetId":2,"amount":23000},{"targetId":3,"amount":415000}]', 'PAID',
+     448000.00, 448000.00, '[{"targetId":2,"amount":{"amount":23000},"sellerId":3},{"targetId":3,"amount":{"amount":415000},"sellerId":3}]', 'PAID',
      'toss_pk_20260208_0004', 'toss_tx_20260208_0004', 'approve_004', '2026-02-08 14:05:00',
      '2026-02-08 14:00:00', '2026-02-08 14:05:00', 'SYSTEM', 'SYSTEM');
 
