@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -17,7 +18,8 @@ public class FundingScheduler {
 
     @Scheduled(cron = "0 0 0 * * *")
     public void expireExpiredFundings() {
-        List<FundingCompleteResponseDto> expired = fundingFacade.expireExpiredFundings();
+        LocalDateTime now = LocalDateTime.now();
+        List<FundingCompleteResponseDto> expired = fundingFacade.expireExpiredFundings(now);
         log.info("만료 처리된 펀딩 건수: {}", expired.size());
     }
 
