@@ -9,7 +9,7 @@ import java.math.RoundingMode;
  * 정산 도메인에서 차감을 처리하려면 Money 객체가 음수를 지원
  * 필요 시 Money을 사용하는 도메인에서 양수 검증 수행
  */
-public record Money(BigDecimal amount) {
+public record Money(BigDecimal amount) implements Comparable<Money> {
 
 	public Money {
 		validateNotNull(amount);
@@ -34,19 +34,19 @@ public record Money(BigDecimal amount) {
 	// Money 비교용
 
 	public boolean isLessThan(Money other) {
-		return this.amount.compareTo(other.amount) < 0;
+		return compareTo(other) < 0;
 	}
 
 	public boolean isLessThanOrEqual(Money other) {
-		return this.amount.compareTo(other.amount) <= 0;
+		return compareTo(other) <= 0;
 	}
 
 	public boolean isGreaterThan(Money other) {
-		return this.amount.compareTo(other.amount) > 0;
+		return compareTo(other) > 0;
 	}
 
 	public boolean isGreaterThanOrEqual(Money other) {
-		return this.amount.compareTo(other.amount) >= 0;
+		return compareTo(other) >= 0;
 	}
 
 	public Money plus(Money other) {
@@ -103,5 +103,10 @@ public record Money(BigDecimal amount) {
 	@Override
 	public int hashCode() {
 		return amount.stripTrailingZeros().hashCode(); // scaling 제외하고 값만 비교하기 위해
+	}
+
+	@Override
+	public int compareTo(Money other) {
+		return this.amount.compareTo(other.amount);
 	}
 }

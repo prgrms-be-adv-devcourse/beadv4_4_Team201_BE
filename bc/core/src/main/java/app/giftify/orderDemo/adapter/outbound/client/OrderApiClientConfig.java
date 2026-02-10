@@ -8,7 +8,7 @@ import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @Configuration
-public class ClientConfig {
+public class OrderApiClientConfig {
 
     @Value("${internal-api.base-url}")
     private String baseUrl;
