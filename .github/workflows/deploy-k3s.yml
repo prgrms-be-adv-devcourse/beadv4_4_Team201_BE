@@ -1,0 +1,81 @@
+name: Deploy to K3s
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: '배포할 이미지 태그 (미입력 시 최신 main 커밋)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/api-server
+
+jobs:
+  deploy:
+    name: Deploy to K3s
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tag
+        run: |
+          IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            IMAGE_TAG="${{ inputs.image_tag }}"
+          else
+            IMAGE_TAG="${GITHUB_SHA::7}"
+          fi
+          echo "IMAGE=${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}:${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Verify image exists
+        run: |
+          if ! docker pull ${{ env.IMAGE }}; then
+            echo "::error::Image not found: ${{ env.IMAGE }}"
+            exit 1
+          fi
+
+      - name: Update Kustomize image tag
+        run: |
+          cd infra/k3s/overlays/prod
+          kustomize edit set image \
+            ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server=${{ env.IMAGE }}
+
+      - name: Deploy to K3s
+        run: kubectl apply -k infra/k3s/overlays/prod
+
+      - name: Wait for rollout
+        id: rollout
+        run: |
+          if ! kubectl rollout status deployment/backend -n giftify --timeout=120s; then
+            kubectl get pods -n giftify -l app=backend
+            exit 1
+          fi
+
+      - name: Rollback on failure
+        if: failure() && steps.rollout.outcome == 'failure'
+        run: |
+          kubectl rollout undo deployment/backend -n giftify
+          kubectl rollout status deployment/backend -n giftify --timeout=60s
+
+      - name: Show status
+        if: always()
+        run: |
+          kubectl get pods -n giftify
+          kubectl get deployments -n giftify

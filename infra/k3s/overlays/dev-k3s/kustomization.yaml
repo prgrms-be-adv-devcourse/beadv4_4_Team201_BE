@@ -22,17 +22,29 @@ patches:
             containers:
               - name: backend
                 imagePullPolicy: Never
+                env:
+                  - name: SPRING_SQL_INIT_MODE
+                    value: "never"
+                  - name: SPRING_BATCH_JDBC_INITIALIZE_SCHEMA 
+                    value: "always" # 이거 prod 에서는 직접 테이블 만들게 바꿔야 함
                 resources:
                   requests:
                     memory: "256Mi"
-                    cpu: "100m"
+                    cpu: "200m"
                   limits:
-                    memory: "512Mi"
-                    cpu: "250m"
+                    memory: "768Mi"
+                    cpu: "500m"
+                startupProbe:
+                  httpGet:
+                    path: /actuator/health
+                    port: 8080
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  failureThreshold: 60
                 readinessProbe:
-                  initialDelaySeconds: 120
+                  initialDelaySeconds: 5
                 livenessProbe:
-                  initialDelaySeconds: 180
+                  initialDelaySeconds: 10
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
