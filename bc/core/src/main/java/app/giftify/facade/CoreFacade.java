@@ -11,13 +11,14 @@ import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
 import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -33,11 +34,11 @@ public class CoreFacade {
      */
     @Transactional
     public PlaceOrderResult placeOrder(PlaceOrderCommand command) {
-        Map<Long, Long> fundingIdMap = getFundingIdMapByWishlistItemIds(command);
+        List<FundingSnapshot> fundingSnapshots = getFundingSnapshots(command);
 
         CreateOrderCommand createOrderCommand = CreateOrderCommand.of(command);
 
-        OrderSnapshot orderSnapshot = orderService.createOrder(createOrderCommand, fundingIdMap);
+        OrderSnapshot orderSnapshot = orderService.createOrder(createOrderCommand, fundingSnapshots);
 
         CreateFundingPaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
         PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);
@@ -49,7 +50,6 @@ public class CoreFacade {
                 paymentResult.createdAt()
         );
         orderService.markOrderAsPaid(markOrderAsPaidCommand);
-
         fundingFacade.processFundingActions(orderSnapshot);
 
         return new PlaceOrderResult(orderSnapshot.orderId());
@@ -65,12 +65,12 @@ public class CoreFacade {
         );
     }
 
-    private Map<Long, Long> getFundingIdMapByWishlistItemIds(PlaceOrderCommand command) {
-        List<Long> wishlistItemIds = command.items().stream()
-                .map(itemRequest -> itemRequest.wishlistItemId())
+    // todo: FundingFacade에서 List로 반환하도록 수정 시 제거 예정
+    private @NonNull List<FundingSnapshot> getFundingSnapshots(PlaceOrderCommand command) {
+        return command.items().stream()
+                .map(itemRequest -> fundingFacade.getSnapshot(itemRequest.wishlistItemId())) // Optional<FundingSnapshot> 반환
+                .flatMap(Optional::stream) // 값이 있는 것만 꺼내고 빈 것은 제거
                 .toList();
-
-        return fundingFacade.getFundingIdMapByWishlistItemIds(wishlistItemIds);
     }
 
 }
