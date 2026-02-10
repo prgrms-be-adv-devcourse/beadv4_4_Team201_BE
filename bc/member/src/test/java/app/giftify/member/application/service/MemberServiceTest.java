@@ -238,7 +238,6 @@ class MemberServiceTest {
         String authSub = "auth0|12345";
         UpdateMemberUseCase.UpdateCommand command = new UpdateMemberUseCase.UpdateCommand(
                 authSub,
-                "1234",
                 "newNick",
                 "New Address",
                 "01011112222",

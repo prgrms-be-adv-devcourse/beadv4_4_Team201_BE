@@ -7,7 +7,6 @@ public interface UpdateMemberUseCase {
 
     record UpdateCommand(
             String authSub,
-            String password,
             String nickname,
             String address,
             String phoneNum,

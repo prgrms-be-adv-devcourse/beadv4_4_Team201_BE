@@ -2,17 +2,25 @@
 # PostgreSQL 사용, 환경변수로 접속 정보 주입
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/giftify_db}
+    username: ${DB_USERNAME:giftify}
+    password: ${DB_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET search_path TO public, g7app
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD}
       timeout: 2000ms
+
+  batch:
+    jdbc:
+      initialize-schema: always   # Batch 메타데이터 테이블 자동 생성
+    job:
+      enabled: false              # 기동 시 배치 잡 자동 실행 방지
 
   h2:
     console:
@@ -20,16 +28,25 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
+        default_schema: g7app
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: "0"
+    locations: classpath:db/migration
+    schemas: g7app
+    default-schema: g7app
+    create-schemas: true
+
   sql:
     init:
-      mode: always
-      data-locations: optional:classpath:data-dev.sql
+      mode: never
 
 management:
   metrics:
