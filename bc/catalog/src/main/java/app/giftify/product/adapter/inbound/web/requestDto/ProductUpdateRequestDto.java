@@ -7,8 +7,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
 import static app.giftify.product.domain.ProductStatus.INACTIVE;
-import static app.giftify.product.domain.exception.ProductErrorCode.INVALID_PRODUCT_STATUS;
-import static app.giftify.product.domain.exception.ProductErrorCode.PRODUCT_UPDATE_EMPTY_REQUEST;
+import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 public record ProductUpdateRequestDto(
         String name,
@@ -17,6 +16,7 @@ public record ProductUpdateRequestDto(
         Integer price,
         @PositiveOrZero(message = "재고는 0이상이어야 합니다.")
         Integer stock,
+        Integer expectedStock, // 판매자가 조회 시점에 본 재고 (프론트가 작성하여 전송)
         ProductStatus status
 ) {
     public ProductUpdateRequestDto {
@@ -29,6 +29,9 @@ public record ProductUpdateRequestDto(
         }
         if (status != null && status != ACTIVE && status != INACTIVE) {
             throw new ProductException(INVALID_PRODUCT_STATUS);
+        }
+        if (stock != null && expectedStock == null) {
+            throw new ProductException(EXPECTED_STOCK_REQUIRED);
         }
     }
 

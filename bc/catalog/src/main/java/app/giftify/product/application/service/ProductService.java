@@ -145,20 +145,29 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         productRepositoryPort.save(product);
     }
 
-    // 상품 수정 (판매자)
+    /**
+     * 상품 수정 (판매자)
+     * 재고 수정 시 비관적 락 + CAS 패턴 적용
+     */
     @Override
     @Transactional
     public ProductUpdateResult updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
-        Product product = productSupport.findById(productId);
+        Product product;
+
+        if (requestDto.stock() != null) {
+            product = productSupport.findByIdForUpdate(productId); // 재고 수정 시 배타 잠금
+
+            if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
+                throw new ProductException(PRODUCT_STOCK_CHANGED);
+            }
+            product.updateStock(requestDto.stock());
+        } else {
+            product = productSupport.findById(productId);
+        }
 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
         Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription);
         Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice);
-
-        Integer newStock = requestDto.stock();
-        if (newStock != null && product.getStock() != newStock) {
-            product.updateStock(newStock);
-        }
 
         var status = requestDto.status();
         if (status != null) {
@@ -174,7 +183,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             }
         }
         productRepositoryPort.save(product);
-        product.pullEvents().forEach(eventPublisher::publish); // 기록된 도메인 이벤트를 발행
+        product.pullEvents().forEach(eventPublisher::publish);
 
         return ProductUpdateResult.from(product);
     }

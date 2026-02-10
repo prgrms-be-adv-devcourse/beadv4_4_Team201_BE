@@ -1,11 +1,14 @@
 package app.giftify.product.concurrency;
 
 import app.giftify.product.ProductTestApplication;
+import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
 import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
 import app.giftify.product.application.service.ProductService;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductException;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,9 @@ class ProductStockConcurrencyTest {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     // 동시 차감 시 Lost Update가 발생하지 않는다
     @Test
@@ -112,7 +118,7 @@ class ProductStockConcurrencyTest {
                 .isEqualTo(0);
     }
 
-    // 재고 이상의 요청이 들어오면 정확하게 예외 전달한
+    // 재고 이상의 요청이 들어오면 정확하게 예외 전달한다
     @Test
     @DisplayName("재고 초과 차감 방지 검증 - 동시에 100명이 재고 10개인 상품을 차감하면 10명만 성공하고 90명은 재고 부족 에러를 받는다")
     void concurrentStockDecrease_shouldRejectWhenOutOfStock() throws InterruptedException {
@@ -187,5 +193,87 @@ class ProductStockConcurrencyTest {
         assertThat(result.getStock())
                 .as("재고가 정확히 0이어야 한다")
                 .isEqualTo(0);
+    }
+
+    // 판매자 재고 수정 중 펀딩 차감이 발생하면 CAS 검증으로 stale 덮어쓰기를 방지한다
+    @Test
+    @DisplayName("CAS 검증 - 판매자가 재고 수정하는 사이에 펀딩 차감이 발생하면 재고 변경 에러를 받는다")
+    void sellerStockUpdate_shouldFailWhenStockChangedByFunding() throws InterruptedException {
+        // given
+        int initialStock = 100;
+
+        Member seller = memberRepository.saveAndFlush(new Member(9991L, "테스트판매자"));
+
+        ProductJpa product = productRepository.saveAndFlush(
+                ProductJpa.builder()
+                        .sellerId(seller.getId())
+                        .name("CAS 테스트 상품")
+                        .description("CAS 테스트용")
+                        .price(10000)
+                        .stock(initialStock)
+                        .status(ProductStatus.ACTIVE)
+                        .build()
+        );
+
+        Long productId = product.getId();
+
+        // 판매자가 조회 시점에 본 재고 = 100
+        int sellerExpectedStock = initialStock;
+
+        // when - 펀딩 차감 먼저 실행 (100 → 99)
+        productService.decreaseStockByFunding(productId);
+
+        // then - 판매자가 재고를 50으로 수정 시도 (expectedStock=100이지만 실제 DB=99)
+        ProductUpdateRequestDto updateRequest = new ProductUpdateRequestDto(
+                null, null, null, 50, sellerExpectedStock, null
+        );
+
+        assertThat(org.assertj.core.api.Assertions.catchThrowable(
+                () -> productService.updateProduct(productId, seller.getId(), updateRequest)
+        ))
+                .isInstanceOf(ProductException.class)
+                .hasMessageContaining("재고가 변경되었습니다");
+
+        // 재고는 펀딩 차감된 99 그대로여야 한다
+        ProductJpa result = productRepository.findById(productId).orElseThrow();
+        assertThat(result.getStock())
+                .as("CAS 실패로 판매자 수정이 반영되지 않아 펀딩 차감 후 재고(99)가 유지되어야 한다")
+                .isEqualTo(initialStock - 1);
+    }
+
+    // 판매자가 최신 재고를 확인하고 수정하면 정상 반영된다
+    @Test
+    @DisplayName("CAS 성공 - 판매자가 최신 재고를 확인하고 수정하면 정상 반영된다")
+    void sellerStockUpdate_shouldSucceedWithCorrectExpectedStock() {
+        // given
+        int initialStock = 100;
+
+        Member seller = memberRepository.saveAndFlush(new Member(9992L, "테스트판매자2"));
+
+        ProductJpa product = productRepository.saveAndFlush(
+                ProductJpa.builder()
+                        .sellerId(seller.getId())
+                        .name("CAS 성공 테스트 상품")
+                        .description("CAS 성공 테스트용")
+                        .price(10000)
+                        .stock(initialStock)
+                        .status(ProductStatus.ACTIVE)
+                        .build()
+        );
+
+        Long productId = product.getId();
+
+        // when - 판매자가 현재 재고(100)를 정확히 알고 50으로 수정
+        ProductUpdateRequestDto updateRequest = new ProductUpdateRequestDto(
+                null, null, null, 50, initialStock, null
+        );
+
+        productService.updateProduct(productId, seller.getId(), updateRequest);
+
+        // then
+        ProductJpa result = productRepository.findById(productId).orElseThrow();
+        assertThat(result.getStock())
+                .as("expectedStock과 실제 재고가 일치하므로 수정이 반영되어야 한다")
+                .isEqualTo(50);
     }
 }
