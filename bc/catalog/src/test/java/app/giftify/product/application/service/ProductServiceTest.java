@@ -1,10 +1,10 @@
 package app.giftify.product.application.service;
 
-import app.giftify.product.adapter.outbound.jpa.repository.ProductStockHistoryRepository;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
@@ -29,9 +29,6 @@ class ProductServiceTest {
     private ProductSupport productSupport;
 
     @Mock
-    private ProductStockHistoryRepository productStockHistoryRepository;
-
-    @Mock
     private ProductRepositoryPort productRepositoryPort;
 
     @Mock
@@ -41,7 +38,7 @@ class ProductServiceTest {
     private ProductService productService;
 
     @Test
-    @DisplayName("펀딩에 의한 재고 감소 성공 - 재고 5에서 4로 감소하고 재고 이력이 저장된다")
+    @DisplayName("펀딩에 의한 재고 감소 성공 - 재고 5에서 4로 감소하고 재고 변경 이벤트가 발행된다")
     void decreaseStockByFunding_Success() {
         // given
         Long productId = 1L;
@@ -62,6 +59,7 @@ class ProductServiceTest {
         // then
         assertThat(product.getStock()).isEqualTo(4);
         verify(productRepositoryPort).save(product);
+        verify(eventPublisher).publish(any(ProductStockUpdatedEvent.class));
     }
 
     @Test
