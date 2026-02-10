@@ -29,6 +29,8 @@ VALUES
     (1, 1, 2, 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (2, 1, 6, 5000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (3, 2, 2, 200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-    (4, 2, 6, 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+    (4, 2, 6, 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (5, 3, 5, 70000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (6, 3, 6, 50000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 SELECT setval('funding_participant_member_id_seq', (SELECT MAX(id) FROM funding_participant_member));

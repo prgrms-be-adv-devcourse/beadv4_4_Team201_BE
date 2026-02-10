@@ -1,5 +1,13 @@
 package app.giftify.product.domain;
 
+import static app.giftify.product.domain.ProductStatus.*;
+import static app.giftify.product.domain.exception.ProductErrorCode.*;
+
+import java.time.LocalDateTime;
+
+import org.springframework.util.StringUtils;
+
+import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.product.ProductPriceUpdatedEvent;
@@ -7,12 +15,6 @@ import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.util.StringUtils;
-
-import java.time.LocalDateTime;
-
-import static app.giftify.product.domain.ProductStatus.*;
-import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Getter
 public class Product extends BaseDomainModel {
