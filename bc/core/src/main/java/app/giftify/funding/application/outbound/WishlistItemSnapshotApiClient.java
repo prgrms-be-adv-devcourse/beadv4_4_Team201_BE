@@ -7,6 +7,7 @@ import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 
 import java.util.List;
+import java.util.Map;
 
 @HttpExchange
 public interface WishlistItemSnapshotApiClient {
@@ -17,5 +18,5 @@ public interface WishlistItemSnapshotApiClient {
     );
 
     @GetExchange("/api/internal/wishlist/items/snapshots")
-    List<WishlistItemSnapshot> getSnapshotList(@RequestBody List<Long> wishlistItemIds);
+    Map<Long, WishlistItemSnapshot> getSnapshotList(@RequestBody List<Long> wishlistItemIds);
 }
