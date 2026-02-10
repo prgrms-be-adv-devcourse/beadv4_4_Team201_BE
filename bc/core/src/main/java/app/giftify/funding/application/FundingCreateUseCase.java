@@ -2,13 +2,16 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.orderDemo.domain.OrderItemSnapshot;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
+import app.giftify.shared.domain.event.funding.FundingCreatedEventV2;
 import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.FundingDetail;
+import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -24,6 +28,8 @@ import java.util.List;
 public class FundingCreateUseCase {
 
     private final EventPublisher eventPublisher;
+    private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
+
 
     public List<FundingCreateResult> createFunding(OrderSnapshot orderSnapshot) {
 
@@ -40,22 +46,30 @@ public class FundingCreateUseCase {
             throw new FundingException(FundingErrorCode.DUPLICATED_WISHLIST_ITEM);
         }
 
+        //  필요한 모든 wishlistItemId를 한번에 조회해서 Map으로 받아옴
+        Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = wishlistItemSnapshotPort.getSnapshotList(wishlistItemIds);
+
         // 펀딩 생성 (단일 트랜잭션 -> 하나라도 실패 시, 전체 실패)
         List<FundingCreateResult> results = new ArrayList<>();
+        List<FundingDetail> fundingDetails = new ArrayList<>();
 
         for (OrderItemSnapshot item : fundingItems) {
-            Funding funding = Funding.startFunding(item.targetId(), item.receiverId(), , // fixme : 오더스냅샷에 productId 추가?
-                   , item.price().amount().intValueExact());
+            WishlistItemSnapshot wishlistItemSnapshot = wishlistItemSnapshotMap.get(item.targetId());
+            Funding funding = Funding.startFunding(
+                    item.targetId(), // wishlistItemId
+                    wishlistItemSnapshot.productId(), // productId
+                    item.receiverId(), // receiverId
+                    item.price().amount().intValueExact() // targetAmount
+            );
             results.add(new FundingCreateResult(funding, item));
 
-            eventPublisher.publish(new FundingCreatedEvent(
-                    funding.getId(),
-                    funding.getWishlistItemId(),
-                    item.orderItemId()
-            ));
+            fundingDetails.add(new FundingDetail(funding.getId(), item.orderItemId(), funding.getWishlistItemId()));
 
             log.info("[Funding] 펀딩 생성 완료. fundingId={}", funding.getId());
         }
+
+        eventPublisher.publish(new FundingCreatedEventV2(fundingDetails));
+
         return results;
     }
 }
