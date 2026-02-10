@@ -5,6 +5,7 @@ dependencies {
     // Minimal Spring
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.data.redis)
 
     testImplementation(libs.archunit)
     testImplementation(libs.spring.boot.starter.test)
