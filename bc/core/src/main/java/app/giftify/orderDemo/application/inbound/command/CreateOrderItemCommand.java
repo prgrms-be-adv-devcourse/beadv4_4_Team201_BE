@@ -7,14 +7,24 @@ import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.support.common.annotation.Amount;
+import app.giftify.support.common.annotation.Price;
+import jakarta.validation.constraints.NotNull;
 
 public record CreateOrderItemCommand (
+        @NotNull
         Long targetId,
+        @NotNull
         TargetType targetType,
+        @NotNull
         Long receiverId,
+        @NotNull
         Long sellerId,
+        @NotNull @Price
         Money price,
+        @NotNull @Amount
         Money amount,
+        @NotNull
         OrderItemType orderItemType
 ){
     public static CreateOrderItemCommand of(PlaceOrderItemRequest request, WishlistItemSnapshot wishlistItemSnapshot, Long fundingId) {

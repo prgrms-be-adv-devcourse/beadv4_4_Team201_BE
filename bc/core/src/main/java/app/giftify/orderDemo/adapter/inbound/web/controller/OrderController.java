@@ -11,6 +11,7 @@ import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
@@ -32,7 +33,7 @@ public class OrderController implements OrderControllerSpec {
     @Override
     public ResponseEntity<RsData<PlaceOrderResult>> placeOrder(
             @CurrentMemberId Long memberId,
-            @RequestBody PlaceOrderRequest request
+            @Valid @RequestBody PlaceOrderRequest request
     ) {
         PlaceOrderCommand command = PlaceOrderCommand.of(memberId, request);
 
@@ -59,7 +60,7 @@ public class OrderController implements OrderControllerSpec {
     @Override
     public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(
             @CurrentMemberId Long memberId,
-            @PathVariable(name = "orderId") Long orderId) {
+            @PathVariable Long orderId) {
         OrderDetail orderDetail = orderService.getOrderDetail(memberId, orderId);
 
         GetOrderDetailResponse data = new GetOrderDetailResponse(orderDetail);

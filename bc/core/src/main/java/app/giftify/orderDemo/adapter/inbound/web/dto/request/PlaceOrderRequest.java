@@ -1,6 +1,8 @@
 package app.giftify.orderDemo.adapter.inbound.web.dto.request;
 
 import app.giftify.shared.domain.type.PaymentMethod;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -9,7 +11,10 @@ import java.util.List;
  * @param items
  */
 public record PlaceOrderRequest(
+        @NotNull
+        @Size(min = 1)
         List<PlaceOrderItemRequest> items,
+        @NotNull
         PaymentMethod method
 ) {
 }

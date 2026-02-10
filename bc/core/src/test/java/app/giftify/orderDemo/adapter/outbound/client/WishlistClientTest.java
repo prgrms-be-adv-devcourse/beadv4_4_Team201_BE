@@ -15,15 +15,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RestClientTest
 @ContextConfiguration(classes = {
-        WishlistClientTest.TestBootConfig.class, // ⭐ 이게 핵심
-        ClientConfig.class
+        WishlistClientTest.TestBootConfig.class,
+        OrderApiClientConfig.class
 })
 @TestPropertySource(properties = {
         "internal-api.base-url=http://localhost:8080"
@@ -32,7 +35,7 @@ class WishlistClientTest {
 
     @TestConfiguration
     static class TestBootConfig {
-        // 비워둬도 됨 — SpringBootConfiguration 대체용
+        // SpringBootConfiguration 대체용
     }
 
     @Autowired
@@ -53,6 +56,7 @@ class WishlistClientTest {
         // given
         Long wishlistItemId = 1L;
 
+
         WishlistItemSnapshot snapshot = new WishlistItemSnapshot(
                 wishlistItemId,
                 100L,
@@ -62,17 +66,26 @@ class WishlistClientTest {
                 10L
         );
 
-        String responseBody = objectMapper.writeValueAsString(snapshot);
+        Map<Long, WishlistItemSnapshot> snapshotMap = Map.of(
+                wishlistItemId,
+                snapshot
+        );
 
-        server.expect(requestTo(baseUrl + "/api/internal/wishlist/items/" + wishlistItemId + "/snapshot"))
+        String responseBody = objectMapper.writeValueAsString(snapshotMap);
+
+        server.expect(requestTo(baseUrl + "/api/internal/wishlist/items/snapshots"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
 
         // when
-        WishlistItemSnapshot result =
-                wishlistClient.getWishlistItemSnapshot(wishlistItemId);
+        Map<Long, WishlistItemSnapshot> snapshotList = wishlistClient.getSnapshotList(List.of(wishlistItemId));
 
         // then
+        assertNotNull(snapshotList);
+        assertTrue(snapshotList.containsKey(wishlistItemId));
+
+        WishlistItemSnapshot result = snapshotList.get(wishlistItemId);
+
         assertEquals(result.originalWishlistItemId(), snapshot.originalWishlistItemId());
         assertEquals(result.productId(), snapshot.productId());
         assertEquals(result.productName(), snapshot.productName());
