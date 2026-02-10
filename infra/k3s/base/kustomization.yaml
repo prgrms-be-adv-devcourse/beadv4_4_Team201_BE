@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: giftify
+
+resources:
+  - namespace.yaml
+  # Backend
+  - apps/backend/deployment.yaml
+  - apps/backend/service.yaml
+  # PostgreSQL
+  - apps/postgres/statefulset.yaml
+  - apps/postgres/service.yaml
+  # Redis
+  - apps/redis/deployment.yaml
+  - apps/redis/service.yaml
+  # Traefik
+  - traefik/middleware/rate-limit.yaml
+  - traefik/ingress-routes/api.yaml
+  # Cloudflare
+  - cloudflare/tunnel-deployment.yaml

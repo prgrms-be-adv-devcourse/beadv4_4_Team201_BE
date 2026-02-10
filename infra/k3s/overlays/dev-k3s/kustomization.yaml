@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+    newName: giftify-backend
+    newTag: local
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: backend
+      spec:
+        template:
+          spec:
+            imagePullSecrets: [ ]
+            containers:
+              - name: backend
+                imagePullPolicy: Never
+                resources:
+                  requests:
+                    memory: "256Mi"
+                    cpu: "100m"
+                  limits:
+                    memory: "512Mi"
+                    cpu: "250m"
+                readinessProbe:
+                  initialDelaySeconds: 120
+                livenessProbe:
+                  initialDelaySeconds: 180
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cloudflared
+      spec:
+        replicas: 0
