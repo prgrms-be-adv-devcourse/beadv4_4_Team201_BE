@@ -12,9 +12,11 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +28,7 @@ import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
 import static app.giftify.product.domain.ProductStatus.INACTIVE;
-import static app.giftify.product.domain.exception.ProductErrorCode.PRODUCT_NOT_ACTIVE;
-import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_FOUND;
+import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -178,16 +179,23 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         return ProductUpdateResult.from(product);
     }
 
-    // 펀딩에 의한 재고 감소
+    /**
+     * 펀딩에 의한 재고 감소
+     * 비관적 락 - 배타 잠금 적용
+     */
     @Transactional
     @Override
     public void decreaseStockByFunding(Long productId) {
-        Product product = productSupport.findById(productId);
+        try {
+            Product product = productSupport.findByIdForUpdate(productId); // 락 전용 메서드
 
-        product.decreaseStockByFunding();
-        productRepositoryPort.save(product);
+            product.decreaseStockByFunding();
+            productRepositoryPort.save(product);
 
-        product.pullEvents().forEach(eventPublisher::publish);
+            product.pullEvents().forEach(eventPublisher::publish);
+        } catch (PessimisticLockingFailureException e) {
+            throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+        }
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)

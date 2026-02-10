@@ -3,6 +3,7 @@ package app.giftify.shared.domain.event.product;
 import app.giftify.shared.domain.event.BaseDomainEvent;
 
 /**
+ * todo 위시리스트아이템아이디
  * 상품 가격 변동 시 이벤트 발행
  * - 진행 중인 펀딩의 목표 금액 또한 변동이 적용되어야 합니다. (달성된 펀딩은 영향 X)
  */
