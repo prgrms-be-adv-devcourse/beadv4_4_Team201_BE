@@ -23,6 +23,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funding extends BaseJpaEntity {
 
+    @Version
+    private Long version;
+
     @Column(nullable = false)
     private Long wishlistItemId;
 
@@ -84,7 +87,6 @@ public class Funding extends BaseJpaEntity {
 
         Integer remainingAmount = this.targetAmount - this.currentAmount;
 
-        // TODO : 동시성 문제 해결 필요 (낙관적 락 등)
         // 잔여 금액 초과 검증
         if (amount > remainingAmount) {
             throw new FundingException(
@@ -103,9 +105,9 @@ public class Funding extends BaseJpaEntity {
         }
     }
 
-    public void expire() {
-        if (this.status == FundingStatus.CLOSED) {
-            throw new FundingException(FundingErrorCode.ALREADY_TERMINATED);
+    public boolean expire(LocalDateTime now) {
+        if (this.status != FundingStatus.IN_PROGRESS) {
+            return false; // 이미 종료됨 → 멱등
         }
 
         if (!isExpired()) {
@@ -113,12 +115,13 @@ public class Funding extends BaseJpaEntity {
         }
 
         this.status = FundingStatus.EXPIRED;
-        this.closedAt = LocalDateTime.now();
+        this.closedAt = now;
+        return true;
     }
 
     public void close() {
-        if (this.getStatus() == FundingStatus.CLOSED || this.getStatus() == FundingStatus.EXPIRED) {
-            throw new FundingException(FundingErrorCode.ALREADY_TERMINATED);
+        if (this.status != FundingStatus.IN_PROGRESS && this.status != FundingStatus.ACHIEVED) {
+            return;
         }
 
         this.status = FundingStatus.CLOSED;
