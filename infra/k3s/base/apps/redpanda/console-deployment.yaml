@@ -21,7 +21,7 @@ spec:
         runAsGroup: 99
       containers:
         - name: console
-          image: redpandadata/console:v2.9.0
+          image: redpandadata/console:v3.5.1
           ports:
             - containerPort: 8080
           env:

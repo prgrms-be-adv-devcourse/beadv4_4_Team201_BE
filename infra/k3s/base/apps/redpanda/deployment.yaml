@@ -22,7 +22,7 @@ spec:
         fsGroup: 101
       containers:
         - name: redpanda
-          image: redpandadata/redpanda:v25.1.1
+          image: redpandadata/redpanda:v25.3.7
           command:
             - rpk
             - redpanda

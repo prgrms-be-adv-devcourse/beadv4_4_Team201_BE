@@ -21,9 +21,19 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.37.0
+          command: [ "sh", "-c", "chown -R 1000:1000 /data" ]
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
       containers:
         - name: minio
-          image: minio/minio:RELEASE.2025-10-15T17-29-55Z
+          image: minio/minio:RELEASE.2025-09-07T16-13-09Z
           args: [ "server", "/data", "--console-address", ":9001" ]
           ports:
             - name: s3
