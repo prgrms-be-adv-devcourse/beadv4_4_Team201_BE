@@ -40,6 +40,7 @@ public class FundingFacade {
         return getFundingSnapshotUseCase.getFundingSnapshotsByWishlistItemIds(wishlistItemIds);
     }
 
+    @Transactional
     public void processFundingActions(OrderSnapshot orderSnapshot) {
         // 펀딩 생성 처리 -> OrderSnapshot에 포함된 주문 아이템들 중 'FUNDING_PENDING' 타입이 하나라도 있는지 확인
         if (orderSnapshot.orderItemSnapshots().stream().anyMatch(item -> item.targetType() == TargetType.FUNDING_PENDING)) {
@@ -54,7 +55,7 @@ public class FundingFacade {
 
         // 'FUNDING' 타입의 아이템이 하나 이상 있어서 기여 요청 리스트가 비어있지 않다면 펀딩 기여 메서드 호출
         if (!contributeRequests.isEmpty()) {
-            contributeFunding(contributeRequests, orderSnapshot.buyerId());
+            fundingContributeUseCase.contribute(contributeRequests, orderSnapshot.buyerId());
         }
     }
 

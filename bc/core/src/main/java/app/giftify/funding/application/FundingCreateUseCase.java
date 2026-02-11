@@ -32,7 +32,6 @@ public class FundingCreateUseCase {
     private final EventPublisher eventPublisher;
     private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
 
-
     public List<FundingCreateResult> createFunding(OrderSnapshot orderSnapshot) {
 
         List<OrderItemSnapshot> fundingItems = orderSnapshot.orderItemSnapshots().stream()
@@ -57,6 +56,12 @@ public class FundingCreateUseCase {
 
         for (OrderItemSnapshot item : fundingItems) {
             WishlistItemSnapshot wishlistItemSnapshot = wishlistItemSnapshotMap.get(item.targetId());
+            
+            if (wishlistItemSnapshot == null) {
+                log.error("WishlistItemSnapshot을 찾을 수 없습니다. id: {}", item.targetId());
+                throw new FundingException(FundingErrorCode.WISHLIST_ITEM_NOT_FOUND); // 적절한 에러 코드로 변경 필요
+            }
+
             Funding funding = Funding.startFunding(
                     item.targetId(),                        // wishlistItemId
                     wishlistItemSnapshot.productId(),       // productId
