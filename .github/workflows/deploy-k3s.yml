@@ -63,16 +63,16 @@ jobs:
       - name: Wait for rollout
         id: rollout
         run: |
-          if ! kubectl rollout status deployment/backend -n giftify --timeout=120s; then
-            kubectl get pods -n giftify -l app=backend
+          if ! kubectl rollout status deployment/api-server -n giftify --timeout=120s; then
+            kubectl get pods -n giftify -l app=api-server
             exit 1
           fi
 
       - name: Rollback on failure
         if: failure() && steps.rollout.outcome == 'failure'
         run: |
-          kubectl rollout undo deployment/backend -n giftify
-          kubectl rollout status deployment/backend -n giftify --timeout=60s
+          kubectl rollout undo deployment/api-server -n giftify
+          kubectl rollout status deployment/api-server -n giftify --timeout=60s
 
       - name: Show status
         if: always()

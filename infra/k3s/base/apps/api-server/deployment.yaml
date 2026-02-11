@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: api-server
   labels:
-    app: backend
+    app: api-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: api-server
   template:
     metadata:
       labels:
-        app: backend
+        app: api-server
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -20,7 +20,7 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       containers:
-        - name: backend
+        - name: api-server
           image: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server:SET_BY_CICD
           imagePullPolicy: Always
           ports:
@@ -28,7 +28,7 @@ spec:
               name: http
           envFrom:
             - secretRef:
-                name: backend-secrets
+                name: api-server-secrets
           resources:
             requests:
               memory: "512Mi"

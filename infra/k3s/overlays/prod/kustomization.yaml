@@ -13,12 +13,12 @@ patches:
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: backend
+        name: api-server
       spec:
         template:
           spec:
             containers:
-              - name: backend
+              - name: api-server
                 env:
                   - name: SPRING_BATCH_JDBC_INITIALIZE_SCHEMA
                     value: "always" # 이거 always 로 하면 안되고 직접 마이그레이션 스크립트로 생성하여야 함

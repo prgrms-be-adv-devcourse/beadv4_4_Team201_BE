@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
+  name: api-server
 spec:
   selector:
-    app: backend
+    app: api-server
   ports:
     - port: 8080
       targetPort: 8080

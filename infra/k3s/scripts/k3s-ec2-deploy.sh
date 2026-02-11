@@ -53,7 +53,7 @@ kustomize edit set image \
     "ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server:SET_BY_CICD"
 
 echo ">>> Rollout 대기중..."
-kubectl rollout status deployment/backend -n giftify --timeout=600s
+kubectl rollout status deployment/api-server -n giftify --timeout=600s
 
 echo ""
 echo "=== 배포 완료 ==="

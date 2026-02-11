@@ -6,7 +6,7 @@ resources:
 
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
-    newName: giftify-backend
+    newName: giftify-api-server
     newTag: local
 
 patches:
@@ -14,13 +14,13 @@ patches:
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: backend
+        name: api-server
       spec:
         template:
           spec:
             imagePullSecrets: [ ]
             containers:
-              - name: backend
+              - name: api-server
                 imagePullPolicy: Never
                 env:
                   - name: SPRING_SQL_INIT_MODE

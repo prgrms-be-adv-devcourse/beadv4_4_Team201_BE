@@ -198,14 +198,14 @@ infra/k3s/
     secrets.yaml.template        #   시크릿 템플릿
     kustomization.yaml           #   Kustomize 리소스 목록
     apps/
-      backend/                   #   API Server (Deployment + Service)
+      api-server/                #   API Server (Deployment + Service)
       postgres/                  #   PostgreSQL 16 (StatefulSet + Headless Service)
       redis/                     #   Redis 7 (Deployment + Service)
       prometheus/                #   Prometheus (Deployment + Service + ConfigMap)
       grafana/                   #   Grafana (Deployment + Service + ConfigMap + Dashboards)
       k6/                        #   k6 부하 테스트 (Job + ConfigMap)
     traefik/
-      ingress-routes/api.yaml    #   Traefik IngressRoute (/ -> backend:8080)
+      ingress-routes/api.yaml    #   Traefik IngressRoute (/ -> api-server:8080)
       middleware/rate-limit.yaml  #   Rate Limit (100req/s, burst 50)
     cloudflare/
       tunnel-deployment.yaml     #   Cloudflare Tunnel (prod 전용)
@@ -241,7 +241,7 @@ infra/k3s/
 
 ```
 1. ./gradlew :bootstrap:api-server:bootJar (JAR 빌드)
-2. docker build -t giftify-backend:local
+2. docker build -t giftify-api-server:local
 3. k3d image import (이미지를 k3d 클러스터로 전송)
 4. kubectl apply -f secrets.yaml
 5. kubectl apply -k overlays/dev-k3s
@@ -264,7 +264,7 @@ kubectl get pods -n giftify
 kubectl logs -f <pod-name> -n giftify
 
 # Pod 재시작 (이미지 업데이트 없이)
-kubectl rollout restart deployment/backend -n giftify
+kubectl rollout restart deployment/api-server -n giftify
 
 # 코드 변경 후 재배포
 ./infra/k3s/scripts/k3s-local-deploy.sh
@@ -318,7 +318,7 @@ kubectl logs <pod-name> -n giftify --previous
 
 흔한 원인:
 - `secrets.yaml` 미적용 또는 값 누락
-- PostgreSQL이 아직 기동 중 (backend보다 먼저 Ready 상태여야 함)
+- PostgreSQL이 아직 기동 중 (api-server보다 먼저 Ready 상태여야 함)
 - Docker 이미지가 k3d에 임포트되지 않음 (`k3d image import` 확인)
 
 ### 6. EC2 배포 (k3d)

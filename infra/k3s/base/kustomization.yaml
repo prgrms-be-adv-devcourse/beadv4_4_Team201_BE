@@ -5,9 +5,9 @@ namespace: giftify
 
 resources:
   - namespace.yaml
-  # Backend
-  - apps/backend/deployment.yaml
-  - apps/backend/service.yaml
+  # API Server
+  - apps/api-server/deployment.yaml
+  - apps/api-server/service.yaml
   # PostgreSQL
   - apps/postgres/statefulset.yaml
   - apps/postgres/service.yaml

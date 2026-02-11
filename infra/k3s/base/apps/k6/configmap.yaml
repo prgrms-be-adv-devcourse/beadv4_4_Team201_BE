@@ -13,7 +13,7 @@ data:
     };
 
     export default function smokeTest() {
-        const res = http.get('http://backend:8080/actuator/health');
+        const res = http.get('http://api-server:8080/actuator/health');
 
         check(res, {
             'status is 200': (r) => r.status === 200,

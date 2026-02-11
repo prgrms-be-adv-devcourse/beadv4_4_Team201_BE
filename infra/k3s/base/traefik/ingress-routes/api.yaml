@@ -10,7 +10,7 @@ spec:
       kind: Rule
       priority: 1
       services:
-        - name: backend
+        - name: api-server
           port: 8080
       middlewares:
         - name: rate-limit

@@ -16,7 +16,7 @@ data:
       - job_name: 'giftify-api'
         metrics_path: '/actuator/prometheus'
         static_configs:
-          - targets: ['backend:8080']
+          - targets: ['api-server:8080']
 
       - job_name: 'redpanda'
         metrics_path: '/public_metrics'
