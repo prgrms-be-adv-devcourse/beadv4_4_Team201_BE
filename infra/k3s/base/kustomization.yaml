@@ -22,9 +22,11 @@ resources:
   - apps/grafana/configmap.yaml
   - apps/grafana/deployment.yaml
   - apps/grafana/service.yaml
-  # Redpanda
+  # Red-panda
   - apps/redpanda/deployment.yaml
   - apps/redpanda/service.yaml
+  - apps/redpanda/console-deployment.yaml
+  - apps/redpanda/console-service.yaml
   # k6
   - apps/k6/configmap.yaml
   # Traefik

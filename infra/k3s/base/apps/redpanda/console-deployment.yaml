@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redpanda-console
+  labels:
+    app: redpanda-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redpanda-console
+  template:
+    metadata:
+      labels:
+        app: redpanda-console
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: console
+          image: redpandadata/console:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BROKERS
+              value: "redpanda:9092"
+            - name: REDPANDA_ADMINAPI_URLS
+              value: "http://redpanda:9644"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          readinessProbe:
+            httpGet:
+              path: /admin/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10

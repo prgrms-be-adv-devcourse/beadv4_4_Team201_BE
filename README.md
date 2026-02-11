@@ -276,7 +276,8 @@ kubectl exec -it postgres-0 -n giftify -- psql -U giftify -d giftify_db
 # 모니터링 대시보드 접속 (Traefik IngressRoute, port-forward 불필요)
 # Grafana:    http://grafana.localhost:8080
 # Prometheus: http://prometheus.localhost:8080
-# Redpanda:   http://redpanda.localhost:8080
+# Redpanda:         http://redpanda.localhost:8080
+# Redpanda Console: http://redpanda-console.localhost:8080
 ```
 
 #### docker-compose와의 관계
@@ -343,6 +344,7 @@ Docker Compose와 k3d 환경 모두에서 Prometheus + Grafana 모니터링을 �
 | Grafana     | http://localhost:3000                     | http://grafana.localhost:8080              | 대시보드              |
 | Prometheus  | http://localhost:9090                     | http://prometheus.localhost:8080           | 메트릭 수집/조회       |
 | Redpanda    | -                                         | http://redpanda.localhost:8080             | 메시지 브로커 REST API |
+| Redpanda Console | -                                    | http://redpanda-console.localhost:8080     | 메시지 브로커 웹 UI    |
 | API Metrics | http://localhost:8080/actuator/prometheus | http://localhost:8080/actuator/prometheus   | Spring Actuator 메트릭 |
 
 #### Grafana 대시보드
