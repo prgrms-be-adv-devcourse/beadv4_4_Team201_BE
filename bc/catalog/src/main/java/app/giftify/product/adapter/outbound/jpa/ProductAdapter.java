@@ -65,6 +65,16 @@ public class ProductAdapter implements ProductRepositoryPort {
                 .toList();
     }
 
+    /**
+     * 재고 동시성 제어 : 비관적 락 배타 잠금
+     * 락 범위를 재고 변경 시에만 적용할 수 있도록한 전용 데이터 조회 메서드
+     */
+    @Override
+    public Optional<Product> findByIdForUpdate(Long productId) {
+        return productRepository.findByIdForUpdate(productId)
+                .map(productMapper::toDomain);
+    }
+
     private ProductSearchDto toDto(ProductSearchCommand command) {
         ProductSearchDto dto = new ProductSearchDto();
         dto.setKeyword(command.getKeyword());

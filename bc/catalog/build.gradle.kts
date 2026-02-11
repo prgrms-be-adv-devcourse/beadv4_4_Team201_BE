@@ -43,6 +43,7 @@ dependencies {
     testImplementation(libs.archunit)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
+    testRuntimeOnly(libs.h2)
 
     // Retry
     implementation("org.springframework.retry:spring-retry")
