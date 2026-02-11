@@ -2,6 +2,7 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
@@ -27,6 +28,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FundingCreateUseCase {
 
+    private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
     private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
 
@@ -56,16 +58,19 @@ public class FundingCreateUseCase {
         for (OrderItemSnapshot item : fundingItems) {
             WishlistItemSnapshot wishlistItemSnapshot = wishlistItemSnapshotMap.get(item.targetId());
             Funding funding = Funding.startFunding(
-                    item.targetId(), // wishlistItemId
-                    wishlistItemSnapshot.productId(), // productId
-                    item.receiverId(), // receiverId
-                    item.price().amount().intValueExact() // targetAmount
+                    item.targetId(),                        // wishlistItemId
+                    wishlistItemSnapshot.productId(),       // productId
+                    item.receiverId(),                      // receiverId
+                    item.price().amount().intValueExact()   // targetAmount
             );
-            results.add(new FundingCreateResult(funding, item));
 
-            fundingDetails.add(new FundingDetail(funding.getId(), item.orderItemId(), funding.getWishlistItemId()));
+            Funding savedFunding = fundingRepository.save(funding);
 
-            log.info("[Funding] 펀딩 생성 완료. fundingId={}", funding.getId());
+            results.add(new FundingCreateResult(savedFunding, item));
+
+            fundingDetails.add(new FundingDetail(savedFunding.getId(), item.orderItemId(), savedFunding.getWishlistItemId()));
+
+            log.info("[Funding] 펀딩 생성 완료. fundingId={}", savedFunding.getId());
         }
 
         eventPublisher.publish(new FundingCreatedEventV2(fundingDetails));

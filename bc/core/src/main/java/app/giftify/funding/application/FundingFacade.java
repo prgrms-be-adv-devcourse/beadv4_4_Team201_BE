@@ -40,7 +40,6 @@ public class FundingFacade {
         return getFundingSnapshotUseCase.getFundingSnapshotsByWishlistItemIds(wishlistItemIds);
     }
 
-    @Transactional
     public void processFundingActions(OrderSnapshot orderSnapshot) {
         // 펀딩 생성 처리 -> OrderSnapshot에 포함된 주문 아이템들 중 'FUNDING_PENDING' 타입이 하나라도 있는지 확인
         if (orderSnapshot.orderItemSnapshots().stream().anyMatch(item -> item.targetType() == TargetType.FUNDING_PENDING)) {

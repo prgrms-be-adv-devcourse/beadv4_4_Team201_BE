@@ -26,7 +26,7 @@ public class FundingCreatedEventV2 extends BaseDomainEvent {
     @Override
     public String toString() {
         return "FundingCreatedEventV2{" +
-                ", fundings=" + fundings +
+                " fundings=" + fundings +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';
