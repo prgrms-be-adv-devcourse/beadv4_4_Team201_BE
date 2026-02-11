@@ -213,9 +213,11 @@ infra/k3s/
     dev-k3s/                     # 로컬 k3d 환경 오버레이
     prod/                        # EC2 K3s 운영 환경 오버레이
   scripts/
-    k3s-local-create.sh          # k3d 클러스터 생성
-    k3s-local-deploy.sh          # 이미지 빌드 + k3d 배포
-    k3s-local-delete.sh          # k3d 클러스터 삭제
+    k3s-local-create.sh          # k3d 클러스터 생성 (로컬)
+    k3s-local-deploy.sh          # 이미지 빌드 + k3d 배포 (로컬)
+    k3s-local-delete.sh          # k3d 클러스터 삭제 (로컬)
+    k3s-ec2-setup.sh             # Docker/k3d/kubectl 설치 + 클러스터 생성 (EC2)
+    k3s-ec2-deploy.sh            # GHCR 이미지 풀 + 배포 (EC2)
 ```
 
 #### 스크립트 상세
@@ -319,7 +321,64 @@ kubectl logs <pod-name> -n giftify --previous
 - PostgreSQL이 아직 기동 중 (backend보다 먼저 Ready 상태여야 함)
 - Docker 이미지가 k3d에 임포트되지 않음 (`k3d image import` 확인)
 
-### 6. Health Check
+### 6. EC2 배포 (k3d)
+
+EC2 t3.large (2 vCPU, 8 GiB) 인스턴스에 동일한 k3d 클러스터를 배포합니다.
+
+#### 사전 요구사항
+
+- EC2 인스턴스 (Amazon Linux 2023, t3.large 이상)
+- 보안 그룹: SSH(22) 오픈
+- GHCR Personal Access Token (패키지 read 권한)
+
+#### 1회성 셋업
+
+```bash
+# EC2에 접속 후
+git clone <repo-url>
+cd giftify-be
+
+# Docker, k3d, kubectl 설치 + 클러스터 생성
+./infra/k3s/scripts/k3s-ec2-setup.sh
+```
+
+Docker 설치 직후 그룹 변경이 필요하면 스크립트가 안내 후 종료됩니다. 재로그인 후 다시 실행하세요.
+
+#### 배포
+
+```bash
+# secrets.yaml 생성 (최초 1회)
+cp infra/k3s/base/secrets.yaml.template infra/k3s/base/secrets.yaml
+#    -> <REPLACE> 부분을 실제 값으로 교체
+#    -> SPRING_PROFILES_ACTIVE 는 "prod" 유지
+#    -> TUNNEL_TOKEN 에 Cloudflare Tunnel 토큰 입력
+
+# 배포 (최초 - GHCR PAT 전달)
+./infra/k3s/scripts/k3s-ec2-deploy.sh v1.0.0 ghp_xxxxxxxxxxxx
+
+# 배포 (이후 - ghcr-secret 재사용)
+./infra/k3s/scripts/k3s-ec2-deploy.sh v1.0.1
+```
+
+#### 외부 접근
+
+| 방법 | 용도 | 설명 |
+|------|------|------|
+| Cloudflare Tunnel | API 외부 공개 | cloudflared가 Cloudflare Edge로 아웃바운드 연결, 인바운드 포트 불필요 |
+| SSH 터널 | 모니터링 접근 | `ssh -L 8080:localhost:8080 ec2-user@<IP>` 후 로컬과 동일하게 `*.localhost:8080` 사용 |
+
+Cloudflare Dashboard에서 tunnel route를 설정하면 API가 외부에 노출됩니다. 모니터링 도구(Grafana, Prometheus 등)는 SSH 터널로만 접근하는 것을 권장합니다.
+
+#### 로컬 k3d와의 차이
+
+| 항목 | 로컬 (dev-k3s) | EC2 (prod) |
+|------|---------------|------------|
+| 이미지 | 로컬 빌드 (imagePullPolicy: Never) | GHCR Pull (imagePullPolicy: Always) |
+| 프로파일 | dev | prod |
+| Cloudflare Tunnel | 비활성 (replicas: 0) | 활성 (replicas: 1) |
+| 스크립트 | k3s-local-*.sh | k3s-ec2-*.sh |
+
+### 7. Health Check
 
 ```bash
 # Root Health Check
@@ -333,7 +392,7 @@ curl http://localhost:8080/auth/health
 
 ```
 
-### 7. 모니터링
+### 8. 모니터링
 
 Docker Compose와 k3d 환경 모두에서 Prometheus + Grafana 모니터링을 제공합니다.
 

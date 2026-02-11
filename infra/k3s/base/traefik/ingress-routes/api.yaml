@@ -8,6 +8,7 @@ spec:
   routes:
     - match: PathPrefix(`/`)
       kind: Rule
+      priority: 1
       services:
         - name: backend
           port: 8080
