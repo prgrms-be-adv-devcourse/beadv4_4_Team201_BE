@@ -1,8 +1,11 @@
 package giftify.support.web.aop;
 
+import app.giftify.security.common.util.SecurityUtil;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.IdempotencySuccessEvent;
 import app.giftify.support.common.annotation.Idempotent;
 import giftify.support.web.IdempotencyErrorCode;
 import giftify.support.web.manager.IdempotencyManager;
@@ -23,6 +26,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Optional;
 
 @Slf4j
 @Aspect
@@ -33,6 +37,7 @@ public class IdempotencyAspect {
 
     private final IdempotencyManager idempotencyManager;
     private final PayloadHasher payloadHasher;
+    private final EventPublisher eventPublisher;
 
     private static final String IDEM_HEADER = "X-Idempotency-Key";
 
@@ -58,7 +63,16 @@ public class IdempotencyAspect {
         }
 
         try {
-            return joinPoint.proceed();
+            Object result = joinPoint.proceed();
+
+            eventPublisher.publish(new IdempotencySuccessEvent(
+                    idempotencyKey,
+                    currentHash,
+                    idempotent.prefix(),
+                    getRequesterId()
+            ));
+
+            return result;
         } catch (Exception e) {
             idempotencyManager.removeKey(redisKey);
             throw e;
@@ -86,5 +100,15 @@ public class IdempotencyAspect {
             }
         }
         return null;
+    }
+
+    private Long getRequesterId() {
+        Optional<Long> currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        if (currentMemberId.isEmpty()) {
+            log.warn("requesterId가 존재하지 않습니다. 비회원 요청으로 인식합니다.");
+        }
+
+        return currentMemberId.orElse(null);
     }
 }

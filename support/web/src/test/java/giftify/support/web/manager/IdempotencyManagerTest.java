@@ -2,13 +2,13 @@ package giftify.support.web.manager;
 
 import app.giftify.support.common.AbstractRedisTest;
 import app.giftify.support.common.config.RedisConfig;
-import giftify.support.web.SupportWebTestApplication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.Optional;
@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {SupportWebTestApplication.class, RedisConfig.class})
+@DataRedisTest
+@Import({IdempotencyManager.class, RedisConfig.class})
 class IdempotencyManagerTest extends AbstractRedisTest {
 
     @Autowired
