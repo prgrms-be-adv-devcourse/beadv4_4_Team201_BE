@@ -30,6 +30,7 @@ resources:
   # Traefik
   - traefik/middleware/rate-limit.yaml
   - traefik/ingress-routes/api.yaml
+  - traefik/ingress-routes/monitoring.yaml
   # Cloudflare
   - cloudflare/tunnel-deployment.yaml
 
