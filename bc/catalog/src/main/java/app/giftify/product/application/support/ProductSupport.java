@@ -40,4 +40,13 @@ public class ProductSupport {
                 throw new ProductOutOfStockException(product.getId());
         }
     }
+
+    /**
+     * 재고 동시성 제어 : 비관적 락 배타 잠금
+     * 락 범위를 재고 변경 시에만 적용할 수 있도록한 전용 데이터 조회 메서드
+     */
+    public Product findByIdForUpdate(Long productId) {
+        return productRepositoryPort.findByIdForUpdate(productId)
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+    }
 }
