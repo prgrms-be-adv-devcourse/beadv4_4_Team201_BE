@@ -30,7 +30,7 @@ public class ProductStockHistoryService implements StockHistoryCreateUseCase, St
     @Transactional
     @Retryable(
             recover = "recoverCreateStockHistory", // @Recover 메서드가 여러 개일 때는 모호함 방지 필수(지금은 없어도 자동 매칭됨)
-            value = {TransientDataAccessException.class, RecoverableDataAccessException.class}, //재시도 대상 예외
+            retryFor = {TransientDataAccessException.class, RecoverableDataAccessException.class}, //재시도 대상 예외
             maxAttempts = 3,                  // 최대 3회
             backoff = @Backoff(delay = 1000, multiplier = 2)// 1초 딜레이
     )

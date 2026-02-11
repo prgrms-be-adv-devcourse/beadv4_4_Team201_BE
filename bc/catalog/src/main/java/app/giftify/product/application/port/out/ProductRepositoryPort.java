@@ -21,4 +21,6 @@ public interface ProductRepositoryPort {
     Page<Product> searchMyProducts(Long sellerId, MyProductSearchCommand command);
 
     List<Product> findAllById(List<Long> productsIds);
+
+    Optional<Product> findByIdForUpdate(Long productId);
 }
