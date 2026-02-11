@@ -45,12 +45,9 @@ fi
 echo ">>> Kustomize 배포중 (tag: $IMAGE_TAG)..."
 cd "$OVERLAY_DIR"
 kustomize edit set image \
-    "ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server:$IMAGE_TAG"
+    "ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server=ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server:$IMAGE_TAG"
 kubectl apply -k .
-
-# 이미지 태그 원복 (git diff 방지)
-kustomize edit set image \
-    "ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server:SET_BY_CICD"
+git checkout -- kustomization.yaml
 
 echo ">>> Rollout 대기중..."
 kubectl rollout status deployment/api-server -n giftify --timeout=600s
