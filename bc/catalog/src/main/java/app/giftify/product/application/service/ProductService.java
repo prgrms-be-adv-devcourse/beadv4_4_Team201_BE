@@ -164,12 +164,14 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
             }
 
+            validateProductOwner(product, sellerId);
             if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
                 throw new ProductException(PRODUCT_STOCK_CHANGED);
             }
             product.updateStock(requestDto.stock());
         } else {
             product = productSupport.findById(productId);
+            validateProductOwner(product, sellerId);
         }
 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
@@ -243,5 +245,11 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                         Member::getId,
                         Member::getNickname
                 ));
+    }
+
+    // 상품 판매자 검증
+    private void validateProductOwner(Product product, Long sellerId) {
+        if (!product.getSellerId().equals(sellerId))
+            throw new ProductException(PRODUCT_NOT_OWNED);
     }
 }
