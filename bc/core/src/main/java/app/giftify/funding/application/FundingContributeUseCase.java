@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +27,18 @@ public class FundingContributeUseCase {
     public List<Funding> contribute(List<FundingContributeRequest> requests, Long participantId) {
         List<Funding> result = new ArrayList<>();
 
+        List<Long> fundingIds = requests.stream()
+                .map(FundingContributeRequest::fundingId)
+                .collect(Collectors.toList());
+
+        Map<Long, Funding> fundingMap = fundingRepository.findAllById(fundingIds).stream()
+                .collect(Collectors.toMap(Funding::getId, funding -> funding));
+
         for (FundingContributeRequest request : requests) {
-            Funding funding = fundingRepository.findById(request.fundingId())
-                    .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
+            Funding funding = fundingMap.get(request.fundingId());
+            if (funding == null) {
+                throw new FundingException(FundingErrorCode.FUNDING_NOT_FOUND);
+            }
 
             // 참여자 존재여부 확인 및 추가
             FundingParticipantMember member = fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId);

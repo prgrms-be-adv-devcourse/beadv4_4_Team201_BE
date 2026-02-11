@@ -16,12 +16,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -51,7 +52,8 @@ class FundingContributeUseCaseTest {
         List<FundingContributeRequest> requests = List.of(request);
 
         Funding funding = mock(Funding.class);
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
+        given(funding.getId()).willReturn(fundingId); // ID 설정 필요
+        given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(null);
 
         // when
@@ -74,9 +76,10 @@ class FundingContributeUseCaseTest {
         List<FundingContributeRequest> requests = List.of(request);
 
         Funding funding = mock(Funding.class);
+        given(funding.getId()).willReturn(fundingId); // ID 설정 필요
         FundingParticipantMember member = mock(FundingParticipantMember.class);
 
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
+        given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(member);
 
         // when
@@ -103,7 +106,7 @@ class FundingContributeUseCaseTest {
         given(funding.getWishlistItemId()).willReturn(10L);
         given(funding.isAchieved()).willReturn(true);
 
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
+        given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(null);
 
         // when
@@ -123,7 +126,7 @@ class FundingContributeUseCaseTest {
         FundingContributeRequest request = new FundingContributeRequest(fundingId, amount);
         List<FundingContributeRequest> requests = List.of(request);
 
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.empty());
+        given(fundingRepository.findAllById(anyList())).willReturn(Collections.emptyList());
 
         // when & then
         assertThatThrownBy(() -> fundingContributeUseCase.contribute(requests, participantId))
