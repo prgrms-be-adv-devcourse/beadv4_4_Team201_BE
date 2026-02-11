@@ -14,15 +14,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/wishlist/items")
+@RequestMapping("/api/v2/wishlists/items")
 @RequiredArgsConstructor
 @Validated
-public class WishlistItemController {
+public class WishlistItemController implements WishlistItemV2ApiSpec {
     private final AddWishlistItemUseCase addWishlistItemUseCase;
     private final GetWishlistItemUseCase getWishlistItemUseCase;
     private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
-    // 위시리스트에 담긴 모든 상품 조회
+    @Override
     @GetMapping("/me")
     public ResponseEntity<List<WishlistItemResponse>> getAllProducts(
             @CurrentMemberId Long memberId
@@ -34,7 +34,7 @@ public class WishlistItemController {
         return ResponseEntity.ok(items);
     }
 
-    // 위시리스트아이템에 특정 상품이 담겨있는지 확인
+    @Override
     @GetMapping("/me/check")
     public ResponseEntity<?> isExistProduct(
             @CurrentMemberId Long memberId,
@@ -45,7 +45,7 @@ public class WishlistItemController {
         return ResponseEntity.ok(exists);
     }
 
-    // 위시리스트아이템 추가
+    @Override
     @PostMapping("/add")
     public ResponseEntity<WishlistItemResponse> addProduct(
             @CurrentMemberId Long memberId,
@@ -63,7 +63,7 @@ public class WishlistItemController {
         return ResponseEntity.ok(wishlistItemResponse);
     }
 
-    // 위시리스트에서 특정 상품 삭제
+    @Override
     @DeleteMapping("/remove")
     public ResponseEntity<Void> removeProduct(
             @CurrentMemberId Long memberId,

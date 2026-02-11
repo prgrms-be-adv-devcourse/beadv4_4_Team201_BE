@@ -78,7 +78,7 @@ class WishlistControllerTest {
         given(getWishlistUseCase.getOrCreateWishlistByMemberId(10L)).willReturn(wishlist);
 
         // when & then
-        mockMvc.perform(get("/api/wishlist/me"))
+        mockMvc.perform(get("/api/v2/wishlists/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.visibility").value("PUBLIC"));
     }
@@ -101,7 +101,7 @@ class WishlistControllerTest {
         given(updateWishlistSettingsUseCase.updateSettings(any())).willReturn(updatedWishlist);
 
         // when & then
-        mockMvc.perform(patch("/api/wishlist/me/settings")
+        mockMvc.perform(patch("/api/v2/wishlists/me/settings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

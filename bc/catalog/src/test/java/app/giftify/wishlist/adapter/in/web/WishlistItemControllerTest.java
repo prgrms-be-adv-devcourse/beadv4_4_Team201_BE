@@ -81,7 +81,7 @@ class WishlistItemControllerTest {
         given(getWishlistItemUseCase.getWishlistItems(MEMBER_ID)).willReturn(List.of(item));
 
         // when & then
-        mockMvc.perform(get("/api/wishlist/items/me"))
+        mockMvc.perform(get("/api/v2/wishlists/items/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].productId").value(100));
     }
@@ -93,7 +93,7 @@ class WishlistItemControllerTest {
         given(getWishlistItemUseCase.getWishlistItems(MEMBER_ID)).willReturn(List.of());
 
         // when & then
-        mockMvc.perform(get("/api/wishlist/items/me"))
+        mockMvc.perform(get("/api/v2/wishlists/items/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
@@ -106,7 +106,7 @@ class WishlistItemControllerTest {
         given(getWishlistItemUseCase.isItemExists(any(), any())).willReturn(true);
 
         // when & then
-        mockMvc.perform(get("/api/wishlist/items/me/check")
+        mockMvc.perform(get("/api/v2/wishlists/items/me/check")
                         .queryParam("productId", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(true));
@@ -119,7 +119,7 @@ class WishlistItemControllerTest {
         // any() matcher to avoid any subtle type mismatch during initial debug
 
         // when & then
-        mockMvc.perform(delete("/api/wishlist/items/remove")
+        mockMvc.perform(delete("/api/v2/wishlists/items/remove")
                         .queryParam("productId", "100"))
                 .andExpect(status().isNoContent());
 
@@ -141,7 +141,7 @@ class WishlistItemControllerTest {
         given(addWishlistItemUseCase.addWishlistItem(anyLong(), any())).willReturn(item);
 
         // when & then
-        mockMvc.perform(post("/api/wishlist/items/add")
+        mockMvc.perform(post("/api/v2/wishlists/items/add")
                         .queryParam("productId", String.valueOf(productId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -160,7 +160,7 @@ class WishlistItemControllerTest {
                 .willThrow(new app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException(productId));
 
         // when & then
-        mockMvc.perform(post("/api/wishlist/items/add")
+        mockMvc.perform(post("/api/v2/wishlists/items/add")
                         .queryParam("productId", String.valueOf(productId)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("W103"))
