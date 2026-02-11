@@ -155,7 +155,14 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         Product product;
 
         if (requestDto.stock() != null) {
-            product = productSupport.findByIdForUpdate(productId); // 재고 수정 시 배타 잠금
+            if (requestDto.expectedStock() == null)
+                throw new ProductException(EXPECTED_STOCK_REQUIRED);
+
+            try { // 재고 수정 시 배타 잠금
+                product = productSupport.findByIdForUpdate(productId);
+            } catch (PessimisticLockingFailureException e) {
+                throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+            }
 
             if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
                 throw new ProductException(PRODUCT_STOCK_CHANGED);
@@ -195,16 +202,17 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     @Transactional
     @Override
     public void decreaseStockByFunding(Long productId) {
+        Product product;
         try {
-            Product product = productSupport.findByIdForUpdate(productId); // 락 전용 메서드
-
-            product.decreaseStockByFunding();
-            productRepositoryPort.save(product);
-
-            product.pullEvents().forEach(eventPublisher::publish);
+            product = productSupport.findByIdForUpdate(productId); // 배타 잠금
         } catch (PessimisticLockingFailureException e) {
             throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
         }
+
+        product.decreaseStockByFunding();
+        productRepositoryPort.save(product);
+
+        product.pullEvents().forEach(eventPublisher::publish);
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)

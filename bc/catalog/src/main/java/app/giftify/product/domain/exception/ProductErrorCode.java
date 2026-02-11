@@ -31,11 +31,11 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_PRODUCT_SEARCH_PRICE_RANGE(HttpStatus.BAD_REQUEST.value(), "P305", "가격 범위가 올바르지 않습니다."),
     INVALID_PRODUCT_STOCK(HttpStatus.BAD_REQUEST.value(), "P306", "재고량이 올바르지 않습니다."),
     PRODUCT_ID_REQUIRED(HttpStatus.BAD_REQUEST.value(), "P307", "Product ID는 필수입니다."),
-    EXPECTED_STOCK_REQUIRED(HttpStatus.BAD_REQUEST.value(), "P403", "재고 수정 시 기존 재고값(expectedStock)은 필수입니다."),
 
     // P4xx: 상품 수정/요청 검증
     PRODUCT_UPDATE_EMPTY_REQUEST(HttpStatus.NO_CONTENT.value(), "P401", "수정할 내용이 없습니다."),
     INVALID_PRODUCT_STATUS(HttpStatus.BAD_REQUEST.value(), "P402", "허용되지 않은 상태값입니다."),
+    EXPECTED_STOCK_REQUIRED(HttpStatus.BAD_REQUEST.value(), "P403", "재고 수정 시 기존 재고값(expectedStock)은 필수입니다."),
 
     // P5xx: 인프라/동시성 관련
     PRODUCT_STOCK_LOCK_TIMEOUT(HttpStatus.CONFLICT.value(), "P501", "일시적인 문제가 발생했습니다. 다시 시도하세요."),
