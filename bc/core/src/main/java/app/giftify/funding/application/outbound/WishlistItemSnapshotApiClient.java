@@ -5,8 +5,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
 
 import java.util.List;
+import java.util.Map;
 
 @HttpExchange
 public interface WishlistItemSnapshotApiClient {
@@ -16,6 +18,6 @@ public interface WishlistItemSnapshotApiClient {
             @PathVariable Long wishlistItemId
     );
 
-    @GetExchange("/api/internal/wishlist/items/snapshots")
-    List<WishlistItemSnapshot> getSnapshotList(@RequestBody List<Long> wishlistItemIds);
+    @PostExchange("/api/internal/wishlist/items/snapshots")
+    Map<Long, WishlistItemSnapshot> getSnapshotList(@RequestBody List<Long> wishlistItemIds);
 }

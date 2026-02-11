@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -20,13 +21,6 @@ public class WishlistItemSnapshotHttpAdapter implements WishlistItemSnapshotPort
         try {
             return apiClient.getSnapshot(wishlistItemId);
         } catch (RestClientResponseException e) {
-
-            if (e.getStatusCode().value() == 404) {
-                throw new FundingException(
-                        FundingErrorCode.WISHLIST_ITEM_NOT_FOUND
-                );
-            }
-
             throw new FundingException(
                     FundingErrorCode.EXTERNAL_API_ERROR
             );
@@ -34,7 +28,7 @@ public class WishlistItemSnapshotHttpAdapter implements WishlistItemSnapshotPort
     }
 
     @Override
-    public List<WishlistItemSnapshot> getSnapshotList(List<Long> wishlistItemIds) {
+    public Map<Long, WishlistItemSnapshot> getSnapshotList(List<Long> wishlistItemIds) {
         try {
             return apiClient.getSnapshotList(wishlistItemIds);
         } catch (RestClientResponseException e) {
