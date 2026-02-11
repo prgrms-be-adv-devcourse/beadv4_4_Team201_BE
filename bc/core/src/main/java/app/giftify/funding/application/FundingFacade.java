@@ -1,5 +1,6 @@
 package app.giftify.funding.application;
 
+import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.orderDemo.domain.OrderSnapshot;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -40,27 +41,45 @@ public class FundingFacade {
         return getFundingSnapshotUseCase.getFundingSnapshotsByWishlistItemIds(wishlistItemIds);
     }
 
+    /**
+     * OrderSnapshot을 받아 펀딩 생성&기여
+     */
     public void processFundingActions(OrderSnapshot orderSnapshot) {
-        // 펀딩 생성 처리 -> OrderSnapshot에 포함된 주문 아이템들 중 'FUNDING_PENDING' 타입이 하나라도 있는지 확인
-        if (orderSnapshot.orderItemSnapshots().stream().anyMatch(item -> item.targetType() == TargetType.FUNDING_PENDING)) {
-            fundingCreateUseCase.createFunding(orderSnapshot);
+
+        List<FundingContributeRequest> allContributeRequests = new ArrayList<>();
+
+        // 1. 펀딩 생성 + 초기 기여 요청 수집
+        if (orderSnapshot.orderItemSnapshots().stream()
+                .anyMatch(item -> item.targetType() == TargetType.FUNDING_PENDING)) {
+
+            List<FundingCreateResult> createdFundings = fundingCreateUseCase.createFunding(orderSnapshot);
+
+            // 생성된 펀딩의 초기 기여 요청 추가
+            allContributeRequests.addAll(
+                    createdFundings.stream()
+                            .map(result -> new FundingContributeRequest(
+                                    result.funding().getId(),
+                                    result.orderItemSnapshot().amount().amount().intValueExact()
+                            ))
+                            .toList()
+            );
         }
 
-        // 펀딩 기여 처리
-        List<FundingContributeRequest> contributeRequests = orderSnapshot.orderItemSnapshots().stream()
-                .filter(item -> item.targetType() == TargetType.FUNDING)
-                .map(item -> new FundingContributeRequest(item.targetId(), item.amount().amount().intValueExact()))
-                .collect(Collectors.toList());
+        // 2. 기존 펀딩 기여 요청 추가
+        allContributeRequests.addAll(
+                orderSnapshot.orderItemSnapshots().stream()
+                        .filter(item -> item.targetType() == TargetType.FUNDING)
+                        .map(item -> new FundingContributeRequest(
+                                item.targetId(),
+                                item.amount().amount().intValueExact()
+                        ))
+                        .toList()
+        );
 
-        // 'FUNDING' 타입의 아이템이 하나 이상 있어서 기여 요청 리스트가 비어있지 않다면 펀딩 기여 메서드 호출
-        if (!contributeRequests.isEmpty()) {
-            fundingContributeUseCase.contribute(contributeRequests, orderSnapshot.buyerId());
+        // 3. 모든 기여를 한 번에 처리
+        if (!allContributeRequests.isEmpty()) {
+            fundingContributeUseCase.contribute(allContributeRequests, orderSnapshot.buyerId());
         }
-    }
-
-    @Transactional
-    public List<Funding> contributeFunding(List<FundingContributeRequest> requests, Long participantId) {
-        return fundingContributeUseCase.contribute(requests, participantId);
     }
 
     @Transactional(readOnly = true)
