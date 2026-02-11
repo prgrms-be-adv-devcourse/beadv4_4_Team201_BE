@@ -14,8 +14,29 @@ resources:
   # Redis
   - apps/redis/deployment.yaml
   - apps/redis/service.yaml
+  # Prometheus
+  - apps/prometheus/configmap.yaml
+  - apps/prometheus/deployment.yaml
+  - apps/prometheus/service.yaml
+  # Grafana
+  - apps/grafana/configmap.yaml
+  - apps/grafana/deployment.yaml
+  - apps/grafana/service.yaml
+  # Redpanda
+  - apps/redpanda/deployment.yaml
+  - apps/redpanda/service.yaml
+  # k6
+  - apps/k6/configmap.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
   - traefik/ingress-routes/api.yaml
   # Cloudflare
   - cloudflare/tunnel-deployment.yaml
+
+configMapGenerator:
+  - name: grafana-dashboards
+    files:
+      - apps/grafana/dashboards/spring-boot-19004.json
+      - apps/grafana/dashboards/token-blacklist-security.json
+    options:
+      disableNameSuffixHash: true

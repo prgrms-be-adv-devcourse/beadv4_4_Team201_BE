@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-scripts
+data:
+  smoke-test.js: |
+    import http from 'k6/http';
+    import {check, sleep} from 'k6';
+
+    export const options = {
+        vus: 10,
+        duration: '30s',
+    };
+
+    export default function smokeTest() {
+        const res = http.get('http://backend:8080/actuator/health');
+
+        check(res, {
+            'status is 200': (r) => r.status === 200,
+            'response time < 500ms': (r) => r.timings.duration < 500,
+        });
+
+        sleep(1);
+    }
