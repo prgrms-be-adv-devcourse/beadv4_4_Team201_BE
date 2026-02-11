@@ -147,4 +147,11 @@ public class FundingGetUseCase {
 
         return PageResponse.of(contents, page, size, fundingPage.getTotalElements());
     }
+
+    /**
+     * productId로 진행 중/수락 대기 중인 펀딩 존재여부 조회
+     */
+    public Boolean checkFundingExistsByProductId(Long productId) {
+        return fundingRepository.existsByProductIdAndStatusIn(productId, List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED));
+    }
 }
