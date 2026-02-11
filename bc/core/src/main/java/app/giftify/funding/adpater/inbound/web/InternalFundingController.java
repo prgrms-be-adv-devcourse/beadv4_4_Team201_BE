@@ -12,7 +12,7 @@ public class InternalFundingController {
     private final FundingGetUseCase fundingGetUseCase;
 
     @GetMapping("/{productId}/exists")
-    public Boolean checkFundingExistsByProductId(@PathVariable Long productId) {
+    public boolean checkFundingExistsByProductId(@PathVariable Long productId) {
         return fundingGetUseCase.checkFundingExistsByProductId(productId);
     }
 }
