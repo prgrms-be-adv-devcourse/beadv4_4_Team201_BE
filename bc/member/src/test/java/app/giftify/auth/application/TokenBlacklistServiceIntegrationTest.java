@@ -1,10 +1,7 @@
 package app.giftify.auth.application;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.time.Duration;
-import java.time.Instant;
-
+import app.giftify.auth.support.config.TokenBlacklistTestConfig;
+import app.giftify.support.common.AbstractRedisTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,32 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.redis.testcontainers.RedisContainer;
+import java.time.Duration;
+import java.time.Instant;
 
-import app.giftify.auth.support.config.TokenBlacklistTestConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Testcontainers
 @SpringBootTest(
 	classes = TokenBlacklistTestConfig.class,
 	webEnvironment = SpringBootTest.WebEnvironment.NONE
 )
-class TokenBlacklistServiceIntegrationTest {
-
-	@Container
-	static RedisContainer redis = new RedisContainer(
-		RedisContainer.DEFAULT_IMAGE_NAME.withTag("7-alpine")
-	);
-
-	@DynamicPropertySource
-	static void redisProperties(DynamicPropertyRegistry registry) {
-		registry.add("spring.data.redis.host", redis::getHost);
-		registry.add("spring.data.redis.port", redis::getFirstMappedPort);
-	}
+class TokenBlacklistServiceIntegrationTest extends AbstractRedisTest {
 
 	@Autowired
 	private TokenBlacklistService tokenBlacklistService;
