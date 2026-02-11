@@ -27,6 +27,10 @@ resources:
   - apps/redpanda/service.yaml
   - apps/redpanda/console-deployment.yaml
   - apps/redpanda/console-service.yaml
+  # MinIO (S3 Compatible Object Storage)
+  - apps/minio/statefulset.yaml
+  - apps/minio/service.yaml
+  - apps/minio/init-job.yaml
   # k6
   - apps/k6/configmap.yaml
   # Traefik
