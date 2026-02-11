@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -151,7 +152,8 @@ public class FundingGetUseCase {
     /**
      * productId로 진행 중/수락 대기 중인 펀딩 존재여부 조회
      */
-    public Boolean checkFundingExistsByProductId(Long productId) {
+    @Transactional(readOnly = true)
+    public boolean checkFundingExistsByProductId(Long productId) {
         return fundingRepository.existsByProductIdAndStatusIn(productId, List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED));
     }
 }
