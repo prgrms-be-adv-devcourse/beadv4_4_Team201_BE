@@ -1,5 +1,6 @@
 package app.giftify.funding.application;
 
+import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
@@ -15,11 +16,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -45,16 +48,19 @@ class FundingContributeUseCaseTest {
         Long fundingId = 1L;
         Long participantId = 2L;
         Integer amount = 10000;
+        FundingContributeRequest request = new FundingContributeRequest(fundingId, amount);
+        List<FundingContributeRequest> requests = List.of(request);
 
         Funding funding = mock(Funding.class);
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
+        given(funding.getId()).willReturn(fundingId); // ID 설정 필요
+        given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(null);
 
         // when
-        Funding result = fundingContributeUseCase.contribute(fundingId, participantId, amount);
+        List<Funding> result = fundingContributeUseCase.contribute(requests, participantId);
 
         // then
-        assertThat(result).isEqualTo(funding);
+        assertThat(result).containsExactly(funding);
         verify(fundingParticipantMemberRepository).save(any(FundingParticipantMember.class));
         verify(funding).contribute(amount);
     }
@@ -66,18 +72,21 @@ class FundingContributeUseCaseTest {
         Long fundingId = 1L;
         Long participantId = 2L;
         Integer amount = 10000;
+        FundingContributeRequest request = new FundingContributeRequest(fundingId, amount);
+        List<FundingContributeRequest> requests = List.of(request);
 
         Funding funding = mock(Funding.class);
+        given(funding.getId()).willReturn(fundingId); // ID 설정 필요
         FundingParticipantMember member = mock(FundingParticipantMember.class);
 
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
+        given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(member);
 
         // when
-        Funding result = fundingContributeUseCase.contribute(fundingId, participantId, amount);
+        List<Funding> result = fundingContributeUseCase.contribute(requests, participantId);
 
         // then
-        assertThat(result).isEqualTo(funding);
+        assertThat(result).containsExactly(funding);
         verify(member).addAmount(amount);
         verify(funding).contribute(amount);
     }
@@ -89,17 +98,19 @@ class FundingContributeUseCaseTest {
         Long fundingId = 1L;
         Long participantId = 2L;
         Integer amount = 10000;
+        FundingContributeRequest request = new FundingContributeRequest(fundingId, amount);
+        List<FundingContributeRequest> requests = List.of(request);
 
         Funding funding = mock(Funding.class);
         given(funding.getId()).willReturn(fundingId);
         given(funding.getWishlistItemId()).willReturn(10L);
         given(funding.isAchieved()).willReturn(true);
 
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
+        given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(null);
 
         // when
-        fundingContributeUseCase.contribute(fundingId, participantId, amount);
+        fundingContributeUseCase.contribute(requests, participantId);
 
         // then
         verify(eventPublisher).publish(any(FundingAchievedEvent.class));
@@ -112,11 +123,13 @@ class FundingContributeUseCaseTest {
         Long fundingId = 1L;
         Long participantId = 2L;
         Integer amount = 10000;
+        FundingContributeRequest request = new FundingContributeRequest(fundingId, amount);
+        List<FundingContributeRequest> requests = List.of(request);
 
-        given(fundingRepository.findById(fundingId)).willReturn(Optional.empty());
+        given(fundingRepository.findAllById(anyList())).willReturn(Collections.emptyList());
 
         // when & then
-        assertThatThrownBy(() -> fundingContributeUseCase.contribute(fundingId, participantId, amount))
+        assertThatThrownBy(() -> fundingContributeUseCase.contribute(requests, participantId))
                 .isInstanceOf(FundingException.class)
                 .hasFieldOrPropertyWithValue("errorCode", FundingErrorCode.FUNDING_NOT_FOUND);
     }

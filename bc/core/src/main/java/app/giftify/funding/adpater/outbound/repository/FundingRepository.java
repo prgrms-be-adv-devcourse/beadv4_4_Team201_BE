@@ -24,5 +24,7 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     Page<Funding> findAllByReceiverId(Long receiverId, Pageable pageable);
 
+    List<Funding> findAllByWishlistItemIdIn(List<Long> wishlistItemIds);
+
 //    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }
