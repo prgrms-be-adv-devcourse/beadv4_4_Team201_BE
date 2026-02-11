@@ -18,13 +18,13 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     List<Funding> findByDeadlineAfterAndStatusIn(LocalDateTime now, List<FundingStatus> statuses);
 
-    Optional<Funding> findByWishlistItemId(Long wishlistItemId);
-
     Optional<Funding> findByWishlistItemIdAndStatus(Long wishlistItemId, FundingStatus status);
 
     Page<Funding> findAllByReceiverId(Long receiverId, Pageable pageable);
 
     List<Funding> findAllByWishlistItemIdIn(List<Long> wishlistItemIds);
+
+    Boolean existsByProductIdAndStatusIn(Long productId, List<FundingStatus> statuses);
 
 //    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }
