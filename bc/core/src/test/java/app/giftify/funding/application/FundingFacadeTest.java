@@ -126,9 +126,9 @@ class FundingFacadeTest {
         // given
         Long buyerId = 1L;
         Long newFundingId = 100L;
-        Long existingFundingId = 200L;
-        Integer newAmount = 10000;
-        Integer existingAmount = 5000;
+        long existingFundingId = 200L;
+        int newAmount = 10000;
+        int existingAmount = 5000;
 
         // 1. OrderItemSnapshot 생성 (FUNDING_PENDING)
         OrderItemSnapshot newFundingItem = OrderItemSnapshot.builder()
