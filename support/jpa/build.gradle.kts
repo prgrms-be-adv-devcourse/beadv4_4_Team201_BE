@@ -5,6 +5,9 @@ plugins {
 dependencies {
     implementation(project(":bc:shared"))
     implementation(libs.spring.boot.starter.data.jpa)
+
+    testImplementation(libs.archunit)
+    testImplementation(libs.spring.boot.starter.test)
     
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

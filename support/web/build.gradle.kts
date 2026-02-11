@@ -6,9 +6,21 @@ plugins {
 
 dependencies {
     implementation(project(":support:common"))
+    implementation(project(":support:security"))
     implementation(project(":bc:shared"))
 
     implementation(libs.spring.boot.starter.web)
+
+    // Retry
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+
+    // Redis
+    implementation(libs.spring.boot.starter.data.redis)
+
+    testImplementation(libs.archunit)
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(testFixtures(project(":support:common")))
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
