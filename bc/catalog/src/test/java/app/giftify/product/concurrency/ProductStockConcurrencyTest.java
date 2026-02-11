@@ -228,14 +228,25 @@ class ProductStockConcurrencyTest {
                 null, null, null, 50, sellerExpectedStock, null
         );
 
-        assertThat(org.assertj.core.api.Assertions.catchThrowable(
+        Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(
                 () -> productService.updateProduct(productId, seller.getId(), updateRequest)
-        ))
+        );
+
+        assertThat(thrown)
                 .isInstanceOf(ProductException.class)
                 .hasMessageContaining("재고가 변경되었습니다");
 
         // 재고는 펀딩 차감된 99 그대로여야 한다
         ProductJpa result = productRepository.findById(productId).orElseThrow();
+
+        System.out.println("=== CAS 실패 테스트 결과 ===");
+        System.out.println("초기 재고: " + initialStock);
+        System.out.println("펀딩 차감 후 실제 DB 재고: " + (initialStock - 1));
+        System.out.println("판매자가 알고 있던 재고(expectedStock): " + sellerExpectedStock);
+        System.out.println("판매자 수정 요청 재고: 50");
+        System.out.println("예외 발생: " + thrown.getClass().getSimpleName() + " - " + thrown.getMessage());
+        System.out.println("최종 재고: " + result.getStock());
+
         assertThat(result.getStock())
                 .as("CAS 실패로 판매자 수정이 반영되지 않아 펀딩 차감 후 재고(99)가 유지되어야 한다")
                 .isEqualTo(initialStock - 1);
@@ -272,6 +283,14 @@ class ProductStockConcurrencyTest {
 
         // then
         ProductJpa result = productRepository.findById(productId).orElseThrow();
+
+        System.out.println("=== CAS 성공 테스트 결과 ===");
+        System.out.println("초기 재고: " + initialStock);
+        System.out.println("판매자가 알고 있던 재고(expectedStock): " + initialStock);
+        System.out.println("판매자 수정 요청 재고: 50");
+        System.out.println("예외 발생: 없음");
+        System.out.println("최종 재고: " + result.getStock());
+
         assertThat(result.getStock())
                 .as("expectedStock과 실제 재고가 일치하므로 수정이 반영되어야 한다")
                 .isEqualTo(50);
