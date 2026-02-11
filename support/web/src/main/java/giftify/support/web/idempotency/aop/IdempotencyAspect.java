@@ -1,15 +1,16 @@
-package giftify.support.web.aop;
+package giftify.support.web.idempotency.aop;
 
 import app.giftify.security.common.util.SecurityUtil;
+import app.giftify.shared.api.exception.IdempotencyErrorCode;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.IdempotencySuccessEvent;
 import app.giftify.support.common.annotation.Idempotent;
-import giftify.support.web.IdempotencyErrorCode;
-import giftify.support.web.manager.IdempotencyManager;
-import giftify.support.web.util.PayloadHasher;
+import giftify.support.web.idempotency.manager.IdempotencyManager;
+import giftify.support.web.idempotency.util.HeaderUtil;
+import giftify.support.web.idempotency.util.PayloadHasher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ import java.util.Optional;
 @Slf4j
 @Aspect
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
 @RequiredArgsConstructor
 public class IdempotencyAspect {
 
@@ -39,17 +40,10 @@ public class IdempotencyAspect {
     private final PayloadHasher payloadHasher;
     private final EventPublisher eventPublisher;
 
-    private static final String IDEM_HEADER = "X-Idempotency-Key";
-
     @Around("@annotation(idempotent)")
     public Object execute(ProceedingJoinPoint joinPoint, Idempotent idempotent) throws Throwable {
         HttpServletRequest request = getRequest();
-
-        String idempotencyKey = request.getHeader(IDEM_HEADER);
-        if (idempotencyKey == null || idempotencyKey.isBlank()) {
-            log.warn("필수 헤더 누락: {}", IDEM_HEADER);
-            throw new PolicyException(IdempotencyErrorCode.MISSING_IDEMPOTENCY_KEY);
-        }
+        String idempotencyKey = HeaderUtil.getIdempotencyKeyOrThrow(request);
 
         String redisKey = String.format("IDEM:%s:%s", idempotent.prefix(), idempotencyKey);
 
@@ -59,7 +53,12 @@ public class IdempotencyAspect {
         boolean isFirstRequest = idempotencyManager.attemptLock(redisKey, currentHash, idempotent.ttl());
 
         if (!isFirstRequest) {
-            throw new PolicyException(IdempotencyErrorCode.DUPLICATE_REQUEST);
+            String storedHash = idempotencyManager.getStoredHash(redisKey).orElse(null);
+            if (storedHash.equals(currentHash)) {
+                throw new PolicyException(IdempotencyErrorCode.DUPLICATE_REQUEST);
+            } else {
+                throw new PolicyException(IdempotencyErrorCode.PAYLOAD_MISMATCH);
+            }
         }
 
         try {

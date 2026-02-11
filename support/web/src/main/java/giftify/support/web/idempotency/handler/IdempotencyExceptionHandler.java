@@ -1,4 +1,4 @@
-package giftify.support.web.handler;
+package giftify.support.web.idempotency.handler;
 
 import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.ErrorCode;
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice(basePackages = "giftify.support.web")
+@RestControllerAdvice(basePackages = "giftify.support.web.idempotency")
 @Slf4j
 public class IdempotencyExceptionHandler {
 

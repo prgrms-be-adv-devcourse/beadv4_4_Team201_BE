@@ -11,6 +11,10 @@ import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.annotation.Idempotent;
+import giftify.support.web.idempotency.service.IdempotencyService;
+import giftify.support.web.idempotency.util.HeaderUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -28,14 +32,22 @@ public class OrderController implements OrderControllerSpec {
 
     private final CoreFacade coreFacade;
     private final OrderService orderService;
+    private final IdempotencyService idempotencyService;
 
+    private static final String PREFIX = "ORDER";
+
+    @Idempotent(prefix = PREFIX)
     @PostMapping
     @Override
     public ResponseEntity<RsData<PlaceOrderResult>> placeOrder(
             @CurrentMemberId Long memberId,
-            @Valid @RequestBody PlaceOrderRequest request
+            @Valid @RequestBody PlaceOrderRequest orderRequest,
+            HttpServletRequest httpServletRequest
     ) {
-        PlaceOrderCommand command = PlaceOrderCommand.of(memberId, request);
+        String idempotencyKey = HeaderUtil.getIdempotencyKeyOrThrow(httpServletRequest);
+        idempotencyService.validateIdempotency(idempotencyKey, orderRequest);
+
+        PlaceOrderCommand command = PlaceOrderCommand.of(memberId, orderRequest);
 
         PlaceOrderResult response = coreFacade.placeOrder(command);
 
