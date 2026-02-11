@@ -15,6 +15,11 @@ spec:
         app: prometheus
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
       containers:
         - name: prometheus
           image: prom/prometheus:v2.48.0
@@ -30,6 +35,18 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "200m"
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 15
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus

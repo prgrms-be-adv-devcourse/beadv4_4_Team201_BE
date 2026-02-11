@@ -1,4 +1,8 @@
 #!/bin/bash
+# EC2 최소 요구사항:
+#   인스턴스: t3.large (2 vCPU, 8 GiB RAM)
+#   EBS 루트 볼륨: 30 GiB gp3 이상 (PVC 10GiB + 이미지 캐시 + OS)
+#   OS: Amazon Linux 2023
 set -e
 
 CLUSTER_NAME="${1:-giftify}"

@@ -15,6 +15,11 @@ spec:
         app: redis
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
         - name: redis
           image: redis:7-alpine
@@ -33,11 +38,11 @@ spec:
               cpu: "100m"
           readinessProbe:
             exec:
-              command: [ "redis-cli", "ping" ]
+              command: [ "sh", "-c", "redis-cli -a $REDIS_PASSWORD ping | grep PONG" ]
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: [ "redis-cli", "ping" ]
+              command: [ "sh", "-c", "redis-cli -a $REDIS_PASSWORD ping | grep PONG" ]
             initialDelaySeconds: 15
             periodSeconds: 30

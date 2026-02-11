@@ -16,9 +16,14 @@ spec:
         app: minio
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: minio
-          image: minio/minio:latest
+          image: minio/minio:RELEASE.2025-10-15T17-29-55Z
           args: [ "server", "/data", "--console-address", ":9001" ]
           ports:
             - name: s3

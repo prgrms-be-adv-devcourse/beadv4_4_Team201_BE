@@ -15,6 +15,11 @@ spec:
         app: grafana
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
       containers:
         - name: grafana
           image: grafana/grafana:10.2.0
@@ -22,9 +27,15 @@ spec:
             - containerPort: 3000
           env:
             - name: GF_SECURITY_ADMIN_USER
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: GF_SECURITY_ADMIN_USER
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: GF_SECURITY_ADMIN_PASSWORD
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
           resources:
@@ -34,6 +45,18 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "200m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
           volumeMounts:
             - name: provisioning-datasources
               mountPath: /etc/grafana/provisioning/datasources

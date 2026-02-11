@@ -15,9 +15,13 @@ spec:
         app: redpanda-console
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 99
+        runAsGroup: 99
       containers:
         - name: console
-          image: redpandadata/console:latest
+          image: redpandadata/console:v2.9.0
           ports:
             - containerPort: 8080
           env:

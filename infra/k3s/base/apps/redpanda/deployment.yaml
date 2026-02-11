@@ -15,9 +15,14 @@ spec:
         app: redpanda
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
       containers:
         - name: redpanda
-          image: redpandadata/redpanda:latest
+          image: redpandadata/redpanda:v25.1.1
           command:
             - rpk
             - redpanda

@@ -2,6 +2,7 @@ name: Deploy to K3s
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   workflow_dispatch:
     inputs:
       image_tag:
@@ -10,7 +11,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
   packages: read
 
 env:
@@ -21,7 +22,7 @@ jobs:
   deploy:
     name: Deploy to K3s
     runs-on: self-hosted
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout
@@ -39,6 +40,8 @@ jobs:
           IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
           if [ -n "${{ inputs.image_tag }}" ]; then
             IMAGE_TAG="${{ inputs.image_tag }}"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            IMAGE_TAG="${GITHUB_REF#refs/tags/}"
           else
             IMAGE_TAG="${GITHUB_SHA::7}"
           fi
@@ -57,13 +60,21 @@ jobs:
           kustomize edit set image \
             ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server=${{ env.IMAGE }}
 
+      - name: Commit image tag update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add infra/k3s/overlays/prod/kustomization.yaml
+          git diff --cached --quiet || git commit -m "chore: update api-server image to ${IMAGE##*:}"
+          git push
+
       - name: Deploy to K3s
         run: kubectl apply -k infra/k3s/overlays/prod
 
       - name: Wait for rollout
         id: rollout
         run: |
-          if ! kubectl rollout status deployment/api-server -n giftify --timeout=120s; then
+          if ! kubectl rollout status deployment/api-server -n giftify --timeout=240s; then
             kubectl get pods -n giftify -l app=api-server
             exit 1
           fi
@@ -72,7 +83,7 @@ jobs:
         if: failure() && steps.rollout.outcome == 'failure'
         run: |
           kubectl rollout undo deployment/api-server -n giftify
-          kubectl rollout status deployment/api-server -n giftify --timeout=60s
+          kubectl rollout status deployment/api-server -n giftify --timeout=240s
 
       - name: Show status
         if: always()
