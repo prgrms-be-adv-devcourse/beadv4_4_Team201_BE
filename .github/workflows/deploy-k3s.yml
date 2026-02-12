@@ -12,12 +12,7 @@ on:
         type: string
 
 permissions:
-  contents: read
   packages: read
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/api-server
 
 jobs:
   deploy:
@@ -29,12 +24,8 @@ jobs:
       || github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Set image tag
         run: |
-          IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
           if [ -n "${{ inputs.image_tag }}" ]; then
             IMAGE_TAG="${{ inputs.image_tag }}"
           elif [[ "${{ github.event.workflow_run.head_branch }}" == v* ]]; then
@@ -43,30 +34,11 @@ jobs:
             IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
             IMAGE_TAG="${IMAGE_TAG::7}"
           fi
-          echo "IMAGE=${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}:${IMAGE_TAG}" >> $GITHUB_ENV
-          echo ">>> 배포 이미지: ${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}:${IMAGE_TAG}"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          echo ">>> 배포 이미지 태그: ${IMAGE_TAG}"
 
-      - name: Deploy to K3s
-        run: |
-          cd infra/k3s/overlays/prod
-          kustomize edit set image \
-            ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server=${{ env.IMAGE }}
-          kubectl apply -k .
-
-      - name: Wait for rollout
-        id: rollout
-        run: |
-          if ! kubectl rollout status deployment/api-server -n giftify --timeout=240s; then
-            kubectl get pods -n giftify -l app=api-server
-            kubectl logs -l app=api-server -n giftify --tail=50 || true
-            exit 1
-          fi
-
-      - name: Rollback on failure
-        if: failure() && steps.rollout.outcome == 'failure'
-        run: |
-          kubectl rollout undo deployment/api-server -n giftify
-          kubectl rollout status deployment/api-server -n giftify --timeout=240s
+      - name: Deploy
+        run: ~/giftify-k3s/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
 
       - name: Show status
         if: always()

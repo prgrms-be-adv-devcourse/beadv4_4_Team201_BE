@@ -38,11 +38,19 @@ cd "$OVERLAY_DIR"
 kustomize edit set image \
     "ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server=ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server:$IMAGE_TAG"
 kubectl apply -k .
-git checkout -- kustomization.yaml
 
 echo ">>> Rollout 대기중..."
-kubectl rollout status deployment/api-server -n giftify --timeout=600s
-
-echo ""
-echo "=== 배포 완료 ==="
-kubectl get pods -n giftify
+if kubectl rollout status deployment/api-server -n giftify --timeout=600s; then
+    echo ""
+    echo "=== 배포 완료 ==="
+    kubectl get pods -n giftify
+else
+    echo "!!! Rollout 실패 - 자동 롤백 수행"
+    kubectl get pods -n giftify -l app=api-server
+    kubectl logs -l app=api-server -n giftify --tail=50 || true
+    kubectl rollout undo deployment/api-server -n giftify
+    kubectl rollout status deployment/api-server -n giftify --timeout=240s
+    echo "=== 롤백 완료 ==="
+    kubectl get pods -n giftify
+    exit 1
+fi
