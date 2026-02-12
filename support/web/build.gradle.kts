@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":support:common"))
     implementation(project(":support:security"))
+    implementation(project(":support:jpa"))
     implementation(project(":bc:shared"))
 
     implementation(libs.spring.boot.starter.web)

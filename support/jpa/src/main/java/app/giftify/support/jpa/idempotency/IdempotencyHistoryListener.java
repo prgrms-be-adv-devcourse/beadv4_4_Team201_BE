@@ -11,7 +11,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class IdempotencyHistoryListener {
 
-    private final IdempotencyHistoryRepository repository;
+    private final JpaIdempotencyHistoryRepository repository;
 
     @Async // 저장 로직이 메인 로직에 지장을 주지 않도록 비동기 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

@@ -44,6 +44,10 @@ public class PayloadHasher {
         }
     }
 
+    public boolean isMatch(String storedValue, String currentHash) {
+        return storedValue.equals(currentHash);
+    }
+
     private String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(2 * hash.length);
         for (byte b : hash) {

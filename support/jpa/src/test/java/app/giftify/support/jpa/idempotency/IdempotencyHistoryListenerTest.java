@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 class IdempotencyHistoryListenerTest {
 
     @Mock
-    private IdempotencyHistoryRepository repository;
+    private JpaIdempotencyHistoryRepository repository;
 
     @InjectMocks
     private IdempotencyHistoryListener listener;
