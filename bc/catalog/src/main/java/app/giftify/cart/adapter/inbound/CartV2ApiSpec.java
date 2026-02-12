@@ -55,11 +55,11 @@ public interface CartV2ApiSpec {
 	})
 	ResponseEntity<RsData<CartResponse>> getMyCart(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
-	@Operation(summary = "장바구니 아이템 금액 수정")
+	@Operation(summary = "장바구니 아이템 복수 금액 수정")
 	@ApiResponse(responseCode = "200", description = "수정 성공")
-	ResponseEntity<RsData<Void>> updateItemAmount(
+	ResponseEntity<RsData<Void>> updateItemsAmount(
 		@Parameter(hidden = true) @CurrentMemberId Long memberId,
-		@RequestBody CartItemRequest request
+		@RequestBody List<CartItemRequest> requests
 	);
 
 	@Operation(summary = "장바구니 아이템 복수 삭제")

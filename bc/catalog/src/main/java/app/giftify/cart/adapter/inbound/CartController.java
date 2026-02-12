@@ -72,14 +72,16 @@ public class CartController implements CartV2ApiSpec {
 
 	@Override
 	@PatchMapping("/items")
-	public ResponseEntity<RsData<Void>> updateItemAmount(
+	public ResponseEntity<RsData<Void>> updateItemsAmount(
 		@CurrentMemberId Long memberId,
-		@RequestBody CartItemRequest request
+		@RequestBody List<CartItemRequest> requests
 	) {
-		cartService.addItemToMyCart(memberId, new AddCartItemCommand(
-			new CartItemKey(request.targetType(), request.targetId()),
-			Money.of(request.amount())
-		));
+		List<AddCartItemCommand> commands = requests.stream()
+						.map(c -> new AddCartItemCommand(
+								new CartItemKey(c.targetType(), c.targetId()),
+								Money.of(c.amount())
+						)).toList();
+		cartService.addItemsToMyCart(memberId, commands);
 		return ResponseEntity.ok(RsData.success(null));
 	}
 
