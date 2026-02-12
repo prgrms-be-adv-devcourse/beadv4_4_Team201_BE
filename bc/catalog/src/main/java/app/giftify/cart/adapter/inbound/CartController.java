@@ -40,7 +40,7 @@ public class CartController implements CartV2ApiSpec {
 	}
 
 	@Override
-	@PostMapping
+	@PostMapping("/items")
 	public ResponseEntity<RsData<Void>> addItemsToMyCart(
 		@CurrentMemberId Long memberId,
 		@RequestBody List<CartItemRequest> requests
