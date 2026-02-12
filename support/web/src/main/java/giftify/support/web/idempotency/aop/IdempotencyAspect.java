@@ -1,4 +1,4 @@
-package giftify.support.web.aop;
+package giftify.support.web.idempotency.aop;
 
 import app.giftify.security.common.util.SecurityUtil;
 import app.giftify.shared.api.exception.InfraErrorCode;
@@ -7,9 +7,9 @@ import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.IdempotencySuccessEvent;
 import app.giftify.support.common.annotation.Idempotent;
-import giftify.support.web.IdempotencyErrorCode;
-import giftify.support.web.manager.IdempotencyManager;
-import giftify.support.web.util.PayloadHasher;
+import app.giftify.shared.api.exception.IdempotencyErrorCode;
+import giftify.support.web.idempotency.manager.IdempotencyManager;
+import giftify.support.web.idempotency.util.PayloadHasher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

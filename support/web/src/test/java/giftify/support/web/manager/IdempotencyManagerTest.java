@@ -2,6 +2,7 @@ package giftify.support.web.manager;
 
 import app.giftify.support.common.AbstractRedisTest;
 import app.giftify.support.common.config.RedisConfig;
+import giftify.support.web.idempotency.manager.IdempotencyManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
