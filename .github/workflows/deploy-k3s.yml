@@ -1,0 +1,75 @@
+name: Deploy to K3s
+on:
+  workflow_run:
+    workflows: [ "CI" ]
+    types: [ completed ]
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: '배포할 이미지 태그 (미입력 시 최신 main 커밋)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/api-server
+
+jobs:
+  deploy:
+    name: Deploy to K3s
+    runs-on: self-hosted
+    if: >-
+      (github.event_name == 'workflow_run'
+       && github.event.workflow_run.conclusion == 'success')
+      || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        run: |
+          IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            IMAGE_TAG="${{ inputs.image_tag }}"
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == v* ]]; then
+            IMAGE_TAG="${{ github.event.workflow_run.head_branch }}"
+          else
+            IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
+            IMAGE_TAG="${IMAGE_TAG::7}"
+          fi
+          echo "IMAGE=${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}:${IMAGE_TAG}" >> $GITHUB_ENV
+          echo ">>> 배포 이미지: ${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}:${IMAGE_TAG}"
+
+      - name: Deploy to K3s
+        run: |
+          cd infra/k3s/overlays/prod
+          kustomize edit set image \
+            ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server=${{ env.IMAGE }}
+          kubectl apply -k .
+
+      - name: Wait for rollout
+        id: rollout
+        run: |
+          if ! kubectl rollout status deployment/api-server -n giftify --timeout=240s; then
+            kubectl get pods -n giftify -l app=api-server
+            kubectl logs -l app=api-server -n giftify --tail=50 || true
+            exit 1
+          fi
+
+      - name: Rollback on failure
+        if: failure() && steps.rollout.outcome == 'failure'
+        run: |
+          kubectl rollout undo deployment/api-server -n giftify
+          kubectl rollout status deployment/api-server -n giftify --timeout=240s
+
+      - name: Show status
+        if: always()
+        run: |
+          kubectl get pods -n giftify
+          kubectl get deployments -n giftify
