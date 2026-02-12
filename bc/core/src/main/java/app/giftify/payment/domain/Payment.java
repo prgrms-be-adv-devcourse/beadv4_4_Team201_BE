@@ -27,10 +27,11 @@ public class Payment extends BaseDomainModel {
 
 	private PaymentStatus status;
 	private String paymentKey;
-	private String lastTransactionKey; // NOTE :: 무조건 주는 값이니까 받아서 저장하도록 수정, 리스트가 되어야 하나?
+	private String lastTransactionKey;
 	private String approveCode;
-	private LocalDateTime paidAt;// NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
-	private final LocalDateTime createdAt; // NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
+	// 도메인이 스냅샷으로 들고 있되, 생성은 JPA에 위임
+	private LocalDateTime paidAt;
+	private final LocalDateTime createdAt;
 
 	private Payment(Long id, PaymentType type, PaymentMethod method,
 		String orderId, Long memberId,
