@@ -22,11 +22,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = {
         "app.giftify.product",
-        "app.giftify.replica"
+        "app.giftify.replica",
+        "app.giftify.support.jpa"
 })
 @EntityScan(basePackages = {
         "app.giftify.product",
-        "app.giftify.replica"
+        "app.giftify.replica",
+        "app.giftify.support.jpa"
 })
 public class ProductTestApplication {
     public static void main(String[] args) {
