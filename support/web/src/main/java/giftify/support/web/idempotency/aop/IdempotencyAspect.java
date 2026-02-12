@@ -64,12 +64,15 @@ public class IdempotencyAspect {
         try {
             Object result = joinPoint.proceed();
 
-            eventPublisher.publish(new IdempotencySuccessEvent(
+            IdempotencySuccessEvent successEvent = new IdempotencySuccessEvent(
                     idempotencyKey,
                     currentHash,
                     idempotent.prefix(),
                     getRequesterId()
-            ));
+            );
+            eventPublisher.publish(successEvent);
+
+            log.debug("IdempotencySuccessEvent 발행 완료 eventId = {}", successEvent.getEventId());
 
             return result;
         } catch (Exception e) {

@@ -1,21 +1,26 @@
-package app.giftify.support.jpa.idempotency;
+package giftify.support.web.idempotency.listener;
 
 import app.giftify.shared.domain.event.IdempotencySuccessEvent;
+import app.giftify.support.jpa.idempotency.IdempotencyHistory;
+import app.giftify.support.jpa.idempotency.IdempotencyHistoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class IdempotencyHistoryListener {
 
-    private final JpaIdempotencyHistoryRepository repository;
+    private final IdempotencyHistoryRepository repository;
 
-    @Async // 저장 로직이 메인 로직에 지장을 주지 않도록 비동기 처리
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async // 이제 비동기도 잘 작동할 겁니다.
+    @EventListener
     public void handleIdempotencySuccess(IdempotencySuccessEvent event) {
+        log.debug("IdempotencySuccessEvent 수신 완료 eventId = {}", event.getEventId());
+
         IdempotencyHistory idempotencyHistory = new IdempotencyHistory(
                 event.getIdempotencyKey(),
                 event.getPayloadHash(),
@@ -25,4 +30,6 @@ public class IdempotencyHistoryListener {
 
         repository.save(idempotencyHistory);
     }
+
+
 }
