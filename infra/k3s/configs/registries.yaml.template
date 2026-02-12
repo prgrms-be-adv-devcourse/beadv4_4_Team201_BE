@@ -1,0 +1,18 @@
+# GHCR Private Registry 인증 설정 (k3s containerd)
+#
+# 사용법:
+#   sudo cp registries.yaml.template /etc/rancher/k3s/registries.yaml
+#   /etc/rancher/k3s/registries.yaml 의 <GHCR_PAT> 를 실제 토큰으로 교체
+#   sudo systemctl restart k3s
+#
+# GitHub PAT 필요 권한: read:packages
+# 생성: GitHub > Settings > Developer settings > Personal access tokens (classic)
+mirrors:
+  ghcr.io:
+    endpoint:
+      - "https://ghcr.io"
+configs:
+  "ghcr.io":
+    auth:
+      username: giftify-bot
+      password: <GHCR_PAT>
