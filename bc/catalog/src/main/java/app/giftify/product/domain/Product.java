@@ -144,7 +144,7 @@ public class Product extends BaseDomainModel {
         registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, newStock - beforeStock, StockChangeType.MANUAL_SELLER);
     }
 
-    // 펀딩에 의한 상품 재고 감소 todo 동시성 제어
+    // 펀딩에 의한 상품 재고 감소
     public void decreaseStockByFunding() {
         validateStockForFunding();
 
@@ -168,7 +168,7 @@ public class Product extends BaseDomainModel {
         registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_REFUNDED);
     }
 
-    // 일반 주문에 의한 상품 재고 감소 todo 동시성 제어
+    // 일반 주문에 의한 상품 재고 감소
     public void decreaseStock(int quantity) {
         validateStockForOrder(quantity);
 

@@ -12,9 +12,11 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +28,7 @@ import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
 import static app.giftify.product.domain.ProductStatus.INACTIVE;
-import static app.giftify.product.domain.exception.ProductErrorCode.PRODUCT_NOT_ACTIVE;
-import static app.giftify.product.domain.exception.ProductErrorCode.SELLER_NOT_FOUND;
+import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -144,20 +145,38 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         productRepositoryPort.save(product);
     }
 
-    // 상품 수정 (판매자)
+    /**
+     * 상품 수정 (판매자)
+     * 재고 수정 시 비관적 락 + CAS 패턴 적용
+     */
     @Override
     @Transactional
     public ProductUpdateResult updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
-        Product product = productSupport.findById(productId);
+        Product product;
+
+        if (requestDto.stock() != null) {
+            if (requestDto.expectedStock() == null)
+                throw new ProductException(EXPECTED_STOCK_REQUIRED);
+
+            try { // 재고 수정 시 배타 잠금
+                product = productSupport.findByIdForUpdate(productId);
+            } catch (PessimisticLockingFailureException e) {
+                throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+            }
+
+            validateProductOwner(product, sellerId);
+            if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
+                throw new ProductException(PRODUCT_STOCK_CHANGED);
+            }
+            product.updateStock(requestDto.stock());
+        } else {
+            product = productSupport.findById(productId);
+            validateProductOwner(product, sellerId);
+        }
 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
         Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription);
         Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice);
-
-        Integer newStock = requestDto.stock();
-        if (newStock != null && product.getStock() != newStock) {
-            product.updateStock(newStock);
-        }
 
         var status = requestDto.status();
         if (status != null) {
@@ -173,16 +192,24 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             }
         }
         productRepositoryPort.save(product);
-        product.pullEvents().forEach(eventPublisher::publish); // 기록된 도메인 이벤트를 발행
+        product.pullEvents().forEach(eventPublisher::publish);
 
         return ProductUpdateResult.from(product);
     }
 
-    // 펀딩에 의한 재고 감소
+    /**
+     * 펀딩에 의한 재고 감소
+     * 비관적 락 - 배타 잠금 적용
+     */
     @Transactional
     @Override
     public void decreaseStockByFunding(Long productId) {
-        Product product = productSupport.findById(productId);
+        Product product;
+        try {
+            product = productSupport.findByIdForUpdate(productId); // 배타 잠금
+        } catch (PessimisticLockingFailureException e) {
+            throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+        }
 
         product.decreaseStockByFunding();
         productRepositoryPort.save(product);
@@ -218,5 +245,11 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                         Member::getId,
                         Member::getNickname
                 ));
+    }
+
+    // 상품 판매자 검증
+    private void validateProductOwner(Product product, Long sellerId) {
+        if (!product.getSellerId().equals(sellerId))
+            throw new ProductException(PRODUCT_NOT_OWNED);
     }
 }
