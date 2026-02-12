@@ -10,9 +10,9 @@ public final class PaymentHistoryKeyGenerator {
 	public static String generate(
 		String orderId,
 		PaymentEventType eventType,
-		String requestId
+		String eventId
 	) {
-		Objects.requireNonNull(requestId, "requestId는 필수입니다");
-		return orderId + "-" + eventType.name() + "-" + requestId;
+		Objects.requireNonNull(eventId, "eventId는 필수입니다");
+		return orderId + "-" + eventType.name() + "-" + eventId;
 	}
 }

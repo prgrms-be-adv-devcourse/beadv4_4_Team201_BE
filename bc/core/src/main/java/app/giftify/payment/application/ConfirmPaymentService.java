@@ -15,7 +15,6 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,27 +83,18 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		String encryptedPaymentKey = encryptor.encrypt(command.paymentKey());
 		LocalDateTime paidAt = LocalDateTime.now();
 
-		// 6. 상태 변경 (도메인 메서드)
+		// 6. 상태 변경 (도메인 메서드 — 내부적으로 registerEvent 호출)
 		payment.markAsPaid(
 			encryptedPaymentKey,
 			pgResult.approveNo(),
 			pgResult.lastTransactionKey(),
-			paidAt,
-			command.paymentKey()
+			paidAt
 		);
 
-		// 7. 저장 (uncommittedHistory 포함)
+		// 7. 도메인 이벤트 확보 → 저장 → 발행
+		var domainEvents = payment.pullEvents();
 		Payment savedPayment = paymentRepository.save(payment);
-
-		// 8. 이벤트 발행 (Wallet BC가 DEPOSIT_CHARGE 시 수신하여 예치금 충전)
-		eventPublisher.publish(new PaymentConfirmedEvent(
-			savedPayment.getId(),
-			savedPayment.getMemberId(),
-			savedPayment.getOrderId(),
-			savedPayment.getType(),
-			savedPayment.getPaidAmount(),
-			paidAt
-		));
+		domainEvents.forEach(eventPublisher::publish);
 
 		return ConfirmPaymentResult.success(savedPayment.getId());
 	}

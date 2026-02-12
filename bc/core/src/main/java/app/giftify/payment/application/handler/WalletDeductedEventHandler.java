@@ -8,7 +8,6 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 import lombok.RequiredArgsConstructor;
@@ -37,25 +36,11 @@ public class WalletDeductedEventHandler {
 				"[WalletDeductedEventHandler] Payment를 찾을 수 없습니다. paymentId=" + event.getPaymentId()
 			));
 
-		String requestId = "WALLET-" + event.getWalletId();
-		payment.markAsPaid(
-			null,
-			null,
-			null,
-			event.getDeductedAt(),
-			requestId
-		);
+		payment.markAsPaid(null, null, null, event.getDeductedAt());
 
+		var domainEvents = payment.pullEvents();
 		Payment savedPayment = paymentRepository.save(payment);
-
-		eventPublisher.publish(new PaymentConfirmedEvent(
-			savedPayment.getId(),
-			savedPayment.getMemberId(),
-			savedPayment.getOrderId(),
-			savedPayment.getType(),
-			savedPayment.getPaidAmount(),
-			event.getDeductedAt()
-		));
+		domainEvents.forEach(eventPublisher::publish);
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
 			savedPayment.getId(), savedPayment.getStatus());

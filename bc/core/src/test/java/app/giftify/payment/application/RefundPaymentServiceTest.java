@@ -81,7 +81,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -120,7 +120,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -168,7 +168,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -217,7 +217,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -243,7 +243,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.empty());
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -284,7 +284,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, unauthorizedRequesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, unauthorizedRequesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -321,7 +321,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -361,7 +361,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -401,7 +401,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -442,7 +442,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
