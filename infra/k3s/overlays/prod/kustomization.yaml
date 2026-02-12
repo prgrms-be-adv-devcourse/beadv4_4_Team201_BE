@@ -1,0 +1,56 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+    newTag: SET_BY_CICD
+
+patches:
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |-
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 10Gi
+  - target:
+      kind: StatefulSet
+      name: minio
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 0
+  - target:
+      kind: Job
+      name: minio-init
+    patch: |-
+      - op: add
+        path: /spec/suspend
+        value: true
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: api-server
+      spec:
+        template:
+          spec:
+            containers:
+              - name: api-server
+                env:
+                  - name: SPRING_BATCH_JDBC_INITIALIZE_SCHEMA
+                    value: "always" # 이거 always 로 하면 안되고 직접 마이그레이션 스크립트로 생성하여야 함
+                startupProbe:
+                  httpGet:
+                    path: /actuator/health
+                    port: 8080
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  failureThreshold: 60
+                readinessProbe:
+                  initialDelaySeconds: 5
+                livenessProbe:
+                  initialDelaySeconds: 10

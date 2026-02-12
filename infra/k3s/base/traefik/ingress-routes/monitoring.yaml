@@ -1,0 +1,69 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana-ingress
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`grafana.localhost`)
+      kind: Rule
+      services:
+        - name: grafana
+          port: 3333
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prometheus-ingress
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`prometheus.localhost`)
+      kind: Rule
+      services:
+        - name: prometheus
+          port: 9090
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: redpanda-ingress
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`redpanda.localhost`)
+      kind: Rule
+      services:
+        - name: redpanda
+          port: 8082
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: redpanda-console-ingress
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`redpanda-console.localhost`)
+      kind: Rule
+      services:
+        - name: redpanda-console
+          port: 8180
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: minio-console-ingress
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`minio.localhost`)
+      kind: Rule
+      services:
+        - name: minio
+          port: 9001
