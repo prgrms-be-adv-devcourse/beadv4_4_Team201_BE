@@ -19,6 +19,11 @@ spring:
       hibernate:
         default_schema: g7app
 
+  elasticsearch:
+    uris: ${ES_URIS} # ES는 HTTP REST API로 통신하기 때문에 전체 URL을 지정하는 uris를 사용
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD}
+
   flyway:
     enabled: true
     baseline-on-migrate: true

@@ -34,6 +34,9 @@ dependencies {
     annotationProcessor("jakarta.annotation:jakarta.annotation-api")
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
 
+    // ElasticSearch
+    implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -48,6 +51,9 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
+    testImplementation("org.springframework.boot:spring-boot-starter-data-elasticsearch-test")
+    testImplementation("org.testcontainers:elasticsearch")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
 
     // Retry
     implementation("org.springframework.retry:spring-retry")

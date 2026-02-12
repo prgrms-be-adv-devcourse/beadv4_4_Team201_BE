@@ -116,14 +116,14 @@ services:
       --maxmemory 100mb
       --maxmemory-policy volatile-ttl
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 3
     networks:
       - giftify-network
     restart: unless-stopped
-      
+
 
   prometheus: # 별도 depends_on 없이 → Prometheus가 api-server 없어도 시작 가능하게 (scrape 실패만 발생)
     image: prom/prometheus:v2.48.0
@@ -156,6 +156,13 @@ services:
     networks:
       - giftify-network
     restart: unless-stopped
+  elasticsearch:
+    image: elasticsearch:9.2.4
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node # 클러스터 구성없이 단일 노드로 동작. 로컬/개발 환경에서 표준적인 설정
+      - xpack.security.enabled=false # ES 8.x부터 보안이 기본 활성화라서, 개발 환경에서 인증 없이 접근하려면 꺼야 함 (배포 환경은 true, prod.yml에 name & pw 환경변수 필수)
 
 #### Docker Volumes ####
 volumes:
