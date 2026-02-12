@@ -19,9 +19,9 @@ public record RefundPaymentCommand(
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 				"[RefundPaymentCommand] requesterId는 필수입니다.");
 		}
-		if (refundAmount == null) {
+		if (refundAmount == null || refundAmount.isLessThanOrEqual(Money.zero())) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[RefundPaymentCommand] refundAmount는 필수입니다.");
+				"[RefundPaymentCommand] refundAmount는 양수여야 합니다.");
 		}
 	}
 }

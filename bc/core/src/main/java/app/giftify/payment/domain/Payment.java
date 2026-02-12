@@ -390,6 +390,11 @@ public class Payment extends BaseDomainModel {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
 			}
+			Money effectiveRefundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
+			if (effectiveRefundedAmount.isGreaterThan(paidAmount)) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] refundedAmount는 paidAmount를 초과할 수 없습니다.");
+			}
 		}
 
 		private void validateOrderItemsIfRequired() {
