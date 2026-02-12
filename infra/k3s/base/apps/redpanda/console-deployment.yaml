@@ -20,11 +20,13 @@ spec:
         runAsUser: 99
         runAsGroup: 99
       containers:
-        - name: console
+        - name: redpanda-console
           image: redpandadata/console:v3.5.1
           ports:
-            - containerPort: 8080
+            - containerPort: 8180
           env:
+            - name: SERVER_LISTENPORT
+              value: "8180"
             - name: KAFKA_BROKERS
               value: "redpanda:9092"
             - name: REDPANDA_ADMINAPI_URLS
@@ -33,12 +35,14 @@ spec:
             requests:
               memory: "64Mi"
               cpu: "50m"
+              ephemeral-storage: "100Mi"
             limits:
               memory: "128Mi"
               cpu: "200m"
+              ephemeral-storage: "300Mi"
           readinessProbe:
             httpGet:
               path: /admin/health
-              port: 8080
+              port: 8180
             initialDelaySeconds: 5
             periodSeconds: 10

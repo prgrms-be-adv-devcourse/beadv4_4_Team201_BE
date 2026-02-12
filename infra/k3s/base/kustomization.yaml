@@ -31,7 +31,7 @@ resources:
   - apps/minio/statefulset.yaml
   - apps/minio/service.yaml
   - apps/minio/init-job.yaml
-  # k6
+  # k6 (job.yaml은 수동 실행 대상이므로 base에 포함하지 않음. kubectl apply -f apps/k6/job.yaml 으로 개별 실행)
   - apps/k6/configmap.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
