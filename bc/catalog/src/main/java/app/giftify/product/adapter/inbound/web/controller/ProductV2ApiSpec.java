@@ -105,4 +105,17 @@ public interface ProductV2ApiSpec {
             @Parameter(hidden = true) Long sellerId,
             @Valid @ModelAttribute StockHistorySearchCommand searchCommand
     );
+
+    @Operation(summary = "ES 상품 데이터 재동기화 (관리자)", description = """
+            RDB의 승인된 상품(ACTIVE/INACTIVE)을 ES에 수동으로 전체 재동기화합니다. ADMIN 권한 필요.
+            - ES 볼륨이 삭제됐었거나 ES 데이터가 꼬였을 때 수동 재동기화용으로 사용
+            - ES 볼륨이 유지되는 한 서버(Spring Boot) 재시작 시 ES 데이터는 그대로 유지되므로 매번 호출할 필요 없음
+            - 동기화 완료 시 처리된 상품 건수를 반환
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "동기화 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "ADMIN 권한 없음")
+    })
+    ResponseEntity<RsData<String>> syncProductsToEs();
 }

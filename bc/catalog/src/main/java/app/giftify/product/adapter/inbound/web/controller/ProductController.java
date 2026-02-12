@@ -9,6 +9,7 @@ import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
 import app.giftify.product.application.port.in.*;
+import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.domain.ProductStockHistory;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.security.common.CurrentMemberId;
@@ -40,6 +41,7 @@ public class ProductController implements ProductV2ApiSpec {
     private final ProductRejectUseCase productRejectUseCase;
     private final ProductUpdateUseCase productUpdateUseCase;
     private final StockHistorySearchUseCase stockHistorySearchUseCase;
+    private final ProductEsPort productEsPort;
 
     // 상품 등록
     @PostMapping
@@ -155,6 +157,19 @@ public class ProductController implements ProductV2ApiSpec {
                 stockHistoryDtoPage.getTotalElements()
         );
         return ResponseEntity.ok(RsData.success(result));
+    }
+
+    /**
+     * (관리자) ES 상품 데이터 재동기화
+     * - ES 볼륨이 삭제됐었거나 ES 데이터가 꼬였을 때 등등 수동 재동기화용으로 사용
+     * - 도커 ES 볼륨이 있으므로 서버(Spring Boot)를 재시작해도 ES 데이터는 그대로 유지
+     */
+    @PostMapping("/admin/es-sync")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public ResponseEntity<RsData<String>> syncProductsToEs() {
+        int count = productEsPort.syncAll();
+        return ResponseEntity.ok(RsData.success(null, "ES 상품 데이터 재동기화 완료: " + count + "건"));
     }
 
     /**
