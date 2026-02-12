@@ -1,4 +1,4 @@
-package giftify.support.web.handler;
+package giftify.support.web.idempotency.handler;
 
 import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.ErrorCode;

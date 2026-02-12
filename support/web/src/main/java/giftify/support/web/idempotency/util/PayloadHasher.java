@@ -1,4 +1,4 @@
-package giftify.support.web.util;
+package giftify.support.web.idempotency.util;
 
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
@@ -42,6 +42,10 @@ public class PayloadHasher {
             log.error("SHA-256 알고리즘을 찾을 수 없음", e);
             throw new InfraException(InfraErrorCode.UNKNOWN_INFRA_ERROR);
         }
+    }
+
+    public boolean isMatch(String storedValue, String currentHash) {
+        return storedValue.equals(currentHash);
     }
 
     private String bytesToHex(byte[] hash) {
