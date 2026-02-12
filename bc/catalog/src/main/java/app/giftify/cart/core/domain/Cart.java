@@ -56,14 +56,16 @@ public class Cart extends BaseDomainModel {
     /*
     장바구니에서 상품 삭제
      */
-    public void removeItem(TargetType targetType, Long targetId) {
-        CartItemKey key = new CartItemKey(targetType, targetId);
+    public void removeItems(TargetType targetType, List<Long> targetIds) {
+        for (Long targetId : targetIds) {
+            CartItemKey key = new CartItemKey(targetType, targetId);
 
-        if (!items.containsKey(key)) {
-            throw new CartException(CartErrorCode.CARTITEM_NOT_FOUND);
+            if (!items.containsKey(key)) {
+                throw new CartException(CartErrorCode.CARTITEM_NOT_FOUND);
+            }
+
+            items.remove(key);
         }
-
-        items.remove(key);
     }
     /*
     장바구니 전체 비우기

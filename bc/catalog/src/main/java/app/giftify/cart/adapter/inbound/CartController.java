@@ -1,14 +1,7 @@
 package app.giftify.cart.adapter.inbound;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import app.giftify.cart.application.inbound.AddCartItemCommand;
 import app.giftify.cart.application.inbound.CartService;
@@ -21,6 +14,8 @@ import app.giftify.shared.domain.vo.Money;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v2/carts")
 @RequiredArgsConstructor
@@ -28,12 +23,14 @@ public class CartController implements CartV2ApiSpec {
 	private final CartService cartService;
 
 	@Override
-	@PostMapping("/{cartId}")
-	public ResponseEntity<RsData<Void>> addItem(@PathVariable("cartId") Long cartId,
-		@RequestBody CartItemRequest request) {
-		CartItemAddResult result = cartService.addItem(cartId, new AddCartItemCommand(
-			new CartItemKey(request.targetType(), request.targetId()),
-			Money.of(request.amount())
+	@PostMapping
+	public ResponseEntity<RsData<Void>> addItemToMyCart(
+			@CurrentMemberId Long memberId,
+			@RequestBody CartItemRequest request
+	) {
+		CartItemAddResult result = cartService.addItemToMyCart(memberId, new AddCartItemCommand(
+				new CartItemKey(request.targetType(), request.targetId()),
+				Money.of(request.amount())
 		));
 
 		if (result == CartItemAddResult.UPDATED) {
@@ -44,19 +41,18 @@ public class CartController implements CartV2ApiSpec {
 
 	@Override
 	@PostMapping
-	public ResponseEntity<RsData<Void>> addItemToMyCart(
+	public ResponseEntity<RsData<Void>> addItemsToMyCart(
 		@CurrentMemberId Long memberId,
-		@RequestBody CartItemRequest request
+		@RequestBody List<CartItemRequest> requests
 	) {
-		CartItemAddResult result = cartService.addItemToMyCart(memberId, new AddCartItemCommand(
-			new CartItemKey(request.targetType(), request.targetId()),
-			Money.of(request.amount())
-		));
+		List<AddCartItemCommand> commands = requests.stream()
+				.map(req -> new AddCartItemCommand(
+						new CartItemKey(req.targetType(), req.targetId()),
+						Money.of(req.amount())
+				)).toList();
 
-		if (result == CartItemAddResult.UPDATED) {
-			return ResponseEntity.ok(RsData.success(null, "이미 장바구니에 있는 펀딩으로 가격이 수정되었습니다."));
-		}
-		return ResponseEntity.ok(RsData.success(null, "펀딩이 장바구니에 담겼습니다."));
+		cartService.addItemsToMyCart(memberId, commands);
+		return ResponseEntity.ok(RsData.success(null, "펀딩 아이템들이 장바구니에 담겼습니다."));
 	}
 
 	@Override
@@ -88,13 +84,13 @@ public class CartController implements CartV2ApiSpec {
 	}
 
 	@Override
-	@DeleteMapping("/items/{targetType}/{targetId}")
-	public ResponseEntity<RsData<Void>> removeItem(
+	@DeleteMapping("/items/{targetType}")
+	public ResponseEntity<RsData<Void>> removeItems(
 		@CurrentMemberId Long memberId,
 		@PathVariable(value = "targetType") TargetType targetType,
-		@PathVariable(value = "targetId") Long targetId
+		@RequestParam(value = "targetIds") List<Long> targetIds
 	) {
-		cartService.removeItem(memberId, targetType, targetId);
+		cartService.removeItems(memberId, targetType, targetIds);
 		return ResponseEntity.ok(RsData.success(null));
 	}
 
