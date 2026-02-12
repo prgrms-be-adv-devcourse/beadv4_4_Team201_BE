@@ -59,7 +59,12 @@ public class IdempotencyAspect {
         boolean isFirstRequest = idempotencyManager.attemptLock(redisKey, currentHash, idempotent.ttl());
 
         if (!isFirstRequest) {
-            throw new PolicyException(IdempotencyErrorCode.DUPLICATE_REQUEST);
+            String storedHash = idempotencyManager.getStoredHash(redisKey).orElse("");
+            if (storedHash.equals(currentHash)) {
+                throw new PolicyException(IdempotencyErrorCode.DUPLICATE_REQUEST);
+            } else {
+                throw new PolicyException(IdempotencyErrorCode.PAYLOAD_MISMATCH);
+            }
         }
 
         try {
