@@ -3,6 +3,7 @@ package giftify.support.web.util;
 import app.giftify.shared.api.exception.InfraException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import giftify.support.web.idempotency.util.PayloadHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
