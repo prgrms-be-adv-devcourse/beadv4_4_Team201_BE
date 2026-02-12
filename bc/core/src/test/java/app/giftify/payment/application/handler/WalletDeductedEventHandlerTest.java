@@ -71,7 +71,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-123")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -122,7 +121,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-123")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -170,7 +168,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-456")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.DEPOSIT_CHARGE)
@@ -214,7 +211,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-456")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.DEPOSIT_CHARGE)
@@ -266,7 +262,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-789")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -346,7 +341,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-paid")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -397,7 +391,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-save")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)

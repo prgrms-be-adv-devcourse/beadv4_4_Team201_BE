@@ -34,9 +34,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JpaPayment extends BaseJpaEntity {
 
-	@Column(name = "idempotency_key", unique = true, nullable = false, length = 255)
-	private String idempotencyKey;
-
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", nullable = false, length = 50)
 	private PaymentType type;
@@ -77,7 +74,6 @@ public class JpaPayment extends BaseJpaEntity {
 	private LocalDateTime paidAt;
 
 	private JpaPayment(
-		String idempotencyKey,
 		PaymentType type,
 		PaymentMethod method,
 		String orderId,
@@ -91,7 +87,6 @@ public class JpaPayment extends BaseJpaEntity {
 		String approveCode,
 		LocalDateTime paidAt
 	) {
-		this.idempotencyKey = idempotencyKey;
 		this.type = type;
 		this.method = method;
 		this.orderId = orderId;
@@ -116,7 +111,6 @@ public class JpaPayment extends BaseJpaEntity {
 		}
 
 		return new JpaPayment(
-			payment.getIdempotencyKey(),
 			payment.getType(),
 			payment.getMethod(),
 			payment.getOrderId(),
@@ -143,7 +137,6 @@ public class JpaPayment extends BaseJpaEntity {
 
 		return Payment.builder()
 			.id(super.getId())
-			.idempotencyKey(idempotencyKey)
 			.type(type)
 			.method(method)
 			.orderId(orderId)

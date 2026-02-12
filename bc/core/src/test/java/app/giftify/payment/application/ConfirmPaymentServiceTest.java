@@ -60,7 +60,6 @@ class ConfirmPaymentServiceTest {
 		if (type == PaymentType.FUNDING) {
 			return Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key-" + paymentId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(type)
@@ -75,7 +74,6 @@ class ConfirmPaymentServiceTest {
 		}
 		return Payment.builder()
 			.id(paymentId)
-			.idempotencyKey("idempotency-key-" + paymentId)
 			.orderId(orderId)
 			.memberId(memberId)
 			.type(type)

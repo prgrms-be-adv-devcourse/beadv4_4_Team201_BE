@@ -1,15 +1,11 @@
 package app.giftify.payment.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -71,7 +67,6 @@ class CreatePaymentServiceTest {
 
 			Payment existingPayment = Payment.builder()
 				.id(999L)
-				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -82,8 +77,8 @@ class CreatePaymentServiceTest {
 				.status(PaymentStatus.PENDING)
 				.build();
 
-			given(paymentRepository.findByIdempotencyKey(orderId))
-				.willReturn(Optional.of(existingPayment));
+			given(paymentRepository.findByOrderId(orderId))
+				.willReturn(List.of(existingPayment));
 
 			// when
 			PaymentCreatedResult result = createPaymentService.create(command);
@@ -120,7 +115,6 @@ class CreatePaymentServiceTest {
 			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
 			Payment savedPayment = Payment.builder()
 				.id(1L)
-				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -132,8 +126,8 @@ class CreatePaymentServiceTest {
 				.createdAt(createdAt)
 				.build();
 
-			given(paymentRepository.findByIdempotencyKey(orderId))
-				.willReturn(Optional.empty());
+			given(paymentRepository.findByOrderId(orderId))
+				.willReturn(List.of());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 
@@ -177,7 +171,6 @@ class CreatePaymentServiceTest {
 			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
 			Payment savedPayment = Payment.builder()
 				.id(1L)
-				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -191,8 +184,8 @@ class CreatePaymentServiceTest {
 
 			DeductWalletResult walletResult = DeductWalletResult.success(100L, Money.of(5000));
 
-			given(paymentRepository.findByIdempotencyKey(orderId))
-				.willReturn(Optional.empty());
+			given(paymentRepository.findByOrderId(orderId))
+				.willReturn(List.of());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 			given(deductWalletUseCase.deductForPayment(any(DeductWalletCommand.class)))
@@ -239,7 +232,6 @@ class CreatePaymentServiceTest {
 
 			Payment savedPayment = Payment.builder()
 				.id(1L)
-				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -254,8 +246,8 @@ class CreatePaymentServiceTest {
 				100L, requiredAmount, currentBalance
 			);
 
-			given(paymentRepository.findByIdempotencyKey(orderId))
-				.willReturn(Optional.empty());
+			given(paymentRepository.findByOrderId(orderId))
+				.willReturn(List.of());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 			given(deductWalletUseCase.deductForPayment(any(DeductWalletCommand.class)))
@@ -265,7 +257,7 @@ class CreatePaymentServiceTest {
 			assertThatThrownBy(() -> createPaymentService.create(command))
 				.isInstanceOf(PaymentException.class)
 				.satisfies(thrown -> {
-					PaymentException exception = (PaymentException) thrown;
+					PaymentException exception = (PaymentException)thrown;
 					assertThat(exception.getErrorCode()).isEqualTo(PaymentErrorCode.INSUFFICIENT_WALLET_BALANCE);
 				});
 		}
@@ -289,7 +281,6 @@ class CreatePaymentServiceTest {
 
 			Payment existingPayment = Payment.builder()
 				.id(999L)
-				.idempotencyKey(orderId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
@@ -300,8 +291,8 @@ class CreatePaymentServiceTest {
 				.status(PaymentStatus.PENDING)
 				.build();
 
-			given(paymentRepository.findByIdempotencyKey(orderId))
-				.willReturn(Optional.of(existingPayment));
+			given(paymentRepository.findByOrderId(orderId))
+				.willReturn(List.of(existingPayment));
 
 			// when
 			PaymentCreatedResult result = createPaymentService.create(command);
@@ -342,14 +333,13 @@ class CreatePaymentServiceTest {
 
 			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
 
-			given(paymentRepository.findByIdempotencyKey(orderId))
-				.willReturn(Optional.empty());
+			given(paymentRepository.findByOrderId(orderId))
+				.willReturn(List.of());
 			given(paymentRepository.save(paymentCaptor.capture()))
 				.willAnswer(invocation -> {
 					Payment payment = invocation.getArgument(0);
 					return Payment.builder()
 						.id(1L)
-						.idempotencyKey(payment.getIdempotencyKey())
 						.orderId(payment.getOrderId())
 						.memberId(payment.getMemberId())
 						.type(payment.getType())
@@ -366,7 +356,6 @@ class CreatePaymentServiceTest {
 
 			// then
 			Payment capturedPayment = paymentCaptor.getValue();
-			assertThat(capturedPayment.getIdempotencyKey()).isEqualTo(orderId);
 			assertThat(capturedPayment.getOrderId()).isEqualTo(orderId);
 			assertThat(capturedPayment.getMemberId()).isEqualTo(memberId);
 			assertThat(capturedPayment.getType()).isEqualTo(PaymentType.FUNDING);

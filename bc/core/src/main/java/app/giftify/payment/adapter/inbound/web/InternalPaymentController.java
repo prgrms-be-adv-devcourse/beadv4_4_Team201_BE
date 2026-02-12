@@ -70,16 +70,4 @@ public class InternalPaymentController {
 		return ResponseEntity.ok(payments);
 	}
 
-	@GetMapping("/by-idempotency-key/{key}")
-	public ResponseEntity<PaymentInfoResponse> getByIdempotencyKey(
-		@PathVariable("key") @NotBlank String key
-	) {
-		log.debug("[InternalPaymentController] 멱등성 키로 결제 조회 요청. idempotencyKey=***{}",
-			key != null && key.length() > 4 ? key.substring(key.length() - 4) : "****");
-
-		return internalPaymentQueryUseCase.findByIdempotencyKey(key)
-			.map(PaymentInfoResponse::from)
-			.map(ResponseEntity::ok)
-			.orElse(ResponseEntity.notFound().build());
-	}
 }

@@ -97,13 +97,6 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Optional<Payment> findByIdempotencyKey(String idempotencyKey) {
-		return jpaPaymentRepository.findByIdempotencyKey(idempotencyKey)
-			.map(paymentMapper::toDomain);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public Page<Payment> findByMemberId(Long memberId, app.giftify.shared.api.paging.PageRequest pageRequest) {
 		PageRequest springPageRequest = PageRequest.of(pageRequest.page(), pageRequest.size());
 		org.springframework.data.domain.Page<JpaPayment> springPage =

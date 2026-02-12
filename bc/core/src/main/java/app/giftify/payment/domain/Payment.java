@@ -12,7 +12,6 @@ import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
-	private final String idempotencyKey; // Note :: 이거 없애기. 없애는 이유는 orderId 가 곧 멱등키이므로
 	private final PaymentType type;
 	private final PaymentMethod method;
 	private final String orderId; // Note :: Long orderId 로 검색하는 것이 더 빠를 수 있음
@@ -31,14 +30,13 @@ public class Payment extends BaseDomainModel {
 	// 상태 변경 시 발생한 이력들 (영속화 전까지 보관)
 	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>(); // Note BaseAggregateRoot 의 이벤트 스토어를 활용하도록 변경 // NOTE :: 이벤트라기 보다는 감사 로그, 히스토리에 가까우므로 분리 작업이 필요함
 
-	private Payment(Long id, String idempotencyKey, PaymentType type, PaymentMethod method,
+	private Payment(Long id, PaymentType type, PaymentMethod method,
 		String orderId, Long memberId,
 		Money originAmount, Money paidAmount, List<OrderItemSnapshot> orderItems,
 		PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
 		LocalDateTime paidAt, LocalDateTime createdAt
 	) {
 		super(id);
-		this.idempotencyKey = idempotencyKey;
 		this.orderId = orderId;
 		this.memberId = memberId;
 		this.type = type;
@@ -84,7 +82,7 @@ public class Payment extends BaseDomainModel {
 		this.paidAt = paidAt;
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
+			this.orderId,
 			PaymentEventType.PAID,
 			requestId                 // ← 호출자가 제공한 ID 사용
 		);
@@ -112,7 +110,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.REFUNDED.getResultStatus();
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
+			this.orderId,
 			PaymentEventType.REFUNDED,
 			requestId
 		);
@@ -139,7 +137,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.CANCELED.getResultStatus();
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
+			this.orderId,
 			PaymentEventType.CANCELED,
 			requestId
 		);
@@ -166,7 +164,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.FAILED.getResultStatus();
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
+			this.orderId,
 			PaymentEventType.FAILED,
 			requestId
 		);
@@ -193,7 +191,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.RECEIVED.getResultStatus();
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
+			this.orderId,
 			PaymentEventType.RECEIVED,
 			requestId
 		);
@@ -220,7 +218,7 @@ public class Payment extends BaseDomainModel {
 		}
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
+			this.orderId,
 			PaymentEventType.CANCEL_FAILED,
 			requestId
 		);
@@ -274,10 +272,6 @@ public class Payment extends BaseDomainModel {
 	}
 
 	// ========== Getter ========== //
-
-	public String getIdempotencyKey() {
-		return idempotencyKey;
-	}
 
 	public String getOrderId() {
 		return orderId;
@@ -333,40 +327,30 @@ public class Payment extends BaseDomainModel {
 
 	// ========== equals / hashCode ========== //
 
-	/**
-	 * Entity 동일성은 id로 판단합니다.
-	 * id가 null인 경우(비영속 상태)에는 idempotencyKey를 비교합니다.
-	 */
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
 		if (!(o instanceof Payment payment))
 			return false;
-
-		// id가 있으면 id로 비교
 		if (getId() != null && payment.getId() != null) {
 			return Objects.equals(getId(), payment.getId());
 		}
-
-		// 비영속 상태에서는 비즈니스 키(idempotencyKey)로 비교
-		return Objects.equals(idempotencyKey, payment.idempotencyKey);
+		return Objects.equals(orderId, payment.orderId);
 	}
 
 	@Override
 	public int hashCode() {
-		// id가 있으면 id 기반, 없으면 idempotencyKey 기반
 		if (getId() != null) {
 			return Objects.hash(getId());
 		}
-		return Objects.hash(idempotencyKey);
+		return Objects.hash(orderId);
 	}
 
 	// ========== Builder ========== //
 
 	public static class Builder {
 		private Long id;
-		private String idempotencyKey;
 		private String orderId;
 		private Long memberId;
 		private Money originAmount;
@@ -383,11 +367,6 @@ public class Payment extends BaseDomainModel {
 
 		public Builder id(Long id) {
 			this.id = id;
-			return this;
-		}
-
-		public Builder idempotencyKey(String idempotencyKey) {
-			this.idempotencyKey = idempotencyKey;
 			return this;
 		}
 
@@ -460,7 +439,6 @@ public class Payment extends BaseDomainModel {
 			validate();
 			return new Payment(
 				id,
-				idempotencyKey,
 				type, method,
 				orderId, memberId,
 				originAmount, paidAmount, orderItems,
@@ -476,7 +454,6 @@ public class Payment extends BaseDomainModel {
 		}
 
 		private void validateRequiredFields() {
-			requireNonBlank(idempotencyKey, "idempotencyKey");
 			requireNonBlank(orderId, "orderId");
 			requireNonNull(memberId, "memberId");
 			requireNonNull(type, "type");
@@ -530,25 +507,13 @@ public class Payment extends BaseDomainModel {
 
 	// ========== 정적 팩토리 메서드  ========== //
 
-	/**
-	 * 새로운 결제를 생성합니다.
-	 *
-	 * @param context        결제 생성에 필요한 컨텍스트 정보
-	 * @param idempotencyKey 멱등성 키 (중복 결제 방지)
-	 * @param originAmount   원래 결제 금액
-	 * @param paidAmount     실제 결제 금액 (할인 적용 후)
-	 * @param orderItems     주문 항목 정보
-	 * @return 새로운 Payment 객체 (PENDING 상태)
-	 */
 	public static Payment create(
 		PaymentCreateContext context,
-		String idempotencyKey,
 		Money originAmount,
 		Money paidAmount,
 		List<OrderItemSnapshot> orderItems
 	) {
 		return builder()
-			.idempotencyKey(idempotencyKey)
 			.orderId(context.orderId())
 			.memberId(context.memberId())
 			.type(context.type())

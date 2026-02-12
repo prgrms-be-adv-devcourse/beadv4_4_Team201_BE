@@ -65,7 +65,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -105,7 +104,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -154,7 +152,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -204,7 +201,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -273,7 +269,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(ownerId)
 				.type(PaymentType.FUNDING)
@@ -314,7 +309,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -352,7 +346,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -393,7 +386,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -434,7 +426,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)

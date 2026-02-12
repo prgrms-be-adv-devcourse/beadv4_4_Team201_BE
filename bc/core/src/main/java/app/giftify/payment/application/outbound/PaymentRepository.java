@@ -26,14 +26,5 @@ public interface PaymentRepository {
 	 */
 	List<Payment> findByOrderId(String orderId);
 
-	/**
-	 * 멱등성 키로 결제를 조회합니다.
-	 * 결제 생성 요청의 중복 여부를 확인하는 데 사용됩니다.
-	 *
-	 * @param idempotencyKey 클라이언트/Order BC에서 전달받은 멱등성 키
-	 * @return 해당 키로 생성된 결제 (없으면 empty)
-	 */
-	Optional<Payment> findByIdempotencyKey(String idempotencyKey);
-
 	Page<Payment> findByMemberId(Long memberId, PageRequest pageRequest);
 }

@@ -15,5 +15,4 @@ public interface InternalPaymentQueryUseCase {
 
 	List<InternalPaymentResult> findByOrderId(String orderId);
 
-	Optional<InternalPaymentResult> findByIdempotencyKey(String idempotencyKey);
 }

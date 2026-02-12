@@ -49,15 +49,6 @@ public class InternalPaymentQueryService implements InternalPaymentQueryUseCase 
 			.toList();
 	}
 
-	@Override
-	public Optional<InternalPaymentResult> findByIdempotencyKey(String idempotencyKey) {
-		log.debug("[InternalPaymentQueryService] 멱등성 키로 결제 조회. idempotencyKey=***{}",
-			idempotencyKey != null && idempotencyKey.length() > 4 ? idempotencyKey.substring(idempotencyKey.length() - 4) : "****");
-
-		return paymentRepository.findByIdempotencyKey(idempotencyKey)
-			.map(this::toResultWithDecryption);
-	}
-
 	/**
 	 * Payment를 복호화된 InternalPaymentResult로 변환
 	 */
