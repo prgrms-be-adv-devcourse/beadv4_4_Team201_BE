@@ -16,6 +16,7 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -95,6 +96,17 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		var domainEvents = payment.pullEvents();
 		Payment savedPayment = paymentRepository.save(payment);
 		domainEvents.forEach(eventPublisher::publish);
+
+		// 8. 외부 BC 이벤트 발행 (Settlement — Spring Modulith outbox)
+		eventPublisher.publish(PaymentConfirmedForSettlement.create(
+			savedPayment.getId(),
+			payment.getOrderId(),
+			encryptedPaymentKey,
+			pgResult.lastTransactionKey(),
+			payment.getPaidAmount(),
+			payment.getMethod(),
+			paidAt
+		));
 
 		return ConfirmPaymentResult.success(savedPayment.getId());
 	}
