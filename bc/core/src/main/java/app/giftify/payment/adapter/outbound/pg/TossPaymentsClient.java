@@ -48,7 +48,8 @@ public class TossPaymentsClient {
 
 			if (response.isSuccess()) {
 				log.info("[TossPayments] 결제 승인 성공. paymentKey={}, orderId={}", paymentKey, orderId);
-				return TossConfirmResult.success(paymentKey);
+				String approveNo = response.card() != null ? response.card().approveNo() : null;
+				return TossConfirmResult.success(paymentKey, response.lastTransactionKey(), approveNo);
 			} else {
 				log.warn("[TossPayments] 결제 승인 실패. paymentKey={}, orderId={}, errorCode={}, message={}",
 					paymentKey, orderId, response.code(), response.message());
@@ -84,15 +85,15 @@ public class TossPaymentsClient {
 	 * @return 취소 결과
 	 * @throws PaymentException 서버 오류 또는 연결 실패 시
 	 */
-	public TossCancelResult cancelPayment(String paymentKey, String cancelReason) {
+	public TossCancelResult cancelPayment(String paymentKey, String cancelReason, Long cancelAmount) {
 		try {
-			TossPaymentsApi.TossCancelRequest request = new TossPaymentsApi.TossCancelRequest(cancelReason);
+			TossPaymentsApi.TossCancelRequest request = new TossPaymentsApi.TossCancelRequest(cancelReason, cancelAmount);
 
 			TossPaymentsApi.TossPaymentResponse response = tossPaymentsApi.cancel(paymentKey, request);
 
 			if (response.isSuccess()) {
 				log.info("[TossPayments] 결제 취소 성공. paymentKey={}", paymentKey);
-				return TossCancelResult.success(paymentKey);
+				return TossCancelResult.success(paymentKey, response.lastTransactionKey());
 			} else {
 				log.warn("[TossPayments] 결제 취소 실패. paymentKey={}, errorCode={}, message={}",
 					paymentKey, response.code(), response.message());

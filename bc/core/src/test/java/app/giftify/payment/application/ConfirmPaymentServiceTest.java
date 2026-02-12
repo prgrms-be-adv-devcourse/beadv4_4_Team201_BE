@@ -107,7 +107,7 @@ class ConfirmPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(paymentKey, orderId, amount))
-				.willReturn(TossConfirmResult.success(paymentKey));
+				.willReturn(TossConfirmResult.success(paymentKey, "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn("encrypted-payment-key");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
@@ -142,7 +142,7 @@ class ConfirmPaymentServiceTest {
 			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
+			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(anyString())).willReturn("encrypted");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
@@ -176,7 +176,7 @@ class ConfirmPaymentServiceTest {
 			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.FUNDING);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
+			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(anyString())).willReturn("encrypted");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
@@ -322,7 +322,7 @@ class ConfirmPaymentServiceTest {
 			String encryptedPaymentKey = "encrypted-payment-key";
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
+			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn(encryptedPaymentKey);
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 

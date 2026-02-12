@@ -41,6 +41,7 @@ public class WalletDeductedEventHandler {
 		payment.markAsPaid(
 			null,
 			null,
+			null,
 			event.getDeductedAt(),
 			requestId
 		);

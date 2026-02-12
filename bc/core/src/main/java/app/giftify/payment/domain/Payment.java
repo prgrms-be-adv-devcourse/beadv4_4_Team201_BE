@@ -14,7 +14,7 @@ import app.giftify.shared.domain.vo.Money;
 public class Payment extends BaseDomainModel {
 	private final PaymentType type;
 	private final PaymentMethod method;
-	private final String orderId; // Note :: Long orderId 로 검색하는 것이 더 빠를 수 있음
+	private final String orderId; // uuid 를 생성할 때 앞쪽에 타임스탬프 포함하면 됨. 혹은 UUID7 스펙으로 생성하거나
 	private final Long memberId;
 	private final Money originAmount;
 	private final Money paidAmount;
@@ -22,7 +22,7 @@ public class Payment extends BaseDomainModel {
 
 	private PaymentStatus status;
 	private String paymentKey;
-	private String lastTransactionKey; // NOTE :: 무조건 주는 값이니까 받아서 저장하도록 수정
+	private String lastTransactionKey; // NOTE :: 무조건 주는 값이니까 받아서 저장하도록 수정, 리스트가 되어야 하나?
 	private String approveCode;
 	private LocalDateTime paidAt;// NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
 	private final LocalDateTime createdAt; // NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
@@ -71,7 +71,7 @@ public class Payment extends BaseDomainModel {
 	 * @return 생성된 PaymentHistory
 	 * @throws PaymentException 상태가 PENDING이 아닌 경우
 	 */
-	public PaymentHistory markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt, String requestId) {
+	public PaymentHistory markAsPaid(String paymentKey, String approveCode, String lastTransactionKey, LocalDateTime paidAt, String requestId) {
 		if (!PaymentEventType.PAID.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
 				"[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
@@ -79,6 +79,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.PAID.getResultStatus();
 		this.paymentKey = paymentKey;
 		this.approveCode = approveCode;
+		this.lastTransactionKey = lastTransactionKey;
 		this.paidAt = paidAt;
 
 		String historyKey = PaymentHistoryKeyGenerator.generate(
@@ -522,7 +523,6 @@ public class Payment extends BaseDomainModel {
 			.paidAmount(paidAmount)
 			.orderItems(orderItems)
 			.status(PaymentStatus.PENDING)
-			.createdAt(LocalDateTime.now())
 			.build();
 	}
 }
