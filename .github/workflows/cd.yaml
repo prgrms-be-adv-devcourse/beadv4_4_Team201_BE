@@ -1,0 +1,43 @@
+name: cd
+
+on:
+  push:
+    branches: [ "main", "feature/246-cd-script-v2" ]
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # 1. 빌드 (재사용 워크플로우 호출)
+  build:
+    uses: ./.github/workflows/_build.yml
+    with:
+      java-version: '21'
+      run-tests: false
+      generate-coverage: false
+      upload-jar: true
+
+  # 2. 배포 스크립트 수행
+  deploy:
+    needs: [ build ]
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Tag Name
+        id: get_tag
+        run: echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+      - name: Run Deploy Script
+        env:
+          # 태그 푸시묜 태그명을, 아니면 커밋 해시 앞 7자리 사용
+          IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}', github.sha) }}
+          GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GH_PAT: ${{ secrets.GHCR_PAT }}
+        run: |
+          chmod +x ./k3s-ec2-deploy.sh
+          ./k3s-ec2-deploy.sh
