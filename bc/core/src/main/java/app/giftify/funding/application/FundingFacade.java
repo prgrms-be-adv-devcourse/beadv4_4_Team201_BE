@@ -3,14 +3,18 @@ package app.giftify.funding.application;
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -26,25 +30,56 @@ public class FundingFacade {
     private final FundingAcceptUseCase fundingAcceptUseCase;
     private final GetFundingSnapshotUseCase getFundingSnapshotUseCase;
 
+    // todo : 쓰이는 곳에서 아래 Map으로 바뀌면 제거 예정
     @Transactional(readOnly = true)
     public Optional<FundingSnapshot> getSnapshot(Long wishlistItemId) {
         return getFundingSnapshotUseCase.getSnapshot(wishlistItemId);
     }
 
-    @Transactional
-    public FundingResponseDto startFunding(Long wishlistItemId, Long participantId, Integer amount) {
-        // Funding 생성 (기여금 0원의 빈 펀딩)
-        FundingCreateResult result = fundingCreateUseCase.createFunding(wishlistItemId);
-
-        // 펀딩 기여(변경된 funding 받기)
-        Funding fundingAfterContribute = fundingContributeUseCase.contribute(wishlistItemId, participantId, amount);
-
-        return FundingResponseDto.fromEntity(fundingAfterContribute, result.wishlistItemSnapshot());
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getFundingIdMapByWishlistItemIds(List<Long> wishlistItemIds) {
+        return getFundingSnapshotUseCase.getFundingSnapshotsByWishlistItemIds(wishlistItemIds);
     }
 
-    @Transactional
-    public void contributeFunding(Long fundingId, Long participantId, Integer amount) {
-        fundingContributeUseCase.contribute(fundingId, participantId, amount);
+    /**
+     * OrderSnapshot을 받아 펀딩 생성&기여
+     */
+    public void processFundingActions(OrderSnapshot orderSnapshot) {
+
+        List<FundingContributeRequest> allContributeRequests = new ArrayList<>();
+
+        // 1. 펀딩 생성 + 초기 기여 요청 수집
+        if (orderSnapshot.orderItemSnapshots().stream()
+                .anyMatch(item -> item.targetType() == TargetType.FUNDING_PENDING)) {
+
+            List<FundingCreateResult> createdFundings = fundingCreateUseCase.createFunding(orderSnapshot);
+
+            // 생성된 펀딩의 초기 기여 요청 추가
+            allContributeRequests.addAll(
+                    createdFundings.stream()
+                            .map(result -> new FundingContributeRequest(
+                                    result.funding().getId(),
+                                    result.orderItemSnapshot().amount().amount().intValueExact()
+                            ))
+                            .toList()
+            );
+        }
+
+        // 2. 기존 펀딩 기여 요청 추가
+        allContributeRequests.addAll(
+                orderSnapshot.orderItemSnapshots().stream()
+                        .filter(item -> item.targetType() == TargetType.FUNDING)
+                        .map(item -> new FundingContributeRequest(
+                                item.targetId(),
+                                item.amount().amount().intValueExact()
+                        ))
+                        .toList()
+        );
+
+        // 3. 모든 기여를 한 번에 처리
+        if (!allContributeRequests.isEmpty()) {
+            fundingContributeUseCase.contribute(allContributeRequests, orderSnapshot.buyerId());
+        }
     }
 
     @Transactional(readOnly = true)

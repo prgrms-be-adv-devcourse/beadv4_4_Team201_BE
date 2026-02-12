@@ -43,4 +43,5 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.redis)
+    testImplementation(testFixtures(project(":support:common")))
 }
