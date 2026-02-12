@@ -9,6 +9,8 @@ import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.application.port.out.ProductSearchCommand;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
+import app.giftify.product.domain.event.ProductAcceptedEvent;
+import app.giftify.product.domain.event.ProductUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
@@ -133,6 +135,8 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         product.approve();
         productRepositoryPort.save(product);
+
+        eventPublisher.publish(new ProductAcceptedEvent(productId)); // ES 도큐먼트 생성
     }
 
     // 상품 등록 거절 (관리자)
@@ -193,6 +197,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         }
         productRepositoryPort.save(product);
         product.pullEvents().forEach(eventPublisher::publish);
+        eventPublisher.publish(new ProductUpdatedEvent(productId));
 
         return ProductUpdateResult.from(product);
     }
