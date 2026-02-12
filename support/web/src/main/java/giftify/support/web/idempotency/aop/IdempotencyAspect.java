@@ -1,14 +1,15 @@
 package giftify.support.web.idempotency.aop;
 
 import app.giftify.security.common.util.SecurityUtil;
+import app.giftify.shared.api.exception.IdempotencyErrorCode;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.IdempotencySuccessEvent;
 import app.giftify.support.common.annotation.Idempotent;
-import app.giftify.shared.api.exception.IdempotencyErrorCode;
 import giftify.support.web.idempotency.manager.IdempotencyManager;
+import giftify.support.web.idempotency.util.HeaderUtil;
 import giftify.support.web.idempotency.util.PayloadHasher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -39,17 +40,10 @@ public class IdempotencyAspect {
     private final PayloadHasher payloadHasher;
     private final EventPublisher eventPublisher;
 
-    private static final String IDEM_HEADER = "X-Idempotency-Key";
-
     @Around("@annotation(idempotent)")
     public Object execute(ProceedingJoinPoint joinPoint, Idempotent idempotent) throws Throwable {
         HttpServletRequest request = getRequest();
-
-        String idempotencyKey = request.getHeader(IDEM_HEADER);
-        if (idempotencyKey == null || idempotencyKey.isBlank()) {
-            log.warn("필수 헤더 누락: {}", IDEM_HEADER);
-            throw new PolicyException(IdempotencyErrorCode.MISSING_IDEMPOTENCY_KEY);
-        }
+        String idempotencyKey = HeaderUtil.getIdempotencyKeyOrThrow(request);
 
         String redisKey = String.format("IDEM:%s:%s", idempotent.prefix(), idempotencyKey);
 
