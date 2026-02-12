@@ -1,4 +1,4 @@
-package app.giftify.product.adapter.outbound.document;
+package app.giftify.product.adapter.outbound.elasticsearch.document;
 
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -24,21 +24,17 @@ public class ProductDocument {
     private int price;
     @Field(type = FieldType.Keyword)
     private String category;
+    @Field(type = FieldType.Keyword)
+    private String status;
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second_millis)
     private LocalDateTime createdAt;
 
-    public ProductDocument(String name, String description, int price, String category) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.category = category;
-    }
-
-    public ProductDocument(String id, String name, String description, int price, String category) {
+    public ProductDocument(String id, String name, String description, int price, String category, String status) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
+        this.status = status;
     }
 }
