@@ -1,24 +1,11 @@
 package app.giftify.payment.adapter.inbound.event;
 
-import static app.giftify.payment.domain.SystemConstants.SYSTEM_REQUESTER_ID;
-
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
-import app.giftify.payment.application.inbound.CancelPaymentCommand;
 import app.giftify.payment.application.inbound.CancelPaymentUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 결제 취소 이벤트 리스너.
- * Funding BC 등에서 발행하는 취소 이벤트를 수신합니다.
- *
- * TODO: 구체적인 이벤트 타입 정의 후 구현 완료 필요
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -26,15 +13,20 @@ public class PaymentCancelEventListener {
 
 	private final CancelPaymentUseCase cancelPaymentUseCase;
 
-	// TODO: FundingCanceledEvent 등 구체적 이벤트 정의 후 활성화
-	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	// @Transactional(propagation = Propagation.REQUIRES_NEW)
+	// TODO: FundingCanceledEvent → Payment 연결 경로 부재
+	//  현재 FundingCanceledEvent는 fundingId, wishlistItemId, canceledAmount만 포함.
+	//  Payment를 찾으려면 orderId가 필요하지만, Funding 엔티티에 orderId가 없음.
+	//   1. Funding 엔티티에 orderId 저장 → FundingCanceledEvent에 포함
+	//   2.  Funding → Order 매핑 테이블 도입
+	//  결정 후 @ApplicationModuleListener로 전환 필요.
+	//
+	// @ApplicationModuleListener
 	// public void handle(FundingCanceledEvent event) {
-	//     CancelPaymentCommand command = new CancelPaymentCommand(
-	//         event.getPaymentId(),
-	//         SYSTEM_REQUESTER_ID,
-	//         "FUNDING_CANCELED"
-	//     );
-	//     cancelPaymentUseCase.cancel(command);
+	//     String orderId = ???; // Funding → orderId 매핑 필요
+	//     paymentRepository.findByOrderId(orderId).stream()
+	//         .filter(Payment::isCancelable)
+	//         .forEach(payment -> cancelPaymentUseCase.cancel(
+	//             new CancelPaymentCommand(payment.getId(), SYSTEM_REQUESTER_ID, "펀딩 취소에 의한 자동 취소")
+	//         ));
 	// }
 }

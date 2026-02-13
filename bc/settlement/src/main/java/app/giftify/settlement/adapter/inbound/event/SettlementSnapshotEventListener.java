@@ -13,7 +13,8 @@ import app.giftify.settlement.domain.exception.SettlementException;
 import app.giftify.shared.domain.event.funding.FundingReceivedConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
-import app.giftify.shared.domain.event.payment.PaymentCompleteEvent;
+import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -73,14 +74,14 @@ public class SettlementSnapshotEventListener {
         ));
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentCompleteEvent(PaymentCompleteEvent event) {
+    @ApplicationModuleListener
+    public void handlePaymentConfirmedEvent(PaymentConfirmedForSettlement event) {
         paymentSnapshotRepository.save(new PaymentSnapshot(
                 event.paymentId(),
                 event.orderNumber(),
                 event.paymentKey(),
                 event.transactionKey(),
-                event.paidAt(),
+                event.occurredAt(),
                 event.paidAmount(),
                 event.method()
         ));

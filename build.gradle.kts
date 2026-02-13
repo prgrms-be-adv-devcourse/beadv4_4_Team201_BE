@@ -100,6 +100,15 @@ subprojects {
             }
         }
 
+        // Spring Boot BOM의 Testcontainers 버전을 version catalog 버전으로 오버라이드
+        configurations.all {
+            resolutionStrategy.eachDependency {
+                if (requested.group == "org.testcontainers") {
+                    useVersion(rootProject.libs.versions.testcontainers.get())
+                }
+            }
+        }
+
         // 테스트 설정
         tasks.withType<Test> {
             useJUnitPlatform()

@@ -1,50 +1,52 @@
 package app.giftify.payment.domain;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import app.giftify.payment.domain.event.PaymentCancelFailedEvent;
+import app.giftify.payment.domain.event.PaymentCanceledEvent;
+import app.giftify.payment.domain.event.PaymentConfirmedEvent;
+import app.giftify.payment.domain.event.PaymentFailedEvent;
+import app.giftify.payment.domain.event.PaymentReceivedEvent;
+import app.giftify.payment.domain.event.PaymentRefundedEvent;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 public class Payment extends BaseDomainModel {
-	private final String idempotencyKey; // Note :: 이거 없애기. 없애는 이유는 orderId 가 곧 멱등키이므로
 	private final PaymentType type;
 	private final PaymentMethod method;
-	private final String orderId; // Note :: Long orderId 로 검색하는 것이 더 빠를 수 있음
+	private final String orderId; // uuid 를 생성할 때 앞쪽에 타임스탬프 포함하면 됨. 혹은 UUID7 스펙으로 생성하거나
 	private final Long memberId;
 	private final Money originAmount;
 	private final Money paidAmount;
+	private Money refundedAmount;
 	private final List<OrderItemSnapshot> orderItems;
 
 	private PaymentStatus status;
 	private String paymentKey;
-	private String lastTransactionKey; // NOTE :: 무조건 주는 값이니까 받아서 저장하도록 수정
+	private String lastTransactionKey;
 	private String approveCode;
-	private LocalDateTime paidAt;// NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
-	private final LocalDateTime createdAt; // NOTE :: lastModifiedAt 으로 통일, 외부로 나갈때 맥락에 따라 다르게 사용하도록 가이드
+	// 도메인이 스냅샷으로 들고 있되, 생성은 JPA에 위임
+	private LocalDateTime paidAt;
+	private final LocalDateTime createdAt;
 
-	// 상태 변경 시 발생한 이력들 (영속화 전까지 보관)
-	private final List<PaymentHistory> uncommittedHistory = new ArrayList<>(); // Note BaseAggregateRoot 의 이벤트 스토어를 활용하도록 변경 // NOTE :: 이벤트라기 보다는 감사 로그, 히스토리에 가까우므로 분리 작업이 필요함
-
-	private Payment(Long id, String idempotencyKey, PaymentType type, PaymentMethod method,
+	private Payment(Long id, PaymentType type, PaymentMethod method,
 		String orderId, Long memberId,
-		Money originAmount, Money paidAmount, List<OrderItemSnapshot> orderItems,
+		Money originAmount, Money paidAmount, Money refundedAmount, List<OrderItemSnapshot> orderItems,
 		PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
 		LocalDateTime paidAt, LocalDateTime createdAt
 	) {
 		super(id);
-		this.idempotencyKey = idempotencyKey;
 		this.orderId = orderId;
 		this.memberId = memberId;
 		this.type = type;
 		this.method = method;
 		this.originAmount = originAmount;
 		this.paidAmount = paidAmount;
+		this.refundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
 		this.orderItems = List.copyOf(orderItems);
 		this.status = status;
 		this.paymentKey = paymentKey;
@@ -62,18 +64,7 @@ public class Payment extends BaseDomainModel {
 
 	// ========== 상태 변경 메서드 ========== //
 
-	/**
-	 * 결제를 완료 처리합니다.
-	 * PENDING 상태에서만 호출 가능합니다.
-	 *
-	 * @param paymentKey  PG사 결제 키
-	 * @param approveCode PG사 승인 코드
-	 * @param paidAt      결제 완료 시각
-	 * @param requestId   요청 식별자
-	 * @return 생성된 PaymentHistory
-	 * @throws PaymentException 상태가 PENDING이 아닌 경우
-	 */
-	public PaymentHistory markAsPaid(String paymentKey, String approveCode, LocalDateTime paidAt, String requestId) {
+	public void markAsPaid(String paymentKey, String approveCode, String lastTransactionKey, LocalDateTime paidAt) {
 		if (!PaymentEventType.PAID.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
 				"[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
@@ -81,178 +72,84 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.PAID.getResultStatus();
 		this.paymentKey = paymentKey;
 		this.approveCode = approveCode;
+		this.lastTransactionKey = lastTransactionKey;
 		this.paidAt = paidAt;
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
-			PaymentEventType.PAID,
-			requestId                 // ← 호출자가 제공한 ID 사용
-		);
-
-		PaymentHistory history = PaymentHistory.create(
-			getId(), historyKey, PaymentEventType.PAID, paidAt
-		);
-		this.uncommittedHistory.add(history);
-		return history;
+		registerEvent(new PaymentConfirmedEvent(
+			getId(), getMemberId(), getOrderId(), getType(), getPaidAmount(), paidAt
+		));
 	}
 
-	/**
-	 * 결제를 환불 처리합니다.
-	 * PAID 상태에서만 호출 가능합니다.
-	 *
-	 * @param occurredAt 환불 발생 시각
-	 * @return 생성된 PaymentHistory
-	 * @throws PaymentException 환불 불가능한 상태인 경우
-	 */
-	public PaymentHistory markAsRefunded(LocalDateTime occurredAt, String requestId) {
+	public void markAsRefunded(Money refundAmount, LocalDateTime occurredAt, String reason) {
 		if (!PaymentEventType.REFUNDED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
 				"[Payment] 환불 불가능한 상태입니다: " + this.status);
 		}
-		this.status = PaymentEventType.REFUNDED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
-			PaymentEventType.REFUNDED,
-			requestId
-		);
+		Money remainingRefundable = this.paidAmount.minus(this.refundedAmount);
+		if (refundAmount.isGreaterThan(remainingRefundable)) {
+			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+				"[Payment] 환불 금액이 남은 환불 가능 금액을 초과합니다. 요청: " + refundAmount + ", 가능: " + remainingRefundable);
+		}
 
-		PaymentHistory history = PaymentHistory.create(
-			getId(), historyKey, PaymentEventType.REFUNDED, occurredAt);
-		this.uncommittedHistory.add(history);
-		return history;
+		this.refundedAmount = this.refundedAmount.plus(refundAmount);
+
+		if (this.refundedAmount.equals(this.paidAmount)) {
+			this.status = PaymentEventType.REFUNDED.getResultStatus();
+		}
+
+		registerEvent(new PaymentRefundedEvent(
+			getId(), getMemberId(), getOrderId(), getType(), refundAmount, reason, occurredAt
+		));
 	}
 
-	/**
-	 * 결제를 취소 처리합니다.
-	 * PENDING 상태에서만 호출 가능합니다.
-	 *
-	 * @param occurredAt 취소 발생 시각
-	 * @return 생성된 PaymentHistory
-	 * @throws PaymentException 취소 불가능한 상태인 경우
-	 */
-	public PaymentHistory markAsCanceled(LocalDateTime occurredAt, String requestId) {
+	public void markAsCanceled(LocalDateTime occurredAt, String reason) {
 		if (!PaymentEventType.CANCELED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
 				"[Payment] 취소 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.CANCELED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
-			PaymentEventType.CANCELED,
-			requestId
-		);
-
-		PaymentHistory history = PaymentHistory.create(
-			getId(), historyKey, PaymentEventType.CANCELED, occurredAt);
-		this.uncommittedHistory.add(history);
-		return history;
+		registerEvent(new PaymentCanceledEvent(
+			getId(), getMemberId(), getOrderId(), getType(), getPaidAmount(), reason, occurredAt
+		));
 	}
 
-	/**
-	 * 결제를 실패 처리합니다.
-	 * PENDING 상태에서만 호출 가능합니다.
-	 *
-	 * @param occurredAt 실패 발생 시각
-	 * @return 생성된 PaymentHistory
-	 * @throws PaymentException 상태가 PENDING이 아닌 경우
-	 */
-	public PaymentHistory markAsFailed(LocalDateTime occurredAt, String requestId) {
+	public void markAsFailed(LocalDateTime occurredAt) {
 		if (!PaymentEventType.FAILED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
 				"[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
 		}
 		this.status = PaymentEventType.FAILED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
-			PaymentEventType.FAILED,
-			requestId
-		);
-
-		PaymentHistory history = PaymentHistory.create(
-			getId(), historyKey, PaymentEventType.FAILED, occurredAt);
-		this.uncommittedHistory.add(history);
-		return history;
+		registerEvent(new PaymentFailedEvent(getId(), getOrderId(), occurredAt));
 	}
 
-	/**
-	 * 수령 확정 처리합니다.
-	 * PAID 상태에서만 호출 가능하며, 수령 확정 후에는 환불이 불가능합니다.
-	 *
-	 * @param occurredAt 수령 확정 시각
-	 * @return 생성된 PaymentHistory
-	 * @throws PaymentException 수령 확정 불가능한 상태인 경우
-	 */
-	public PaymentHistory markAsReceived(LocalDateTime occurredAt, String requestId) {
+	public void markAsReceived(LocalDateTime occurredAt) {
 		if (!PaymentEventType.RECEIVED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
 				"[Payment] 수령 확정 불가능한 상태입니다: " + this.status);
 		}
 		this.status = PaymentEventType.RECEIVED.getResultStatus();
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
-			PaymentEventType.RECEIVED,
-			requestId
-		);
-
-		PaymentHistory history = PaymentHistory.create(
-			getId(), historyKey, PaymentEventType.RECEIVED, occurredAt);
-		this.uncommittedHistory.add(history);
-		return history;
+		registerEvent(new PaymentReceivedEvent(
+			getId(), getMemberId(), getOrderId(), occurredAt
+		));
 	}
 
-	/**
-	 * 취소 실패를 기록합니다.
-	 * PAID 상태에서만 호출 가능하며, 상태는 변경되지 않습니다.
-	 *
-	 * @param errorMetadata 에러 메타데이터 (JSON 등)
-	 * @param occurredAt    취소 실패 발생 시각
-	 * @return 생성된 PaymentHistory
-	 * @throws PaymentException PAID 상태가 아닌 경우
-	 */
-	public PaymentHistory recordCancelFailed(String errorMetadata, LocalDateTime occurredAt, String requestId) {
+	public void recordCancelFailed(String errorMetadata, LocalDateTime occurredAt) {
 		if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
 				"[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
 		}
 
-		String historyKey = PaymentHistoryKeyGenerator.generate(
-			this.idempotencyKey,
-			PaymentEventType.CANCEL_FAILED,
-			requestId
-		);
-
-		PaymentHistory history = PaymentHistory.withMetadata(
-			getId(), historyKey, PaymentEventType.CANCEL_FAILED,
-			occurredAt, errorMetadata);
-		this.uncommittedHistory.add(history);
-		return history;
-	}
-
-	// ========== uncommittedHistory 관리 ========== //
-
-	/**
-	 * 영속화되지 않은 이력 목록을 반환합니다.
-	 * 반환된 리스트는 불변입니다.
-	 */
-	public List<PaymentHistory> getUncommittedHistory() {
-		return Collections.unmodifiableList(uncommittedHistory);
-	}
-
-	/**
-	 * 영속화 완료 후 이력 목록을 비웁니다.
-	 */
-	public void clearUncommittedHistory() {
-		uncommittedHistory.clear();
+		registerEvent(new PaymentCancelFailedEvent(getId(), getOrderId(), errorMetadata, occurredAt));
 	}
 
 	// ========== 상태 조회 메서드 ========== //
 
 	public boolean isRefundable() {
-		return PaymentEventType.REFUNDED.canApply(this.status);
+		return PaymentEventType.REFUNDED.canApply(this.status) && this.refundedAmount.isLessThan(this.paidAmount);
 	}
 
 	public boolean isCancelable() {
@@ -275,10 +172,6 @@ public class Payment extends BaseDomainModel {
 
 	// ========== Getter ========== //
 
-	public String getIdempotencyKey() {
-		return idempotencyKey;
-	}
-
 	public String getOrderId() {
 		return orderId;
 	}
@@ -293,6 +186,10 @@ public class Payment extends BaseDomainModel {
 
 	public Money getPaidAmount() {
 		return paidAmount;
+	}
+
+	public Money getRefundedAmount() {
+		return refundedAmount;
 	}
 
 	public List<OrderItemSnapshot> getOrderItems() {
@@ -333,44 +230,35 @@ public class Payment extends BaseDomainModel {
 
 	// ========== equals / hashCode ========== //
 
-	/**
-	 * Entity 동일성은 id로 판단합니다.
-	 * id가 null인 경우(비영속 상태)에는 idempotencyKey를 비교합니다.
-	 */
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
 		if (!(o instanceof Payment payment))
 			return false;
-
-		// id가 있으면 id로 비교
 		if (getId() != null && payment.getId() != null) {
 			return Objects.equals(getId(), payment.getId());
 		}
-
-		// 비영속 상태에서는 비즈니스 키(idempotencyKey)로 비교
-		return Objects.equals(idempotencyKey, payment.idempotencyKey);
+		return Objects.equals(orderId, payment.orderId);
 	}
 
 	@Override
 	public int hashCode() {
-		// id가 있으면 id 기반, 없으면 idempotencyKey 기반
 		if (getId() != null) {
 			return Objects.hash(getId());
 		}
-		return Objects.hash(idempotencyKey);
+		return Objects.hash(orderId);
 	}
 
 	// ========== Builder ========== //
 
 	public static class Builder {
 		private Long id;
-		private String idempotencyKey;
 		private String orderId;
 		private Long memberId;
 		private Money originAmount;
 		private Money paidAmount;
+		private Money refundedAmount;
 		private List<OrderItemSnapshot> orderItems;
 		private PaymentStatus status;
 		private PaymentType type;
@@ -383,11 +271,6 @@ public class Payment extends BaseDomainModel {
 
 		public Builder id(Long id) {
 			this.id = id;
-			return this;
-		}
-
-		public Builder idempotencyKey(String idempotencyKey) {
-			this.idempotencyKey = idempotencyKey;
 			return this;
 		}
 
@@ -408,6 +291,11 @@ public class Payment extends BaseDomainModel {
 
 		public Builder paidAmount(Money paidAmount) {
 			this.paidAmount = paidAmount;
+			return this;
+		}
+
+		public Builder refundedAmount(Money refundedAmount) {
+			this.refundedAmount = refundedAmount;
 			return this;
 		}
 
@@ -460,10 +348,9 @@ public class Payment extends BaseDomainModel {
 			validate();
 			return new Payment(
 				id,
-				idempotencyKey,
 				type, method,
 				orderId, memberId,
-				originAmount, paidAmount, orderItems,
+				originAmount, paidAmount, refundedAmount, orderItems,
 				status, paymentKey, lastTransactionKey, approveCode,
 				paidAt, createdAt
 			);
@@ -476,7 +363,6 @@ public class Payment extends BaseDomainModel {
 		}
 
 		private void validateRequiredFields() {
-			requireNonBlank(idempotencyKey, "idempotencyKey");
 			requireNonBlank(orderId, "orderId");
 			requireNonNull(memberId, "memberId");
 			requireNonNull(type, "type");
@@ -505,6 +391,11 @@ public class Payment extends BaseDomainModel {
 				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 					"[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
 			}
+			Money effectiveRefundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
+			if (effectiveRefundedAmount.isGreaterThan(paidAmount)) {
+				throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+					"[Payment] refundedAmount는 paidAmount를 초과할 수 없습니다.");
+			}
 		}
 
 		private void validateOrderItemsIfRequired() {
@@ -530,25 +421,13 @@ public class Payment extends BaseDomainModel {
 
 	// ========== 정적 팩토리 메서드  ========== //
 
-	/**
-	 * 새로운 결제를 생성합니다.
-	 *
-	 * @param context        결제 생성에 필요한 컨텍스트 정보
-	 * @param idempotencyKey 멱등성 키 (중복 결제 방지)
-	 * @param originAmount   원래 결제 금액
-	 * @param paidAmount     실제 결제 금액 (할인 적용 후)
-	 * @param orderItems     주문 항목 정보
-	 * @return 새로운 Payment 객체 (PENDING 상태)
-	 */
 	public static Payment create(
 		PaymentCreateContext context,
-		String idempotencyKey,
 		Money originAmount,
 		Money paidAmount,
 		List<OrderItemSnapshot> orderItems
 	) {
 		return builder()
-			.idempotencyKey(idempotencyKey)
 			.orderId(context.orderId())
 			.memberId(context.memberId())
 			.type(context.type())
@@ -557,7 +436,6 @@ public class Payment extends BaseDomainModel {
 			.paidAmount(paidAmount)
 			.orderItems(orderItems)
 			.status(PaymentStatus.PENDING)
-			.createdAt(LocalDateTime.now())
 			.build();
 	}
 }

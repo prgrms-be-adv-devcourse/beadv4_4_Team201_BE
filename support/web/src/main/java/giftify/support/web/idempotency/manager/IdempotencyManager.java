@@ -1,4 +1,4 @@
-package giftify.support.web.manager;
+package giftify.support.web.idempotency.manager;
 
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,8 +41,8 @@ public class FundingGetUseCase {
         Funding funding = fundingRepository.findById(id).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, id));
 
-        WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
-
+        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(List.of(funding.getWishlistItemId()));
+        WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
 
         // 진행 중이거나 목표 달성한 펀딩만 조회 가능
         if (funding.getStatus() != FundingStatus.IN_PROGRESS
@@ -62,9 +63,15 @@ public class FundingGetUseCase {
         List<FundingStatus> statuses = List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED);
         Page<Funding> fundingPage = fundingRepository.findAllByStatusIn(statuses, pageable);
 
+        List<Long> wishlistItemIds = fundingPage.getContent().stream()
+                .map(Funding::getWishlistItemId)
+                .collect(Collectors.toList());
+
+        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(wishlistItemIds);
+
         List<FundingResponseDto> content = fundingPage.getContent().stream()
             .map(funding -> {
-                WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
+                WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
                 return FundingResponseDto.fromEntity(funding, snapshot);
             })
             .collect(Collectors.toList());
@@ -80,7 +87,8 @@ public class FundingGetUseCase {
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + fundingId)
         );
 
-        WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
+        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(List.of(funding.getWishlistItemId()));
+        WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
 
         // 참여 여부 확인
         boolean isParticipated = participantMemberRepository.existsByFundingIdAndParticipantId(fundingId, memberId);
@@ -98,18 +106,22 @@ public class FundingGetUseCase {
     /**
      * 내가 참여한 펀딩 목록 조회
      */
-    public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
+    public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId, FundingStatus status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, pageable);
+        Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, status, pageable);
+
+        List<Long> wishlistItemIds = myFundingInfoPage.getContent().stream()
+                .map(info -> info.funding().getWishlistItemId())
+                .collect(Collectors.toList());
+
+        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(wishlistItemIds);
 
         List<ContributeFundingResponseDto> contents =
                 myFundingInfoPage.getContent().stream()
                         .map(info -> {
                             Funding funding = info.funding();
-
-                            WishlistItemSnapshot snapshot = wishlistItemSnapshotPort.getSnapshot(funding.getWishlistItemId());
-
+                            WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
                             return ContributeFundingResponseDto.fromEntity(funding, info.myContribution(), snapshot);
                         })
                         .collect(Collectors.toList());

@@ -30,7 +30,8 @@ dotenv = "3.0.0"
 # =============================================================================
 archunit = "1.3.0"
 restAssured = "5.4.0"
-testcontainers = "1.19.3"
+testcontainers = "2.0.3"
+testcontainersRedis = "2.2.4"
 
 # =============================================================================
 # Monitoring & Docs
@@ -103,8 +104,8 @@ dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv" }
 # =============================================================================
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "restAssured" }
-testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
-testcontainers-redis = { module = "com.redis:testcontainers-redis", version = "2.2.2" }
+testcontainers-junit = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-redis = { module = "com.redis:testcontainers-redis", version.ref = "testcontainersRedis" }
 
 # =============================================================================
 # Monitoring & Documentation

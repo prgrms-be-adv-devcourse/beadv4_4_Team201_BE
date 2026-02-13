@@ -7,9 +7,12 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
@@ -20,9 +23,17 @@ public interface OrderControllerSpec {
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
+    @Parameter(
+            name = "X-Idempotency-Key",
+            description = "멱등성 검증을 위한 고유 키 (UUID 권장)",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     ResponseEntity<RsData<PlaceOrderResult>> placeOrder(
             @Parameter(hidden = true) Long memberId,
-            @RequestBody PlaceOrderRequest request
+            @RequestBody PlaceOrderRequest request,
+            HttpServletRequest httpServletRequest
     );
 
     @Operation(summary = "주문 목록 조회", description = "로그인된 회원 ID로 주문 목록을 조회합니다.")

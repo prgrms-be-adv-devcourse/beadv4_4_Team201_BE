@@ -12,6 +12,7 @@ public sealed interface PaymentExternalEvent
 	permits PaymentConfirmedForOrder,
 			PaymentCanceledForOrder,
 			PaymentRefundedForSettlement,
+			PaymentConfirmedForSettlement,
 			PaymentCompletedForFunding {
 
 	/**

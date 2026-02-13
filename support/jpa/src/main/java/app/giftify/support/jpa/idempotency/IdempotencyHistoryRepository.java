@@ -1,6 +1,9 @@
 package app.giftify.support.jpa.idempotency;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
-public interface IdempotencyHistoryRepository extends JpaRepository<IdempotencyHistory, Long> {
+public interface IdempotencyHistoryRepository {
+    void save(IdempotencyHistory history);
+
+    Optional<IdempotencyHistory> findByIdempotencyKey(String idempotencyKey);
 }

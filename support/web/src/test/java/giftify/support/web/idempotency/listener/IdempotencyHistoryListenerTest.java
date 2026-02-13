@@ -1,6 +1,8 @@
-package app.giftify.support.jpa.idempotency;
+package giftify.support.web.idempotency.listener;
 
 import app.giftify.shared.domain.event.IdempotencySuccessEvent;
+import app.giftify.support.jpa.idempotency.IdempotencyHistory;
+import app.giftify.support.jpa.idempotency.IdempotencyHistoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
