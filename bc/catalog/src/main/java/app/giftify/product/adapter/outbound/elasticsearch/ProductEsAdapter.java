@@ -26,11 +26,13 @@ public class ProductEsAdapter implements ProductEsPort {
     private final MemberRepository memberRepository;
 
     @Override
-    public ProductDocument save(Product product) {
-        String sellerNickname = memberRepository.findById(product.getSellerId()).get().getNickname();
+    public void save(Product product) {
+        String sellerNickname = memberRepository.findById(product.getSellerId())
+                .map(Member::getNickname)
+                .orElse("UNKNOWN");
         ProductDocument document = ProductEsMapper.toDocument(product, sellerNickname);
 
-        return productEsRepository.save(document);
+        productEsRepository.save(document);
     }
 
     @Override
