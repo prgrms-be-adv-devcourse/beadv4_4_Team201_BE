@@ -48,6 +48,8 @@ jobs:
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+    env:
+      DOCKER_API_VERSION: "1.44"
     outputs:
       outcome: ${{ steps.gradle-build.outcome }}
       build-scan: ${{ steps.gradle-build.outputs.build-scan }}
