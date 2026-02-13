@@ -81,7 +81,7 @@ jobs:
       - name: Build
         id: gradle-build
         # clean 제거: GitHub Actions는 매번 새 환경이므로 불필요
-        run: ./gradlew build --parallel ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
+        run: ./gradlew build --parallel ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }} --info
 
       # 배포용 Jar 업로드 (옵션)
       - name: Upload application jar
