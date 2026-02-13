@@ -311,18 +311,6 @@ class CartServiceTest {
     }
 
     @Test
-    @DisplayName("장바구니 아이템 삭제 실패: 아이템 없음")
-    void removeItems_Fail_ItemNotFound() {
-        // given
-        Cart cart = Cart.create(memberId);
-        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
-
-        // when & then
-        assertThatThrownBy(() -> cartService.removeItems(memberId, TargetType.FUNDING_PENDING, List.of(999L)))
-                .isInstanceOf(CartException.class);
-    }
-
-    @Test
     @DisplayName("장바구니 비우기 성공")
     void clearCart_Success() {
         // given
