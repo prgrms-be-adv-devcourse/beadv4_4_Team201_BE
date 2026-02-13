@@ -48,8 +48,6 @@ jobs:
   build:
     name: Build & Test
     runs-on: ubuntu-latest
-    env:
-      DOCKER_API_VERSION: "1.24"
     outputs:
       outcome: ${{ steps.gradle-build.outcome }}
       build-scan: ${{ steps.gradle-build.outputs.build-scan }}
@@ -81,7 +79,7 @@ jobs:
       - name: Build
         id: gradle-build
         # clean 제거: GitHub Actions는 매번 새 환경이므로 불필요
-        run: ./gradlew build --parallel ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }} --info
+        run: ./gradlew build --parallel ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
 
       # 배포용 Jar 업로드 (옵션)
       - name: Upload application jar
