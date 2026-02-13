@@ -1,9 +1,6 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
-import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductCreateRequestDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
+import app.giftify.product.adapter.inbound.web.requestDto.*;
 import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
@@ -41,6 +38,7 @@ public class ProductController implements ProductV2ApiSpec {
     private final ProductRejectUseCase productRejectUseCase;
     private final ProductUpdateUseCase productUpdateUseCase;
     private final StockHistorySearchUseCase stockHistorySearchUseCase;
+    private final ProductEsSearchUseCase productEsSearchUseCase;
     private final ProductEsPort productEsPort;
 
     // 상품 등록
@@ -171,6 +169,23 @@ public class ProductController implements ProductV2ApiSpec {
     public ResponseEntity<RsData<String>> syncProductsToEs() {
         int count = productEsPort.syncAll();
         return ResponseEntity.ok(RsData.success(null, "ES 상품 데이터 재동기화 완료: " + count + "건"));
+    }
+
+    // ES 기반 상품 검색
+    @GetMapping("/search/es")
+    @Override
+    public ResponseEntity<RsData<PageResponse<ProductDto>>> searchProductsByEs(
+            @Valid @ModelAttribute ProductEsSearchDto searchDto
+    ) {
+        PageResponse<ProductResult> resultPage = productEsSearchUseCase.searchByEs(searchDto);
+
+        List<ProductDto> dtoList = resultPage.content().stream()
+                .map(ProductDto::from)
+                .collect(Collectors.toList());
+        var response = PageResponse.of(dtoList, resultPage.pageNumber(), resultPage.pageSize(),
+                resultPage.totalElements());
+
+        return ResponseEntity.ok(RsData.success(response));
     }
 
     /**

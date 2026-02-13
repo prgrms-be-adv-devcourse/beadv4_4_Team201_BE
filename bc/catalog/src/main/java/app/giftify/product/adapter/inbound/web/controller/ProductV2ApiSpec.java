@@ -1,9 +1,6 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
-import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductCreateRequestDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
+import app.giftify.product.adapter.inbound.web.requestDto.*;
 import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
@@ -118,4 +115,17 @@ public interface ProductV2ApiSpec {
             @ApiResponse(responseCode = "403", description = "ADMIN 권한 없음")
     })
     ResponseEntity<RsData<String>> syncProductsToEs();
+
+    @Operation(summary = "상품 검색 (ES)", description = """
+            Elasticsearch 기반 상품 검색 API.
+            키워드(name, description), 가격 범위, 카테고리 조건으로 ACTIVE 상품을 검색합니다.
+            정렬 옵션: latest(최신순, 기본값), priceAsc(가격 낮은순), priceDesc(가격 높은순), relevance(ES 스코어순)
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "검색 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 검색 파라미터 (size >= 1 필수)")
+    })
+    ResponseEntity<RsData<PageResponse<ProductDto>>> searchProductsByEs(
+            @Valid @ModelAttribute ProductEsSearchDto searchDto
+    );
 }
