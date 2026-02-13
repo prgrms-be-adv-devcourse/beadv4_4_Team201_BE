@@ -68,6 +68,15 @@ jobs:
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
           echo ">>> 배포 이미지 태그: ${IMAGE_TAG}"
 
+      - name: Path Debugging
+        run: |
+          echo "Checking Current User:"
+          whoami
+          echo "Checking Directory Structure:"
+          ls -R /home/ec2-user/infra || echo "Directory not accessible"
+          echo "Locating File:"
+          find /home/ec2-user -name "k3s-ec2-deploy.sh"
+
       - name: Deploy
         env:
           GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
