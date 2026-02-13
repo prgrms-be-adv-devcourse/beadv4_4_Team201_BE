@@ -72,4 +72,4 @@ jobs:
         env:
           GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GH_PAT: ${{ secrets.GHCR_PAT }}
-        run: sudo /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
+        run: sudo -E /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
