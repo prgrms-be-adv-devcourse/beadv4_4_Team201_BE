@@ -2,6 +2,7 @@ package app.giftify.funding.adpater.inbound.web;
 
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.application.FundingFacade;
+import app.giftify.funding.domain.FundingStatus;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.api.response.RsData;
@@ -71,9 +72,10 @@ public class FundingController implements FundingV2ApiSpec {
     public ResponseEntity<RsData<PageResponse<ContributeFundingResponseDto>>> getParticipatedFundings(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "status", required = false) FundingStatus status,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     ) {
-        PageResponse<ContributeFundingResponseDto> fundings = fundingFacade.getParticipatedFundings(page, size, memberId);
+        PageResponse<ContributeFundingResponseDto> fundings = fundingFacade.getParticipatedFundings(page, size, memberId, status);
         return ResponseEntity.ok(RsData.success(fundings));
     }
 

@@ -39,8 +39,8 @@ public class CartService
 	}
 
 	@Override
-	public CartItemAddResult addItem(Long cartId, AddCartItemCommand command) {
-		Cart cart = cartRepositoryPort.findById(cartId)
+	public CartItemAddResult addItemToMyCart(Long memberId, AddCartItemCommand command) {
+		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
 		// 타입 검증
@@ -58,22 +58,23 @@ public class CartService
 	}
 
 	@Override
-	public CartItemAddResult addItemToMyCart(Long memberId, AddCartItemCommand command) {
+	public void addItemsToMyCart(Long memberId, List<AddCartItemCommand> commands) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
-			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
+				.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
-		// 타입 검증
-		TargetType targetType = command.cartItemKey().targetType();
-		validateFundingTarget(targetType);
+		for (AddCartItemCommand command : commands) {
+			// 타입 검증
+			TargetType targetType = command.cartItemKey().targetType();
+			validateFundingTarget(targetType);
 
-		// 펀딩 구매 검증
-		Long wishlistItemId = command.cartItemKey().targetId();
-		validateFundingPurchase(wishlistItemId);
+			// 펀딩 구매 검증
+			Long wishlistItemId = command.cartItemKey().targetId();
+			validateFundingPurchase(wishlistItemId);
 
-		CartItemAddResult result = cart.addItem(targetType, wishlistItemId, command.amount());
+			cart.addItem(targetType, wishlistItemId, command.amount());
+		}
+
 		cartRepositoryPort.save(cart);
-
-		return result;
 	}
 
 	private void validateFundingTarget(TargetType targetType) {
@@ -139,10 +140,10 @@ public class CartService
 
 	// 내 카트에서 상품 제거
 	@Override
-	public void removeItem(Long memberId, TargetType targetType, Long targetId) {
+	public void removeItems(Long memberId, TargetType targetType, List<Long> targetIds) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
-		cart.removeItem(targetType, targetId);
+		cart.removeItems(targetType, targetIds);
 		cartRepositoryPort.save(cart);
 	}
 

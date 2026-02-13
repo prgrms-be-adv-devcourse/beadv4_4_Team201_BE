@@ -5,8 +5,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 
+import java.util.List;
 import java.util.Optional;
 
+import app.giftify.cart.core.domain.CartItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +59,7 @@ class CartServiceTest {
 
         // Cart Mocking
         Cart cart = Cart.create(memberId);
-        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         WishlistItem wishlistItem = mock(WishlistItem.class);
@@ -76,7 +78,7 @@ class CartServiceTest {
         );
 
         // when
-        CartItemAddResult result = cartService.addItem(cartId, command);
+        CartItemAddResult result = cartService.addItemToMyCart(memberId, command);
 
         // then
         assertThat(result).isEqualTo(CartItemAddResult.ADDED);
@@ -92,7 +94,7 @@ class CartServiceTest {
 
         // Cart Mocking
         Cart cart = Cart.create(memberId);
-        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         WishlistItem wishlistItem = mock(WishlistItem.class);
@@ -111,7 +113,7 @@ class CartServiceTest {
         );
 
         // when
-        CartItemAddResult result = cartService.addItem(cartId, command);
+        CartItemAddResult result = cartService.addItemToMyCart(memberId, command);
 
         // then
         assertThat(result).isEqualTo(CartItemAddResult.ADDED);
@@ -127,7 +129,7 @@ class CartServiceTest {
 
         // Cart Mocking
         Cart cart = Cart.create(memberId);
-        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
 
         WishlistItem wishlistItem = mock(WishlistItem.class);
         given(wishlistItem.getProductId()).willReturn(productId);
@@ -145,7 +147,7 @@ class CartServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> cartService.addItem(cartId, command))
+        assertThatThrownBy(() -> cartService.addItemToMyCart(memberId, command))
                 .isInstanceOf(CartException.class);
     }
 
@@ -159,7 +161,7 @@ class CartServiceTest {
 
         // Cart Mocking
         Cart cart = Cart.create(memberId);
-        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
 
         WishlistItem wishlistItem = mock(WishlistItem.class);
         given(wishlistItem.getProductId()).willReturn(productId);
@@ -177,7 +179,7 @@ class CartServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> cartService.addItem(cartId, command))
+        assertThatThrownBy(() -> cartService.addItemToMyCart(memberId, command))
                 .isInstanceOf(CartException.class);
     }
 
@@ -190,7 +192,7 @@ class CartServiceTest {
 
         // Cart Mocking
         Cart cart = Cart.create(memberId);
-        given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.GENERAL_PRODUCT, productId),
@@ -198,7 +200,7 @@ class CartServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> cartService.addItem(cartId, command))
+        assertThatThrownBy(() -> cartService.addItemToMyCart(memberId, command))
                 .isInstanceOf(CartException.class);
     }
 
@@ -276,41 +278,35 @@ class CartServiceTest {
 
     @Test
     @DisplayName("장바구니 아이템 삭제 성공")
-    void removeItem_Success() {
+    void removeItems_Success() {
         // given
         Cart cart = Cart.create(memberId);
         cart.addItem(TargetType.FUNDING_PENDING, 100L, Money.of(10000));
+        cart.addItem(TargetType.FUNDING_PENDING, 10L, Money.of(20000));
+        cart.addItem(TargetType.FUNDING_PENDING, 20L, Money.of(5000));
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        cartService.removeItem(memberId, TargetType.FUNDING_PENDING, 100L);
+        cartService.removeItems(memberId, TargetType.FUNDING_PENDING, List.of(100L, 10L));
 
         // then
-        assertThat(cart.getItemCount()).isZero();
+        assertThat(cart.getItemCount()).isEqualTo(1);
+        assertThat(cart.getItems().stream()
+                .map(CartItem::getAmount)
+                .reduce(Money.zero(), Money::plus))
+                .isEqualTo(Money.of(5000));
         then(cartRepository).should().save(cart);
     }
 
     @Test
     @DisplayName("장바구니 아이템 삭제 실패: 장바구니 없음")
-    void removeItem_Fail_CartNotFound() {
+    void removeItems_Fail_CartNotFound() {
         // given
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> cartService.removeItem(memberId, TargetType.FUNDING_PENDING, 100L))
-                .isInstanceOf(CartException.class);
-    }
-
-    @Test
-    @DisplayName("장바구니 아이템 삭제 실패: 아이템 없음")
-    void removeItem_Fail_ItemNotFound() {
-        // given
-        Cart cart = Cart.create(memberId);
-        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
-
-        // when & then
-        assertThatThrownBy(() -> cartService.removeItem(memberId, TargetType.FUNDING_PENDING, 999L))
+        assertThatThrownBy(() -> cartService.removeItems(memberId, TargetType.FUNDING_PENDING, List.of(100L)))
                 .isInstanceOf(CartException.class);
     }
 
@@ -341,5 +337,61 @@ class CartServiceTest {
         // when & then
         assertThatThrownBy(() -> cartService.clearCart(memberId))
                 .isInstanceOf(CartException.class);
+    }
+
+    @Test
+    @DisplayName("여러 상품 장바구니 추가 성공")
+    void addItemsToMyCart_Success() {
+        // given
+        Long wishlistItemId1 = 100L;
+        Long productId1 = 200L;
+        Money amount1 = Money.of(10000);
+
+        Long wishlistItemId2 = 101L;
+        Long productId2 = 201L;
+        Money amount2 = Money.of(20000);
+
+        // Cart Mocking
+        Cart cart = Cart.create(memberId);
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
+        given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // Item 1 Mocking
+        WishlistItem wishlistItem1 = mock(WishlistItem.class);
+        given(wishlistItem1.getProductId()).willReturn(productId1);
+        given(wishlistItem1.getWishlistItemStatus()).willReturn(WishlistItemStatus.PENDING);
+        given(wishlistItemRepositoryPort.findById(wishlistItemId1)).willReturn(Optional.of(wishlistItem1));
+
+        Product product1 = mock(Product.class);
+        given(product1.getStatus()).willReturn(ProductStatus.ACTIVE);
+        given(product1.getStock()).willReturn(10);
+        given(productRepositoryPort.findById(productId1)).willReturn(Optional.of(product1));
+
+        // Item 2 Mocking
+        WishlistItem wishlistItem2 = mock(WishlistItem.class);
+        given(wishlistItem2.getProductId()).willReturn(productId2);
+        given(wishlistItem2.getWishlistItemStatus()).willReturn(WishlistItemStatus.IN_PROGRESS);
+        given(wishlistItemRepositoryPort.findById(wishlistItemId2)).willReturn(Optional.of(wishlistItem2));
+
+        Product product2 = mock(Product.class);
+        given(product2.getStatus()).willReturn(ProductStatus.ACTIVE);
+        given(product2.getStock()).willReturn(5);
+        given(productRepositoryPort.findById(productId2)).willReturn(Optional.of(product2));
+
+        List<AddCartItemCommand> commands = List.of(
+                new AddCartItemCommand(new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId1), amount1),
+                new AddCartItemCommand(new CartItemKey(TargetType.FUNDING, wishlistItemId2), amount2)
+        );
+
+        // when
+        cartService.addItemsToMyCart(memberId, commands);
+
+        // then
+        assertThat(cart.getItemCount()).isEqualTo(2);
+        assertThat(cart.getItems().stream()
+                .map(CartItem::getAmount)
+                .reduce(Money.zero(), Money::plus))
+                .isEqualTo(Money.of(30000));
+        then(cartRepository).should().save(cart);
     }
 }
