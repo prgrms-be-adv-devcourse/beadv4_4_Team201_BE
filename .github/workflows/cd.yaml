@@ -1,5 +1,18 @@
 name: cd
 
+# todo: 테스트 성공 시 주석 해제
+#on:
+#  workflow_run:
+#    workflows: [ "CI" ]
+#    types: [ completed ]
+#    branches: [ main ]
+#  workflow_dispatch:
+#    inputs:
+#      image_tag:
+#        description: '배포할 이미지 태그 (미입력 시 최신 main 커밋)'
+#        required: false
+#        type: string
+
 on:
   push:
     branches: [ "main", "feature/246-cd-script-v2" ]
@@ -7,8 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  packages: write
+  packages: read
 
 jobs:
   # 1. 빌드 (재사용 워크플로우 호출)
@@ -20,24 +32,37 @@ jobs:
       generate-coverage: false
       upload-jar: true
 
-  # 2. 배포 스크립트 수행
   deploy:
-    needs: [ build ]
+    name: Deploy to K3s
     runs-on: self-hosted
+    if: >-
+      (github.event_name == 'workflow_run'
+       && github.event.workflow_run.conclusion == 'success')
+      || github.event_name == 'workflow_dispatch'
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Set image tag
+        run: |
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            IMAGE_TAG="${{ inputs.image_tag }}"
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == v* ]]; then
+            IMAGE_TAG="${{ github.event.workflow_run.head_branch }}"
+          else
+            IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
+            IMAGE_TAG="${IMAGE_TAG::7}"
+          fi
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          echo ">>> 배포 이미지 태그: ${IMAGE_TAG}"
 
-      - name: Get Tag Name
-        id: get_tag
-        run: echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-
-      - name: Run Deploy Script
+      - name: Deploy
         env:
-          # 태그 푸시묜 태그명을, 아니면 커밋 해시 앞 7자리 사용
-          IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}', github.sha) }}
           GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GH_PAT: ${{ secrets.GHCR_PAT }}
+        run: ~/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
+
+      - name: Show status
+        if: always()
         run: |
-          chmod +x ./k3s-ec2-deploy.sh
-          ./k3s-ec2-deploy.sh
+          kubectl get pods -n giftify
+          kubectl get deployments -n giftify
+
