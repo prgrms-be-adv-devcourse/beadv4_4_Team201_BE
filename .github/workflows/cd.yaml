@@ -79,6 +79,7 @@ jobs:
 
       - name: Deploy
         env:
+          KUBECONFIG: /home/ec2-user/.kube/config
           GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GH_PAT: ${{ secrets.GHCR_PAT }}
         run: |
@@ -87,6 +88,8 @@ jobs:
 
       - name: Show status
         if: always()
+        env:
+          KUBECONFIG: /home/ec2-user/.kube/config # 여기도 추가
         run: |
           kubectl get pods -n giftify
           kubectl get deployments -n giftify
