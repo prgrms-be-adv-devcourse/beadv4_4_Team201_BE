@@ -40,9 +40,6 @@ patches:
           spec:
             containers:
               - name: api-server
-                env:
-                  - name: SPRING_BATCH_JDBC_INITIALIZE_SCHEMA
-                    value: "always" # 이거 always 로 하면 안되고 직접 마이그레이션 스크립트로 생성하여야 함
                 startupProbe:
                   httpGet:
                     path: /actuator/health
