@@ -1,37 +1,21 @@
 name: cd
 
-# todo: 테스트 성공 시 주석 해제
-#on:
-#  workflow_run:
-#    workflows: [ "CI" ]
-#    types: [ completed ]
-#    branches: [ main ]
-#  workflow_dispatch:
-#    inputs:
-#      image_tag:
-#        description: '배포할 이미지 태그 (미입력 시 최신 main 커밋)'
-#        required: false
-#        type: string
-
 on:
-  push:
-    branches: [ "main", "feature/246-cd-script-v2" ]
-    tags: [ "v*" ]
+  workflow_run:
+    workflows: [ "CI" ]
+    types: [ completed ]
+    branches: [ main, feature/246-cd-script-v2 ]
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: '배포할 이미지 태그 (미입력 시 최신 main 커밋)'
+        required: false
+        type: string
 
 permissions:
   packages: read
 
 jobs:
-  # 1. 빌드 (재사용 워크플로우 호출)
-  build:
-    uses: ./.github/workflows/_build.yml
-    with:
-      java-version: '21'
-      run-tests: false
-      generate-coverage: false
-      upload-jar: true
-
   deploy:
     name: Deploy to K3s
     runs-on: self-hosted
