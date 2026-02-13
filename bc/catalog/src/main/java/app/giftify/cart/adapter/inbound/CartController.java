@@ -90,7 +90,7 @@ public class CartController implements CartV2ApiSpec {
 	public ResponseEntity<RsData<Void>> removeItems(
 		@CurrentMemberId Long memberId,
 		@PathVariable(value = "targetType") TargetType targetType,
-		@RequestParam(value = "targetIds") List<Long> targetIds
+		@RequestParam(value = "targetIds", required = false) List<Long> targetIds
 	) {
 		cartService.removeItems(memberId, targetType, targetIds);
 		return ResponseEntity.ok(RsData.success(null));

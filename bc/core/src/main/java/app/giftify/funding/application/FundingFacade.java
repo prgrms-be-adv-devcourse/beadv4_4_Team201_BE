@@ -3,6 +3,7 @@ package app.giftify.funding.application;
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.*;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.domain.FundingStatus;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.type.TargetType;
@@ -98,8 +99,8 @@ public class FundingFacade {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId) {
-        return fundingGetUseCase.getParticipatedFundings(page, size, memberId);
+    public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId, FundingStatus status) {
+        return fundingGetUseCase.getParticipatedFundings(page, size, memberId, status);
     }
 
     @Transactional
