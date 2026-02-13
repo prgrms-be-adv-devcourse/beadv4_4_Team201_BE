@@ -44,7 +44,7 @@ public class FundingContributeUseCase {
             FundingParticipantMember member = fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId);
 
             if (member == null) {
-                member = new FundingParticipantMember(funding, participantId, request.amount());
+                member = new FundingParticipantMember(funding, participantId, member.getNickName(), request.amount());
                 fundingParticipantMemberRepository.save(member);
             } else {
                 member.addAmount(request.amount());

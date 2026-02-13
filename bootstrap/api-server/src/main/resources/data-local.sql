@@ -171,12 +171,13 @@ ALTER TABLE funding
 -- -----------------------------------------------------------------------------
 -- 11. FUNDING_PARTICIPANT_MEMBER (펀딩 참여자) — V1.2.3
 -- -----------------------------------------------------------------------------
-INSERT INTO funding_participant_member (id, funding_id, participant_id, amount,
+INSERT INTO funding_participant_member (id, funding_id, participant_id, nick_name, amount,
                                         created_at, updated_at, created_by, updated_by)
-VALUES (1, 1, 2, 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (2, 1, 6, 5000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 2, 2, 200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (4, 2, 6, 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+VALUES (1, 1, 2, "나른한고양이0013", 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 1, 6, "배고픈강아지0007", 55000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 2, 2, "나른한고양이0013", 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 2, 6, "배고픈강아지0007", 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (5, 3, 2, "나른한고양이0013", 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding_participant_member
     ALTER COLUMN id RESTART WITH 100;
