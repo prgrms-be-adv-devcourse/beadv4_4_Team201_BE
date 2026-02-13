@@ -1,17 +1,13 @@
 package app.giftify.payment.application;
 
-import static app.giftify.payment.domain.SystemConstants.SYSTEM_REQUESTER_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static app.giftify.payment.domain.SystemConstants.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,10 +24,10 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCanceledForOrder;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -52,7 +48,6 @@ class CancelPaymentServiceTest {
 	private Payment createPendingPayment(Long paymentId, Long memberId, String orderId) {
 		return Payment.builder()
 			.id(paymentId)
-			.idempotencyKey("idem-key-" + UUID.randomUUID())
 			.orderId(orderId)
 			.memberId(memberId)
 			.type(PaymentType.DEPOSIT_CHARGE)
@@ -67,7 +62,6 @@ class CancelPaymentServiceTest {
 	private Payment createPaidPayment(Long paymentId, Long memberId, String orderId) {
 		return Payment.builder()
 			.id(paymentId)
-			.idempotencyKey("idem-key-" + UUID.randomUUID())
 			.orderId(orderId)
 			.memberId(memberId)
 			.type(PaymentType.DEPOSIT_CHARGE)
@@ -215,8 +209,8 @@ class CancelPaymentServiceTest {
 			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
 
 			PaymentCanceledEvent internalEvent = eventCaptor.getAllValues().stream()
-				.filter(e -> e instanceof PaymentCanceledEvent)
-				.map(e -> (PaymentCanceledEvent) e)
+				.filter(PaymentCanceledEvent.class::isInstance)
+				.map(e -> (PaymentCanceledEvent)e)
 				.findFirst().orElseThrow();
 
 			assertThat(internalEvent.getReason()).isNull();
@@ -245,8 +239,8 @@ class CancelPaymentServiceTest {
 			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
 
 			PaymentCanceledEvent event = eventCaptor.getAllValues().stream()
-				.filter(e -> e instanceof PaymentCanceledEvent)
-				.map(e -> (PaymentCanceledEvent) e)
+				.filter(PaymentCanceledEvent.class::isInstance)
+				.map(e -> (PaymentCanceledEvent)e)
 				.findFirst().orElseThrow();
 
 			assertThat(event.getPaymentId()).isEqualTo(paymentId);
@@ -281,8 +275,8 @@ class CancelPaymentServiceTest {
 			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
 
 			PaymentCanceledForOrder event = eventCaptor.getAllValues().stream()
-				.filter(e -> e instanceof PaymentCanceledForOrder)
-				.map(e -> (PaymentCanceledForOrder) e)
+				.filter(PaymentCanceledForOrder.class::isInstance)
+				.map(e -> (PaymentCanceledForOrder)e)
 				.findFirst().orElseThrow();
 
 			assertThat(event.paymentId()).isEqualTo(paymentId);

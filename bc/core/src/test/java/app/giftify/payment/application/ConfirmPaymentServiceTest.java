@@ -34,6 +34,7 @@ import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -60,7 +61,6 @@ class ConfirmPaymentServiceTest {
 		if (type == PaymentType.FUNDING) {
 			return Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key-" + paymentId)
 				.orderId(orderId)
 				.memberId(memberId)
 				.type(type)
@@ -75,7 +75,6 @@ class ConfirmPaymentServiceTest {
 		}
 		return Payment.builder()
 			.id(paymentId)
-			.idempotencyKey("idempotency-key-" + paymentId)
 			.orderId(orderId)
 			.memberId(memberId)
 			.type(type)
@@ -109,7 +108,7 @@ class ConfirmPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(paymentKey, orderId, amount))
-				.willReturn(TossConfirmResult.success(paymentKey));
+				.willReturn(TossConfirmResult.success(paymentKey, "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn("encrypted-payment-key");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
@@ -144,7 +143,7 @@ class ConfirmPaymentServiceTest {
 			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
+			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(anyString())).willReturn("encrypted");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
@@ -178,7 +177,7 @@ class ConfirmPaymentServiceTest {
 			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.FUNDING);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
+			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(anyString())).willReturn("encrypted");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 
@@ -189,6 +188,49 @@ class ConfirmPaymentServiceTest {
 			assertThat(result.success()).isTrue();
 			assertThat(result.paymentId()).isEqualTo(paymentId);
 			verify(eventPublisher).publish(any(PaymentConfirmedEvent.class));
+		}
+
+		@Test
+		@DisplayName("결제 승인 시 PaymentConfirmedForSettlement 이벤트를 발행한다")
+		void confirm_Payment_PublishesPaymentConfirmedForSettlement() {
+			// given
+			Long paymentId = 1L;
+			Long memberId = 100L;
+			String paymentKey = "payment-key-123";
+			String orderId = "order-123";
+			Money amount = Money.of(10000);
+			String encryptedKey = "encrypted-payment-key";
+			String transactionKey = "txn-key-001";
+
+			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
+				paymentId, memberId, paymentKey, orderId, amount
+			);
+
+			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(paymentGateway.confirm(paymentKey, orderId, amount))
+				.willReturn(TossConfirmResult.success(paymentKey, transactionKey, "12345678"));
+			given(encryptor.encrypt(paymentKey)).willReturn(encryptedKey);
+			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
+
+			// when
+			confirmPaymentService.confirm(command);
+
+			// then
+			ArgumentCaptor<PaymentConfirmedForSettlement> captor =
+				ArgumentCaptor.forClass(PaymentConfirmedForSettlement.class);
+			verify(eventPublisher).publish(captor.capture());
+
+			PaymentConfirmedForSettlement event = captor.getValue();
+			assertThat(event.paymentId()).isEqualTo(paymentId);
+			assertThat(event.orderNumber()).isEqualTo(orderId);
+			assertThat(event.paymentKey()).isEqualTo(encryptedKey);
+			assertThat(event.transactionKey()).isEqualTo(transactionKey);
+			assertThat(event.paidAmount()).isEqualTo(amount);
+			assertThat(event.method()).isEqualTo(PaymentMethod.CARD);
+			assertThat(event.eventId()).isNotNull();
+			assertThat(event.occurredAt()).isNotNull();
 		}
 	}
 
@@ -324,7 +366,7 @@ class ConfirmPaymentServiceTest {
 			String encryptedPaymentKey = "encrypted-payment-key";
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key"));
+			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn(encryptedPaymentKey);
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
 

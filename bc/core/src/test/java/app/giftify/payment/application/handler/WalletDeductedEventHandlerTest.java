@@ -71,7 +71,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-123")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -122,7 +121,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-123")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -170,7 +168,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-456")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.DEPOSIT_CHARGE)
@@ -214,7 +211,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-456")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.DEPOSIT_CHARGE)
@@ -241,57 +237,6 @@ class WalletDeductedEventHandlerTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("requestId 포맷 검증")
-	class RequestIdFormatTests {
-
-		@Test
-		@DisplayName("requestId가 'WALLET-{walletId}' 포맷으로 생성된다")
-		void handle_FormatsRequestIdAsWalletWithWalletId() {
-			// given
-			Long paymentId = 3L;
-			Long walletId = 999L;
-			Long memberId = 200L;
-			String orderId = "ORDER-789";
-			Money amount = Money.of(20000);
-			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 12, 0, 0);
-
-			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
-			);
-
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(20000), 100L)
-			);
-
-			Payment payment = Payment.builder()
-				.id(paymentId)
-				.idempotencyKey("idem-key-789")
-				.memberId(memberId)
-				.orderId(orderId)
-				.type(PaymentType.FUNDING)
-				.method(PaymentMethod.DEPOSIT)
-				.originAmount(amount)
-				.paidAmount(amount)
-				.orderItems(orderItems)
-				.status(PaymentStatus.PENDING)
-				.build();
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-			// when
-			handler.handle(event);
-
-			// then
-			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
-			verify(paymentRepository).save(paymentCaptor.capture());
-
-			Payment savedPayment = paymentCaptor.getValue();
-			assertThat(savedPayment.getStatus()).isEqualTo(PaymentStatus.PAID);
-			assertThat(savedPayment.getUncommittedHistory()).hasSize(1);
-		}
-	}
 
 	@Nested
 	@DisplayName("예외 처리")
@@ -346,7 +291,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-paid")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
@@ -397,7 +341,6 @@ class WalletDeductedEventHandlerTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idem-key-save")
 				.memberId(memberId)
 				.orderId(orderId)
 				.type(PaymentType.FUNDING)
