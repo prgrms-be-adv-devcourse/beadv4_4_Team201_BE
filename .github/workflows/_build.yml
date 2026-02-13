@@ -76,10 +76,13 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
+      - name: Verify Docker
+        run: docker info
+
       - name: Build
         id: gradle-build
         # clean 제거: GitHub Actions는 매번 새 환경이므로 불필요
-        run: ./gradlew build --parallel ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
+        run: ./gradlew build --parallel --info ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
 
       # 배포용 Jar 업로드 (옵션)
       - name: Upload application jar
@@ -109,4 +112,3 @@ jobs:
           name: test-results
           path: '**/build/test-results/'
           retention-days: 7
-
