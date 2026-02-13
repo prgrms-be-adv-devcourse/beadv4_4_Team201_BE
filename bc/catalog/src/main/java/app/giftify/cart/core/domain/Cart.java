@@ -59,11 +59,7 @@ public class Cart extends BaseDomainModel {
     public void removeItems(TargetType targetType, List<Long> targetIds) {
         for (Long targetId : targetIds) {
             CartItemKey key = new CartItemKey(targetType, targetId);
-
-            if (!items.containsKey(key)) {
-                throw new CartException(CartErrorCode.CARTITEM_NOT_FOUND);
-            }
-
+            // 없으면 무시하고 다음 아이템으로 진행
             items.remove(key);
         }
     }
