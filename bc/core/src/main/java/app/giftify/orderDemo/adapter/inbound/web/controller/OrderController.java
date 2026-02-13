@@ -12,8 +12,6 @@ import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import app.giftify.support.common.annotation.Idempotent;
-import giftify.support.web.idempotency.util.HeaderUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
