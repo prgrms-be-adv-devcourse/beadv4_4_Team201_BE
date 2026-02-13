@@ -165,6 +165,15 @@ services:
       - xpack.security.enabled=false # ES 8.x부터 보안이 기본 활성화라서, 개발 환경에서 인증 없이 접근하려면 꺼야 함 (배포 환경은 true, prod.yml에 name & pw 환경변수 필수)
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+  kibana: # ㅊElasticsearch에 저장된 데이터를 쿼리, 분석, 시각화 및 관리하기 위한 오픈 소스 인터페이스
+    image: kibana:9.2.4
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
 
 #### Docker Volumes ####
 volumes:
