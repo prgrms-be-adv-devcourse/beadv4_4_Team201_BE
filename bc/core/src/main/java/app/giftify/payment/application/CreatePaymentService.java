@@ -40,9 +40,6 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 	@Override
 	public PaymentCreatedResult charge(ChargeDepositCommand command) {
 		return paymentRepository.findByOrderId(command.orderId())
-			.stream()
-			.filter(p -> p.getStatus() != PaymentStatus.FAILED && p.getStatus() != PaymentStatus.CANCELED)
-			.findFirst()
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),
@@ -89,9 +86,6 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 	@Override
 	public PaymentCreatedResult create(CreateFundingPaymentCommand command) {
 		return paymentRepository.findByOrderId(command.orderId())
-			.stream()
-			.filter(p -> p.getStatus() != PaymentStatus.FAILED && p.getStatus() != PaymentStatus.CANCELED)
-			.findFirst()
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),

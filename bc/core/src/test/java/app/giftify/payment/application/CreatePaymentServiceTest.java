@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -78,7 +79,7 @@ class CreatePaymentServiceTest {
 				.build();
 
 			given(paymentRepository.findByOrderId(orderId))
-				.willReturn(List.of(existingPayment));
+				.willReturn(Optional.of(existingPayment));
 
 			// when
 			PaymentCreatedResult result = createPaymentService.create(command);
@@ -127,7 +128,7 @@ class CreatePaymentServiceTest {
 				.build();
 
 			given(paymentRepository.findByOrderId(orderId))
-				.willReturn(List.of());
+				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 
@@ -185,7 +186,7 @@ class CreatePaymentServiceTest {
 			DeductWalletResult walletResult = DeductWalletResult.success(100L, Money.of(5000));
 
 			given(paymentRepository.findByOrderId(orderId))
-				.willReturn(List.of());
+				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 			given(deductWalletUseCase.deductForPayment(any(DeductWalletCommand.class)))
@@ -247,7 +248,7 @@ class CreatePaymentServiceTest {
 			);
 
 			given(paymentRepository.findByOrderId(orderId))
-				.willReturn(List.of());
+				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
 			given(deductWalletUseCase.deductForPayment(any(DeductWalletCommand.class)))
@@ -292,7 +293,7 @@ class CreatePaymentServiceTest {
 				.build();
 
 			given(paymentRepository.findByOrderId(orderId))
-				.willReturn(List.of(existingPayment));
+				.willReturn(Optional.of(existingPayment));
 
 			// when
 			PaymentCreatedResult result = createPaymentService.create(command);
@@ -334,7 +335,7 @@ class CreatePaymentServiceTest {
 			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
 
 			given(paymentRepository.findByOrderId(orderId))
-				.willReturn(List.of());
+				.willReturn(Optional.empty());
 			given(paymentRepository.save(paymentCaptor.capture()))
 				.willAnswer(invocation -> {
 					Payment payment = invocation.getArgument(0);

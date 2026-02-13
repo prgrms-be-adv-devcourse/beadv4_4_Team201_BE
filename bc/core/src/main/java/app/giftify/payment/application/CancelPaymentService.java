@@ -63,7 +63,7 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		Payment savedPayment = paymentRepository.save(payment);
 		domainEvents.forEach(eventPublisher::publish);
 
-		// 6. 외부 BC용 이벤트 직접 발행 (Order BC) NOTE :: 이거 이렇게 내부 외부 나눠서 관리하기 너무 힘들어. 이건 사람 5명일 때 이렇게 하기로 결정한 것이엇는데
+		// 6. 외부 BC용 이벤트 발행 (Order BC)
 		eventPublisher.publish(PaymentCanceledForOrder.create(
 			savedPayment.getId(),
 			savedPayment.getOrderId(),

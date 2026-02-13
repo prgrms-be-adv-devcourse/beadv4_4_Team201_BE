@@ -1,7 +1,5 @@
 package app.giftify.payment.adapter.inbound.web;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,19 +53,16 @@ public class InternalPaymentController {
 	}
 
 	@GetMapping("/by-order/{orderId}")
-	public ResponseEntity<List<PaymentInfoResponse>> getByOrderId(
+	public ResponseEntity<PaymentInfoResponse> getByOrderId(
 		@PathVariable("orderId") @NotBlank String orderId
 	) {
 		log.debug("[InternalPaymentController] 주문별 결제 조회 요청. orderId=***{}",
 			orderId != null && orderId.length() > 4 ? orderId.substring(orderId.length() - 4) : "****");
 
-		List<PaymentInfoResponse> payments = internalPaymentQueryUseCase
-			.findByOrderId(orderId)
-			.stream()
+		return internalPaymentQueryUseCase.findByOrderId(orderId)
 			.map(PaymentInfoResponse::from)
-			.toList();
-
-		return ResponseEntity.ok(payments);
+			.map(ResponseEntity::ok)
+			.orElse(ResponseEntity.notFound().build());
 	}
 
 }

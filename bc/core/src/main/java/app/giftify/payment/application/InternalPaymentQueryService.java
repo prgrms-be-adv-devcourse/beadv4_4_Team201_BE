@@ -1,6 +1,5 @@
 package app.giftify.payment.application;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -40,13 +39,11 @@ public class InternalPaymentQueryService implements InternalPaymentQueryUseCase 
 	}
 
 	@Override
-	public List<InternalPaymentResult> findByOrderId(String orderId) {
+	public Optional<InternalPaymentResult> findByOrderId(String orderId) {
 		log.debug("[InternalPaymentQueryService] 주문별 결제 조회. orderId={}", orderId);
 
 		return paymentRepository.findByOrderId(orderId)
-			.stream()
-			.map(this::toResultWithDecryption)
-			.toList();
+			.map(this::toResultWithDecryption);
 	}
 
 	/**

@@ -17,14 +17,7 @@ public interface PaymentRepository {
 
 	Optional<Payment> findByPaymentKey(String paymentKey);
 
-	/**
-	 * orderId로 결제 목록을 조회합니다.
-	 * Order BC 연동을 위한 메서드입니다.
-	 *
-	 * @param orderId Order BC에서 발급한 주문 대체키
-	 * @return 해당 orderId로 생성된 결제 목록
-	 */
-	List<Payment> findByOrderId(String orderId);
+	Optional<Payment> findByOrderId(String orderId);
 
 	Page<Payment> findByMemberId(Long memberId, PageRequest pageRequest);
 }
