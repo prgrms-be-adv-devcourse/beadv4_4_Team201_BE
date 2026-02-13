@@ -7,7 +7,7 @@ spring:
     password: ${DB_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
     hikari:
-      connection-init-sql: SET search_path TO public, g7app
+      connection-init-sql: SET search_path TO g7app, public
 
   data:
     redis:
