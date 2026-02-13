@@ -51,7 +51,6 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
-    testImplementation("org.springframework.boot:spring-boot-starter-data-elasticsearch-test")
     testImplementation("org.testcontainers:elasticsearch")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
 

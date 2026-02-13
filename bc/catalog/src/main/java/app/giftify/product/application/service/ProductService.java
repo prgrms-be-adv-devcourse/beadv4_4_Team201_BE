@@ -53,6 +53,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 .description(command.description())
                 .price(command.price())
                 .stock(command.stock())
+                .category(command.category())
                 .build();
 
         Product savedProduct = productRepositoryPort.save(product);

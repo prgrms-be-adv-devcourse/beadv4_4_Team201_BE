@@ -54,7 +54,8 @@ public class ProductController implements ProductV2ApiSpec {
                 requestDto.name(),
                 requestDto.description(),
                 requestDto.price(),
-                requestDto.stock()
+                requestDto.stock(),
+                requestDto.category()
         );
         ProductResult result = productCreateUseCase.createProduct(sellerId, command);
         ProductDto responseDto = ProductDto.from(result);

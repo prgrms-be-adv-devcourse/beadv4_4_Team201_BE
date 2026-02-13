@@ -5,14 +5,16 @@ import app.giftify.product.domain.Product;
 
 public class ProductEsMapper {
 
-    public static ProductDocument toDocument(Product product) {
+    public static ProductDocument toDocument(Product product, String sellerNickname) {
         return new ProductDocument(
                 String.valueOf(product.getId()),
+                sellerNickname,
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
                 product.getCategory().name(),
-                product.getStatus().name()
+                product.getStatus().name(),
+                product.getCreatedAt()
         );
     }
 }
