@@ -8,7 +8,6 @@ on:
     tags: [ 'v*' ]
   merge_group:
     types: [ checks_requested ]
-  workflow_call:
 
 env:
   REGISTRY: ghcr.io

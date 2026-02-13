@@ -15,7 +15,7 @@ name: cd
 
 on:
   push:
-    branches: [ main, feature/246-cd-script-v2 ] # 지금 작업 중인 브랜치
+    branches: [ main, feature/246-cd-script-v2 ]
   workflow_dispatch:
     inputs:
       image_tag:
@@ -27,9 +27,6 @@ permissions:
   packages: read
 
 jobs:
-  run-ci:
-    uses: ./.github/workflows/ci.yml
-
   deploy:
     name: Deploy to K3s
     runs-on: self-hosted
