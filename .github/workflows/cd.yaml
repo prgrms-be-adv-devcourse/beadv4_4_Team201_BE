@@ -1,4 +1,5 @@
-name: Deploy to K3s
+name: cd
+
 on:
   workflow_run:
     workflows: [ "CI" ]
@@ -38,10 +39,7 @@ jobs:
           echo ">>> 배포 이미지 태그: ${IMAGE_TAG}"
 
       - name: Deploy
-        run: ~/giftify-k3s/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
-
-      - name: Show status
-        if: always()
-        run: |
-          kubectl get pods -n giftify
-          kubectl get deployments -n giftify
+        env:
+          GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GH_PAT: ${{ secrets.GHCR_PAT }}
+        run: sudo -E /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"

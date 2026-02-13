@@ -39,8 +39,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 
 	@Override
 	public PaymentCreatedResult charge(ChargeDepositCommand command) {
-		// 1. 멱등성 체크 - orderId로 이미 존재하는 결제인지 확인
-		return paymentRepository.findByIdempotencyKey(command.orderId())
+		return paymentRepository.findByOrderId(command.orderId())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),
@@ -53,7 +52,6 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 	}
 
 	private PaymentCreatedResult createDepositChargePayment(ChargeDepositCommand command) {
-		// PaymentCreateContext 생성 - 예치금 충전은 항상 DEPOSIT_CHARGE + CARD
 		PaymentCreateContext context = new PaymentCreateContext(
 			command.memberId(),
 			command.orderId(),
@@ -61,10 +59,8 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			PaymentMethod.CARD
 		);
 
-		// Payment 생성 - orderItems 없음
 		Payment payment = Payment.create(
 			context,
-			command.orderId(),
 			command.amount(),
 			command.amount(),
 			Collections.emptyList()
@@ -89,8 +85,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 
 	@Override
 	public PaymentCreatedResult create(CreateFundingPaymentCommand command) {
-		// 1. 멱등성 체크 - orderId로 이미 존재하는 결제인지 확인
-		return paymentRepository.findByIdempotencyKey(command.orderId())
+		return paymentRepository.findByOrderId(command.orderId())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
 				existing.getOrderId(),
@@ -111,10 +106,8 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 			command.method()
 		);
 
-		// Payment 생성
 		Payment payment = Payment.create(
 			context,
-			command.orderId(),
 			command.expectedAmount(),
 			command.expectedAmount(),
 			command.orderItems()

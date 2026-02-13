@@ -9,5 +9,5 @@ import app.giftify.shared.domain.vo.Money;
  */
 public interface PaymentGateway {
 	TossConfirmResult confirm(String paymentKey, String orderId, Money amount);
-	TossCancelResult cancel(String paymentKey, String cancelReason);
+	TossCancelResult cancel(String paymentKey, String cancelReason, Money cancelAmount);
 }

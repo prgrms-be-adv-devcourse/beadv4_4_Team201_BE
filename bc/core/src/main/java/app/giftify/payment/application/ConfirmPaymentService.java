@@ -15,8 +15,8 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -84,24 +84,27 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		String encryptedPaymentKey = encryptor.encrypt(command.paymentKey());
 		LocalDateTime paidAt = LocalDateTime.now();
 
-		// 6. 상태 변경 (도메인 메서드)
+		// 6. 상태 변경 (도메인 메서드 — 내부적으로 registerEvent 호출)
 		payment.markAsPaid(
 			encryptedPaymentKey,
-			null, // NOTE :: 승인번호는 환불/취소시에 필요할 수 있지만, paymentKey로도 일부분 가능함. TossConfirmResult 에서 approveNumber 를 받아오는 것으로 개선 가능
-			paidAt,
-			command.paymentKey()
+			pgResult.approveNo(),
+			pgResult.lastTransactionKey(),
+			paidAt
 		);
 
-		// 7. 저장 (uncommittedHistory 포함)
+		// 7. 도메인 이벤트 확보 → 저장 → 발행
+		var domainEvents = payment.pullEvents();
 		Payment savedPayment = paymentRepository.save(payment);
+		domainEvents.forEach(eventPublisher::publish);
 
-		// 8. 이벤트 발행 (Wallet BC가 DEPOSIT_CHARGE 시 수신하여 예치금 충전)
-		eventPublisher.publish(new PaymentConfirmedEvent(
+		// 8. 외부 BC 이벤트 발행 (Settlement — Spring Modulith outbox)
+		eventPublisher.publish(PaymentConfirmedForSettlement.create(
 			savedPayment.getId(),
-			savedPayment.getMemberId(),
-			savedPayment.getOrderId(),
-			savedPayment.getType(),
-			savedPayment.getPaidAmount(),
+			payment.getOrderId(),
+			encryptedPaymentKey,
+			pgResult.lastTransactionKey(),
+			payment.getPaidAmount(),
+			payment.getMethod(),
 			paidAt
 		));
 

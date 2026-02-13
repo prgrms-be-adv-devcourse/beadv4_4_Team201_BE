@@ -10,7 +10,9 @@ public abstract sealed class PaymentInternalEvent extends BaseDomainEvent
 	permits PaymentConfirmedEvent,
 			PaymentCanceledEvent,
 			PaymentRefundedEvent,
-			PaymentReceivedEvent {
+			PaymentReceivedEvent,
+			PaymentFailedEvent,
+			PaymentCancelFailedEvent {
 
 	private final Long paymentId;
 
