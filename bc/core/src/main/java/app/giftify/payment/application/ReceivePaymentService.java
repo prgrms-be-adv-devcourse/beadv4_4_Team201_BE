@@ -1,7 +1,6 @@
 package app.giftify.payment.application;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,6 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentReceivedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,20 +51,13 @@ public class ReceivePaymentService implements ReceivePaymentUseCase {
 			);
 		}
 
-		// 3. 상태 변경
+		// 3. 상태 변경 (도메인 메서드 — 내부적으로 registerEvent 호출)
 		LocalDateTime receivedAt = LocalDateTime.now();
-		String requestId = UUID.randomUUID().toString();
-		payment.markAsReceived(receivedAt, requestId);
+		payment.markAsReceived(receivedAt);
 
-		// 4. 저장
-		Payment savedPayment = paymentRepository.save(payment);
-
-		// 5. 내부 이벤트 발행
-		eventPublisher.publish(new PaymentReceivedEvent(
-			savedPayment.getId(),
-			savedPayment.getMemberId(),
-			savedPayment.getOrderId(),
-			receivedAt
-		));
+		// 4. 도메인 이벤트 확보 → 저장 → 발행
+		var domainEvents = payment.pullEvents();
+		paymentRepository.save(payment);
+		domainEvents.forEach(eventPublisher::publish);
 	}
 }

@@ -1,6 +1,6 @@
 package app.giftify.settlement.domain;
 
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,5 +36,6 @@ public class PaymentSnapshot {
     private Money paidAmount;
 
     @Column
-    private PaymentMethodType method;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod method;
 }

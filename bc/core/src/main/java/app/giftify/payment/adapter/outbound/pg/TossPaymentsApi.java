@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * Toss Payments API를 위한 HTTP Interface.
  *
@@ -44,19 +47,27 @@ public interface TossPaymentsApi {
 	}
 
 	record TossCancelRequest(
-		String cancelReason
+		String cancelReason,
+		@JsonInclude(JsonInclude.Include.NON_NULL) Long cancelAmount
 	) {
 	}
 
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	record TossPaymentResponse(
 		String paymentKey,
 		String orderId,
 		String status,
+		String lastTransactionKey,
+		String approvedAt,
+		CardInfo card,
 		String code,
 		String message
 	) {
 		public boolean isSuccess() {
 			return code == null;
 		}
+
+		@JsonIgnoreProperties(ignoreUnknown = true)
+		record CardInfo(String approveNo) {}
 	}
 }

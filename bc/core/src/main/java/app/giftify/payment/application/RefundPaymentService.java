@@ -2,7 +2,6 @@ package app.giftify.payment.application;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import app.giftify.payment.application.inbound.RefundPaymentCommand;
 import app.giftify.payment.application.inbound.RefundPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.payment.domain.event.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentRefundedForSettlement;
 import lombok.extern.slf4j.Slf4j;
@@ -53,34 +52,24 @@ public class RefundPaymentService implements RefundPaymentUseCase {
 			);
 		}
 
-		// 3. 상태 변경
+		// 3. 상태 변경 (도메인 메서드 — 내부적으로 registerEvent 호출)
 		LocalDateTime refundedAt = LocalDateTime.now();
-		String requestId = UUID.randomUUID().toString();
-		payment.markAsRefunded(refundedAt, requestId);
+		payment.markAsRefunded(command.refundAmount(), refundedAt, command.reason());
 
-		// 4. 저장
+		// 4. 도메인 이벤트 확보 → 저장 → 발행
+		var domainEvents = payment.pullEvents();
 		Payment savedPayment = paymentRepository.save(payment);
-
-		// 5. 내부 이벤트 발행 (다른 BC가 수신할 수 있도록 유지)
-		eventPublisher.publish(new PaymentRefundedEvent(
-			savedPayment.getId(),
-			savedPayment.getMemberId(),
-			savedPayment.getOrderId(),
-			savedPayment.getType(),
-			savedPayment.getPaidAmount(),
-			command.reason(),
-			refundedAt
-		));
+		domainEvents.forEach(eventPublisher::publish);
 
 		// 6. 외부 BC용 이벤트 직접 발행 (Settlement BC)
 		List<Long> sellerIds = savedPayment.getOrderItems().stream()
-			.map(item -> item.sellerId())
+			.map(OrderItemSnapshot::sellerId)
 			.distinct()
 			.toList();
 
 		eventPublisher.publish(PaymentRefundedForSettlement.create(
 			savedPayment.getId(),
-			savedPayment.getPaidAmount(),
+			command.refundAmount(),
 			sellerIds,
 			refundedAt
 		));

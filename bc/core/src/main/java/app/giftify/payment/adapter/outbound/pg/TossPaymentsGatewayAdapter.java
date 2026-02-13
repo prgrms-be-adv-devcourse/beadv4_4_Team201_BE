@@ -20,7 +20,8 @@ public class TossPaymentsGatewayAdapter implements PaymentGateway {
 	}
 
 	@Override
-	public TossCancelResult cancel(String paymentKey, String cancelReason) {
-		return tossPaymentsClient.cancelPayment(paymentKey, cancelReason);
+	public TossCancelResult cancel(String paymentKey, String cancelReason, Money cancelAmount) {
+		Long amountValue = cancelAmount != null ? cancelAmount.amount().longValue() : null;
+		return tossPaymentsClient.cancelPayment(paymentKey, cancelReason, amountValue);
 	}
 }
