@@ -34,9 +34,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JpaPayment extends BaseJpaEntity {
 
-	@Column(name = "idempotency_key", unique = true, nullable = false, length = 255)
-	private String idempotencyKey;
-
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", nullable = false, length = 50)
 	private PaymentType type;
@@ -56,6 +53,9 @@ public class JpaPayment extends BaseJpaEntity {
 
 	@Column(name = "paid_amount", nullable = false, precision = 19, scale = 2)
 	private BigDecimal paidAmount;
+
+	@Column(name = "refunded_amount", nullable = false, precision = 19, scale = 2)
+	private BigDecimal refundedAmount;
 
 	@Column(name = "order_items_json", nullable = false, columnDefinition = "TEXT")
 	private String orderItemsJson;
@@ -77,13 +77,13 @@ public class JpaPayment extends BaseJpaEntity {
 	private LocalDateTime paidAt;
 
 	private JpaPayment(
-		String idempotencyKey,
 		PaymentType type,
 		PaymentMethod method,
 		String orderId,
 		Long memberId,
 		BigDecimal originAmount,
 		BigDecimal paidAmount,
+		BigDecimal refundedAmount,
 		String orderItemsJson,
 		PaymentStatus status,
 		String paymentKey,
@@ -91,13 +91,13 @@ public class JpaPayment extends BaseJpaEntity {
 		String approveCode,
 		LocalDateTime paidAt
 	) {
-		this.idempotencyKey = idempotencyKey;
 		this.type = type;
 		this.method = method;
 		this.orderId = orderId;
 		this.memberId = memberId;
 		this.originAmount = originAmount;
 		this.paidAmount = paidAmount;
+		this.refundedAmount = refundedAmount;
 		this.orderItemsJson = orderItemsJson;
 		this.status = status;
 		this.paymentKey = paymentKey;
@@ -116,13 +116,13 @@ public class JpaPayment extends BaseJpaEntity {
 		}
 
 		return new JpaPayment(
-			payment.getIdempotencyKey(),
 			payment.getType(),
 			payment.getMethod(),
 			payment.getOrderId(),
 			payment.getMemberId(),
 			payment.getOriginAmount().amount(),
 			payment.getPaidAmount().amount(),
+			payment.getRefundedAmount().amount(),
 			orderItemsJson,
 			payment.getStatus(),
 			payment.getPaymentKey(),
@@ -143,13 +143,13 @@ public class JpaPayment extends BaseJpaEntity {
 
 		return Payment.builder()
 			.id(super.getId())
-			.idempotencyKey(idempotencyKey)
 			.type(type)
 			.method(method)
 			.orderId(orderId)
 			.memberId(memberId)
 			.originAmount(Money.of(originAmount))
 			.paidAmount(Money.of(paidAmount))
+			.refundedAmount(Money.of(refundedAmount))
 			.orderItems(java.util.Arrays.asList(orderItems))
 			.status(status)
 			.paymentKey(paymentKey)
@@ -166,6 +166,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.lastTransactionKey = payment.getLastTransactionKey();
 		this.approveCode = payment.getApproveCode();
 		this.paidAt = payment.getPaidAt();
+		this.refundedAmount = payment.getRefundedAmount().amount();
 		this.orderItemsJson = orderItemsJson;
 	}
 }

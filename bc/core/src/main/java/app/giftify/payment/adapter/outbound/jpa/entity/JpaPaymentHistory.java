@@ -27,8 +27,8 @@ public class JpaPaymentHistory extends BaseJpaEntity {
 	@Column(name = "payment_id", nullable = false)
 	private Long paymentId;
 
-	@Column(name = "idempotency_key", unique = true, nullable = false, length = 255)
-	private String idempotencyKey;
+	@Column(name = "history_key", unique = true, nullable = false, length = 255)
+	private String historyKey;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "event_type", nullable = false, length = 50)
@@ -42,13 +42,13 @@ public class JpaPaymentHistory extends BaseJpaEntity {
 
 	private JpaPaymentHistory(
 		Long paymentId,
-		String idempotencyKey,
+		String historyKey,
 		PaymentEventType eventType,
 		LocalDateTime occurredAt,
 		String metadata
 	) {
 		this.paymentId = paymentId;
-		this.idempotencyKey = idempotencyKey;
+		this.historyKey = historyKey;
 		this.eventType = eventType;
 		this.occurredAt = occurredAt;
 		this.metadata = metadata;
@@ -57,7 +57,7 @@ public class JpaPaymentHistory extends BaseJpaEntity {
 	public static JpaPaymentHistory from(PaymentHistory history, Long paymentId) {
 		return new JpaPaymentHistory(
 			paymentId,
-			history.getIdempotencyKey(),
+			history.getHistoryKey(),
 			history.getEventType(),
 			history.getOccurredAt(),
 			history.getMetadata()
@@ -68,7 +68,7 @@ public class JpaPaymentHistory extends BaseJpaEntity {
 		return PaymentHistory.restore(
 			super.getId(),
 			paymentId,
-			idempotencyKey,
+			historyKey,
 			eventType,
 			occurredAt,
 			metadata
