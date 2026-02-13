@@ -240,24 +240,24 @@ ALTER TABLE order_item_v2
 -- -----------------------------------------------------------------------------
 -- 14. PAYMENT (결제) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO payment (id, idempotency_key, type, method, order_id, member_id,
+INSERT INTO payment (id, type, method, order_id, member_id,
                      origin_amount, paid_amount, order_items_json, status,
                      payment_key, last_transaction_key, approve_code, paid_at,
                      created_at, updated_at, created_by, updated_by)
 VALUES
-    (1, 'idem-20260205-0001', 'FUNDING', 'CARD',
+    (1, 'FUNDING', 'CARD',
      'ORD-20260205-A1B2C3D4E5F6-20260205170000', 2,
      359000.00, 359000.00, '[{"targetId":1,"amount":{"amount":359000},"sellerId":3}]', 'PAID',
      'toss_pk_20260205_0001', 'toss_tx_20260205_0001', 'approve_001', '2026-02-05 17:05:00',
      '2026-02-05 17:00:00', '2026-02-05 17:05:00', 'SYSTEM', 'SYSTEM'),
 
-    (2, 'idem-20260205-0002', 'FUNDING', 'CARD',
+    (2, 'FUNDING', 'CARD',
      'ORD-20260205-B2C3D4E5F6G7-20260205171000', 2,
      23000.00, 23000.00, '[{"targetId":2,"amount":{"amount":23000},"sellerId":3}]', 'PAID',
      'toss_pk_20260205_0002', 'toss_tx_20260205_0002', 'approve_002', '2026-02-05 17:15:00',
      '2026-02-05 17:10:00', '2026-02-05 17:15:00', 'SYSTEM', 'SYSTEM'),
 
-    (3, 'idem-20260208-0004', 'FUNDING', 'KAKAO_PAY',
+    (3, 'FUNDING', 'KAKAO_PAY',
      'ORD-20260208-D4E5F6G7H8I9-20260208140000', 6,
      448000.00, 448000.00, '[{"targetId":2,"amount":{"amount":23000},"sellerId":3},{"targetId":3,"amount":{"amount":415000},"sellerId":3}]', 'PAID',
      'toss_pk_20260208_0004', 'toss_tx_20260208_0004', 'approve_004', '2026-02-08 14:05:00',
@@ -269,7 +269,7 @@ ALTER TABLE payment
 -- -----------------------------------------------------------------------------
 -- 15. PAYMENT_HISTORY (결제 이력) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO payment_history (id, payment_id, idempotency_key, event_type, occurred_at, metadata,
+INSERT INTO payment_history (id, payment_id, history_key, event_type, occurred_at, metadata,
                              created_at, updated_at, created_by, updated_by)
 VALUES
     (1, 1, 'idem-20260205-0001-created', 'CREATED', '2026-02-05 17:00:00', NULL,
