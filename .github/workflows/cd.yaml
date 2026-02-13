@@ -1,21 +1,10 @@
 name: cd
 
-#on:
-#  workflow_run:
-#    workflows: [ "CI" ]
-#    types: [ completed ]
-#    branches: [ main, feature/246-cd-script-v2 ]
-#  workflow_dispatch:
-#    inputs:
-#      image_tag:
-#        description: '배포할 이미지 태그 (미입력 시 최신 main 커밋)'
-#        required: false
-#        type: string
-#
-
 on:
-  push:
-    branches: [ main, feature/246-cd-script-v2 ]
+  workflow_run:
+    workflows: [ "CI" ]
+    types: [ completed ]
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       image_tag:
@@ -30,35 +19,16 @@ jobs:
   deploy:
     name: Deploy to K3s
     runs-on: self-hosted
-#    if: >-
-#      (github.event_name == 'workflow_run'
-#       && github.event.workflow_run.conclusion == 'success')
-#      || github.event_name == 'workflow_dispatch'
-    if: |
-      github.event_name == 'push' || 
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    if: >-
+      (github.event_name == 'workflow_run'
+       && github.event.workflow_run.conclusion == 'success')
+      || github.event_name == 'workflow_dispatch'
 
     steps:
-#      - name: Set image tag
-#        run: |
-#          if [ -n "${{ inputs.image_tag }}" ]; then
-#            IMAGE_TAG="${{ inputs.image_tag }}"
-#          elif [[ "${{ github.event.workflow_run.head_branch }}" == v* ]]; then
-#            IMAGE_TAG="${{ github.event.workflow_run.head_branch }}"
-#          else
-#            IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
-#            IMAGE_TAG="${IMAGE_TAG::7}"
-#          fi
-#          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-#          echo ">>> 배포 이미지 태그: ${IMAGE_TAG}"
-
       - name: Set image tag
         run: |
           if [ -n "${{ inputs.image_tag }}" ]; then
             IMAGE_TAG="${{ inputs.image_tag }}"
-          elif [ "${{ github.event_name }}" == "push" ]; then
-            IMAGE_TAG="${GITHUB_SHA::7}" # push된 커밋의 앞 7자리
           elif [[ "${{ github.event.workflow_run.head_branch }}" == v* ]]; then
             IMAGE_TAG="${{ github.event.workflow_run.head_branch }}"
           else
@@ -72,4 +42,4 @@ jobs:
         env:
           GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GH_PAT: ${{ secrets.GHCR_PAT }}
-        run: sudo -E /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh 0569a8b
+        run: sudo -E /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
