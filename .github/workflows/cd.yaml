@@ -68,29 +68,11 @@ jobs:
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
           echo ">>> 배포 이미지 태그: ${IMAGE_TAG}"
 
-      - name: Path Debugging
-        run: |
-          echo "Checking Current User:"
-          whoami
-          echo "Checking Directory Structure:"
-          ls -R /home/ec2-user/infra || echo "Directory not accessible"
-          echo "Locating File:"
-          find /home/ec2-user -name "k3s-ec2-deploy.sh"
-
       - name: Deploy
         env:
-          KUBECONFIG: /home/ec2-user/.kube/config
           GH_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GH_PAT: ${{ secrets.GHCR_PAT }}
         run: |
           chmod +x /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh
           /home/ec2-user/infra/k3s/scripts/k3s-ec2-deploy.sh "${{ env.IMAGE_TAG }}"
-
-      - name: Show status
-        if: always()
-        env:
-          KUBECONFIG: /home/ec2-user/.kube/config # 여기도 추가
-        run: |
-          kubectl get pods -n giftify
-          kubectl get deployments -n giftify
 
