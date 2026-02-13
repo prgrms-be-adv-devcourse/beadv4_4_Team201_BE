@@ -9,7 +9,7 @@ import app.giftify.settlement.domain.*;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.exception.DomainException;
 import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethodType;
+import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
@@ -84,7 +84,7 @@ class SettlementItemServiceTest {
             "transaction-key",
             paidAt,
             Money.of(10000),
-            PaymentMethodType.WALLET
+            PaymentMethod.DEPOSIT
         );
 
         when(orderItemSnapshotRepository.getByTargetId(targetId)).thenReturn(itemSnapshot);
@@ -152,7 +152,7 @@ class SettlementItemServiceTest {
             "transaction-key",
             null,
             Money.of(5000),
-            PaymentMethodType.WALLET
+            PaymentMethod.DEPOSIT
         );
 
         when(orderItemSnapshotRepository.getByTargetId(targetId)).thenReturn(itemSnapshot);
@@ -201,7 +201,7 @@ class SettlementItemServiceTest {
             "transaction-key",
             paidAt,
             Money.of(3000),
-            PaymentMethodType.WALLET
+            PaymentMethod.DEPOSIT
         );
 
         when(orderItemSnapshotRepository.getByTargetId(targetId)).thenReturn(itemSnapshot);

@@ -65,7 +65,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -82,7 +81,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -105,7 +104,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -122,7 +120,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -154,7 +152,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -171,7 +168,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -204,7 +201,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -221,7 +217,7 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);
@@ -247,7 +243,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.empty());
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -273,7 +269,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(ownerId)
 				.type(PaymentType.FUNDING)
@@ -289,7 +284,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, unauthorizedRequesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, unauthorizedRequesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -314,7 +309,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -327,7 +321,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -352,7 +346,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -368,7 +361,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -393,7 +386,6 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -409,7 +401,7 @@ class RefundPaymentServiceTest {
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when & then
 			assertThatThrownBy(() -> refundPaymentService.refund(command))
@@ -423,18 +415,16 @@ class RefundPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("두 개의 이벤트가 모두 발행된다")
-		void refund_PublishesBothEvents() {
+		@DisplayName("부분 환불 시 상태가 PAID로 유지되고 refundedAmount가 누적된다")
+		void refund_PartialRefund_StaysPaidAndAccumulatesRefundedAmount() {
 			// given
 			Long paymentId = 1L;
 			Long requesterId = 100L;
-			String reason = "단순 변심";
 
 			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.idempotencyKey("idempotency-key")
 				.orderId("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
@@ -451,7 +441,83 @@ class RefundPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason);
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, "부분 환불", Money.of(5000));
+
+			// when
+			refundPaymentService.refund(command);
+
+			// then
+			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+			assertThat(payment.getRefundedAmount()).isEqualTo(Money.of(5000));
+		}
+
+		@Test
+		@DisplayName("환불 금액이 남은 환불 가능 금액을 초과하면 예외가 발생한다")
+		void refund_ExceedsRemainingAmount_ThrowsException() {
+			// given
+			Long paymentId = 1L;
+			Long requesterId = 100L;
+
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
+
+			Payment payment = Payment.builder()
+				.id(paymentId)
+				.orderId("order-123")
+				.memberId(requesterId)
+				.type(PaymentType.FUNDING)
+				.method(PaymentMethod.CARD)
+				.originAmount(Money.of(20000))
+				.paidAmount(Money.of(20000))
+				.refundedAmount(Money.of(15000))
+				.orderItems(List.of(item))
+				.status(PaymentStatus.PAID)
+				.paymentKey("payment-key")
+				.approveCode("approve-code")
+				.paidAt(LocalDateTime.now().minusDays(1))
+				.build();
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, "초과 환불", Money.of(10000));
+
+			// when & then
+			assertThatThrownBy(() -> refundPaymentService.refund(command))
+				.isInstanceOf(PaymentException.class)
+				.extracting("errorCode")
+				.isEqualTo(PaymentErrorCode.INVALID_INPUT_VALUE);
+
+			verify(paymentRepository, never()).save(any(Payment.class));
+		}
+
+		@Test
+		@DisplayName("두 개의 이벤트가 모두 발행된다")
+		void refund_PublishesBothEvents() {
+			// given
+			Long paymentId = 1L;
+			Long requesterId = 100L;
+			String reason = "단순 변심";
+
+			OrderItemSnapshot item = new OrderItemSnapshot(1L, Money.of(20000), 200L);
+
+			Payment payment = Payment.builder()
+				.id(paymentId)
+				.orderId("order-123")
+				.memberId(requesterId)
+				.type(PaymentType.FUNDING)
+				.method(PaymentMethod.CARD)
+				.originAmount(Money.of(20000))
+				.paidAmount(Money.of(20000))
+				.orderItems(List.of(item))
+				.status(PaymentStatus.PAID)
+				.paymentKey("payment-key")
+				.approveCode("approve-code")
+				.paidAt(LocalDateTime.now().minusDays(1))
+				.build();
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+			RefundPaymentCommand command = new RefundPaymentCommand(paymentId, requesterId, reason, Money.of(20000));
 
 			// when
 			refundPaymentService.refund(command);

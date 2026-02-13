@@ -13,5 +13,5 @@ public interface JpaPaymentHistoryRepository extends JpaRepository<JpaPaymentHis
 
 	List<JpaPaymentHistory> findByPaymentIdOrderByOccurredAtAsc(Long paymentId);
 
-	Optional<JpaPaymentHistory> findByIdempotencyKey(String idempotencyKey);
+	Optional<JpaPaymentHistory> findByHistoryKey(String historyKey);
 }

@@ -9,10 +9,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
-import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
-import app.giftify.payment.domain.PaymentHistory;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.api.paging.Page;
 
@@ -20,16 +18,13 @@ import app.giftify.shared.api.paging.Page;
 public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	private final JpaPaymentRepository jpaPaymentRepository;
-	private final JpaPaymentHistoryRepository jpaPaymentHistoryRepository;
 	private final PaymentMapper paymentMapper;
 
 	public PaymentRepositoryAdapter(
 		JpaPaymentRepository jpaPaymentRepository,
-		JpaPaymentHistoryRepository jpaPaymentHistoryRepository,
 		PaymentMapper paymentMapper
 	) {
 		this.jpaPaymentRepository = jpaPaymentRepository;
-		this.jpaPaymentHistoryRepository = jpaPaymentHistoryRepository;
 		this.paymentMapper = paymentMapper;
 	}
 
@@ -48,17 +43,6 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 			JpaPayment updatedEntity = paymentMapper.toEntity(payment);
 			jpaPayment.updateFrom(payment, updatedEntity.getOrderItemsJson());
 		}
-
-		List<PaymentHistory> uncommittedHistory = payment.getUncommittedHistory();
-		if (!uncommittedHistory.isEmpty()) {
-			Long paymentId = jpaPayment.getId();
-			List<JpaPaymentHistory> jpaHistories = uncommittedHistory.stream()
-				.map(history -> paymentMapper.toEntity(history, paymentId))
-				.toList();
-			jpaPaymentHistoryRepository.saveAll(jpaHistories);
-		}
-
-		payment.clearUncommittedHistory();
 
 		return paymentMapper.toDomain(jpaPayment);
 	}
@@ -88,17 +72,8 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Payment> findByOrderId(String orderId) {
+	public Optional<Payment> findByOrderId(String orderId) {
 		return jpaPaymentRepository.findByOrderId(orderId)
-			.stream()
-			.map(paymentMapper::toDomain)
-			.toList();
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public Optional<Payment> findByIdempotencyKey(String idempotencyKey) {
-		return jpaPaymentRepository.findByIdempotencyKey(idempotencyKey)
 			.map(paymentMapper::toDomain);
 	}
 
