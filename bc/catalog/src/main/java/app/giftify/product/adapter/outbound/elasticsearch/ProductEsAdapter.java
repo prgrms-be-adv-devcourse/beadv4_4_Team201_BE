@@ -1,5 +1,6 @@
 package app.giftify.product.adapter.outbound.elasticsearch;
 
+import app.giftify.product.adapter.inbound.web.ProductSearchSortType;
 import app.giftify.product.adapter.outbound.elasticsearch.document.ProductDocument;
 import app.giftify.product.adapter.outbound.elasticsearch.repository.ProductEsRepository;
 import app.giftify.product.adapter.outbound.jpa.ProductMapper;
@@ -104,7 +105,7 @@ public class ProductEsAdapter implements ProductEsPort {
         if (command.keyword() != null && !command.keyword().isBlank()) {
             boolBuilder.must(m -> m.multiMatch(mm -> mm
                     .query(command.keyword())
-                    .fields("name^2", "description")
+                    .fields("name^2", "description", "sellerNickname")
                     .fuzziness("AUTO") // 오타 허용
             ));
         }
@@ -133,15 +134,15 @@ public class ProductEsAdapter implements ProductEsPort {
         return PageResponse.of(results, command.page(), command.size(), totalElements);
     }
 
-    private Sort buildSort(String sortOption) {
-        if (sortOption == null) {
-            return Sort.by(Sort.Direction.DESC, "createdAt");
+    private Sort buildSort(ProductSearchSortType sortType) {
+        if (sortType == null) {
+            return Sort.unsorted();
         }
-        return switch (sortOption) {
-            case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
-            case "priceDesc" -> Sort.by(Sort.Direction.DESC, "price");
-            case "relevance" -> Sort.unsorted();
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        return switch (sortType) {
+            case LATEST -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case PRICE_ASC -> Sort.by(Sort.Direction.ASC, "price");
+            case PRICE_DESC -> Sort.by(Sort.Direction.DESC, "price");
+            case RELEVANCE -> Sort.unsorted();
         };
     }
 }

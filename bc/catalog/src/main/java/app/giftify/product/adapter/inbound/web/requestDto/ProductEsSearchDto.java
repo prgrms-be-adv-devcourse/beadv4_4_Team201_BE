@@ -1,5 +1,6 @@
 package app.giftify.product.adapter.inbound.web.requestDto;
 
+import app.giftify.product.adapter.inbound.web.ProductSearchSortType;
 import app.giftify.product.domain.ProductCategory;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
@@ -12,7 +13,7 @@ public class ProductEsSearchDto {
     private Integer minPrice;
     private Integer maxPrice;
     private ProductCategory category;
-    private String sort = "latest";
+    private ProductSearchSortType sort = ProductSearchSortType.RELEVANCE;
 
     @Min(value = 0, message = "page must be >= 0")
     private int page = 0;

@@ -1,5 +1,6 @@
 package app.giftify.product.application.port.out;
 
+import app.giftify.product.adapter.inbound.web.ProductSearchSortType;
 import app.giftify.product.domain.ProductCategory;
 
 public record ProductEsSearchCommand(
@@ -7,7 +8,7 @@ public record ProductEsSearchCommand(
         Integer minPrice,
         Integer maxPrice,
         ProductCategory category,
-        String sort,
+        ProductSearchSortType sort,
         int page,
         int size
 ) {
