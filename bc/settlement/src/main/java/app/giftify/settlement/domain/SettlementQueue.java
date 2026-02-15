@@ -27,6 +27,10 @@ public class SettlementQueue {
     @JoinColumn(name = "settlement_item_id")
     private SettlementItem item;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SettlementQueueStatus status;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -36,5 +40,6 @@ public class SettlementQueue {
 
     public SettlementQueue(SettlementItem item) {
         this.item = item;
+        this.status = SettlementQueueStatus.READY;
     }
 }
