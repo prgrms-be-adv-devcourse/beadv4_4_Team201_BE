@@ -15,14 +15,14 @@ import java.time.LocalDateTime;
 @Embeddable
 @NoArgsConstructor
 @Getter
-public class LifeCycleMeta {
+public class ItemStatusInfo {
         @Enumerated(EnumType.STRING)
         private SettlementItemStatus status;
         private LocalDate expectedDate;
         private LocalDateTime settledAt;
         private LocalDateTime cancelledAt;
 
-        private LifeCycleMeta(SettlementItemStatus status, LocalDate expectedDate, LocalDateTime settledAt, LocalDateTime cancelledAt) {
+        private ItemStatusInfo(SettlementItemStatus status, LocalDate expectedDate, LocalDateTime settledAt, LocalDateTime cancelledAt) {
                 if (status == null || expectedDate == null) {
                         throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
                 }
@@ -33,12 +33,12 @@ public class LifeCycleMeta {
                 this.cancelledAt = cancelledAt;
         }
 
-        public static LifeCycleMeta pending(LocalDateTime confirmedAt) {
+        public static ItemStatusInfo pending(LocalDateTime confirmedAt) {
                 if (confirmedAt == null) {
                         throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
                 }
 
-                return new LifeCycleMeta(
+                return new ItemStatusInfo(
                         SettlementItemStatus.PENDING,
                         calculateExpectedDate(confirmedAt),
                         null,
@@ -46,12 +46,12 @@ public class LifeCycleMeta {
                 );
         }
 
-        public LifeCycleMeta ready() {
+        public ItemStatusInfo ready() {
                 if (this.status != SettlementItemStatus.PENDING) {
                         throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
                 }
 
-                return new LifeCycleMeta(
+                return new ItemStatusInfo(
                         SettlementItemStatus.READY,
                         expectedDate,
                         settledAt,
@@ -59,8 +59,8 @@ public class LifeCycleMeta {
                 );
         }
 
-        public LifeCycleMeta fail() {
-                return new LifeCycleMeta(
+        public ItemStatusInfo fail() {
+                return new ItemStatusInfo(
                         SettlementItemStatus.FAIL,
                         expectedDate,
                         settledAt,
@@ -68,8 +68,8 @@ public class LifeCycleMeta {
                 );
         }
 
-        public LifeCycleMeta manual() {
-                return new LifeCycleMeta(
+        public ItemStatusInfo manual() {
+                return new ItemStatusInfo(
                         SettlementItemStatus.MANUAL_CHECK,
                         expectedDate,
                         settledAt,

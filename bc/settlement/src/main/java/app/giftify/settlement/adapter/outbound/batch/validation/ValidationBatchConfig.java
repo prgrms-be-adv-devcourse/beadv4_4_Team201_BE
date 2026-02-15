@@ -100,8 +100,8 @@ public class ValidationBatchConfig {
                 .queryString("""
                     SELECT s FROM SettlementItem s
                     WHERE s.orderId BETWEEN :minOrderId AND :maxOrderId
-                      AND (s.lifeCycleMeta.status = 'PENDING'
-                           OR (s.lifeCycleMeta.status = 'FAIL' AND s.retryCount < :retryLimit))
+                      AND (s.statusInfo.status = 'PENDING'
+                           OR (s.statusInfo.status = 'FAIL' AND s.retryCount < :retryLimit))
                       AND s.createdAt < :cutOffDateTime
                 """)
                 .parameterValues(Map.of(

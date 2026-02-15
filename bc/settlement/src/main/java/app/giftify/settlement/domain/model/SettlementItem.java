@@ -71,7 +71,7 @@ public class SettlementItem {
     private SettlementCore core;
 
     @Embedded
-    private LifeCycleMeta lifeCycleMeta;
+    private ItemStatusInfo statusInfo;
 
     @Column(nullable = false)
     private int retryCount = 0;
@@ -93,7 +93,7 @@ public class SettlementItem {
                            LocalDateTime paidAt,
                            LocalDateTime confirmedAt,
                            SettlementCore core,
-                           LifeCycleMeta lifeCycleMeta) {
+                           ItemStatusInfo statusInfo) {
 
         if (sellerId == null) {
             throw new DomainException(SettlementErrorCode.INVALID_SELLER_ID);
@@ -104,7 +104,7 @@ public class SettlementItem {
         if (core == null) {
             throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_CORE);
         }
-        if (lifeCycleMeta == null) {
+        if (statusInfo == null) {
             throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
         }
         if (orderedAt == null || paidAt == null || confirmedAt == null) {
@@ -130,7 +130,7 @@ public class SettlementItem {
         this.paidAt = paidAt;
         this.confirmedAt = confirmedAt;
         this.core = core;
-        this.lifeCycleMeta = lifeCycleMeta;
+        this.statusInfo = statusInfo;
     }
 
     private SettlementItem(Long sellerId,
@@ -143,9 +143,9 @@ public class SettlementItem {
                            LocalDateTime paidAt,
                            LocalDateTime confirmedAt,
                            SettlementCore core,
-                           LifeCycleMeta lifeCycleMeta) {
+                           ItemStatusInfo statusInfo) {
 
-        this(sellerId, type, null, orderId, orderItemId, targetId, orderNumber, orderedAt, paidAt, confirmedAt, core, lifeCycleMeta);
+        this(sellerId, type, null, orderId, orderItemId, targetId, orderNumber, orderedAt, paidAt, confirmedAt, core, statusInfo);
     }
 
     public static SettlementItem createPaymentItem(SettlementSource source, SettlementCore core, LocalDateTime confirmedAt) {
@@ -168,21 +168,21 @@ public class SettlementItem {
                 source.getPaidAt(),
                 confirmedAt,
                 core,
-                LifeCycleMeta.pending(confirmedAt)
+                ItemStatusInfo.pending(confirmedAt)
         );
     }
 
     public void fail() {
-        lifeCycleMeta = lifeCycleMeta.fail();
+        statusInfo = statusInfo.fail();
         this.retryCount++;
     }
 
     public void ready() {
-        lifeCycleMeta = this.lifeCycleMeta.ready();
+        statusInfo = this.statusInfo.ready();
     }
 
     public void manual() {
-        lifeCycleMeta = lifeCycleMeta.manual();
+        statusInfo = statusInfo.manual();
     }
 
     private void validateTimeSequence(LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt) {

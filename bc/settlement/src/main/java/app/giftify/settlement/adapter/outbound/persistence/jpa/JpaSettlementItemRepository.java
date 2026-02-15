@@ -16,7 +16,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     @Query("""
         SELECT DISTINCT s.orderId
         FROM SettlementItem s
-        WHERE s.lifeCycleMeta.status = :status
+        WHERE s.statusInfo.status = :status
           AND s.createdAt < :cutOffDateTime
           AND s.retryCount < :retryLimit
     """)
@@ -41,7 +41,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     @Query("""
         SELECT MIN(s.orderId)
         FROM SettlementItem s
-        WHERE s.lifeCycleMeta.status = :status
+        WHERE s.statusInfo.status = :status
           AND s.createdAt < :cutOffDateTime
           AND s.retryCount < :retryLimit
     """)
@@ -54,7 +54,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     @Query("""
         SELECT MAX(s.orderId)
         FROM SettlementItem s
-        WHERE s.lifeCycleMeta.status = :status
+        WHERE s.statusInfo.status = :status
           AND s.createdAt < :cutOffDateTime
           AND s.retryCount < :retryLimit
     """)
