@@ -2,6 +2,8 @@ package giftify.support.web.manager;
 
 import app.giftify.support.common.AbstractRedisTest;
 import app.giftify.support.common.config.RedisConfig;
+import giftify.support.web.idempotency.IdempotencyStatus;
+import giftify.support.web.idempotency.IdempotencyValue;
 import giftify.support.web.idempotency.manager.IdempotencyManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,15 +48,15 @@ class IdempotencyManagerTest extends AbstractRedisTest {
 
             // then
             assertThat(result).isTrue();
-            String storedHash = (String) redisTemplate.opsForValue().get(testKey);
-            assertThat(storedHash).isEqualTo(testHash);
+            IdempotencyValue storedValue = (IdempotencyValue) redisTemplate.opsForValue().get(testKey);
+            assertThat(storedValue.payloadHash()).isEqualTo(testHash);
         }
 
         @Test
         @DisplayName("실패: 이미 동일한 키가 존재하면 false를 반환한다")
         void should_return_false_when_key_already_exists() {
             // given
-            redisTemplate.opsForValue().set(testKey, testHash);
+            redisTemplate.opsForValue().set(testKey, null);
 
             // when
             boolean result = idempotencyManager.attemptLock(testKey, testHash, 10);
@@ -84,16 +85,18 @@ class IdempotencyManagerTest extends AbstractRedisTest {
     class HashAndRemoveTest {
 
         @Test
-        @DisplayName("조회: 키가 존재하면 Optional에 해시값이 담겨야 한다")
+        @DisplayName("조회: 키가 존재하면 IdempotencyValue가 존재해야 한다")
         void getStoredHash_should_return_hash_when_present() {
             // given
-            redisTemplate.opsForValue().set(testKey, testHash);
+            IdempotencyValue testValue = new IdempotencyValue(IdempotencyStatus.PROCESSING, testHash);
+
+            redisTemplate.opsForValue().set(testKey, testValue);
 
             // when
-            Optional<String> result = idempotencyManager.getStoredHash(testKey);
+            IdempotencyValue storedValue = idempotencyManager.getStoredValue(testKey);
 
             // then
-            assertThat(result).isPresent().contains(testHash);
+            assertThat(storedValue).isEqualTo(testValue);
         }
 
         @Test
