@@ -1,4 +1,4 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.service;
 
 import org.springframework.stereotype.Service;
 

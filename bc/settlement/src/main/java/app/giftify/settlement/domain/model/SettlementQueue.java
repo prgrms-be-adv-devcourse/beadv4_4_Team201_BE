@@ -1,5 +1,6 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.model;
 
+import app.giftify.settlement.domain.status.SettlementQueueStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

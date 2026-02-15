@@ -1,6 +1,8 @@
-package app.giftify.settlement.application;
+package app.giftify.settlement.application.dto;
 
-import app.giftify.settlement.domain.*;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;

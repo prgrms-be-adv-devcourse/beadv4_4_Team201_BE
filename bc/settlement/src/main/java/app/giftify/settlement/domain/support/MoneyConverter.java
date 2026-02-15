@@ -1,4 +1,4 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.support;
 
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.AttributeConverter;

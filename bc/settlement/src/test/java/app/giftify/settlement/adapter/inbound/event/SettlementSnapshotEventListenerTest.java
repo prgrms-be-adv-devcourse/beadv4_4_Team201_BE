@@ -17,7 +17,7 @@ import app.giftify.settlement.application.SettlementItemService;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
-import app.giftify.settlement.domain.PaymentSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;

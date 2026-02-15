@@ -6,9 +6,9 @@ import app.giftify.settlement.application.inbound.InitializeSettlementItemComman
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
-import app.giftify.settlement.domain.OrderItemSnapshot;
-import app.giftify.settlement.domain.OrderSnapshot;
-import app.giftify.settlement.domain.PaymentSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.settlement.domain.exception.SettlementException;
 import app.giftify.shared.domain.event.funding.FundingReceivedConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;

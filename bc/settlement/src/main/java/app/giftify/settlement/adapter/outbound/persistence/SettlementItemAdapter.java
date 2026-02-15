@@ -2,8 +2,8 @@ package app.giftify.settlement.adapter.outbound.persistence;
 
 import app.giftify.settlement.adapter.outbound.persistence.jpa.JpaSettlementItemRepository;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
-import app.giftify.settlement.domain.SettlementItem;
-import app.giftify.settlement.domain.SettlementItemStatus;
+import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

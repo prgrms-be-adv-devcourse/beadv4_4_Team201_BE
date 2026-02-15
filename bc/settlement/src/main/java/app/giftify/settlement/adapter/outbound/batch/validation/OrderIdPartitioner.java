@@ -2,7 +2,7 @@ package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
-import app.giftify.settlement.domain.SettlementItemStatus;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;

@@ -1,5 +1,6 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.snapshot;
 
+import app.giftify.settlement.domain.support.MoneyConverter;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;

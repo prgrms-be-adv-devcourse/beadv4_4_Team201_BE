@@ -1,4 +1,4 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.snapshot;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,7 @@ package app.giftify.settlement.adapter.outbound.persistence;
 
 import app.giftify.settlement.adapter.outbound.persistence.jpa.JpaPaymentSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
-import app.giftify.settlement.domain.PaymentSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.exception.PolicyException;
 import lombok.RequiredArgsConstructor;

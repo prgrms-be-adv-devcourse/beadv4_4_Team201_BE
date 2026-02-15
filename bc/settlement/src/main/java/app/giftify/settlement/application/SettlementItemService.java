@@ -1,12 +1,19 @@
 package app.giftify.settlement.application;
 
+import app.giftify.settlement.application.dto.SettlementSource;
 import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
-import app.giftify.settlement.domain.*;
 import app.giftify.settlement.domain.exception.InfraException;
+import app.giftify.settlement.domain.model.SettlementCore;
+import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.service.FeePolicyService;
+import app.giftify.settlement.domain.service.SettlementCalculator;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.shared.api.AmountSummaryProjection;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;

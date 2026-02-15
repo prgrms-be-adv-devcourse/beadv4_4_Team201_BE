@@ -5,9 +5,16 @@ import app.giftify.settlement.application.outbound.port.OrderItemSnapshotReposit
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
-import app.giftify.settlement.domain.*;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.exception.DomainException;
+import app.giftify.settlement.domain.model.SettlementCore;
+import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.model.SettlementItemType;
+import app.giftify.settlement.domain.service.FeePolicyService;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;

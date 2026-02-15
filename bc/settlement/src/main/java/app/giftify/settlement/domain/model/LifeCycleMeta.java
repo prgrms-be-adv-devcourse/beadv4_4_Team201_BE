@@ -1,7 +1,8 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.model;
 
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.exception.DomainException;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

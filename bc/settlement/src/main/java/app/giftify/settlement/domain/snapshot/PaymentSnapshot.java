@@ -1,4 +1,4 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.snapshot;
 
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;

@@ -1,4 +1,4 @@
-package app.giftify.settlement.domain;
+package app.giftify.settlement.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
