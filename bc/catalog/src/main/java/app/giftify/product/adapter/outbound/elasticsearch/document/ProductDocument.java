@@ -17,14 +17,17 @@ public class ProductDocument {
     private String id;
 
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer"))
+            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "standard"))
     private String sellerNickname;
+
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer"))
+            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "standard"))
     private String name;
+
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer"))
+            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "standard"))
     private String description;
+
     @Field(type = FieldType.Integer)
     private int price;
     @Field(type = FieldType.Keyword)
