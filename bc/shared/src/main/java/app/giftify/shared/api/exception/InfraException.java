@@ -16,5 +16,7 @@ public class InfraException extends BaseException {
         super(errorCode, message, cause);
     }
 
-
+    public InfraException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause.getMessage(), cause);
+    }
 }

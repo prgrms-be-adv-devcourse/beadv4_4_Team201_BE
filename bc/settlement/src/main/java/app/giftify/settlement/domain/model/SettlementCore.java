@@ -1,8 +1,8 @@
 package app.giftify.settlement.domain.model;
 
-import app.giftify.settlement.domain.support.MoneyConverter;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
-import app.giftify.settlement.domain.exception.DomainException;
+import app.giftify.settlement.domain.support.MoneyConverter;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;

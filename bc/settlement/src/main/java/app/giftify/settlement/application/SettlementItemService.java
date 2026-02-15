@@ -6,7 +6,6 @@ import app.giftify.settlement.application.outbound.port.OrderItemSnapshotReposit
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
-import app.giftify.settlement.domain.exception.InfraException;
 import app.giftify.settlement.domain.model.SettlementCore;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.service.FeePolicyService;
@@ -15,6 +14,7 @@ import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
 import app.giftify.settlement.domain.snapshot.OrderSnapshot;
 import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.shared.api.AmountSummaryProjection;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,9 +40,8 @@ public class SettlementItemService {
     private final FeePolicyService feePolicyService;
 
     @Retryable(
-            value = { InfraException.class }, // 재시도 대상 예외
-            maxAttempts = 3,                  // 최대 3회
-            backoff = @Backoff(delay = 10000, multiplier = 2)// 10초 딜레이
+            retryFor = InfraException.class,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
     )
     @Transactional
     public void initializeSettlementItem(InitializeSettlementItemCommand command) {
