@@ -110,11 +110,12 @@ public class ProductEsAdapter implements ProductEsPort {
                     .boost(3f)
             ));
 
-            // 2순위: 형태소 분석 + 오타 허용
+            // 2순위: 형태소 분석 + 오타 허용 (75% 이상 토큰 매칭 필요)
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(command.keyword())
                     .fields("name^2", "description", "sellerNickname")
                     .fuzziness("AUTO")
+                    .minimumShouldMatch("75%")
                     .boost(1f)
             ));
 
