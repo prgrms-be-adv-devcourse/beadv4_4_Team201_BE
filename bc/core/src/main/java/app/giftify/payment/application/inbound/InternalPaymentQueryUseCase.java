@@ -6,6 +6,6 @@ public interface InternalPaymentQueryUseCase {
 
 	Optional<InternalPaymentResult> findById(Long paymentId);
 
-	Optional<InternalPaymentResult> findByOrderId(String orderId);
+	Optional<InternalPaymentResult> findByOrderNumber(String orderNumber);
 
 }

@@ -17,7 +17,9 @@ public interface PaymentRepository {
 
 	Optional<Payment> findByPaymentKey(String paymentKey);
 
-	Optional<Payment> findByOrderId(String orderId);
+	Optional<Payment> findByOrderNumber(String orderNumber);
+
+	List<Payment> findAllByOrderIdIn(List<Long> orderIds);
 
 	Page<Payment> findByMemberId(Long memberId, PageRequest pageRequest);
 }

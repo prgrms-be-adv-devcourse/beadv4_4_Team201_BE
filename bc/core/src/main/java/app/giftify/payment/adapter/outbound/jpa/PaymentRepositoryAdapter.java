@@ -72,9 +72,18 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Optional<Payment> findByOrderId(String orderId) {
-		return jpaPaymentRepository.findByOrderId(orderId)
+	public Optional<Payment> findByOrderNumber(String orderNumber) {
+		return jpaPaymentRepository.findByOrderNumber(orderNumber)
 			.map(paymentMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Payment> findAllByOrderIdIn(List<Long> orderIds) {
+		return jpaPaymentRepository.findAllByOrderIdIn(orderIds)
+			.stream()
+			.map(paymentMapper::toDomain)
+			.toList();
 	}
 
 	@Override

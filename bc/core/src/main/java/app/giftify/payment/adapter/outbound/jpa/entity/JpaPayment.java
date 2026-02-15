@@ -42,8 +42,11 @@ public class JpaPayment extends BaseJpaEntity {
 	@Column(name = "method", nullable = false, length = 50)
 	private PaymentMethod method;
 
-	@Column(name = "order_id", nullable = false, length = 255)
-	private String orderId;
+	@Column(name = "order_id")
+	private Long orderId;
+
+	@Column(name = "order_number", nullable = false, length = 255)
+	private String orderNumber;
 
 	@Column(name = "member_id", nullable = false)
 	private Long memberId;
@@ -79,7 +82,8 @@ public class JpaPayment extends BaseJpaEntity {
 	private JpaPayment(
 		PaymentType type,
 		PaymentMethod method,
-		String orderId,
+		Long orderId,
+		String orderNumber,
 		Long memberId,
 		BigDecimal originAmount,
 		BigDecimal paidAmount,
@@ -94,6 +98,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.type = type;
 		this.method = method;
 		this.orderId = orderId;
+		this.orderNumber = orderNumber;
 		this.memberId = memberId;
 		this.originAmount = originAmount;
 		this.paidAmount = paidAmount;
@@ -119,6 +124,7 @@ public class JpaPayment extends BaseJpaEntity {
 			payment.getType(),
 			payment.getMethod(),
 			payment.getOrderId(),
+			payment.getOrderNumber(),
 			payment.getMemberId(),
 			payment.getOriginAmount().amount(),
 			payment.getPaidAmount().amount(),
@@ -146,6 +152,7 @@ public class JpaPayment extends BaseJpaEntity {
 			.type(type)
 			.method(method)
 			.orderId(orderId)
+			.orderNumber(orderNumber)
 			.memberId(memberId)
 			.originAmount(Money.of(originAmount))
 			.paidAmount(Money.of(paidAmount))

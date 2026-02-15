@@ -7,18 +7,18 @@ import java.time.LocalDateTime;
  */
 public final class PaymentReceivedEvent extends PaymentInternalEvent {
 	private final Long memberId;
-	private final String orderId;
+	private final String orderNumber;
 	private final LocalDateTime receivedAt;
 
 	public PaymentReceivedEvent(
 		Long paymentId,
 		Long memberId,
-		String orderId,
+		String orderNumber,
 		LocalDateTime receivedAt
 	) {
 		super(paymentId);
 		this.memberId = memberId;
-		this.orderId = orderId;
+		this.orderNumber = orderNumber;
 		this.receivedAt = receivedAt;
 	}
 
@@ -26,8 +26,8 @@ public final class PaymentReceivedEvent extends PaymentInternalEvent {
 		return memberId;
 	}
 
-	public String getOrderId() {
-		return orderId;
+	public String getOrderNumber() {
+		return orderNumber;
 	}
 
 	public LocalDateTime getReceivedAt() {

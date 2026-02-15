@@ -8,7 +8,7 @@ import app.giftify.shared.domain.vo.Money;
 
 public record InternalPaymentResult(
 	Long paymentId,
-	String orderId,
+	String orderNumber,
 	Long memberId,
 	PaymentStatus status,
 	PaymentType type,
@@ -26,7 +26,7 @@ public record InternalPaymentResult(
 	) {
 		return new InternalPaymentResult(
 			payment.getId(),
-			payment.getOrderId(),
+			payment.getOrderNumber(),
 			payment.getMemberId(),
 			payment.getStatus(),
 			payment.getType(),

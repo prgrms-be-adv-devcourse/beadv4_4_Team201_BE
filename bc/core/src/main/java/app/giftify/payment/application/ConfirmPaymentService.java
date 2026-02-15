@@ -16,7 +16,7 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
+import app.giftify.shared.domain.event.payment.PaymentPaidEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -70,7 +70,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		// 4. PG 승인 요청 (DB에서 조회한 금액 사용)
 		TossConfirmResult pgResult = paymentGateway.confirm(
 			command.paymentKey(),
-			command.orderId(),
+			command.orderNumber(),
 			payment.getPaidAmount()
 		);
 
@@ -98,13 +98,15 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		domainEvents.forEach(eventPublisher::publish);
 
 		// 8. 외부 BC 이벤트 발행 (Settlement — Spring Modulith outbox)
-		eventPublisher.publish(PaymentConfirmedForSettlement.create(
+		eventPublisher.publish(PaymentPaidEvent.create(
 			savedPayment.getId(),
-			payment.getOrderId(),
+			payment.getOrderNumber(),
+			payment.getMemberId(),
+			payment.getPaidAmount(),
+			payment.getType(),
+			payment.getMethod(),
 			encryptedPaymentKey,
 			pgResult.lastTransactionKey(),
-			payment.getPaidAmount(),
-			payment.getMethod(),
 			paidAt
 		));
 
