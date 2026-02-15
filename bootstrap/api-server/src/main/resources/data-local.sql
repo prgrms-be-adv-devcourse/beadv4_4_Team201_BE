@@ -147,7 +147,7 @@ ALTER TABLE cart_item
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------
--- 10. FUNDING (펀딩) — V1.2.3
+-- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
 INSERT INTO funding (id, wishlist_item_id, product_id, receiver_id, target_amount, current_amount,
                      status, deadline, achieved_at, closed_at,
@@ -163,21 +163,25 @@ VALUES
 
     (3, 4, 3, 2, 415000, 120000, 'EXPIRED',
      '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
+     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+
+    (4, 2, 3, 2, 415000, 415000, 'ACHIEVED',
+     '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------
--- 11. FUNDING_PARTICIPANT_MEMBER (펀딩 참여자) — V1.2.3
+-- 11. FUNDING_PARTICIPANT_MEMBER (펀딩 참여자) — V1.2.4
 -- -----------------------------------------------------------------------------
 INSERT INTO funding_participant_member (id, funding_id, participant_id, nick_name, amount,
                                         created_at, updated_at, created_by, updated_by)
-VALUES (1, 1, 2, "나른한고양이0013", 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (2, 1, 6, "배고픈강아지0007", 55000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 2, 2, "나른한고양이0013", 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (4, 2, 6, "배고픈강아지0007", 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (5, 3, 2, "나른한고양이0013", 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+VALUES (1, 1, 2, '나른한고양이0013', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 1, 6, '배고픈강아지0007', 555000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 2, 2, '나른한고양이0013', 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 2, 6,  '배고픈강아지0007', 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (5, 3, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding_participant_member
     ALTER COLUMN id RESTART WITH 100;
