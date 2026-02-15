@@ -3,6 +3,7 @@ package app.giftify.funding.adpater.outbound.repository;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
 import app.giftify.funding.application.MyFundingInfo;
+import app.giftify.funding.domain.FundingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,8 +27,9 @@ public interface FundingParticipantMemberRepository extends JpaRepository<Fundin
     @Query("SELECT new app.giftify.funding.application.MyFundingInfo(fpm.funding, SUM(fpm.amount)) " +
            "FROM FundingParticipantMember fpm " +
            "WHERE fpm.participantId = :memberId " +
+           "AND (:status IS NULL OR fpm.funding.status = :status) " +
            "GROUP BY fpm.funding")
-    Page<MyFundingInfo> findAllMyFundingInfos(@Param("memberId") Long memberId, Pageable pageable);
+    Page<MyFundingInfo> findAllMyFundingInfos(@Param("memberId") Long memberId, @Param("status") FundingStatus status, Pageable pageable);
 
     FundingParticipantMember findByFundingAndParticipantId(Funding funding, Long participantId);
 
