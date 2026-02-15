@@ -3,14 +3,12 @@ package app.giftify.product.adapter.outbound.elasticsearch.document;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.time.LocalDateTime;
 
 @Document(indexName = "products")
+@Setting(settingPath = "/elasticsearch/product-settings.json")
 @Getter
 @AllArgsConstructor
 public class ProductDocument {
@@ -18,11 +16,14 @@ public class ProductDocument {
     @Id
     private String id;
 
-    @Field(type = FieldType.Text)
+    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
+            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer"))
     private String sellerNickname;
-    @Field(type = FieldType.Text)
+    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
+            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer"))
     private String name;
-    @Field(type = FieldType.Text)
+    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
+            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer"))
     private String description;
     @Field(type = FieldType.Integer)
     private int price;

@@ -77,7 +77,7 @@ public class ProductEsAdapter implements ProductEsPort {
         BoolQuery.Builder boolBuilder = new BoolQuery.Builder();
 
         // ----- filter 절
-        // 판매 중인 상품만 조회
+        // 항상 판매 중인 상품만 조회
         boolBuilder.filter(f -> f.term(t -> t.field("status").value("ACTIVE")));
 
         if (command.category() != null) {
@@ -105,7 +105,7 @@ public class ProductEsAdapter implements ProductEsPort {
         if (command.keyword() != null && !command.keyword().isBlank()) {
             boolBuilder.must(m -> m.multiMatch(mm -> mm
                     .query(command.keyword())
-                    .fields("name^2", "description", "sellerNickname")
+                    .fields("name^3", "name.ngram", "description^2", "description.ngram", "sellerNickname^2", "sellerNickname.ngram")
                     .fuzziness("AUTO") // 오타 허용
             ));
         }
