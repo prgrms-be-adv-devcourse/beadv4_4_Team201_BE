@@ -18,7 +18,8 @@ import app.giftify.settlement.application.outbound.port.OrderItemSnapshotReposit
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
 import app.giftify.settlement.domain.PaymentSnapshot;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
+import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
 
@@ -42,10 +43,11 @@ class SettlementSnapshotEventListenerTest {
 	private SettlementSnapshotEventListener listener;
 
 	@Test
-	@DisplayName("PaymentConfirmedForSettlement 이벤트를 받으면 PaymentSnapshot을 저장한다")
+	@DisplayName("PaymentPaidExternalEvent 이벤트를 받으면 PaymentSnapshot을 저장한다")
 	void handlePaymentConfirmedEvent_SavesPaymentSnapshot() {
 		// given
 		Long paymentId = 1L;
+		Long memberId = 100L;
 		String orderNumber = "ORD-001";
 		String paymentKey = "encrypted-payment-key";
 		String transactionKey = "txn-key-001";
@@ -53,12 +55,12 @@ class SettlementSnapshotEventListenerTest {
 		PaymentMethod method = PaymentMethod.CARD;
 		LocalDateTime paidAt = LocalDateTime.of(2026, 2, 12, 14, 30);
 
-		PaymentConfirmedForSettlement event = PaymentConfirmedForSettlement.create(
-			paymentId, orderNumber, paymentKey, transactionKey, paidAmount, method, paidAt
+		PaymentPaidExternalEvent event = PaymentPaidExternalEvent.create(
+			paymentId, orderNumber, memberId, paidAmount, PaymentType.FUNDING, method, paymentKey, transactionKey, paidAt
 		);
 
 		// when
-		listener.handlePaymentConfirmedEvent(event);
+		listener.handlePaymentPaidExternalEvent(event);
 
 		// then
 		ArgumentCaptor<PaymentSnapshot> captor = ArgumentCaptor.forClass(PaymentSnapshot.class);
