@@ -100,14 +100,25 @@ public class ProductEsAdapter implements ProductEsPort {
             }));
         }
 
-        // ----- must 절
-        // 키워드가 있으면 스코어 기반 검색 수행 multi_match
+        // ----- should 절
+        // 키워드가 있으면 스코어 기반 검색 수행
         if (command.keyword() != null && !command.keyword().isBlank()) {
-            boolBuilder.must(m -> m.multiMatch(mm -> mm
+            // 1순위: 검색어가 정확히 포함된 문서 (LIKE)
+            boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(command.keyword())
-                    .fields("name^3", "name.ngram", "description^2", "description.ngram", "sellerNickname^2", "sellerNickname.ngram")
-                    .fuzziness("AUTO") // 오타 허용
+                    .fields("name.ngram^3", "description.ngram^2", "sellerNickname.ngram")
+                    .boost(3f)
             ));
+
+            // 2순위: 형태소 분석 + 오타 허용
+            boolBuilder.should(s -> s.multiMatch(mm -> mm
+                    .query(command.keyword())
+                    .fields("name^2", "description", "sellerNickname")
+                    .fuzziness("AUTO")
+                    .boost(1f)
+            ));
+
+            boolBuilder.minimumShouldMatch("1");
         }
 
         // Bool Query로 조합
