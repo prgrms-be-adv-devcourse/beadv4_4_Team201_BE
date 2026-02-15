@@ -9,11 +9,9 @@ import java.time.LocalDateTime;
  * <p>내부 이벤트는 {@code bc/payment/domain/event/PaymentInternalEvent}를 사용합니다.</p>
  */
 public sealed interface PaymentExternalEvent
-	permits PaymentConfirmedForOrder,
-			PaymentCanceledForOrder,
-			PaymentRefundedForSettlement,
-			PaymentConfirmedForSettlement,
-			PaymentCompletedForFunding {
+	permits PaymentPaidExternalEvent,
+			PaymentCanceledExternalEvent,
+			PaymentRefundedExternalEvent {
 
 	/**
 	 * 결제 ID

@@ -9,7 +9,10 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
+
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,6 +44,18 @@ public class WalletDeductedEventHandler {
 		var domainEvents = payment.pullEvents();
 		Payment savedPayment = paymentRepository.save(payment);
 		domainEvents.forEach(eventPublisher::publish);
+
+		eventPublisher.publish(PaymentPaidExternalEvent.create(
+			savedPayment.getId(),
+			savedPayment.getOrderNumber(),
+			savedPayment.getMemberId(),
+			savedPayment.getPaidAmount(),
+			savedPayment.getType(),
+			savedPayment.getMethod(),
+			null,
+			null,
+			LocalDateTime.now()
+		));
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
 			savedPayment.getId(), savedPayment.getStatus());
