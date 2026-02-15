@@ -1,6 +1,7 @@
-package app.giftify.settlement.adapter.outbound.batch;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import app.giftify.settlement.adapter.inbound.event.ValidationJobListener;
+import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import app.giftify.settlement.domain.SettlementItem;
 import app.giftify.settlement.domain.SettlementQueue;
 import app.giftify.settlement.domain.exception.InfraException;
@@ -34,17 +35,13 @@ import java.util.Map;
 @Configuration
 public class ValidationBatchConfig {
 
-    @Value("${settlement.batch.chunk-size}")
-    private int chunkSize;
-    @Value("${settlement.batch.retry-limit}")
-    private int retryLimit;
-
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final EntityManagerFactory emf;
     private final OrderIdPartitioner orderIdPartitioner;
     private final ValidationBulkLoadListener validationBulkLoadListener;
     private final ValidationJobListener validationJobListener;
+    private final BatchProperties properties;
 
     @Bean
     public Job validationJob() {
@@ -58,14 +55,14 @@ public class ValidationBatchConfig {
     @Bean
     public Step validationStep() {
         return new StepBuilder("validationStep", jobRepository)
-                .<SettlementItem, SettlementQueue>chunk(chunkSize, transactionManager)
+                .<SettlementItem, SettlementQueue>chunk(properties.chunkSize(), transactionManager)
                 .reader(settlementItemReader(null, null, null))
                 .processor(validationProcessor(null))
                 .writer(validationWriter())
                 .listener(validationBulkLoadListener)
                 .faultTolerant()
                 .retry(InfraException.class)
-                .retryLimit(retryLimit)
+                .retryLimit(properties.retryLimit())
                 .build();
     }
 
@@ -110,10 +107,10 @@ public class ValidationBatchConfig {
                 .parameterValues(Map.of(
                         "minOrderId", minOrderId,
                         "maxOrderId", maxOrderId,
-                        "retryLimit", retryLimit,
+                        "retryLimit", properties.retryLimit(),
                         "cutOffDateTime", cutOffDateTime
                 ))
-                .pageSize(chunkSize)
+                .pageSize(properties.chunkSize())
                 .build();
     }
 

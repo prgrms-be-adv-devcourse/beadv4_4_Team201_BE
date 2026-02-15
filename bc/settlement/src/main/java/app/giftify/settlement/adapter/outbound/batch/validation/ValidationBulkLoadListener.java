@@ -1,4 +1,4 @@
-package app.giftify.settlement.adapter.outbound.batch;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import app.giftify.settlement.adapter.outbound.client.OrderClient;
 import app.giftify.settlement.adapter.outbound.client.PaymentClient;

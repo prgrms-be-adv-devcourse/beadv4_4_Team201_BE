@@ -1,12 +1,12 @@
-package app.giftify.settlement.adapter.outbound.batch;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
+import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,13 +20,9 @@ import java.time.LocalTime;
 @EnableScheduling
 public class ValidationBatchScheduler {
 
-    @Value("${settlement.batch.retry-limit}")
-    private Long retryLimit;
-    @Value("${settlement.batch.validation-cut-off-time}")
-    private String cutOffTimeStr;
-
     private final JobLauncher jobLauncher;
     private final Job validationJob;
+    private final BatchProperties properties;
 
     /**
      * 매일 01:00시에 실행
@@ -37,7 +33,7 @@ public class ValidationBatchScheduler {
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("cutOffDateTime", cutOffDateTime.toString())
-                .addLong("retryLimit", retryLimit)
+                .addLong("retryLimit", (long) properties.retryLimit())
                 .addLong("runId", System.currentTimeMillis())
                 .toJobParameters();
 
@@ -45,7 +41,7 @@ public class ValidationBatchScheduler {
     }
 
     private @NonNull LocalDateTime createCutOffDateTime() {
-        LocalTime cutOffTime = LocalTime.parse(cutOffTimeStr);
+        LocalTime cutOffTime = LocalTime.parse(properties.validationCutOffTime());
         return LocalDate.now().atTime(cutOffTime);
     }
 }

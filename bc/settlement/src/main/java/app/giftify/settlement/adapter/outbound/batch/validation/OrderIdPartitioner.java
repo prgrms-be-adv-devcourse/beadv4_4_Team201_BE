@@ -1,5 +1,6 @@
-package app.giftify.settlement.adapter.outbound.batch;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
+import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.SettlementItemStatus;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,8 @@ import java.util.Map;
 @StepScope
 public class OrderIdPartitioner implements Partitioner {
 
-    @Value("${settlement.batch.order-per-partition}")
-    private int orderPerPartition;
-
     private final SettlementItemRepository settlementItemRepository;
+    private final BatchProperties properties;
 
     @Value("#{jobParameters['cutOffDateTime']}")
     private LocalDateTime cutOffDateTime;
@@ -47,7 +46,7 @@ public class OrderIdPartitioner implements Partitioner {
         int partitionIndex = 0;
 
         while (fromId <= maxOrderId) {
-            long toId = Math.min(fromId + orderPerPartition - 1, maxOrderId);
+            long toId = Math.min(fromId + properties.orderPerPartition() - 1, maxOrderId);
 
             ExecutionContext context = new ExecutionContext();
             context.putLong("minOrderId", fromId);

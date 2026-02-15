@@ -1,4 +1,4 @@
-package app.giftify.settlement.adapter.outbound.batch;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import app.giftify.shared.domain.vo.Money;
 import org.springframework.batch.core.configuration.annotation.StepScope;

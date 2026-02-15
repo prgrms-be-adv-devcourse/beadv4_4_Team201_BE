@@ -1,4 +1,4 @@
-package app.giftify.settlement.adapter.outbound.batch;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import app.giftify.settlement.domain.SettlementItem;
 import app.giftify.settlement.domain.SettlementQueue;
