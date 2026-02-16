@@ -28,11 +28,10 @@ public record MyFundingResponseDto(
 
     public record ParticipantDto(
             Long participantId,
-            String nickName,
-            Integer amount
+            String nickName
     ) {
         public static ParticipantDto fromEntity(FundingParticipantMember member) {
-            return new ParticipantDto(member.getParticipantId(), member.getNickName(), member.getAmount());
+            return new ParticipantDto(member.getParticipantId(), member.getNickName());
         }
     }
 
