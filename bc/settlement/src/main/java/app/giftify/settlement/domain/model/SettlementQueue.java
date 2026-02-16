@@ -3,7 +3,6 @@ package app.giftify.settlement.domain.model;
 import app.giftify.settlement.domain.status.SettlementQueueStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,8 +15,7 @@ import java.time.LocalDateTime;
 @Table(name = "settlement_queue")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SettlementQueue {
 
     @Id
