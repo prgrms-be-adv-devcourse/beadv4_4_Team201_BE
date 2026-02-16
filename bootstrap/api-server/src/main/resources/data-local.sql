@@ -149,23 +149,23 @@ ALTER TABLE cart_item
 -- -----------------------------------------------------------------------------
 -- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding (id, wishlist_item_id, product_id, receiver_id, target_amount, current_amount,
+INSERT INTO funding (id, version, wishlist_item_id, product_id, receiver_id, target_amount, current_amount,
                      status, deadline, achieved_at, closed_at,
                      created_at, updated_at, created_by, updated_by)
 VALUES
-    (1, 8, 4, 5, 699000, 15000, 'IN_PROGRESS',
+    (1, 0,8, 4, 5, 699000, 15000, 'IN_PROGRESS',
      '2026-03-01 23:59:59', NULL, NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (2, 9, 1, 5, 359000, 359000, 'ACHIEVED',
+    (2, 0,9, 1, 5, 359000, 359000, 'ACHIEVED',
      '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (3, 4, 3, 2, 415000, 120000, 'EXPIRED',
+    (3, 0,4, 3, 2, 415000, 120000, 'EXPIRED',
      '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (4, 2, 3, 2, 415000, 415000, 'ACHIEVED',
+    (4, 0,2, 3, 2, 415000, 415000, 'ACHIEVED',
      '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
