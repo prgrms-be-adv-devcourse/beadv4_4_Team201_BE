@@ -2,7 +2,6 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.*;
-import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
@@ -129,13 +128,13 @@ public class FundingFacade {
     }
 
     @Transactional(readOnly = true)
-    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
-        return fundingGetUseCase.getMyFunding(id, memberId);
+    public MyFundingResponseDto getMyFunding(Long id, FundingStatus status, Long memberId) {
+        return fundingGetUseCase.getMyFunding(id, status, memberId);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
-        return fundingGetUseCase.getMyFundings(page, size, memberId);
+    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, FundingStatus status, Long memberId) {
+        return fundingGetUseCase.getMyFundings(page, size, status, memberId);
     }
 
 //    @Transactional

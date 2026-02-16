@@ -132,8 +132,8 @@ public class FundingGetUseCase {
     /**
      * 나의 펀딩 단건 조회
      */
-    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
-        Funding funding = fundingRepository.findById(id).orElseThrow(() ->
+    public MyFundingResponseDto getMyFunding(Long id, FundingStatus status, Long memberId) {
+        Funding funding = fundingRepository.findByIdAndStatus(id, status).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + id));
 
         funding.validateReceiver(memberId);
@@ -150,10 +150,10 @@ public class FundingGetUseCase {
     /**
      * 나의 펀딩 리스트 조회
      */
-    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
+    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, FundingStatus status, Long memberId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<Funding> fundingPage = fundingRepository.findAllByReceiverId(memberId, pageable);
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdAndStatus(memberId, status, pageable);
         List<MyFundingSummaryDto> contents = fundingPage.getContent().stream()
                 .map(funding -> MyFundingSummaryDto.fromEntity(funding))
                 .collect(Collectors.toList());

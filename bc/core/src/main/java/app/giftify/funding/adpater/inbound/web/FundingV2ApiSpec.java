@@ -103,6 +103,7 @@ public interface FundingV2ApiSpec {
     })
     ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
             @PathVariable("id") Long id,
+            @RequestParam(value = "status", required = false) FundingStatus status,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(summary = "나의 펀딩 목록 조회",description = "수령자가 본인의 펀딩 목록을 페이지 단위로 조회합니다.")
@@ -113,6 +114,7 @@ public interface FundingV2ApiSpec {
     ResponseEntity<RsData<PageResponse<MyFundingSummaryDto>>> getMyFundings(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "status", required = false) FundingStatus status,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
 }
