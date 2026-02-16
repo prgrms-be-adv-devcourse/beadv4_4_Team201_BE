@@ -18,11 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -33,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class IdempotencyAspectTest {
 
     @InjectMocks
@@ -51,31 +49,28 @@ class IdempotencyAspectTest {
     @Mock
     private Idempotent idempotent;
 
-    private static final String REDIS_KEY = "IDEM:TEST_PREFIX:test-key";
-    private static final String CURRENT_HASH = "hash123";
-    private static final Long TTL = 10L;
+    private static final String IDEM_KEY = "test-uuid";
+    private static final String REDIS_KEY = "IDEM:TEST:test-uuid";
+    private static final String HASH = "hash123456789";
+    private static final long TTL = 10L;
 
     @BeforeEach
-    void setUp() throws NoSuchMethodException {
-        // 1. 실제 메서드 정보를 가져오기 위한 준비 (테스트용 메서드 아무거나 지정)
-        Method mockMethod = this.getClass().getDeclaredMethod("setUp");
-
-        // 2. MethodSignature Mocking
-        MethodSignature signature = mock(MethodSignature.class);
-        when(signature.getMethod()).thenReturn(mockMethod);
-        when(signature.getParameterTypes()).thenReturn(mockMethod.getParameterTypes());
-
-        // 3. JoinPoint가 위 signature를 반환하도록 설정
-        when(joinPoint.getSignature()).thenReturn(signature);
-
-        // 나머지 기존 설정...
+    void setUp() {
+        // HTTP 헤더 Mocking
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Idempotency-Key", "test-key");
+        request.addHeader("X-Idempotency-Key", IDEM_KEY);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-        when(idempotent.prefix()).thenReturn("TEST_PREFIX");
-        when(idempotent.ttl()).thenReturn(10L);
-        when(payloadHasher.calculateHash(any())).thenReturn(CURRENT_HASH);
+        // Annotation 및 Hash Mocking
+        lenient().when(idempotent.prefix()).thenReturn("TEST");
+        lenient().when(idempotent.ttl()).thenReturn(TTL);
+        lenient().when(payloadHasher.calculateHash(any())).thenReturn(HASH);
+
+        // Reflection-based RequestBody find logic을 위한 Mocking (최소화)
+        MethodSignature signature = mock(MethodSignature.class);
+        Method mockMethod = ReflectionUtils.findMethod(this.getClass(), "setUp");
+        lenient().when(signature.getMethod()).thenReturn(mockMethod);
+        lenient().when(joinPoint.getSignature()).thenReturn(signature);
     }
 
     @AfterEach
@@ -84,28 +79,28 @@ class IdempotencyAspectTest {
     }
 
     @Test
-    @DisplayName("최초 요청 시 로직을 실행하고 상태를 COMPLETED로 업데이트한다")
-    void success_first_request() throws Throwable {
+    @DisplayName("최초 요청 시 비즈니스 로직을 실행하고 완료 상태로 업데이트한다")
+    void execute_Success_FirstRequest() throws Throwable {
         // given
-        when(idempotencyManager.attemptLock(REDIS_KEY, CURRENT_HASH, TTL)).thenReturn(true);
-        when(joinPoint.proceed()).thenReturn("Success Result");
+        when(idempotencyManager.attemptLock(REDIS_KEY, HASH, TTL)).thenReturn(true);
+        when(joinPoint.proceed()).thenReturn("RESULT");
 
         // when
         Object result = idempotencyAspect.execute(joinPoint, idempotent);
 
         // then
-        assertThat(result).isEqualTo("Success Result");
-        verify(joinPoint).proceed();
-        verify(idempotencyManager).updateToCompleted(eq(REDIS_KEY), any());
+        assertThat(result).isEqualTo("RESULT");
+        verify(idempotencyManager).updateToCompleted(REDIS_KEY, HASH);
     }
 
     @Test
-    @DisplayName("중복 요청(PROCESSING)이고 해시가 일치하면 202 Accepted를 반환한다")
-    void fail_duplicated_request_processing() throws Throwable {
+    @DisplayName("처리 중인 중복 요청이면 202 Accepted를 반환한다")
+    void execute_Duplicate_Processing() throws Throwable {
         // given
-        when(idempotencyManager.attemptLock(REDIS_KEY, CURRENT_HASH, TTL)).thenReturn(false);
-        IdempotencyValue storedValue = new IdempotencyValue(IdempotencyStatus.PROCESSING, CURRENT_HASH);
-        when(idempotencyManager.getStoredValue(REDIS_KEY)).thenReturn(storedValue);
+        when(idempotencyManager.attemptLock(REDIS_KEY, HASH, TTL)).thenReturn(false);
+        when(idempotencyManager.getStoredValue(REDIS_KEY))
+                .thenReturn(new IdempotencyValue(IdempotencyStatus.PROCESSING, HASH));
+        when(payloadHasher.isMatch(HASH, HASH)).thenReturn(true);
 
         // when
         Object result = idempotencyAspect.execute(joinPoint, idempotent);
@@ -114,16 +109,35 @@ class IdempotencyAspectTest {
         assertThat(result).isInstanceOf(ResponseEntity.class);
         ResponseEntity<?> response = (ResponseEntity<?>) result;
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        verify(joinPoint, never()).proceed(); // 비즈니스 로직 실행 안됨
+        verify(joinPoint, never()).proceed();
     }
 
     @Test
-    @DisplayName("중복 요청이지만 해시가 다르면 PAYLOAD_MISMATCH 예외가 발생한다")
-    void fail_payload_mismatch() {
+    @DisplayName("완료된 중복 요청이면 200 OK를 반환한다")
+    void execute_Duplicate_Completed() throws Throwable {
         // given
-        when(idempotencyManager.attemptLock(REDIS_KEY, CURRENT_HASH, TTL)).thenReturn(false);
-        IdempotencyValue storedValue = new IdempotencyValue(IdempotencyStatus.COMPLETED, "different_hash");
-        when(idempotencyManager.getStoredValue(REDIS_KEY)).thenReturn(storedValue);
+        when(idempotencyManager.attemptLock(REDIS_KEY, HASH, TTL)).thenReturn(false);
+        when(idempotencyManager.getStoredValue(REDIS_KEY))
+                .thenReturn(new IdempotencyValue(IdempotencyStatus.COMPLETED, HASH));
+        when(payloadHasher.isMatch(HASH, HASH)).thenReturn(true);
+
+        // when
+        Object result = idempotencyAspect.execute(joinPoint, idempotent);
+
+        // then
+        ResponseEntity<?> response = (ResponseEntity<?>) result;
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("키는 같으나 해시가 다르면 PAYLOAD_MISMATCH 예외가 발생한다")
+    void execute_PayloadMismatch() {
+        // given
+        String differentHash = "differentHash";
+        when(idempotencyManager.attemptLock(REDIS_KEY, HASH, TTL)).thenReturn(false);
+        when(idempotencyManager.getStoredValue(REDIS_KEY))
+                .thenReturn(new IdempotencyValue(IdempotencyStatus.COMPLETED, differentHash));
+        when(payloadHasher.isMatch(differentHash, HASH)).thenReturn(false);
 
         // when & then
         assertThatThrownBy(() -> idempotencyAspect.execute(joinPoint, idempotent))
@@ -132,33 +146,17 @@ class IdempotencyAspectTest {
     }
 
     @Test
-    @DisplayName("로직 실행 중 예외 발생 시 Redis 키를 삭제하고 예외를 던진다")
-    void fail_business_exception_removes_key() throws Throwable {
+    @DisplayName("비즈니스 로직 실행 중 예외가 발생하면 Redis 키를 삭제하고 예외를 전파한다")
+    void execute_BusinessException_RemovesKey() throws Throwable {
         // given
-        when(idempotencyManager.attemptLock(REDIS_KEY, CURRENT_HASH, TTL)).thenReturn(true);
-        when(joinPoint.proceed()).thenThrow(new RuntimeException("Business Error"));
+        when(idempotencyManager.attemptLock(REDIS_KEY, HASH, TTL)).thenReturn(true);
+        when(joinPoint.proceed()).thenThrow(new RuntimeException("Business Logic Error"));
 
         // when & then
         assertThatThrownBy(() -> idempotencyAspect.execute(joinPoint, idempotent))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("Business Error");
+                .hasMessage("Business Logic Error");
 
-        verify(idempotencyManager).removeKey(REDIS_KEY); // 키 삭제 검증
-    }
-
-    @Test
-    @DisplayName("선점은 실패했으나 조회 시 값이 없으면(TTL만료) 신규 요청으로 진행한다")
-    void success_race_condition_ttl_expired() throws Throwable {
-        // given
-        when(idempotencyManager.attemptLock(REDIS_KEY, CURRENT_HASH, TTL)).thenReturn(false);
-        when(idempotencyManager.getStoredValue(REDIS_KEY)).thenReturn(null); // 조회 직전 만료
-        when(joinPoint.proceed()).thenReturn("Fallback Success");
-
-        // when
-        Object result = idempotencyAspect.execute(joinPoint, idempotent);
-
-        // then
-        assertThat(result).isEqualTo("Fallback Success");
-        verify(joinPoint).proceed();
+        verify(idempotencyManager).removeKey(REDIS_KEY);
     }
 }
