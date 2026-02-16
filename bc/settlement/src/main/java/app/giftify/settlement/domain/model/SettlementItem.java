@@ -58,6 +58,8 @@ public class SettlementItem {
     @Column(nullable = false)
     private String orderNumber;
 
+    private Long historyId;
+
     @Column(nullable = false)
     private LocalDateTime orderedAt;
 
@@ -183,6 +185,11 @@ public class SettlementItem {
 
     public void manual() {
         statusInfo = statusInfo.manual();
+    }
+
+    public void complete(Long historyId) {
+        this.historyId = historyId;
+        statusInfo = statusInfo.complete();
     }
 
     private void validateTimeSequence(LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt) {

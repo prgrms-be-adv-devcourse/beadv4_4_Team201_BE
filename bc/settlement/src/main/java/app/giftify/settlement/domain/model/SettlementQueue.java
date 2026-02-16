@@ -1,6 +1,8 @@
 package app.giftify.settlement.domain.model;
 
+import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.status.SettlementQueueStatus;
+import app.giftify.shared.api.exception.DomainException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -40,5 +42,18 @@ public class SettlementQueue {
     public SettlementQueue(SettlementItem item) {
         this.item = item;
         this.status = SettlementQueueStatus.READY;
+    }
+
+    public void done(Long historyId) {
+        if (this.status != SettlementQueueStatus.READY) {
+            throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+        }
+
+        this.status = SettlementQueueStatus.DONE;
+        item.complete(historyId);
+    }
+
+    public void fail() {
+        this.status = SettlementQueueStatus.FAIL;
     }
 }

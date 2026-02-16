@@ -77,38 +77,22 @@ public class ItemStatusInfo {
                 );
         }
 
+        public ItemStatusInfo complete() {
+                if (this.status != SettlementItemStatus.READY) {
+                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+                }
+                if (settledAt == null) {
+                        throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
+                }
+                return new ItemStatusInfo(SettlementItemStatus.COMPLETED, expectedDate, LocalDateTime.now(), cancelledAt);
+        }
+
         // 익월 정산
         private static LocalDate calculateExpectedDate(LocalDateTime confirmedAt) {
                 return confirmedAt.toLocalDate()
                         .withDayOfMonth(1)
                         .plusMonths(1); // 다음 달 1일에 정산 예정
         }
-
-// todo: 추후 기능 추가
-
-//        public LifeCycleMeta start() {
-//                if (this.status != SettlementItemStatus.READY) {
-//                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
-//                }
-//                return new LifeCycleMeta(SettlementItemStatus.IN_PROGRESS, expectedDate, null, null);
-//        }
-//
-//        public LifeCycleMeta complete(LocalDateTime settledAt) {
-//                if (this.status != SettlementItemStatus.IN_PROGRESS) {
-//                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
-//                }
-//                if (settledAt == null) {
-//                        throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
-//                }
-//                return new LifeCycleMeta(SettlementItemStatus.COMPLETED, expectedDate, settledAt, cancelledAt);
-//        }
-//
-//        public LifeCycleMeta cancel(LocalDateTime cancelledAt) {
-//                if (this.status == SettlementItemStatus.COMPLETED) {
-//                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
-//                }
-//                return new LifeCycleMeta(SettlementItemStatus.CANCELLED, expectedDate, settledAt, cancelledAt);
-//        }
 }
 
 

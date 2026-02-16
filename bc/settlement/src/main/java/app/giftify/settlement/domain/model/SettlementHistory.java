@@ -32,4 +32,11 @@ public class SettlementHistory {
 
     @CreatedDate
     private LocalDateTime settledAt;
+
+    public SettlementHistory(Long sellerId, SettlementAmountSummary amountSummary, int itemCount) {
+        this.sellerId = sellerId;
+        this.amountSummary = amountSummary;
+        this.itemCount = itemCount;
+        this.status = SettlementHistoryStatus.CREATED;
+    }
 }
