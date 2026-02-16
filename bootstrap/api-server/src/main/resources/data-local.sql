@@ -181,7 +181,11 @@ VALUES (1, 1, 2, '나른한고양이0013', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTE
        (2, 1, 6, '배고픈강아지0007', 555000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (3, 2, 2, '나른한고양이0013', 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (4, 2, 6,  '배고픈강아지0007', 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (5, 3, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+       (5, 3, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (6, 4, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (7, 4, 6,  '배고픈강아지0007', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (8, 4, 1,  '참가자3', 50000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (9, 4, 2,  '참가자4', 1000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding_participant_member
     ALTER COLUMN id RESTART WITH 100;
