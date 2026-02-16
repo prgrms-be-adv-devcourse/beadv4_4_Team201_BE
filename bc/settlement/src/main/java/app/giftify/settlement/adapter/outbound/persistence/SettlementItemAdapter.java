@@ -42,6 +42,11 @@ public class SettlementItemAdapter implements SettlementItemRepository {
     }
 
     @Override
+    public List<Long> findDistinctOrderIdsBetween(Long minOrderId, Long maxOrderId, int retryLimit) {
+        return jpaSettlementItemRepository.findDistinctOrderIdsBetween(minOrderId, maxOrderId, retryLimit);
+    }
+
+    @Override
     public Long getMinOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit) {
         return jpaSettlementItemRepository.findMinOrderId(status, cutOffDateTime, retryLimit);
     }

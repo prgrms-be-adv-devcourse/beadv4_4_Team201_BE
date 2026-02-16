@@ -1,4 +1,4 @@
-package app.giftify.settlement.adapter.inbound.event;
+package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.BatchStatus;

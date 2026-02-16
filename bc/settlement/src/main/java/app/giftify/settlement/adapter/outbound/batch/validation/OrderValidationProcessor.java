@@ -21,8 +21,10 @@ public class OrderValidationProcessor implements ItemProcessor<SettlementItem, S
 
         if (orderAmount == null || paymentAmount == null || settlementAmount == null) {
             item.manual();
+            return null;
         } else if (!isThreeWayMatch(orderAmount, paymentAmount, settlementAmount)) {
             item.fail();
+            return null;
         } else {
             item.ready();
         }

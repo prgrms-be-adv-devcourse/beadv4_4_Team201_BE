@@ -39,6 +39,18 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     List<AmountSummaryProjection> findSettlementSumByOrderIds(@Param("orderIds") List<Long> orderIds);
 
     @Query("""
+        SELECT DISTINCT s.orderId
+        FROM SettlementItem s
+        WHERE s.orderId BETWEEN :minOrderId AND :maxOrderId
+          AND s.retryCount < :retryLimit
+    """)
+    List<Long> findDistinctOrderIdsBetween(
+            @Param("minOrderId") Long minOrderId,
+            @Param("maxOrderId") Long maxOrderId,
+            @Param("retryLimit") int retryLimit
+    );
+
+    @Query("""
         SELECT MIN(s.orderId)
         FROM SettlementItem s
         WHERE s.statusInfo.status = :status
