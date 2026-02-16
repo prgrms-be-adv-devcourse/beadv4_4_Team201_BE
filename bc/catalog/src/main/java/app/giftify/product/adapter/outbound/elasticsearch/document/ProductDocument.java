@@ -17,15 +17,24 @@ public class ProductDocument {
     private String id;
 
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "standard"))
+            otherFields = {
+                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "ngram_analyzer"),
+                    @InnerField(suffix = "jamo", type = FieldType.Text, analyzer = "jamo_analyzer")
+            })
     private String sellerNickname;
 
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "standard"))
+            otherFields = {
+                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "ngram_analyzer"),
+                    @InnerField(suffix = "jamo", type = FieldType.Text, analyzer = "jamo_analyzer")
+            })
     private String name;
 
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "standard"))
+            otherFields = {
+                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "ngram_analyzer"),
+                    @InnerField(suffix = "jamo", type = FieldType.Text, analyzer = "jamo_analyzer")
+            })
     private String description;
 
     @Field(type = FieldType.Integer)

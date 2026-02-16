@@ -1,5 +1,11 @@
 {
   "analysis": {
+    "filter": {
+      "nfd_filter": {
+        "type": "icu_transform",
+        "id": "NFD"
+      }
+    },
     "tokenizer": {
       "ngram_tokenizer": {
         "type": "ngram",
@@ -20,6 +26,14 @@
         "type": "custom",
         "tokenizer": "ngram_tokenizer",
         "filter": [
+          "lowercase"
+        ]
+      },
+      "jamo_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "nfd_filter",
           "lowercase"
         ]
       }

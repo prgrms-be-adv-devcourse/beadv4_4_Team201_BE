@@ -107,15 +107,15 @@ public class ProductEsAdapter implements ProductEsPort {
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(command.keyword())
                     .fields("name.ngram^3", "description.ngram^2", "sellerNickname.ngram")
+                    .minimumShouldMatch("50%")
                     .boost(3f)
             ));
 
-            // 2순위: 형태소 분석 + 오타 허용 (75% 이상 토큰 매칭 필요)
+            // 2순위: 자모 분해(NFD) + 오타 허용 (음소 단위 매칭)
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(command.keyword())
-                    .fields("name^2", "description", "sellerNickname")
+                    .fields("name.jamo^2", "description.jamo", "sellerNickname.jamo")
                     .fuzziness("AUTO")
-                    .minimumShouldMatch("75%")
                     .boost(1f)
             ));
 

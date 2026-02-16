@@ -164,7 +164,7 @@ services:
       - discovery.type=single-node # 클러스터 구성없이 단일 노드로 동작. 로컬/개발 환경에서 표준적인 설정
       - xpack.security.enabled=false # ES 8.x부터 보안이 기본 활성화라서, 개발 환경에서 인증 없이 접근하려면 꺼야 함 (배포 환경은 true, prod.yml에 name & pw 환경변수 필수)
     command: >
-      bash -c "elasticsearch-plugin install --batch analysis-nori && docker-entrypoint.sh"
+      bash -c "elasticsearch-plugin install --batch analysis-nori && bin/elasticsearch-plugin install --batch analysis-icu && docker-entrypoint.sh"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
   kibana: # Elasticsearch에 저장된 데이터를 쿼리, 분석, 시각화 및 관리하기 위한 오픈 소스 인터페이스
