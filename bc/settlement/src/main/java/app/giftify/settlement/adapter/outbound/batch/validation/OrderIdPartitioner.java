@@ -31,10 +31,10 @@ public class OrderIdPartitioner implements Partitioner {
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
         Long minOrderId = settlementItemRepository.getMinOrderId(
-                SettlementItemStatus.PENDING, cutOffDateTime, retryLimit
+                SettlementItemStatus.CREATED, cutOffDateTime, retryLimit
         );
         Long maxOrderId = settlementItemRepository.getMaxOrderId(
-                SettlementItemStatus.PENDING, cutOffDateTime, retryLimit
+                SettlementItemStatus.CREATED, cutOffDateTime, retryLimit
         );
 
         Map<String, ExecutionContext> partitions = new LinkedHashMap<>();

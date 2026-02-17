@@ -23,10 +23,10 @@ public class OrderValidationProcessor implements ItemProcessor<SettlementItem, S
             item.manual();
             return null;
         } else if (!isThreeWayMatch(orderAmount, paymentAmount, settlementAmount)) {
-            item.fail();
+            item.failToValidate();
             return null;
         } else {
-            item.ready();
+            item.validated();
         }
 
         return new SettlementQueue(item);
