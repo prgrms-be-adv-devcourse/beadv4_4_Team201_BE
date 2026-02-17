@@ -7,10 +7,10 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.database.JpaCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
-import org.springframework.batch.item.database.JpaPagingItemReader;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
-import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +27,12 @@ public class ValidationItemConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<SettlementItem> settlementItemReader(
+    public JpaCursorItemReader<SettlementItem> settlementItemReader(
             @Value("#{stepExecutionContext['minOrderId']}") Long minOrderId,
             @Value("#{stepExecutionContext['maxOrderId']}") Long maxOrderId,
             @Value("#{jobParameters['cutOffDateTime']}") LocalDateTime cutOffDateTime
     ) {
-        return new JpaPagingItemReaderBuilder<SettlementItem>()
+        return new JpaCursorItemReaderBuilder<SettlementItem>()
                 .name("settlementItemReader")
                 .entityManagerFactory(emf)
                 .queryString("""
@@ -48,7 +48,6 @@ public class ValidationItemConfig {
                         "retryLimit", properties.retryLimit(),
                         "cutOffDateTime", cutOffDateTime
                 ))
-                .pageSize(properties.chunkSize())
                 .build();
     }
 
