@@ -45,12 +45,20 @@ public class SettlementQueue {
     }
 
     public void done(Long historyId) {
-        if (this.status != SettlementQueueStatus.READY) {
+        if (this.status != SettlementQueueStatus.IN_PROGRESS) {
             throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
         }
 
         this.status = SettlementQueueStatus.DONE;
         item.complete(historyId);
+    }
+
+    public void startProcessing() {
+        if (this.status != SettlementQueueStatus.READY) {
+            throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+        }
+
+        this.status = SettlementQueueStatus.IN_PROGRESS;
     }
 
     public void fail() {

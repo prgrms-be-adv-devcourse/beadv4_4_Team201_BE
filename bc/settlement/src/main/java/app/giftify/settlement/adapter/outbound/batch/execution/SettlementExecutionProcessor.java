@@ -24,6 +24,8 @@ public class SettlementExecutionProcessor implements ItemProcessor<Long, Executi
             return null;
         }
 
+        queues.forEach(SettlementQueue::startProcessing);
+
         Money totalSales = Money.zero();
         Money totalPlatformFee = Money.zero();
         Money totalPgFee = Money.zero();
