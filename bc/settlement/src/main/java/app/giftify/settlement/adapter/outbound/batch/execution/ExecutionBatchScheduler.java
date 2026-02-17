@@ -18,9 +18,9 @@ public class ExecutionBatchScheduler {
     private final Job executionJob;
 
     /**
-     * 매일 03:00시에 실행
+     * 매일 02:00시에 실행
      */
-    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(cron = "0 0 2 * * ?")
     public void runExecutionJob() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("runId", System.currentTimeMillis())
