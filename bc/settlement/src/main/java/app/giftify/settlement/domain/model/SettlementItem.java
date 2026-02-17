@@ -170,12 +170,20 @@ public class SettlementItem {
                 source.getPaidAt(),
                 confirmedAt,
                 core,
-                ItemStatusInfo.pending(confirmedAt)
+                ItemStatusInfo.create(confirmedAt)
         );
     }
 
-    public void fail() {
-        statusInfo = statusInfo.fail();
+    public void validating() {
+        statusInfo = statusInfo.validating();
+    }
+
+    public void validated() {
+        statusInfo = statusInfo.validated();
+    }
+
+    public void failToValidate() {
+        statusInfo = statusInfo.failToValidate();
         this.retryCount++;
     }
 
@@ -183,13 +191,21 @@ public class SettlementItem {
         statusInfo = this.statusInfo.ready();
     }
 
-    public void manual() {
-        statusInfo = statusInfo.manual();
+    public void processing() {
+        statusInfo = this.statusInfo.processing();
+    }
+
+    public void failToExecute() {
+        statusInfo = this.statusInfo.failToExecute();
     }
 
     public void complete(Long historyId) {
         this.historyId = historyId;
         statusInfo = statusInfo.complete();
+    }
+
+    public void manual() {
+        statusInfo = statusInfo.manual();
     }
 
     private void validateTimeSequence(LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt) {

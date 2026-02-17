@@ -33,24 +33,58 @@ public class ItemStatusInfo {
                 this.cancelledAt = cancelledAt;
         }
 
-        public static ItemStatusInfo pending(LocalDateTime confirmedAt) {
+        public static ItemStatusInfo create(LocalDateTime confirmedAt) {
                 if (confirmedAt == null) {
                         throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
                 }
 
                 return new ItemStatusInfo(
-                        SettlementItemStatus.PENDING,
+                        SettlementItemStatus.CREATED,
                         calculateExpectedDate(confirmedAt),
                         null,
                         null
                 );
         }
 
-        public ItemStatusInfo ready() {
-                if (this.status != SettlementItemStatus.PENDING) {
+        public ItemStatusInfo validating() {
+                if (this.status != SettlementItemStatus.CREATED) {
                         throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
                 }
 
+                return new ItemStatusInfo(
+                        SettlementItemStatus.VALIDATING,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
+                );
+        }
+
+        public ItemStatusInfo validated() {
+                if (this.status != SettlementItemStatus.VALIDATING) {
+                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+                }
+
+                return new ItemStatusInfo(
+                        SettlementItemStatus.VALIDATED,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
+                );
+        }
+
+        public ItemStatusInfo failToValidate() {
+                return new ItemStatusInfo(
+                        SettlementItemStatus.VALIDATE_FAILED,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
+                );
+        }
+
+        public ItemStatusInfo ready() {
+                if (this.status != SettlementItemStatus.VALIDATED) {
+                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+                }
                 return new ItemStatusInfo(
                         SettlementItemStatus.READY,
                         expectedDate,
@@ -59,18 +93,21 @@ public class ItemStatusInfo {
                 );
         }
 
-        public ItemStatusInfo fail() {
+        public ItemStatusInfo processing() {
+                if (this.status != SettlementItemStatus.READY) {
+                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
+                }
                 return new ItemStatusInfo(
-                        SettlementItemStatus.FAIL,
+                        SettlementItemStatus.PROCESSING,
                         expectedDate,
                         settledAt,
                         cancelledAt
                 );
         }
 
-        public ItemStatusInfo manual() {
+        public ItemStatusInfo failToExecute() {
                 return new ItemStatusInfo(
-                        SettlementItemStatus.MANUAL_CHECK,
+                        SettlementItemStatus.FAILED,
                         expectedDate,
                         settledAt,
                         cancelledAt
@@ -81,10 +118,22 @@ public class ItemStatusInfo {
                 if (this.status != SettlementItemStatus.READY) {
                         throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
                 }
-                if (settledAt == null) {
-                        throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
-                }
-                return new ItemStatusInfo(SettlementItemStatus.COMPLETED, expectedDate, LocalDateTime.now(), cancelledAt);
+
+                return new ItemStatusInfo(
+                        SettlementItemStatus.COMPLETED,
+                        expectedDate,
+                        LocalDateTime.now(),
+                        cancelledAt
+                );
+        }
+
+        public ItemStatusInfo manual() {
+                return new ItemStatusInfo(
+                        SettlementItemStatus.MANUAL,
+                        expectedDate,
+                        settledAt,
+                        cancelledAt
+                );
         }
 
         // 익월 정산
