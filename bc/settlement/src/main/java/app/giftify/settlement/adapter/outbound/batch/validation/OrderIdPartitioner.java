@@ -52,7 +52,7 @@ public class OrderIdPartitioner implements Partitioner {
             context.putLong("minOrderId", fromId);
             context.putLong("maxOrderId", toId);
 
-            partitions.put("partition-" + partitionIndex++, context);
+            partitions.put("partition-v-" + partitionIndex++, context);
             fromId = toId + 1;
         }
 

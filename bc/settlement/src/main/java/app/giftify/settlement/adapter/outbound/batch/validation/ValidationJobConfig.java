@@ -6,8 +6,6 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @RequiredArgsConstructor
 @Configuration
@@ -24,16 +22,5 @@ public class ValidationJobConfig {
                 .start(stepConfig.cleanupSettlementQueueStep())
                 .next(stepConfig.validationPartitionStep())
                 .build();
-    }
-
-    @Bean
-    public TaskExecutor partitionExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(50);
-        executor.setThreadNamePrefix("partition-v-");
-        executor.initialize();
-        return executor;
     }
 }
