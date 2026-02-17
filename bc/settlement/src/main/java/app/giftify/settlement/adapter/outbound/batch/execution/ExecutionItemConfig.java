@@ -1,5 +1,6 @@
 package app.giftify.settlement.adapter.outbound.batch.execution;
 
+import app.giftify.settlement.application.SettlementExecutionService;
 import app.giftify.settlement.application.outbound.port.SettlementHistoryRepository;
 import app.giftify.settlement.application.outbound.port.SettlementQueueRepository;
 import app.giftify.shared.domain.event.EventPublisher;
@@ -16,25 +17,31 @@ import java.util.List;
 @Configuration
 public class ExecutionItemConfig {
 
+    private final SettlementExecutionService settlementExecutionService;
     private final SettlementQueueRepository settlementQueueRepository;
     private final SettlementHistoryRepository settlementHistoryRepository;
     private final EventPublisher eventPublisher;
 
     @Bean
     @StepScope
-    public ListItemReader<Long> sellerIdReader(
-            @Value("#{stepExecutionContext['sellerIds']}") List<Long> sellerIds) {
+    public ListItemReader<Long> settlementQueueReader(
+            @Value("#{stepExecutionContext['sellerIds']}") List<Long> sellerIds
+    ) {
         return new ListItemReader<>(sellerIds);
     }
 
     @Bean
     @StepScope
     public SettlementExecutionProcessor settlementExecutionProcessor() {
-        return new SettlementExecutionProcessor(settlementQueueRepository);
+        return new SettlementExecutionProcessor(settlementExecutionService);
     }
 
     @Bean
     public SettlementExecutionWriter settlementExecutionWriter() {
-        return new SettlementExecutionWriter(settlementHistoryRepository, settlementQueueRepository, eventPublisher);
+        return new SettlementExecutionWriter(
+                settlementHistoryRepository,
+                settlementQueueRepository,
+                eventPublisher
+        );
     }
 }

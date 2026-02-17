@@ -6,6 +6,8 @@ import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.Convert;
 
+import java.util.List;
+
 public record SettlementAmountSummary(
         @Convert(converter = MoneyConverter.class)
         Money salesAmount,
@@ -22,5 +24,28 @@ public record SettlementAmountSummary(
         if (!calculated.equals(settlementAmount)) {
             throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_CORE);
         }
+    }
+
+    public static SettlementAmountSummary of(List<SettlementQueue> queues) {
+        Money totalSales = Money.zero();
+        Money totalPlatformFee = Money.zero();
+        Money totalPgFee = Money.zero();
+        Money totalSettlement = Money.zero();
+
+        for (SettlementQueue queue : queues) {
+            SettlementItem item = queue.getItem();
+
+            totalSales = totalSales.plus(item.getCore().paidAmount());
+            totalPlatformFee = totalPlatformFee.plus(item.getCore().platformFee());
+            totalPgFee = totalPgFee.plus(item.getCore().pgFee());
+            totalSettlement = totalSettlement.plus(item.getCore().settlementAmount());
+        }
+
+        return new SettlementAmountSummary(
+                totalSales,
+                totalPlatformFee,
+                totalPgFee,
+                totalSettlement
+        );
     }
 }
