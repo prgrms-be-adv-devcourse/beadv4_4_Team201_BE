@@ -2,7 +2,9 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.replica.MemberReplica;
 import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
+import app.giftify.replica.MemberReplicaRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class FundingContributeUseCase {
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
+    private final MemberReplicaRepository memberReplicaRepository;
     private final EventPublisher eventPublisher;
 
     public List<Funding> contribute(List<FundingContributeRequest> requests, Long participantId) {
@@ -34,6 +37,11 @@ public class FundingContributeUseCase {
         Map<Long, Funding> fundingMap = fundingRepository.findAllById(fundingIds).stream()
                 .collect(Collectors.toMap(Funding::getId, funding -> funding));
 
+        // 닉네임 조회
+        String nickName = memberReplicaRepository.findById(participantId)
+                .map(MemberReplica::getNickname)
+                .orElse("Unknown");
+
         for (FundingContributeRequest request : requests) {
             Funding funding = fundingMap.get(request.fundingId());
             if (funding == null) {
@@ -44,7 +52,7 @@ public class FundingContributeUseCase {
             FundingParticipantMember member = fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId);
 
             if (member == null) {
-                member = new FundingParticipantMember(funding, participantId, member.getNickName(), request.amount());
+                member = new FundingParticipantMember(funding, participantId, nickName, request.amount());
                 fundingParticipantMemberRepository.save(member);
             } else {
                 member.addAmount(request.amount());
