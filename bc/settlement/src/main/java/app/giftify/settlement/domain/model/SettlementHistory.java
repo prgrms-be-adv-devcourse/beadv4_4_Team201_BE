@@ -7,11 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"seller_id", "settlement_date"}))
 public class SettlementHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,6 +32,9 @@ public class SettlementHistory {
 
     private Long referenceHistoryId;
 
+    @Column(nullable = false)
+    private LocalDate settlementDate;
+
     @CreatedDate
     private LocalDateTime settledAt;
 
@@ -38,5 +43,6 @@ public class SettlementHistory {
         this.amountSummary = amountSummary;
         this.itemCount = itemCount;
         this.status = SettlementHistoryStatus.CREATED;
+        this.settlementDate = LocalDate.now();
     }
 }
