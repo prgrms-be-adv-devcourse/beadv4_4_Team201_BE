@@ -1,7 +1,6 @@
 package app.giftify.settlement.adapter.outbound.persistence.jpa;
 
 import app.giftify.settlement.domain.model.SettlementQueue;
-import app.giftify.settlement.domain.status.SettlementQueueStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,13 +8,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface JpaSettlementQueueRepository extends JpaRepository<SettlementQueue, Long> {
-
     @Query("""
         SELECT DISTINCT q.item.sellerId
         FROM SettlementQueue q
-        WHERE q.status = :status
+        WHERE q.status = 'READY'
+          AND q.item.statusInfo.status = 'READY'
     """)
-    List<Long> findDistinctSellerIdsByStatus(@Param("status") SettlementQueueStatus status);
+    List<Long> findDistinctSellerIdsByStatusReady();
 
     @Query("""
         SELECT q FROM SettlementQueue q
@@ -24,7 +23,7 @@ public interface JpaSettlementQueueRepository extends JpaRepository<SettlementQu
           AND q.status = 'READY'
           AND q.item.statusInfo.status = 'READY'
     """)
-    List<SettlementQueue> findAllReadyBySellerId(
+    List<SettlementQueue> findAllReadyQueuesBySellerId(
             @Param("sellerId") Long sellerId
     );
 }
