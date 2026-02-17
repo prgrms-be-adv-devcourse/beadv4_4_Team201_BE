@@ -43,6 +43,17 @@ VALUES (1, '멍청한돼지0009'),
        (6, '배고픈강아지0007');
 
 -- -----------------------------------------------------------------------------
+-- 3. CORE_MEMBER_REPLICA (회원 레플리카 - core 모듈) — V1.0.0
+-- -----------------------------------------------------------------------------
+INSERT INTO core_member_replica (id, nickname)
+VALUES (1, '멍청한돼지0009'),
+       (2, '나른한고양이0013'),
+       (3, '멍청한고양이2013'),
+       (4, '관리자'),
+       (5, '졸린토끼0042'),
+       (6, '배고픈강아지0007');
+
+-- -----------------------------------------------------------------------------
 -- 4. WALLET (지갑) — V1.2.1
 -- -----------------------------------------------------------------------------
 INSERT INTO wallet (id, member_id, balance, version, created_at, updated_at, created_by, updated_by)
@@ -184,7 +195,7 @@ VALUES (1, 1, 2, '나른한고양이0013', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTE
        (5, 3, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (6, 4, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (7, 4, 6,  '배고픈강아지0007', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (8, 4, 1,  '참가자3', 50000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (8, 4, 1,  '멍청한돼지0009', 50000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (9, 4, 2,  '참가자4', 1000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding_participant_member
@@ -332,8 +343,8 @@ ALTER TABLE wallet_history
 -- Wishlists: 6개 (PUBLIC 4, PRIVATE 1, FRIENDS_ONLY 1)
 -- WishlistItems: 10개 (PENDING 6, IN_PROGRESS 2, COMPLETED 2)
 -- CartItems: 5개 (buyer2: 2, buyer3: 2, buyer1: 1)
--- Fundings: 3개 (IN_PROGRESS 1, ACHIEVED 1, EXPIRED 1)
--- FundingParticipants: 4명
+-- Fundings: 4개 (IN_PROGRESS 1, ACHIEVED 2, EXPIRED 1)
+-- FundingParticipants: 9명
 -- Orders: 5개 (PAID 2, CONFIRMED 1, CREATED 1, CANCELED 1)
 -- OrderItems: 6개
 -- Payments: 3개 (모두 PAID)

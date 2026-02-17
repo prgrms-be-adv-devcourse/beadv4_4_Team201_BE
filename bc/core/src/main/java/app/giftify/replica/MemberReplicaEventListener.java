@@ -20,7 +20,6 @@ public class MemberReplicaEventListener {
     public void handle(MemberSignedEvent event) {
         memberReplicaSyncUseCase.syncMember(
                 event.getMemberId(),
-                event.getAuthSub(),
                 event.getNickname()
         );
     }
@@ -30,7 +29,6 @@ public class MemberReplicaEventListener {
     public void handle(MemberUpdatedEvent event) {
         memberReplicaSyncUseCase.syncMember(
                 event.getMemberId(),
-                event.getAuthSub(),
                 event.getNickname()
         );
     }

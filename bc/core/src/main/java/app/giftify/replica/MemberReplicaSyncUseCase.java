@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 public class MemberReplicaSyncUseCase {
     private final MemberReplicaRepository memberReplicaRepository;
 
-    public void syncMember(Long memberId, String authSub, String nickname) {
-        memberReplicaRepository.findById(memberId)
+    public void syncMember(Long id, String nickname) {
+        memberReplicaRepository.findById(id)
                 .ifPresentOrElse(
-                        existing -> existing.update(authSub, nickname),
-                        () -> memberReplicaRepository.save(new MemberReplica(memberId, authSub, nickname))
+                        existing -> existing.update(nickname),
+                        () -> memberReplicaRepository.save(new MemberReplica(id, nickname))
                 );
     }
 }
