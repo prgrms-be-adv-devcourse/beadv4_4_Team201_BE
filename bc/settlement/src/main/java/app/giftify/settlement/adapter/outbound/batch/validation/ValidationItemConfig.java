@@ -38,8 +38,8 @@ public class ValidationItemConfig {
                 .queryString("""
                     SELECT s FROM SettlementItem s
                     WHERE s.orderId BETWEEN :minOrderId AND :maxOrderId
-                      AND (s.statusInfo.status = 'PENDING'
-                           OR (s.statusInfo.status = 'FAIL' AND s.retryCount < :retryLimit))
+                      AND (s.statusInfo.status = 'CREATED'
+                           OR (s.statusInfo.status = 'VALIDATE_FAILED' AND s.retryCount < :retryLimit))
                       AND s.createdAt < :cutOffDateTime
                     ORDER BY s.orderId ASC
                 """)

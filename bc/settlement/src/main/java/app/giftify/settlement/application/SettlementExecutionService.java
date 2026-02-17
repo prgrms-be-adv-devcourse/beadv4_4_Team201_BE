@@ -25,6 +25,11 @@ public class SettlementExecutionService {
             return null;
         }
 
+        queues.forEach(queue -> {
+            queue.startProcessing();
+            queue.getItem().processing();
+        });
+
         SettlementAmountSummary summary = SettlementAmountSummary.of(queues);
 
         SettlementHistory history = new SettlementHistory(sellerId, summary, queues.size());

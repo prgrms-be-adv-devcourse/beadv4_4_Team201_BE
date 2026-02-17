@@ -13,6 +13,8 @@ public class OrderValidationProcessor implements ItemProcessor<SettlementItem, S
 
     @Override
     public SettlementQueue process(SettlementItem item) {
+        item.validating();
+
         Long orderId = item.getOrderId();
 
         Money orderAmount = context.orderAmountOf(orderId);
@@ -26,7 +28,7 @@ public class OrderValidationProcessor implements ItemProcessor<SettlementItem, S
             item.failToValidate();
             return null;
         } else {
-            item.validated();
+            item.ready();
         }
 
         return new SettlementQueue(item);

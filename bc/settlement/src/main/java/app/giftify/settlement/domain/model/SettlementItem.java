@@ -178,10 +178,6 @@ public class SettlementItem {
         statusInfo = statusInfo.validating();
     }
 
-    public void validated() {
-        statusInfo = statusInfo.validated();
-    }
-
     public void failToValidate() {
         statusInfo = statusInfo.failToValidate();
         this.retryCount++;

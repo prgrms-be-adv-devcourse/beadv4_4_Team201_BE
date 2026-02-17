@@ -59,18 +59,6 @@ public class ItemStatusInfo {
                 );
         }
 
-        public ItemStatusInfo validated() {
-                if (this.status != SettlementItemStatus.VALIDATING) {
-                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
-                }
-
-                return new ItemStatusInfo(
-                        SettlementItemStatus.VALIDATED,
-                        expectedDate,
-                        settledAt,
-                        cancelledAt
-                );
-        }
 
         public ItemStatusInfo failToValidate() {
                 return new ItemStatusInfo(
@@ -82,7 +70,7 @@ public class ItemStatusInfo {
         }
 
         public ItemStatusInfo ready() {
-                if (this.status != SettlementItemStatus.VALIDATED) {
+                if (this.status != SettlementItemStatus.VALIDATING) {
                         throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
                 }
                 return new ItemStatusInfo(
@@ -115,7 +103,7 @@ public class ItemStatusInfo {
         }
 
         public ItemStatusInfo complete() {
-                if (this.status != SettlementItemStatus.READY) {
+                if (this.status != SettlementItemStatus.PROCESSING) {
                         throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
                 }
 
