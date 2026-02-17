@@ -14,7 +14,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "settlement_queue")
+@Table(
+        name = "settlement_queue",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "settlement_item_id")
+        }
+)
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
