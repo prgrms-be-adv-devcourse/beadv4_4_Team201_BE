@@ -41,6 +41,7 @@ public class ValidationItemConfig {
                       AND (s.statusInfo.status = 'PENDING'
                            OR (s.statusInfo.status = 'FAIL' AND s.retryCount < :retryLimit))
                       AND s.createdAt < :cutOffDateTime
+                    ORDER BY s.orderId ASC
                 """)
                 .parameterValues(Map.of(
                         "minOrderId", minOrderId,
