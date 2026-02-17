@@ -21,7 +21,12 @@ public class SettlementQueueAdapter implements SettlementQueueRepository {
     }
 
     @Override
-    public List<SettlementQueue> findAllBySellerIdAndStatus(Long sellerId, SettlementQueueStatus status) {
-        return jpaSettlementQueueRepository.findAllBySellerIdAndStatus(sellerId, status);
+    public List<SettlementQueue> findAllReadyBySellerId(Long sellerId) {
+        return jpaSettlementQueueRepository.findAllReadyBySellerId(sellerId);
+    }
+
+    @Override
+    public void saveAll(List<SettlementQueue> queues) {
+        jpaSettlementQueueRepository.saveAll(queues);
     }
 }

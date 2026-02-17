@@ -35,6 +35,6 @@ public class ExecutionItemConfig {
 
     @Bean
     public SettlementExecutionWriter settlementExecutionWriter() {
-        return new SettlementExecutionWriter(settlementHistoryRepository, eventPublisher);
+        return new SettlementExecutionWriter(settlementHistoryRepository, settlementQueueRepository, eventPublisher);
     }
 }

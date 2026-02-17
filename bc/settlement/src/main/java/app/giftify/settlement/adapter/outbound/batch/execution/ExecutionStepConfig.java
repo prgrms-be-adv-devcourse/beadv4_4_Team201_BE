@@ -6,10 +6,10 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-@Component
+@Configuration
 @RequiredArgsConstructor
 public class ExecutionStepConfig {
 
@@ -17,6 +17,7 @@ public class ExecutionStepConfig {
     private final BatchProperties batchProperties;
     private final PlatformTransactionManager transactionManager;
     private final ExecutionItemConfig itemConfig;
+    private final ExecutionBulkLoadListener bulkLoadListener;
 
     @Bean
     public Step executionStep() {
@@ -25,6 +26,7 @@ public class ExecutionStepConfig {
                 .reader(itemConfig.sellerIdReader(null))
                 .processor(itemConfig.settlementExecutionProcessor())
                 .writer(itemConfig.settlementExecutionWriter())
+                .listener(bulkLoadListener)
                 .build();
     }
 }

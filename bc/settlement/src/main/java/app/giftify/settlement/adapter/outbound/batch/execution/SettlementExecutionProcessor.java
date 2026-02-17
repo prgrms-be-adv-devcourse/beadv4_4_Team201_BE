@@ -5,12 +5,10 @@ import app.giftify.settlement.domain.model.SettlementAmountSummary;
 import app.giftify.settlement.domain.model.SettlementHistory;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementQueue;
-import app.giftify.settlement.domain.status.SettlementQueueStatus;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.ItemProcessor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -20,9 +18,7 @@ public class SettlementExecutionProcessor implements ItemProcessor<Long, Executi
 
     @Override
     public ExecutionResult process(Long sellerId) {
-        List<SettlementQueue> queues = settlementQueueRepository.findAllBySellerIdAndStatus(
-                sellerId, SettlementQueueStatus.READY
-        );
+        List<SettlementQueue> queues = settlementQueueRepository.findAllReadyBySellerId(sellerId);
 
         if (queues.isEmpty()) {
             return null;
@@ -32,8 +28,6 @@ public class SettlementExecutionProcessor implements ItemProcessor<Long, Executi
         Money totalPlatformFee = Money.zero();
         Money totalPgFee = Money.zero();
         Money totalSettlement = Money.zero();
-
-        LocalDateTime now = LocalDateTime.now();
 
         for (SettlementQueue queue : queues) {
             SettlementItem item = queue.getItem();

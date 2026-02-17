@@ -1,6 +1,7 @@
 package app.giftify.settlement.adapter.outbound.batch.execution;
 
 import app.giftify.settlement.application.outbound.port.SettlementHistoryRepository;
+import app.giftify.settlement.application.outbound.port.SettlementQueueRepository;
 import app.giftify.settlement.domain.model.SettlementHistory;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
@@ -12,6 +13,7 @@ import org.springframework.batch.item.ItemWriter;
 public class SettlementExecutionWriter implements ItemWriter<ExecutionResult> {
 
     private final SettlementHistoryRepository settlementHistoryRepository;
+    private final SettlementQueueRepository settlementQueueRepository;
     private final EventPublisher eventPublisher;
 
     @Override
@@ -20,6 +22,7 @@ public class SettlementExecutionWriter implements ItemWriter<ExecutionResult> {
             SettlementHistory saved = settlementHistoryRepository.save(result.history());
 
             result.queueItems().forEach(q -> q.done(saved.getId()));
+            settlementQueueRepository.saveAll(result.queueItems());
 
             eventPublisher.publish(new SettlementCreatedEvent(
                     saved.getId(),

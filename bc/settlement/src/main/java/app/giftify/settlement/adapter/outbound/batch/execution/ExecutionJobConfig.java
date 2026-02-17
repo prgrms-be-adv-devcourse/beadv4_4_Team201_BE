@@ -5,11 +5,11 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
-@Component
+@Configuration
 @RequiredArgsConstructor
-public class ExecutionJopConfig {
+public class ExecutionJobConfig {
 
     private final JobRepository jobRepository;
     private final ExecutionJobListener executionJobListener;

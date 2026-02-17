@@ -9,5 +9,7 @@ public interface SettlementQueueRepository {
 
     List<Long> findDistinctSellerIdsByStatus(SettlementQueueStatus status);
 
-    List<SettlementQueue> findAllBySellerIdAndStatus(Long sellerId, SettlementQueueStatus status);
+    List<SettlementQueue> findAllReadyBySellerId(Long sellerId);
+
+    void saveAll(List<SettlementQueue> queues);
 }

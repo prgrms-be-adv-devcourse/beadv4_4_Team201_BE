@@ -21,10 +21,10 @@ public interface JpaSettlementQueueRepository extends JpaRepository<SettlementQu
         SELECT q FROM SettlementQueue q
         JOIN FETCH q.item
         WHERE q.item.sellerId = :sellerId
-          AND q.status = :status
+          AND q.status = 'READY'
+          AND q.item.statusInfo.status = 'READY'
     """)
-    List<SettlementQueue> findAllBySellerIdAndStatus(
-            @Param("sellerId") Long sellerId,
-            @Param("status") SettlementQueueStatus status
+    List<SettlementQueue> findAllReadyBySellerId(
+            @Param("sellerId") Long sellerId
     );
 }
