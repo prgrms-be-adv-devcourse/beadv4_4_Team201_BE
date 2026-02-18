@@ -29,6 +29,7 @@ public class FriendshipService implements
         GetFriendRequestsUseCase {
 
     private final FriendshipRepositoryPort friendshipRepository;
+    // 개발 속도를 위해 같은 모듈 내 직접 참조. 별도 모듈로 분리 시 이벤트 or 내부 API로 전환 필요
     private final MemberRepositoryPort memberRepository;
     private final EventPublisher eventPublisher;
 
