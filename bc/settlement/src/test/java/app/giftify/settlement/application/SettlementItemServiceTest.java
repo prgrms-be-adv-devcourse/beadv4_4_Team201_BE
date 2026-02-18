@@ -5,6 +5,7 @@ import app.giftify.settlement.application.outbound.port.OrderItemSnapshotReposit
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
+import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.model.SettlementCore;
 import app.giftify.settlement.domain.model.SettlementItem;

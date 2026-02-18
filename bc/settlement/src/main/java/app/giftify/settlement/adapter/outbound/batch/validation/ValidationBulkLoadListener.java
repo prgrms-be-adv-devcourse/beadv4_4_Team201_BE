@@ -3,7 +3,7 @@ package app.giftify.settlement.adapter.outbound.batch.validation;
 import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import app.giftify.settlement.adapter.outbound.client.OrderClient;
 import app.giftify.settlement.adapter.outbound.client.PaymentClient;
-import app.giftify.settlement.application.SettlementItemService;
+import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;

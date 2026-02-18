@@ -1,7 +1,7 @@
 package app.giftify.settlement.adapter.inbound.event;
 
 
-import app.giftify.settlement.application.SettlementItemService;
+import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;

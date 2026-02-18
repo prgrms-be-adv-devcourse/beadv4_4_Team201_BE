@@ -1,41 +1,43 @@
 package app.giftify.settlement.adapter.outbound.batch.execution;
 
-import app.giftify.settlement.application.outbound.port.SettlementHistoryRepository;
-import app.giftify.settlement.application.outbound.port.SettlementQueueRepository;
-import app.giftify.settlement.domain.model.SettlementHistory;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
+import app.giftify.settlement.application.service.SettlementExecutionService;
+import app.giftify.shared.api.exception.InfraErrorCode;
+import app.giftify.shared.api.exception.InfraException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.dao.DataIntegrityViolationException;
 
 @Slf4j
 @RequiredArgsConstructor
 public class SettlementExecutionWriter implements ItemWriter<ExecutionResult> {
 
-    private final SettlementHistoryRepository settlementHistoryRepository;
-    private final SettlementQueueRepository settlementQueueRepository;
-    private final EventPublisher eventPublisher;
+    private final SettlementExecutionService settlementExecutionService;
 
     @Override
     public void write(Chunk<? extends ExecutionResult> chunk) {
         for (ExecutionResult result : chunk) {
             try {
-                SettlementHistory saved = settlementHistoryRepository.save(result.history());
+                settlementExecutionService.write(result);
+            } catch (InfraException e) {
+                InfraErrorCode errorCode = (InfraErrorCode) e.getErrorCode();
+                if (errorCode.isRetryable()) {
+                    settlementExecutionService.markAsFailed(result);
+                } else {
+                    settlementExecutionService.markAsManual(result);
+                }
 
-                result.queueItems().forEach(q -> q.done(saved.getId()));
-                settlementQueueRepository.saveAll(result.queueItems());
+                log.warn("[{}] 정산 오류 발생 - sellerId: {}, settlementDate: {}. 처리상태: {}",
+                        errorCode.getCode(),
+                        result.history().getSellerId(),
+                        result.history().getSettlementDate(),
+                        errorCode.isRetryable() ? "FAILED" : "MANUAL", e);
+            } catch (Exception e) {
+                settlementExecutionService.markAsManual(result);
 
-                eventPublisher.publish(new SettlementCreatedEvent(
-                        saved.getId(),
-                        saved.getSellerId(),
-                        saved.getAmountSummary().settlementAmount()
-                ));
-            } catch (DataIntegrityViolationException e) {
-                log.warn("중복 정산 감지 - sellerId: {}, settlementDate: {}. skip 처리합니다.",
-                        result.history().getSellerId(), result.history().getSettlementDate(), e);
+                log.warn("[UNKNOWN] 정산 오류 발생 - sellerId: {}, settlementDate: {}. 처리상태: MANUAL",
+                        result.history().getSellerId(),
+                        result.history().getSettlementDate(), e);
             }
         }
     }

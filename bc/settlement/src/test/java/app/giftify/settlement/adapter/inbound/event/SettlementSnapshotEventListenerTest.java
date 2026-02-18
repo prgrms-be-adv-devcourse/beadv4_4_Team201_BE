@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.settlement.application.SettlementItemService;
+import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;

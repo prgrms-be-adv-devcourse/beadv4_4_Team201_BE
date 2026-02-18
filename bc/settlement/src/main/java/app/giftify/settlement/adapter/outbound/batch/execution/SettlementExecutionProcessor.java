@@ -11,6 +11,6 @@ public class SettlementExecutionProcessor implements ItemProcessor<Long, Executi
 
     @Override
     public ExecutionResult process(Long sellerId) {
-        return settlementExecutionService.execute(sellerId);
+        return settlementExecutionService.process(sellerId);
     }
 }

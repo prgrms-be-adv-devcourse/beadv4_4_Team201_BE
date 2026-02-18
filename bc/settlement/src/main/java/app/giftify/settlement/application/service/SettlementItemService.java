@@ -1,4 +1,4 @@
-package app.giftify.settlement.application;
+package app.giftify.settlement.application.service;
 
 import app.giftify.settlement.application.dto.SettlementSource;
 import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;

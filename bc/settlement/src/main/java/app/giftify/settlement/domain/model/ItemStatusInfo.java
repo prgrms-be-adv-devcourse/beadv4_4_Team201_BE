@@ -70,9 +70,6 @@ public class ItemStatusInfo {
         }
 
         public ItemStatusInfo ready() {
-                if (this.status != SettlementItemStatus.VALIDATING) {
-                        throw new DomainException(SettlementErrorCode.INVALID_STATUS_TRANSITION);
-                }
                 return new ItemStatusInfo(
                         SettlementItemStatus.READY,
                         expectedDate,
