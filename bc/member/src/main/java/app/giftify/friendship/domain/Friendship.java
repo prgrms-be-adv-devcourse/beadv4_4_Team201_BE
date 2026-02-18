@@ -29,7 +29,7 @@ public class Friendship extends BaseDomainModel {
             throw new FriendshipException(FriendshipErrorCode.SELF_FRIEND_REQUEST);
         }
         return new Friendship(null, requesterId, receiverId,
-                FriendshipStatus.PENDING, LocalDateTime.now(), null);
+                FriendshipStatus.PENDING, LocalDateTime.now(), null); // TODO : LocalDateTime 대신 파라미터 주입받기
     }
 
     public void accept(Long memberId) {
