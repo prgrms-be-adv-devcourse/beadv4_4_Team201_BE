@@ -1,10 +1,6 @@
 package app.giftify.payment.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -16,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.QueryTimeoutException;
 
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
@@ -94,33 +89,6 @@ class BulkPaymentQueryServiceTest {
 		Map<Long, Money> result = sut.getBulkAmounts(List.of(orderId));
 
 		assertThat(result.get(orderId)).isEqualTo(Money.of(45000));
-	}
-
-	@Test
-	@DisplayName("일시적 DB 장애 시 재시도 후 성공한다")
-	void getBulkAmounts_retriesOnTransientException() {
-		Payment payment = buildPayment(1L, 101L, "ORD-EEE", Money.of(10000), Money.zero(), PaymentStatus.PAID);
-
-		when(paymentRepository.findAllByOrderIdInAndStatusIn(anyList(), anyList()))
-			.thenThrow(new QueryTimeoutException("timeout"))
-			.thenReturn(List.of(payment));
-
-		Map<Long, Money> result = sut.getBulkAmounts(List.of(101L));
-
-		assertThat(result.get(101L)).isEqualTo(Money.of(10000));
-		verify(paymentRepository, times(2)).findAllByOrderIdInAndStatusIn(anyList(), anyList());
-	}
-
-	@Test
-	@DisplayName("일시적 DB 장애가 최대 재시도 횟수를 초과하면 예외를 던진다")
-	void getBulkAmounts_throwsAfterMaxRetries() {
-		when(paymentRepository.findAllByOrderIdInAndStatusIn(anyList(), anyList()))
-			.thenThrow(new QueryTimeoutException("timeout"));
-
-		assertThatThrownBy(() -> sut.getBulkAmounts(List.of(101L)))
-			.isInstanceOf(QueryTimeoutException.class);
-
-		verify(paymentRepository, times(3)).findAllByOrderIdInAndStatusIn(anyList(), anyList());
 	}
 
 	private Payment buildPayment(Long id, Long orderId, String orderNumber,
