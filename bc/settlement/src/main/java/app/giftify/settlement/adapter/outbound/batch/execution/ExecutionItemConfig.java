@@ -1,6 +1,6 @@
 package app.giftify.settlement.adapter.outbound.batch.execution;
 
-import app.giftify.settlement.application.SettlementExecutionService;
+import app.giftify.settlement.application.service.SettlementExecutionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.support.ListItemReader;
