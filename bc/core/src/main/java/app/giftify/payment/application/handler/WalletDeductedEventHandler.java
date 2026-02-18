@@ -12,7 +12,6 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +53,7 @@ public class WalletDeductedEventHandler {
 			savedPayment.getMethod(),
 			null,
 			null,
-			LocalDateTime.now()
+			savedPayment.getPaidAt()
 		));
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
