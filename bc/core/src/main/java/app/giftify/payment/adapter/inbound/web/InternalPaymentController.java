@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import app.giftify.payment.adapter.inbound.web.dto.PaymentInfoResponse;
 import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
@@ -76,7 +77,7 @@ public class InternalPaymentController {
 
 	@PostMapping("/bulk-amounts")
 	public ResponseEntity<Map<Long, Money>> getBulkAmounts(
-		@RequestBody @NotEmpty List<Long> orderIds
+		@RequestBody @NotEmpty @Size(max = 1000) List<Long> orderIds
 	) {
 		log.debug("[InternalPaymentController] bulk-amounts request. count={}", orderIds.size());
 		return ResponseEntity.ok(bulkPaymentAmountUseCase.getBulkAmounts(orderIds));
