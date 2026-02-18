@@ -23,5 +23,7 @@ public interface JpaPaymentRepository extends JpaRepository<JpaPayment, Long> {
 
 	List<JpaPayment> findAllByOrderIdIn(List<Long> orderIds);
 
+	List<JpaPayment> findAllByOrderIdInAndStatusIn(List<Long> orderIds, List<PaymentStatus> statuses);
+
 	Page<JpaPayment> findByMemberId(Long memberId, Pageable pageable);
 }

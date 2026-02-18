@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import app.giftify.payment.domain.Payment;
+import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.api.paging.Page;
 import app.giftify.shared.api.paging.PageRequest;
 
@@ -20,6 +21,8 @@ public interface PaymentRepository {
 	Optional<Payment> findByOrderNumber(String orderNumber);
 
 	List<Payment> findAllByOrderIdIn(List<Long> orderIds);
+
+	List<Payment> findAllByOrderIdInAndStatusIn(List<Long> orderIds, List<PaymentStatus> statuses);
 
 	Page<Payment> findByMemberId(Long memberId, PageRequest pageRequest);
 }

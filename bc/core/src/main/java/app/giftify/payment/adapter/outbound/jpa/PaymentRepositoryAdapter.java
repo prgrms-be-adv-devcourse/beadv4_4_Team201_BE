@@ -88,6 +88,15 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	@Override
 	@Transactional(readOnly = true)
+	public List<Payment> findAllByOrderIdInAndStatusIn(List<Long> orderIds, List<PaymentStatus> statuses) {
+		return jpaPaymentRepository.findAllByOrderIdInAndStatusIn(orderIds, statuses)
+			.stream()
+			.map(paymentMapper::toDomain)
+			.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Page<Payment> findByMemberId(Long memberId, app.giftify.shared.api.paging.PageRequest pageRequest) {
 		PageRequest springPageRequest = PageRequest.of(pageRequest.page(), pageRequest.size());
 		org.springframework.data.domain.Page<JpaPayment> springPage =
