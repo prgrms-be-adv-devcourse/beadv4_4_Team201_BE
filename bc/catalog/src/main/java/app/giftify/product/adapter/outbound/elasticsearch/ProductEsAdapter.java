@@ -103,21 +103,43 @@ public class ProductEsAdapter implements ProductEsPort {
         // ----- should 절
         // 키워드가 있으면 스코어 기반 검색 수행
         if (command.keyword() != null && !command.keyword().isBlank()) {
-            // 1순위: 검색어가 정확히 포함된 문서 (LIKE)
+            String keyword = command.keyword();
+            String keywordNoSpaces = keyword.replaceAll("\\s+", "");
+
+            // 1순위: 원본 검색어 ngram 매칭
             boolBuilder.should(s -> s.multiMatch(mm -> mm
-                    .query(command.keyword())
+                    .query(keyword)
                     .fields("name.ngram^3", "description.ngram^2", "sellerNickname.ngram")
-                    .minimumShouldMatch("50%")
+                    .minimumShouldMatch("70%")
                     .boost(3f)
             ));
 
+            // 공백 제거 검색어가 원본과 다를 경우 추가 매칭
+            if (!keywordNoSpaces.equals(keyword)) {
+                boolBuilder.should(s -> s.multiMatch(mm -> mm
+                        .query(keywordNoSpaces)
+                        .fields("name.ngram^3", "description.ngram^2", "sellerNickname.ngram")
+                        .minimumShouldMatch("70%")
+                        .boost(3f)
+                ));
+            }
+
             // 2순위: 자모 분해(NFD) + 오타 허용 (음소 단위 매칭)
             boolBuilder.should(s -> s.multiMatch(mm -> mm
-                    .query(command.keyword())
+                    .query(keyword)
                     .fields("name.jamo^2", "description.jamo", "sellerNickname.jamo")
                     .fuzziness("AUTO")
                     .boost(1f)
             ));
+
+            if (!keywordNoSpaces.equals(keyword)) {
+                boolBuilder.should(s -> s.multiMatch(mm -> mm
+                        .query(keywordNoSpaces)
+                        .fields("name.jamo^2", "description.jamo", "sellerNickname.jamo")
+                        .fuzziness("AUTO")
+                        .boost(1f)
+                ));
+            }
 
             boolBuilder.minimumShouldMatch("1");
         }
