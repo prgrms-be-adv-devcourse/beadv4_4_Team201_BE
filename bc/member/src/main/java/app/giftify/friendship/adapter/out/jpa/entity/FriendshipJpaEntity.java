@@ -32,4 +32,9 @@ public class FriendshipJpaEntity extends BaseJpaEntity {
 
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
+
+    @Override
+    public Long getId() {
+        return id;
+    }
 }
