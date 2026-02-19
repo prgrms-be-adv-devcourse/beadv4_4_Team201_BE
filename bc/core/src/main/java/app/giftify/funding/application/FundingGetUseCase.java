@@ -8,12 +8,12 @@ import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
-import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
+import app.giftify.replica.MemberReplica;
+import app.giftify.replica.MemberReplicaRepository;
 import app.giftify.shared.api.paging.PageResponse;
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +34,7 @@ public class FundingGetUseCase {
 
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository participantMemberRepository;
-    private final WishlistItemSnapshotPort wishlistItemSnapshotPort;
+    private final MemberReplicaRepository memberReplicaRepository;
 
     /**
      * 전체 공개 단일 펀딩 조회
@@ -41,8 +43,8 @@ public class FundingGetUseCase {
         Funding funding = fundingRepository.findById(id).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, id));
 
-        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(List.of(funding.getWishlistItemId()));
-        WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
+        MemberReplica receiver = memberReplicaRepository.findById(funding.getReceiverId()).orElseThrow(()->
+                new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
 
         // 진행 중이거나 목표 달성한 펀딩만 조회 가능
         if (funding.getStatus() != FundingStatus.IN_PROGRESS
@@ -51,7 +53,7 @@ public class FundingGetUseCase {
                 FundingErrorCode.NOT_IN_PROGRESS, "진행 중이거나 목표 달성한 펀딩만 조회할 수 있습니다");
         }
 
-        return FundingResponseDto.fromEntity(funding, snapshot);
+        return FundingResponseDto.fromEntity(funding, receiver.getNickname());
     }
 
     /**
@@ -62,17 +64,21 @@ public class FundingGetUseCase {
 
         List<FundingStatus> statuses = List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED);
         Page<Funding> fundingPage = fundingRepository.findAllByStatusIn(statuses, pageable);
+        List<Funding> fundings = fundingPage.getContent();
 
-        List<Long> wishlistItemIds = fundingPage.getContent().stream()
-                .map(Funding::getWishlistItemId)
-                .collect(Collectors.toList());
+        Set<Long> receiverIds = fundings.stream()
+                .map(Funding::getReceiverId)
+                .collect(Collectors.toSet());
 
-        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(wishlistItemIds);
+        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberReplica::getId, r -> r));
 
-        List<FundingResponseDto> content = fundingPage.getContent().stream()
+        List<FundingResponseDto> content = fundings.stream()
             .map(funding -> {
-                WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
-                return FundingResponseDto.fromEntity(funding, snapshot);
+                String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
+                        .map(MemberReplica::getNickname)
+                        .orElse("알 수 없음");
+                return FundingResponseDto.fromEntity(funding, receiverNickname);
             })
             .collect(Collectors.toList());
 
@@ -87,20 +93,18 @@ public class FundingGetUseCase {
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + fundingId)
         );
 
-        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(List.of(funding.getWishlistItemId()));
-        WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
+        MemberReplica receiver = memberReplicaRepository.findById(funding.getReceiverId()).orElseThrow(()->
+                new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
 
         // 참여 여부 확인
         boolean isParticipated = participantMemberRepository.existsByFundingIdAndParticipantId(fundingId, memberId);
-        if (!isParticipated) {
-            throw new FundingException(FundingErrorCode.FORBIDDEN);
-        }
+        if (!isParticipated) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
 
         // 참여 금액 조회
         Integer myContribution = participantMemberRepository.findTotalAmountByFundingIdAndParticipantId(fundingId, memberId)
                 .orElse(0);
 
-        return ContributeFundingResponseDto.fromEntity(funding, myContribution, snapshot);
+        return ContributeFundingResponseDto.fromEntity(funding, myContribution, receiver.getNickname());
     }
 
     /**
@@ -110,19 +114,24 @@ public class FundingGetUseCase {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, status, pageable);
+        List<MyFundingInfo> myFundingInfos = myFundingInfoPage.getContent();
 
-        List<Long> wishlistItemIds = myFundingInfoPage.getContent().stream()
-                .map(info -> info.funding().getWishlistItemId())
-                .collect(Collectors.toList());
+        Set<Long> receiverIds = myFundingInfos.stream()
+                .map(info -> info.funding().getReceiverId())
+                .collect(Collectors.toSet());
 
-        Map<Long, WishlistItemSnapshot> snapshots = wishlistItemSnapshotPort.getSnapshotList(wishlistItemIds);
+        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberReplica::getId, r-> r));
 
         List<ContributeFundingResponseDto> contents =
-                myFundingInfoPage.getContent().stream()
+                myFundingInfos.stream()
                         .map(info -> {
                             Funding funding = info.funding();
-                            WishlistItemSnapshot snapshot = snapshots.get(funding.getWishlistItemId());
-                            return ContributeFundingResponseDto.fromEntity(funding, info.myContribution(), snapshot);
+                            String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
+                                    .map(MemberReplica::getNickname)
+                                    .orElse("알 수 없음");
+
+                            return ContributeFundingResponseDto.fromEntity(funding, info.myContribution(), receiverNickname);
                         })
                         .collect(Collectors.toList());
 
@@ -132,8 +141,8 @@ public class FundingGetUseCase {
     /**
      * 나의 펀딩 단건 조회
      */
-    public MyFundingResponseDto getMyFunding(Long id, Long memberId) {
-        Funding funding = fundingRepository.findById(id).orElseThrow(() ->
+    public MyFundingResponseDto getMyFunding(Long id, FundingStatus status, Long memberId) {
+        Funding funding = fundingRepository.findByIdAndStatus(id, status).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + id));
 
         funding.validateReceiver(memberId);
@@ -150,12 +159,12 @@ public class FundingGetUseCase {
     /**
      * 나의 펀딩 리스트 조회
      */
-    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, Long memberId) {
+    public PageResponse<MyFundingSummaryDto> getMyFundings(int page, int size, FundingStatus status, Long memberId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<Funding> fundingPage = fundingRepository.findAllByReceiverId(memberId, pageable);
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdAndStatus(memberId, status, pageable);
         List<MyFundingSummaryDto> contents = fundingPage.getContent().stream()
-                .map(funding -> MyFundingSummaryDto.fromEntity(funding))
+                .map(MyFundingSummaryDto::fromEntity)
                 .collect(Collectors.toList());
 
         return PageResponse.of(contents, page, size, fundingPage.getTotalElements());

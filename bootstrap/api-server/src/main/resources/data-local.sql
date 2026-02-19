@@ -43,6 +43,17 @@ VALUES (1, '멍청한돼지0009'),
        (6, '배고픈강아지0007');
 
 -- -----------------------------------------------------------------------------
+-- 3. CORE_MEMBER_REPLICA (회원 레플리카 - core 모듈) — V1.0.0
+-- -----------------------------------------------------------------------------
+INSERT INTO core_member_replica (id, nickname)
+VALUES (1, '멍청한돼지0009'),
+       (2, '나른한고양이0013'),
+       (3, '멍청한고양이2013'),
+       (4, '관리자'),
+       (5, '졸린토끼0042'),
+       (6, '배고픈강아지0007');
+
+-- -----------------------------------------------------------------------------
 -- 4. WALLET (지갑) — V1.2.1
 -- -----------------------------------------------------------------------------
 INSERT INTO wallet (id, member_id, balance, version, created_at, updated_at, created_by, updated_by)
@@ -147,36 +158,45 @@ ALTER TABLE cart_item
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------
--- 10. FUNDING (펀딩) — V1.2.3
+-- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding (id, wishlist_item_id, product_id, receiver_id, target_amount, current_amount,
+INSERT INTO funding (id, version, wishlist_item_id, product_id, receiver_id, target_amount, current_amount,
                      status, deadline, achieved_at, closed_at,
                      created_at, updated_at, created_by, updated_by)
 VALUES
-    (1, 8, 4, 5, 699000, 15000, 'IN_PROGRESS',
+    (1, 0,8, 4, 5, 699000, 15000, 'IN_PROGRESS',
      '2026-03-01 23:59:59', NULL, NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (2, 9, 1, 5, 359000, 359000, 'ACHIEVED',
+    (2, 0,9, 1, 5, 359000, 359000, 'ACHIEVED',
      '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (3, 4, 3, 2, 415000, 120000, 'EXPIRED',
+    (3, 0,4, 3, 2, 415000, 120000, 'EXPIRED',
      '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
+     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+
+    (4, 0,2, 3, 2, 415000, 415000, 'ACHIEVED',
+     '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------
--- 11. FUNDING_PARTICIPANT_MEMBER (펀딩 참여자) — V1.2.3
+-- 11. FUNDING_PARTICIPANT_MEMBER (펀딩 참여자) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding_participant_member (id, funding_id, participant_id, amount,
+INSERT INTO funding_participant_member (id, funding_id, participant_id, nick_name, amount,
                                         created_at, updated_at, created_by, updated_by)
-VALUES (1, 1, 2, 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (2, 1, 6, 5000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 2, 2, 200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (4, 2, 6, 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+VALUES (1, 1, 2, '나른한고양이0013', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 1, 6, '배고픈강아지0007', 555000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 2, 2, '나른한고양이0013', 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (4, 2, 6,  '배고픈강아지0007', 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (5, 3, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (6, 4, 2,  '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (7, 4, 6,  '배고픈강아지0007', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (8, 4, 1,  '멍청한돼지0009', 50000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (9, 4, 2,  '참가자4', 1000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding_participant_member
     ALTER COLUMN id RESTART WITH 100;
@@ -323,8 +343,8 @@ ALTER TABLE wallet_history
 -- Wishlists: 6개 (PUBLIC 4, PRIVATE 1, FRIENDS_ONLY 1)
 -- WishlistItems: 10개 (PENDING 6, IN_PROGRESS 2, COMPLETED 2)
 -- CartItems: 5개 (buyer2: 2, buyer3: 2, buyer1: 1)
--- Fundings: 3개 (IN_PROGRESS 1, ACHIEVED 1, EXPIRED 1)
--- FundingParticipants: 4명
+-- Fundings: 4개 (IN_PROGRESS 1, ACHIEVED 2, EXPIRED 1)
+-- FundingParticipants: 9명
 -- Orders: 5개 (PAID 2, CONFIRMED 1, CREATED 1, CANCELED 1)
 -- OrderItems: 6개
 -- Payments: 3개 (모두 PAID)
