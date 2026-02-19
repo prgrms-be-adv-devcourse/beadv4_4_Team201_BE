@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import app.giftify.friendship.application.port.in.FriendInfo;
+import app.giftify.friendship.application.port.in.FriendRequestInfo;
 import app.giftify.friendship.application.port.out.FriendshipRepositoryPort;
 import app.giftify.friendship.domain.Friendship;
 import app.giftify.friendship.domain.FriendshipStatus;
@@ -108,6 +111,38 @@ class FriendshipServiceTest {
 
         assertThatThrownBy(() -> service.remove(10L, 3L))
                 .isInstanceOf(FriendshipException.class);
+    }
+
+    @Test
+    void getFriends_Member조회포함_FriendInfo반환() {
+        Friendship friendship = new Friendship(10L, 1L, 2L,
+                FriendshipStatus.ACCEPTED, LocalDateTime.now(), LocalDateTime.now());
+        given(friendshipRepository.findAllByMemberIdAndStatus(1L, FriendshipStatus.ACCEPTED))
+                .willReturn(List.of(friendship));
+        given(memberRepository.findAllByIds(List.of(2L)))
+                .willReturn(List.of(dummyMember(2L)));
+
+        List<FriendInfo> result = service.getFriends(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).memberId()).isEqualTo(2L);
+        assertThat(result.get(0).nickname()).isEqualTo("test");
+    }
+
+    @Test
+    void getReceivedRequests_Member조회포함_FriendRequestInfo반환() {
+        Friendship friendship = new Friendship(10L, 3L, 1L,
+                FriendshipStatus.PENDING, LocalDateTime.now(), null);
+        given(friendshipRepository.findAllByReceiverIdAndStatus(1L, FriendshipStatus.PENDING))
+                .willReturn(List.of(friendship));
+        given(memberRepository.findAllByIds(List.of(3L)))
+                .willReturn(List.of(dummyMember(3L)));
+
+        List<FriendRequestInfo> result = service.getReceivedRequests(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).friendshipId()).isEqualTo(10L);
+        assertThat(result.get(0).requesterId()).isEqualTo(3L);
     }
 
     private Member dummyMember(Long id) {

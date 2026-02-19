@@ -34,8 +34,6 @@ import app.giftify.friendship.domain.Friendship;
 import app.giftify.friendship.domain.FriendshipStatus;
 import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.friendship.domain.exception.FriendshipException;
-import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.domain.member.Member;
 import app.giftify.security.common.CurrentMemberId;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +47,6 @@ class FriendshipV2ControllerTest {
     @Mock private RemoveFriendUseCase removeFriendUseCase;
     @Mock private GetFriendListUseCase getFriendListUseCase;
     @Mock private GetFriendRequestsUseCase getFriendRequestsUseCase;
-    @Mock private MemberRepositoryPort memberRepository;
 
     private static final Long MEMBER_ID = 1L;
     private static final Long RECEIVER_ID = 2L;
@@ -67,8 +64,7 @@ class FriendshipV2ControllerTest {
                 rejectFriendRequestUseCase,
                 removeFriendUseCase,
                 getFriendListUseCase,
-                getFriendRequestsUseCase,
-                memberRepository
+                getFriendRequestsUseCase
         );
 
         mockMvc = MockMvcBuilders
@@ -101,15 +97,6 @@ class FriendshipV2ControllerTest {
         LocalDateTime now = LocalDateTime.of(2025, 1, 2, 12, 0);
         return new Friendship(FRIENDSHIP_ID, MEMBER_ID, RECEIVER_ID,
                 FriendshipStatus.ACCEPTED, LocalDateTime.of(2025, 1, 1, 12, 0), now);
-    }
-
-    private Member createMember(Long id, String nickname) {
-        return Member.builder()
-                .id(id)
-                .email(nickname + "@test.com")
-                .nickname(nickname)
-                .authSub("auth0|" + id)
-                .build();
     }
 
     @Nested
@@ -235,10 +222,8 @@ class FriendshipV2ControllerTest {
         @DisplayName("친구 목록 조회 성공 시 200 OK 반환")
         void success_Returns200() throws Exception {
             // given
-            Friendship friendship = createAcceptedFriendship();
-            given(getFriendListUseCase.getFriends(MEMBER_ID)).willReturn(List.of(friendship));
-            given(memberRepository.findAllByIds(List.of(RECEIVER_ID)))
-                    .willReturn(List.of(createMember(RECEIVER_ID, "친구")));
+            given(getFriendListUseCase.getFriends(MEMBER_ID))
+                    .willReturn(List.of(new FriendInfo(RECEIVER_ID, "친구")));
 
             // when & then
             mockMvc.perform(get("/api/v2/members/{memberId}/friends", MEMBER_ID))
@@ -257,10 +242,9 @@ class FriendshipV2ControllerTest {
         @DisplayName("받은 친구 요청 목록 조회 성공 시 200 OK 반환")
         void success_Returns200() throws Exception {
             // given
-            Friendship friendship = createPendingFriendship();
-            given(getFriendRequestsUseCase.getReceivedRequests(MEMBER_ID)).willReturn(List.of(friendship));
-            given(memberRepository.findAllByIds(List.of(MEMBER_ID)))
-                    .willReturn(List.of(createMember(MEMBER_ID, "요청자")));
+            given(getFriendRequestsUseCase.getReceivedRequests(MEMBER_ID))
+                    .willReturn(List.of(new FriendRequestInfo(
+                            FRIENDSHIP_ID, MEMBER_ID, "요청자", LocalDateTime.of(2025, 1, 1, 12, 0))));
 
             // when & then
             mockMvc.perform(get("/api/v2/friends/requests"))

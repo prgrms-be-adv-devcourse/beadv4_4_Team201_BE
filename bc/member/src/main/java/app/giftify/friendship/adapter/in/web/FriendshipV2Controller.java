@@ -1,9 +1,6 @@
 package app.giftify.friendship.adapter.in.web;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -11,8 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import app.giftify.friendship.adapter.in.web.dto.*;
 import app.giftify.friendship.application.port.in.*;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.domain.member.Member;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import jakarta.validation.Valid;
@@ -21,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class FriendshipV2Controller {
+public class FriendshipV2Controller implements FriendshipV2ApiSpec {
 
     private final SendFriendRequestUseCase sendFriendRequestUseCase;
     private final AcceptFriendRequestUseCase acceptFriendRequestUseCase;
@@ -29,7 +24,6 @@ public class FriendshipV2Controller {
     private final RemoveFriendUseCase removeFriendUseCase;
     private final GetFriendListUseCase getFriendListUseCase;
     private final GetFriendRequestsUseCase getFriendRequestsUseCase;
-    private final MemberRepositoryPort memberRepository;
 
     @PostMapping("/api/v2/friends/request")
     public ResponseEntity<RsData<FriendshipResponse>> sendRequest(
@@ -68,30 +62,17 @@ public class FriendshipV2Controller {
     public ResponseEntity<RsData<List<FriendResponse>>> getFriends(
             @CurrentMemberId Long currentMemberId,
             @PathVariable Long memberId) {
-        List<Friendship> friendships = getFriendListUseCase.getFriends(memberId);
-        List<Long> friendIds = friendships.stream()
-                .map(f -> f.getFriendId(memberId))
-                .toList();
-        Map<Long, Member> memberMap = memberRepository.findAllByIds(friendIds).stream()
-                .collect(Collectors.toMap(Member::getId, Function.identity()));
-        List<FriendResponse> friends = friendIds.stream()
-                .map(memberMap::get)
+        List<FriendResponse> responses = getFriendListUseCase.getFriends(memberId).stream()
                 .map(FriendResponse::from)
                 .toList();
-        return ResponseEntity.ok(RsData.success(friends));
+        return ResponseEntity.ok(RsData.success(responses));
     }
 
     @GetMapping("/api/v2/friends/requests")
     public ResponseEntity<RsData<List<FriendRequestResponse>>> getReceivedRequests(
             @CurrentMemberId Long memberId) {
-        List<Friendship> requests = getFriendRequestsUseCase.getReceivedRequests(memberId);
-        List<Long> requesterIds = requests.stream()
-                .map(Friendship::getRequesterId)
-                .toList();
-        Map<Long, Member> memberMap = memberRepository.findAllByIds(requesterIds).stream()
-                .collect(Collectors.toMap(Member::getId, Function.identity()));
-        List<FriendRequestResponse> responses = requests.stream()
-                .map(f -> FriendRequestResponse.of(f, memberMap.get(f.getRequesterId())))
+        List<FriendRequestResponse> responses = getFriendRequestsUseCase.getReceivedRequests(memberId).stream()
+                .map(FriendRequestResponse::from)
                 .toList();
         return ResponseEntity.ok(RsData.success(responses));
     }

@@ -1,16 +1,16 @@
 package app.giftify.friendship.adapter.in.web.dto;
 
-import app.giftify.member.domain.member.Member;
+import app.giftify.friendship.application.port.in.FriendInfo;
 
 public record FriendResponse(
         Long id,
         String nickname,
         String avatarUrl
 ) {
-    public static FriendResponse from(Member member) {
+    public static FriendResponse from(FriendInfo info) {
         return new FriendResponse(
-                member.getId(),
-                member.getNickname(),
+                info.memberId(),
+                info.nickname(),
                 null
         );
     }

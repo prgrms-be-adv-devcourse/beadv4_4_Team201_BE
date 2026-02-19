@@ -1,19 +1,18 @@
 package app.giftify.friendship.adapter.in.web.dto;
 
 import java.time.LocalDateTime;
-import app.giftify.friendship.domain.Friendship;
-import app.giftify.member.domain.member.Member;
+import app.giftify.friendship.application.port.in.FriendRequestInfo;
 
 public record FriendRequestResponse(
         Long friendshipId,
         FriendResponse requester,
         LocalDateTime createdAt
 ) {
-    public static FriendRequestResponse of(Friendship friendship, Member requester) {
+    public static FriendRequestResponse from(FriendRequestInfo info) {
         return new FriendRequestResponse(
-                friendship.getId(),
-                FriendResponse.from(requester),
-                friendship.getCreatedAt()
+                info.friendshipId(),
+                new FriendResponse(info.requesterId(), info.requesterNickname(), null),
+                info.createdAt()
         );
     }
 }

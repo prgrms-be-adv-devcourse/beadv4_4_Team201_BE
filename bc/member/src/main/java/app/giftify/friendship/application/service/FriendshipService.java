@@ -1,6 +1,9 @@
 package app.giftify.friendship.application.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import app.giftify.friendship.application.port.in.*;
@@ -10,6 +13,7 @@ import app.giftify.friendship.domain.FriendshipStatus;
 import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
+import app.giftify.member.domain.member.Member;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.friendship.FriendshipAcceptedEvent;
 import app.giftify.shared.domain.event.friendship.FriendshipRequestSentEvent;
@@ -87,14 +91,39 @@ public class FriendshipService implements
 
     @Override
     @Transactional(readOnly = true)
-    public List<Friendship> getFriends(Long memberId) {
-        return friendshipRepository.findAllByMemberIdAndStatus(memberId, FriendshipStatus.ACCEPTED);
+    public List<FriendInfo> getFriends(Long memberId) {
+        List<Friendship> friendships = friendshipRepository.findAllByMemberIdAndStatus(
+                memberId, FriendshipStatus.ACCEPTED);
+        List<Long> friendIds = friendships.stream()
+                .map(f -> f.getFriendId(memberId))
+                .toList();
+        Map<Long, Member> memberMap = memberRepository.findAllByIds(friendIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
+        return friendIds.stream()
+                .map(id -> {
+                    Member m = memberMap.get(id);
+                    return new FriendInfo(m.getId(), m.getNickname());
+                })
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Friendship> getReceivedRequests(Long memberId) {
-        return friendshipRepository.findAllByReceiverIdAndStatus(memberId, FriendshipStatus.PENDING);
+    public List<FriendRequestInfo> getReceivedRequests(Long memberId) {
+        List<Friendship> requests = friendshipRepository.findAllByReceiverIdAndStatus(
+                memberId, FriendshipStatus.PENDING);
+        List<Long> requesterIds = requests.stream()
+                .map(Friendship::getRequesterId)
+                .toList();
+        Map<Long, Member> memberMap = memberRepository.findAllByIds(requesterIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
+        return requests.stream()
+                .map(f -> {
+                    Member m = memberMap.get(f.getRequesterId());
+                    return new FriendRequestInfo(
+                            f.getId(), m.getId(), m.getNickname(), f.getCreatedAt());
+                })
+                .toList();
     }
 
     private Friendship findFriendshipOrThrow(Long friendshipId) {
