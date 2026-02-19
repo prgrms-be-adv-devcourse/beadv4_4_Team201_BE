@@ -79,7 +79,7 @@ public class OrderController implements OrderControllerSpec {
             @CurrentMemberId Long memberId,
             @PathVariable Long orderId
     ) {
-        orderService.cancelOrder(memberId, orderId);
+        orderService.requestCancelOrder(memberId, orderId);
 
         return ResponseEntity.ok(RsData.success(null));
     }

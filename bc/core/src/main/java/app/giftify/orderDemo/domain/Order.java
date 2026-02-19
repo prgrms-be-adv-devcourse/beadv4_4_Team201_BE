@@ -67,6 +67,9 @@ public class Order extends BaseAggregateRoot {
     private LocalDateTime paidAt;
 
     @Column
+    private LocalDateTime cancelRequestedAt;
+
+    @Column
     private LocalDateTime cancelledAt;
 
     @Column
@@ -170,5 +173,16 @@ public class Order extends BaseAggregateRoot {
                     String.format("이미 취소된 주문입니다. orderId = %s", id)
             );
         }
+    }
+
+    public void pendingToCancel(LocalDateTime cancelRequestedAt) {
+        if (status == OrderStatus.CANCELED || status == OrderStatus.CANCEL_PENDING) {
+            throw new PolicyException(
+                    OrderErrorCode.ALREADY_CANCELED,
+                    String.format("이미 취소(요청)된 주문입니다. orderId = %s", id)
+            );
+        }
+        status = OrderStatus.CANCEL_PENDING;
+        this.cancelRequestedAt = cancelRequestedAt;
     }
 }

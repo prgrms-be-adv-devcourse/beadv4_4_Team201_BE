@@ -18,7 +18,7 @@ import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.order.OrderCanceledEvent;
+import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
@@ -245,8 +245,8 @@ class OrderServiceTest {
         private final Long orderId = 10L;
 
         @Test
-        @DisplayName("성공: 취소 가능한 아이템이 있는 주문을 취소하고 OrderCanceledEvent를 발행한다")
-        void given_paidOrder_when_cancelOrder_then_success() {
+        @DisplayName("성공: 취소 가능한 아이템이 있는 주문을 CANCEL_PENDING 상태로 변경하고 OrderCancelRequestedEvent를 발행한다")
+        void given_paidOrder_when_requestCancelOrder_then_success() {
             // given
             Order order = spy(OrderFixture.createOrderWithItems(memberId, 2));
             ReflectionTestUtils.setField(order, "id", orderId);
@@ -258,14 +258,15 @@ class OrderServiceTest {
             given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(cancelableItems);
 
             // when
-            orderService.cancelOrder(memberId, orderId);
+            orderService.requestCancelOrder(memberId, orderId);
 
             // then
             verify(orderRepository).getByIdWithLock(orderId);
             verify(orderItemRepository).getCancelableItemsByOrderId(orderId);
-            verify(order).cancel();
+            verify(order).pendingToCancel(any(LocalDateTime.class));
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCEL_PENDING);
 
-            ArgumentCaptor<OrderCanceledEvent> captor = ArgumentCaptor.forClass(OrderCanceledEvent.class);
+            ArgumentCaptor<OrderCancelRequestedEvent> captor = ArgumentCaptor.forClass(OrderCancelRequestedEvent.class);
             verify(eventPublisher).publish(captor.capture());
             assertThat(captor.getValue().getCancelAmount()).isEqualTo(expectedCancelAmount);
         }
@@ -278,7 +279,7 @@ class OrderServiceTest {
                     .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
 
             // when & then
-            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+            assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
@@ -297,12 +298,31 @@ class OrderServiceTest {
             given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
 
             // when & then
-            assertThatThrownBy(() -> orderService.cancelOrder(anotherMemberId, orderId))
+            assertThatThrownBy(() -> orderService.requestCancelOrder(anotherMemberId, orderId))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_OWNER_MISMATCH);
 
             verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
+            verify(eventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패: 취소 요청이 이미 진행 중인 주문(CANCEL_PENDING)에 재요청 시 ALREADY_CANCELED 예외가 발생한다")
+        void given_cancelPendingOrder_when_requestCancelOrder_then_throwAlreadyCanceled() {
+            // given
+            Order cancelPendingOrder = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            ReflectionTestUtils.setField(cancelPendingOrder, "id", orderId);
+
+            given(orderRepository.getByIdWithLock(orderId)).willReturn(cancelPendingOrder);
+            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(List.of());
+
+            // when & then
+            assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ALREADY_CANCELED);
+
             verify(eventPublisher, never()).publish(any());
         }
 
@@ -317,7 +337,7 @@ class OrderServiceTest {
             given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(List.of());
 
             // when & then
-            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+            assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ALREADY_CANCELED);
@@ -333,7 +353,7 @@ class OrderServiceTest {
                     .willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT, "비관적 락 획득 실패"));
 
             // when & then
-            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+            assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(InfraException.class)
                     .extracting("errorCode")
                     .isEqualTo(InfraErrorCode.DB_LOCK_TIMEOUT);
@@ -355,7 +375,7 @@ class OrderServiceTest {
                     .willThrow(new InfraException(InfraErrorCode.DB_TEMPORARY_ERROR, "일시적 DB 오류"));
 
             // when & then
-            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+            assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(InfraException.class)
                     .extracting("errorCode")
                     .isEqualTo(InfraErrorCode.DB_TEMPORARY_ERROR);
@@ -374,7 +394,7 @@ class OrderServiceTest {
             given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(List.of());
 
             // when & then
-            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+            assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ALREADY_CANCELED);

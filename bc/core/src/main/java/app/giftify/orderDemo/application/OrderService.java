@@ -19,7 +19,7 @@ import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.order.OrderCanceledEvent;
+import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
@@ -36,6 +36,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,7 +113,7 @@ public class OrderService {
             backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
     )
     @Transactional
-    public void cancelOrder(Long memberId, Long orderId) {
+    public void requestCancelOrder(Long memberId, Long orderId) {
         Order order = orderRepository.getByIdWithLock(orderId);
 
         validateOwner(memberId, order.getBuyerId());
@@ -122,10 +123,12 @@ public class OrderService {
 
         Money cancelAmount = targetItems.calculateCancelAmount();
 
-        order.cancel();
-        targetItems.cancel();
+        LocalDateTime cancelRequestedAt = LocalDateTime.now();
 
-        eventPublisher.publish(new OrderCanceledEvent(
+        order.pendingToCancel(cancelRequestedAt);
+        targetItems.pendingToCancel(cancelRequestedAt);
+
+        eventPublisher.publish(new OrderCancelRequestedEvent(
                 order.getId(),
                 order.getOrderNumber(),
                 order.getPaymentKey(),

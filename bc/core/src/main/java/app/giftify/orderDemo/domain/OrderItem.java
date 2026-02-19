@@ -17,7 +17,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "order_item_v2")
+@Table(name = "order_item_v2", indexes = {
+        @Index(name = "idx_order_items_order_id_status", columnList = "order_id, status")
+})
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -65,6 +67,9 @@ public class OrderItem {
     @Column
     @Setter
     private String originTransactionKey;
+
+    @Column
+    private LocalDateTime cancelRequestedAt;
 
     @Column
     private LocalDateTime cancelledAt;
@@ -182,5 +187,10 @@ public class OrderItem {
 
         status = OrderItemStatus.CANCELED;
         cancelledAt = LocalDateTime.now();
+    }
+
+    public void pendingToCancel(LocalDateTime cancelRequestedAt) {
+        status = OrderItemStatus.CANCEL_PENDING;
+        this.cancelRequestedAt = cancelRequestedAt;
     }
 }
