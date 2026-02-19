@@ -3,7 +3,6 @@ package app.giftify.funding.application;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
-import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.shared.domain.vo.Money;
@@ -19,13 +18,11 @@ public class WithdrawFundingUseCase {
 
     @Transactional
     public void withdrawFunding(Long fundingId, Long participantId, Money amount) {
-        // 펀딩이 만료/수락/거절/마감 상태가 아니여야 함 -> 즉 진행중이거나 달성 상태일 때만 가능 -> 도메인 내 메서드에서 처리
+        // 진행중이거나 달성 상태일 때만 가능 -> 도메인 내 메서드에서 처리
         Funding funding = fundingRepository.findById(fundingId).
                 orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, fundingId));
 
-        // Money 객체에서 Integer 값 추출하여 withdraw 메서드에 전달
         funding.withdraw(amount.toBigDecimalValue().intValue());
         fundingParticipantMemberRepository.deleteByFundingIdAndParticipantId(fundingId, participantId);
-
     }
 }
