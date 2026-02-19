@@ -8,6 +8,7 @@ import app.giftify.member.domain.member.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -45,5 +46,12 @@ public class MemberPersistenceAdapter implements MemberRepositoryPort {
     public Optional<Member> findByNickname(String nickname) {
         return memberJpaRepository.findByNickname(nickname)
                 .map(MemberMapper::toDomain);
+    }
+
+    @Override
+    public List<Member> findAllByIds(List<Long> ids) {
+        return memberJpaRepository.findAllById(ids).stream()
+                .map(MemberMapper::toDomain)
+                .toList();
     }
 }
