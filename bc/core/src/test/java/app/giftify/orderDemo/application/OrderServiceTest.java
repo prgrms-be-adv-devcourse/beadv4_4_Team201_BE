@@ -260,7 +260,7 @@ class OrderServiceTest {
             verify(orderRepository).getByOrderNumber(orderNumber);
 
             // 2. 엔티티의 toPaid 메서드가 스냅샷의 데이터로 호출되었는지 확인
-            verify(order).toPaid(command.paymentKey(), command.lastTransactionKey(), command.createdAt());
+            verify(order).toPaid(command.paymentKey(), command.lastTransactionKey());
 
             // 3. 실제 상태가 변했는지 확인 (더티 체킹에 의해 반영될 상태)
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);

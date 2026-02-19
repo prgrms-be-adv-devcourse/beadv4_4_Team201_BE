@@ -61,7 +61,7 @@ public class Order extends BaseAggregateRoot {
     private String paymentKey;
 
     @Column
-    private String lastTransactionKey;
+    private String originTransactionKey;
 
     @Column
     private LocalDateTime paidAt;
@@ -143,7 +143,7 @@ public class Order extends BaseAggregateRoot {
                 .build();
     }
 
-    public void toPaid(String paymentKey, String lastTransactionKey, LocalDateTime paidAt) {
+    public void toPaid(String paymentKey, String originTransactionKey) {
         if (this.status == OrderStatus.PAID) {
             return;
         }
@@ -156,10 +156,19 @@ public class Order extends BaseAggregateRoot {
         }
 
         this.paymentKey = paymentKey;
-        this.lastTransactionKey = lastTransactionKey;
-        this.paidAt = paidAt;
+        this.originTransactionKey = originTransactionKey;
+        this.paidAt = LocalDateTime.now();
         this.status = OrderStatus.PAID;
 
-        items.forEach(OrderItem::toPaid);
+        items.forEach(i -> i.toPaid(originTransactionKey));
+    }
+
+    public void cancel() {
+        if (status == OrderStatus.CANCELED) {
+            throw new PolicyException(
+                    OrderErrorCode.ALREADY_CANCELED,
+                    String.format("이미 취소된 주문입니다. orderId = %s", id)
+            );
+        }
     }
 }

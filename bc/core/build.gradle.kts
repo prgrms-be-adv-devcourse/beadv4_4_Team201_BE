@@ -39,6 +39,10 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
+    // Retry
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test:$springModulithVersion")

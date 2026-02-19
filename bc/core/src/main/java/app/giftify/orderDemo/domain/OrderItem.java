@@ -9,6 +9,7 @@ import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @EntityListeners(AuditingEntityListener.class)
+@Slf4j
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,6 +61,10 @@ public class OrderItem {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
+
+    @Column
+    @Setter
+    private String originTransactionKey;
 
     @Column
     private LocalDateTime cancelledAt;
@@ -154,7 +160,7 @@ public class OrderItem {
                 '}';
     }
 
-    public void toPaid() {
+    public void toPaid(String originTransactionKey) {
         if (this.status == OrderItemStatus.PAID) {
             return;
         }
@@ -166,5 +172,15 @@ public class OrderItem {
             );
         }
         status = OrderItemStatus.PAID;
+        this.originTransactionKey = originTransactionKey;
+    }
+
+    public void cancel() {
+        if (status == OrderItemStatus.CANCELED) {
+            log.warn("이미 취소된 주문입니다. orderId = {}, orderItemId = {}", order.getId(), id);
+        }
+
+        status = OrderItemStatus.CANCELED;
+        cancelledAt = LocalDateTime.now();
     }
 }

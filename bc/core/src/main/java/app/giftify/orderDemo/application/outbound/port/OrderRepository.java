@@ -3,6 +3,7 @@ package app.giftify.orderDemo.application.outbound.port;
 import app.giftify.orderDemo.domain.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository {
     Order save(Order order);
@@ -12,4 +13,6 @@ public interface OrderRepository {
     Order getById(Long orderId);
 
     Order getByOrderNumber(String orderNumber);
+
+    Order getByIdWithLock(@Param("id") Long id);
 }

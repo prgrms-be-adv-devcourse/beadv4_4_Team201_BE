@@ -4,29 +4,35 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemReque
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
+import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
+import app.giftify.orderDemo.domain.CancelTargetItems;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
+import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,7 +103,35 @@ public class OrderService {
     public void markOrderAsPaid(@Valid MarkOrderAsPaidCommand command) {
         Order order = orderRepository.getByOrderNumber(command.orderNumber());
 
-        order.toPaid(command.paymentKey(), command.lastTransactionKey(), command.createdAt());
+        order.toPaid(command.paymentKey(), command.lastTransactionKey());
+    }
+
+    @Retryable(
+            retryFor = { InfraException.class },
+            exceptionExpression = "@retryService.isRetryable(#root)",
+            backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
+    )
+    @Transactional
+    public void cancelOrder(Long memberId, Long orderId) {
+        Order order = orderRepository.getByIdWithLock(orderId);
+
+        validateOwner(memberId, order.getBuyerId());
+
+        List<OrderItem> cancelableItems = orderItemRepository.getCancelableItemsByOrderId(orderId);
+        CancelTargetItems targetItems = new CancelTargetItems(cancelableItems);
+
+        Money cancelAmount = targetItems.calculateCancelAmount();
+
+        order.cancel();
+        targetItems.cancel();
+
+        eventPublisher.publish(new OrderCanceledEvent(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getPaymentKey(),
+                order.getOriginTransactionKey(),
+                cancelAmount
+        ));
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {
@@ -199,9 +233,5 @@ public class OrderService {
                         command.amount())
                 )
                 .toList();
-    }
-
-    public void cancelOrder(Long memberId, Long orderId) {
-
     }
 }

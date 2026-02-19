@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class OrderTest {
 
@@ -23,13 +24,13 @@ class OrderTest {
         LocalDateTime paidAt = LocalDateTime.now();
 
         // when
-        order.toPaid(paymentKey, lastTransactionKey, paidAt);
+        order.toPaid(paymentKey, lastTransactionKey);
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
         assertThat(order.getPaymentKey()).isEqualTo(paymentKey);
-        assertThat(order.getLastTransactionKey()).isEqualTo(lastTransactionKey);
-        assertThat(order.getPaidAt()).isEqualTo(paidAt);
+        assertThat(order.getOriginTransactionKey()).isEqualTo(lastTransactionKey);
+        assertNotNull(order.getPaidAt());
     }
 
     @Test
@@ -39,7 +40,7 @@ class OrderTest {
         Order order = OrderFixture.createOrderWithItems(1L, 2); // 아이템 2개 포함
 
         // when
-        order.toPaid("key", "tx", LocalDateTime.now());
+        order.toPaid("key", "tx");
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
@@ -54,7 +55,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() ->
-                order.toPaid("key", "tx", LocalDateTime.now())
+                order.toPaid("key", "tx")
         )
                 .isInstanceOf(PolicyException.class)
                 .hasMessageContaining(String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", order.getStatus()))

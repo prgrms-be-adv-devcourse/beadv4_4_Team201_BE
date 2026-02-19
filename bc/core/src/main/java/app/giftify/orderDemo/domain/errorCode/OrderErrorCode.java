@@ -30,7 +30,9 @@ public enum OrderErrorCode implements ErrorCode {
     UNSUPPORTED_ORDER_COMBINATION(HttpStatus.BAD_REQUEST.value(), "ORDER-117", "해당 상품 상태에서는 요청하신 주문 처리가 불가능합니다."),
     SNAPSHOTS_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "ORDER-118", "주문 상품의 상세 정보(펀딩, 위시리스트 아이템)를 불러올 수 없습니다."),
 
-    INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT.value(), "ORDER-116", "잘못된 상태 변경 요청입니다.");
+    INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT.value(), "ORDER-119", "잘못된 상태 변경 요청입니다."),
+    ALREADY_CANCELED(HttpStatus.OK.value(), "ORDER-120", "이미 취소된 주문입니다."),
+    ;
 
     private final int statusCode;
     private final String code;
