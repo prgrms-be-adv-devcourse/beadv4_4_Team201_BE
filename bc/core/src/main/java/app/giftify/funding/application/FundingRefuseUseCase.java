@@ -8,8 +8,10 @@ import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FundingRefuseUseCase {
@@ -25,6 +27,7 @@ public class FundingRefuseUseCase {
 
         // 거절로 상태 변경
         funding.refuse();
+        log.info("[Funding] 펀딩 거절 완료" + fundingId);
 
         // 이벤트 발행
         eventPublisher.publish(new FundingCanceledEvent(

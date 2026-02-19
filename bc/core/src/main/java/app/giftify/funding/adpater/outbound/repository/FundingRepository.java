@@ -5,6 +5,8 @@ import app.giftify.funding.domain.FundingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +22,11 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     Optional<Funding> findByWishlistItemIdAndStatus(Long wishlistItemId, FundingStatus status);
 
-    Page<Funding> findAllByReceiverId(Long receiverId, Pageable pageable);
+    @Query("SELECT f FROM Funding f WHERE f.id = :id AND (:status IS NULL OR f.status = :status)")
+    Optional<Funding> findByIdAndStatus(@Param("id") Long id, @Param("status") FundingStatus status);
+
+    @Query("SELECT f FROM Funding f WHERE f.receiverId = :receiverId AND (:status IS NULL OR f.status = :status)")
+    Page<Funding> findAllByReceiverIdAndStatus(@Param("receiverId") Long receiverId, @Param("status") FundingStatus status, Pageable pageable);
 
     List<Funding> findAllByWishlistItemIdIn(List<Long> wishlistItemIds);
 
