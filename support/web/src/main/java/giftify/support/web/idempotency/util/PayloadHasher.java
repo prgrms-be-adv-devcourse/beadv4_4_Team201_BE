@@ -44,8 +44,8 @@ public class PayloadHasher {
         }
     }
 
-    public boolean isMatch(String storedValue, String currentHash) {
-        return storedValue.equals(currentHash);
+    public boolean isMatch(String hash, String other) {
+        return hash.equals(other);
     }
 
     private String bytesToHex(byte[] hash) {

@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Idempotent {
     String prefix() default "COMMON"; // 도메인별 구분자 (예: FUNDING, ORDER)
-    long ttl() default 60;            // 멱등성 유지 시간 (분)
+    long ttl() default 10;            // 멱등성 유지 시간 (분)
 }
