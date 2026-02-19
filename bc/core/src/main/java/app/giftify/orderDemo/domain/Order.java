@@ -58,7 +58,7 @@ public class Order extends BaseAggregateRoot {
     private List<OrderItem> items = new ArrayList<>();
 
     @Column(unique = true)
-    private String paymentKey;
+    private Long paymentId;
 
     @Column
     private String originTransactionKey;
@@ -146,7 +146,7 @@ public class Order extends BaseAggregateRoot {
                 .build();
     }
 
-    public void toPaid(String paymentKey, String originTransactionKey) {
+    public void toPaid(Long paymentId, String originTransactionKey) {
         if (this.status == OrderStatus.PAID) {
             return;
         }
@@ -158,7 +158,7 @@ public class Order extends BaseAggregateRoot {
             );
         }
 
-        this.paymentKey = paymentKey;
+        this.paymentId = paymentId;
         this.originTransactionKey = originTransactionKey;
         this.paidAt = LocalDateTime.now();
         this.status = OrderStatus.PAID;

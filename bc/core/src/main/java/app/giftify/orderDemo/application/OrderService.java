@@ -104,7 +104,7 @@ public class OrderService {
     public void markOrderAsPaid(@Valid MarkOrderAsPaidCommand command) {
         Order order = orderRepository.getByOrderNumber(command.orderNumber());
 
-        order.toPaid(command.paymentKey(), command.lastTransactionKey());
+        order.toPaid(command.paymentId(), command.lastTransactionKey());
     }
 
     @Retryable(
@@ -131,7 +131,7 @@ public class OrderService {
         eventPublisher.publish(new OrderCancelRequestedEvent(
                 order.getId(),
                 order.getOrderNumber(),
-                order.getPaymentKey(),
+                order.getPaymentId(),
                 order.getOriginTransactionKey(),
                 cancelAmount
         ));
