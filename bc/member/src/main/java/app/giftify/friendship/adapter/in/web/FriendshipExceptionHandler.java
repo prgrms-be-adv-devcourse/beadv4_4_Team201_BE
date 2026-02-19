@@ -1,12 +1,12 @@
 package app.giftify.friendship.adapter.in.web;
 
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import app.giftify.friendship.domain.exception.FriendshipException;
+import app.giftify.shared.api.response.RsData;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,31 +14,21 @@ import lombok.extern.slf4j.Slf4j;
 public class FriendshipExceptionHandler {
 
     @ExceptionHandler(FriendshipException.class)
-    public ResponseEntity<?> handleFriendshipException(FriendshipException e) {
+    public ResponseEntity<RsData<Void>> handleFriendshipException(FriendshipException e) {
         log.error("[Friendship Exception] Code: {}, Message: {}",
                 e.getErrorCode().getCode(), e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatusCode())
-                .body(Map.of(
-                        "code", e.getErrorCode().getCode(),
-                        "message", e.getMessage()
-                ));
+                .body(RsData.fail(e.getMessage(), e.getErrorCode().getCode()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<RsData<Void>> handleValidationException(MethodArgumentNotValidException e) {
         String errorMessage = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         log.error("[Friendship Validation Error] {}", errorMessage);
         return ResponseEntity.status(400)
-                .body(Map.of("code", "VALIDATION_ERROR", "message", errorMessage));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleUnexpectedException(Exception e) {
-        log.error("[Friendship Unexpected Error] {}", e.getMessage(), e);
-        return ResponseEntity.status(500)
-                .body(Map.of("code", "INTERNAL_ERROR", "message", "서버 내부 오류가 발생했습니다."));
+                .body(RsData.fail(errorMessage, "VALIDATION_ERROR"));
     }
 }

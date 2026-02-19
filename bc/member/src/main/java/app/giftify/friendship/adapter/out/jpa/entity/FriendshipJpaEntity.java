@@ -10,8 +10,6 @@ import lombok.*;
 @Entity
 @Table(name = "friendships")
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class FriendshipJpaEntity extends BaseJpaEntity {
@@ -32,6 +30,15 @@ public class FriendshipJpaEntity extends BaseJpaEntity {
 
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
+
+    public FriendshipJpaEntity(Long id, Long requesterId, Long receiverId,
+                                FriendshipStatus status, LocalDateTime acceptedAt) {
+        this.id = id;
+        this.requesterId = requesterId;
+        this.receiverId = receiverId;
+        this.status = status;
+        this.acceptedAt = acceptedAt;
+    }
 
     @Override
     public Long getId() {

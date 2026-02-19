@@ -17,9 +17,11 @@ import app.giftify.friendship.application.port.in.FriendRequestInfo;
 import app.giftify.friendship.application.port.out.FriendshipRepositoryPort;
 import app.giftify.friendship.domain.Friendship;
 import app.giftify.friendship.domain.FriendshipStatus;
+import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.domain.member.Member;
+import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.shared.domain.event.EventPublisher;
 
 @ExtendWith(MockitoExtension.class)
@@ -143,6 +145,53 @@ class FriendshipServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).friendshipId()).isEqualTo(10L);
         assertThat(result.get(0).requesterId()).isEqualTo(3L);
+    }
+
+    @Test
+    void sendRequest_탈퇴한회원에게요청_예외() {
+        Member withdrawn = Member.builder().id(2L)
+                .email("test@test.com").nickname("test")
+                .authSub("auth0|test").status(MemberStatus.WITHDRAWN).build();
+        given(memberRepository.findById(2L)).willReturn(Optional.of(withdrawn));
+
+        assertThatThrownBy(() -> service.sendRequest(1L, 2L))
+                .isInstanceOf(FriendshipException.class)
+                .satisfies(ex -> assertThat(((FriendshipException) ex).getErrorCode())
+                        .isEqualTo(FriendshipErrorCode.WITHDRAWN_MEMBER));
+    }
+
+    @Test
+    void getFriends_WITHDRAWN회원제외() {
+        Friendship friendship = new Friendship(10L, 1L, 2L,
+                FriendshipStatus.ACCEPTED, LocalDateTime.now(), LocalDateTime.now());
+        given(friendshipRepository.findAllByMemberIdAndStatus(1L, FriendshipStatus.ACCEPTED))
+                .willReturn(List.of(friendship));
+        Member withdrawn = Member.builder().id(2L)
+                .email("w@test.com").nickname("withdrawn")
+                .authSub("auth0|w").status(MemberStatus.WITHDRAWN).build();
+        given(memberRepository.findAllByIds(List.of(2L)))
+                .willReturn(List.of(withdrawn));
+
+        List<FriendInfo> result = service.getFriends(1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getReceivedRequests_WITHDRAWN요청자제외() {
+        Friendship friendship = new Friendship(10L, 3L, 1L,
+                FriendshipStatus.PENDING, LocalDateTime.now(), null);
+        given(friendshipRepository.findAllByReceiverIdAndStatus(1L, FriendshipStatus.PENDING))
+                .willReturn(List.of(friendship));
+        Member withdrawn = Member.builder().id(3L)
+                .email("w@test.com").nickname("withdrawn")
+                .authSub("auth0|w").status(MemberStatus.WITHDRAWN).build();
+        given(memberRepository.findAllByIds(List.of(3L)))
+                .willReturn(List.of(withdrawn));
+
+        List<FriendRequestInfo> result = service.getReceivedRequests(1L);
+
+        assertThat(result).isEmpty();
     }
 
     private Member dummyMember(Long id) {

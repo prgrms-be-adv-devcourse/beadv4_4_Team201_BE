@@ -39,9 +39,12 @@ public class FriendshipService implements
 
     @Override
     public Friendship sendRequest(Long requesterId, Long receiverId) {
-        memberRepository.findById(receiverId)
+        Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new FriendshipException(FriendshipErrorCode.MEMBER_NOT_FOUND,
                         "대상 회원을 찾을 수 없습니다: " + receiverId));
+        if (!receiver.isActive()) {
+            throw new FriendshipException(FriendshipErrorCode.WITHDRAWN_MEMBER);
+        }
 
         boolean exists = friendshipRepository.existsByMemberPairAndStatusIn(
                 requesterId, receiverId,
@@ -98,8 +101,10 @@ public class FriendshipService implements
                 .map(f -> f.getFriendId(memberId))
                 .toList();
         Map<Long, Member> memberMap = memberRepository.findAllByIds(friendIds).stream()
+                .filter(Member::isActive)
                 .collect(Collectors.toMap(Member::getId, Function.identity()));
         return friendIds.stream()
+                .filter(memberMap::containsKey)
                 .map(id -> {
                     Member m = memberMap.get(id);
                     return new FriendInfo(m.getId(), m.getNickname());
@@ -116,8 +121,10 @@ public class FriendshipService implements
                 .map(Friendship::getRequesterId)
                 .toList();
         Map<Long, Member> memberMap = memberRepository.findAllByIds(requesterIds).stream()
+                .filter(Member::isActive)
                 .collect(Collectors.toMap(Member::getId, Function.identity()));
         return requests.stream()
+                .filter(f -> memberMap.containsKey(f.getRequesterId()))
                 .map(f -> {
                     Member m = memberMap.get(f.getRequesterId());
                     return new FriendRequestInfo(

@@ -35,13 +35,8 @@ class FriendshipPersistenceAdapterTest {
     private static final Long RECEIVER_ID = 20L;
 
     private FriendshipJpaEntity createEntity(FriendshipStatus status) {
-        return FriendshipJpaEntity.builder()
-                .id(FRIENDSHIP_ID)
-                .requesterId(REQUESTER_ID)
-                .receiverId(RECEIVER_ID)
-                .status(status)
-                .acceptedAt(status == FriendshipStatus.ACCEPTED ? LocalDateTime.now() : null)
-                .build();
+        return new FriendshipJpaEntity(FRIENDSHIP_ID, REQUESTER_ID, RECEIVER_ID,
+                status, status == FriendshipStatus.ACCEPTED ? LocalDateTime.now() : null);
     }
 
     private Friendship createDomain(FriendshipStatus status) {
