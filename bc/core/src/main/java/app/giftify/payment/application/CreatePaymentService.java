@@ -39,10 +39,10 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 
 	@Override
 	public PaymentCreatedResult charge(ChargeDepositCommand command) {
-		return paymentRepository.findByOrderId(command.orderId())
+		return paymentRepository.findByOrderNumber(command.orderNumber())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
-				existing.getOrderId(),
+				existing.getOrderNumber(),
 				existing.getStatus(),
 				existing.getPaymentKey(),
 				existing.getLastTransactionKey(),
@@ -54,7 +54,8 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 	private PaymentCreatedResult createDepositChargePayment(ChargeDepositCommand command) {
 		PaymentCreateContext context = new PaymentCreateContext(
 			command.memberId(),
-			command.orderId(),
+			null,
+			command.orderNumber(),
 			PaymentType.DEPOSIT_CHARGE,
 			PaymentMethod.CARD
 		);
@@ -69,11 +70,11 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 		Payment savedPayment = paymentRepository.save(payment);
 
 		log.info("[Payment] 예치금 충전 결제 생성. paymentId={}, orderId={}, amount={}",
-			savedPayment.getId(), savedPayment.getOrderId(), command.amount());
+			savedPayment.getId(), savedPayment.getOrderNumber(), command.amount());
 
 		return new PaymentCreatedResult(
 			savedPayment.getId(),
-			savedPayment.getOrderId(),
+			savedPayment.getOrderNumber(),
 			savedPayment.getStatus(),
 			savedPayment.getPaymentKey(),
 			savedPayment.getLastTransactionKey(),
@@ -85,10 +86,10 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 
 	@Override
 	public PaymentCreatedResult create(CreateFundingPaymentCommand command) {
-		return paymentRepository.findByOrderId(command.orderId())
+		return paymentRepository.findByOrderNumber(command.orderNumber())
 			.map(existing -> new PaymentCreatedResult(
 				existing.getId(),
-				existing.getOrderId(),
+				existing.getOrderNumber(),
 				existing.getStatus(),
 				existing.getPaymentKey(),
 				existing.getLastTransactionKey(),
@@ -102,7 +103,8 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 		PaymentCreateContext context = new PaymentCreateContext(
 			command.memberId(),
 			command.orderId(),
-			command.getType(),  // 항상 FUNDING -> 내부에 메서드 미리 준비해놓음
+			command.orderNumber(),
+			command.getType(),
 			command.method()
 		);
 
@@ -121,11 +123,11 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 		}
 
 		log.info("[Payment] 펀딩 결제 생성. paymentId={}, orderId={}, amount={}",
-			savedPayment.getId(), savedPayment.getOrderId(), command.expectedAmount());
+			savedPayment.getId(), savedPayment.getOrderNumber(), command.expectedAmount());
 
 		return new PaymentCreatedResult(
 			savedPayment.getId(),
-			savedPayment.getOrderId(),
+			savedPayment.getOrderNumber(),
 			savedPayment.getStatus(),
 			savedPayment.getPaymentKey(),
 			savedPayment.getLastTransactionKey(),
@@ -137,7 +139,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 		DeductWalletCommand deductCommand = new DeductWalletCommand(
 			command.memberId(),
 			payment.getId(),
-			command.orderId(),
+			command.orderNumber(),
 			command.expectedAmount()
 		);
 
@@ -159,7 +161,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
 
 		return new PaymentCreatedResult(
 			payment.getId(),
-			payment.getOrderId(),
+			payment.getOrderNumber(),
 			PaymentStatus.PENDING,
 			payment.getPaymentKey(),
 			payment.getLastTransactionKey(),

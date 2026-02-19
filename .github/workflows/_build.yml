@@ -36,6 +36,11 @@ on:
         required: false
         default: true
         type: boolean
+      verbose:
+        description: '디버깅을 위한 상세 로그 출력 (--info)'
+        required: false
+        default: false
+        type: boolean
     outputs:
       build-outcome:
         description: 'Build outcome (success/failure)'
@@ -84,7 +89,10 @@ jobs:
       - name: Build
         id: gradle-build
         # clean 제거: GitHub Actions는 매번 새 환경이므로 불필요
-        run: ./gradlew build --parallel --info ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
+        run: >-
+          ./gradlew build --parallel
+          ${{ inputs.verbose && '--info' || '' }}
+          ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
 
       # 배포용 Jar 업로드 (옵션)
       - name: Upload application jar

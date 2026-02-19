@@ -8,6 +8,12 @@ on:
     tags: [ 'v*' ]
   merge_group:
     types: [ checks_requested ]
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: '디버깅을 위한 상세 로그 출력'
+        type: boolean
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -28,6 +34,7 @@ jobs:
       # Docker 빌드에서 JAR 사용
       upload-jar: true
       publish-build-scan: true
+      verbose: ${{ inputs.verbose || false }}
 
   # 2. Docker 이미지 빌드 및 GHCR 푸시 (main 브랜치만)
   docker:

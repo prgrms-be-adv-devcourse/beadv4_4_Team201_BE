@@ -15,7 +15,7 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCanceledForOrder;
+import app.giftify.shared.domain.event.payment.PaymentCanceledExternalEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -64,9 +64,9 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		domainEvents.forEach(eventPublisher::publish);
 
 		// 6. 외부 BC용 이벤트 발행 (Order BC)
-		eventPublisher.publish(PaymentCanceledForOrder.create(
+		eventPublisher.publish(PaymentCanceledExternalEvent.create(
 			savedPayment.getId(),
-			savedPayment.getOrderId(),
+			savedPayment.getOrderNumber(),
 			command.reason(),
 			canceledAt
 		));

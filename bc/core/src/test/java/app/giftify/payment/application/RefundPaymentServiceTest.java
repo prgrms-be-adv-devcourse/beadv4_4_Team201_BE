@@ -31,7 +31,7 @@ import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentRefundedForSettlement;
+import app.giftify.shared.domain.event.payment.PaymentRefundedExternalEvent;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -65,7 +65,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -104,7 +105,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -132,7 +134,7 @@ class RefundPaymentServiceTest {
 			PaymentRefundedEvent capturedEvent = eventCaptor.getValue();
 			assertThat(capturedEvent.getPaymentId()).isEqualTo(paymentId);
 			assertThat(capturedEvent.getMemberId()).isEqualTo(requesterId);
-			assertThat(capturedEvent.getOrderId()).isEqualTo("order-123");
+			assertThat(capturedEvent.getOrderNumber()).isEqualTo("order-123");
 			assertThat(capturedEvent.getPaymentType()).isEqualTo(PaymentType.FUNDING);
 			assertThat(capturedEvent.getRefundAmount()).isEqualTo(Money.of(20000));
 			assertThat(capturedEvent.getReason()).isEqualTo(reason);
@@ -140,8 +142,8 @@ class RefundPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("PaymentRefundedForSettlement 이벤트를 올바른 판매자 ID와 함께 발행한다")
-		void refund_PublishesPaymentRefundedForSettlementEvent() {
+		@DisplayName("PaymentRefundedExternalEvent 이벤트를 올바른 판매자 ID와 함께 발행한다")
+		void refund_PublishesPaymentRefundedExternalEvent() {
 			// given
 			Long paymentId = 1L;
 			Long requesterId = 100L;
@@ -152,7 +154,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -174,11 +177,11 @@ class RefundPaymentServiceTest {
 			refundPaymentService.refund(command);
 
 			// then
-			ArgumentCaptor<PaymentRefundedForSettlement> eventCaptor = ArgumentCaptor.forClass(
-				PaymentRefundedForSettlement.class);
+			ArgumentCaptor<PaymentRefundedExternalEvent> eventCaptor = ArgumentCaptor.forClass(
+				PaymentRefundedExternalEvent.class);
 			verify(eventPublisher).publish(eventCaptor.capture());
 
-			PaymentRefundedForSettlement capturedEvent = eventCaptor.getValue();
+			PaymentRefundedExternalEvent capturedEvent = eventCaptor.getValue();
 			assertThat(capturedEvent.paymentId()).isEqualTo(paymentId);
 			assertThat(capturedEvent.refundAmount()).isEqualTo(Money.of(20000));
 			assertThat(capturedEvent.sellerIds()).containsExactlyInAnyOrder(200L, 201L);
@@ -201,7 +204,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -223,11 +227,11 @@ class RefundPaymentServiceTest {
 			refundPaymentService.refund(command);
 
 			// then
-			ArgumentCaptor<PaymentRefundedForSettlement> eventCaptor = ArgumentCaptor.forClass(
-				PaymentRefundedForSettlement.class);
+			ArgumentCaptor<PaymentRefundedExternalEvent> eventCaptor = ArgumentCaptor.forClass(
+				PaymentRefundedExternalEvent.class);
 			verify(eventPublisher).publish(eventCaptor.capture());
 
-			PaymentRefundedForSettlement capturedEvent = eventCaptor.getValue();
+			PaymentRefundedExternalEvent capturedEvent = eventCaptor.getValue();
 			// 200L이 중복되지 않고 한 번만 포함되는지 확인
 			assertThat(capturedEvent.sellerIds()).hasSize(2);
 			assertThat(capturedEvent.sellerIds()).containsExactlyInAnyOrder(200L, 201L);
@@ -269,7 +273,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(ownerId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -309,7 +314,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -346,7 +352,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -386,7 +393,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -425,7 +433,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -462,7 +471,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -501,7 +511,8 @@ class RefundPaymentServiceTest {
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
-				.orderId("order-123")
+				.orderId(123L)
+				.orderNumber("order-123")
 				.memberId(requesterId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -528,7 +539,7 @@ class RefundPaymentServiceTest {
 
 			List<Object> capturedEvents = eventCaptor.getAllValues();
 			assertThat(capturedEvents).hasAtLeastOneElementOfType(PaymentRefundedEvent.class);
-			assertThat(capturedEvents).hasAtLeastOneElementOfType(PaymentRefundedForSettlement.class);
+			assertThat(capturedEvents).hasAtLeastOneElementOfType(PaymentRefundedExternalEvent.class);
 		}
 	}
 }
