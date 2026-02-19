@@ -11,7 +11,7 @@ import app.giftify.shared.domain.vo.Money;
  */
 public final class PaymentCanceledEvent extends PaymentInternalEvent {
 	private final Long memberId;
-	private final String orderId;
+	private final String orderNumber;
 	private final PaymentType paymentType;
 	private final Money paidAmount;
 	private final String reason;
@@ -20,7 +20,7 @@ public final class PaymentCanceledEvent extends PaymentInternalEvent {
 	public PaymentCanceledEvent(
 		Long paymentId,
 		Long memberId,
-		String orderId,
+		String orderNumber,
 		PaymentType paymentType,
 		Money paidAmount,
 		String reason,
@@ -28,7 +28,7 @@ public final class PaymentCanceledEvent extends PaymentInternalEvent {
 	) {
 		super(paymentId);
 		this.memberId = memberId;
-		this.orderId = orderId;
+		this.orderNumber = orderNumber;
 		this.paymentType = paymentType;
 		this.paidAmount = paidAmount;
 		this.reason = reason;
@@ -39,8 +39,8 @@ public final class PaymentCanceledEvent extends PaymentInternalEvent {
 		return memberId;
 	}
 
-	public String getOrderId() {
-		return orderId;
+	public String getOrderNumber() {
+		return orderNumber;
 	}
 
 	public PaymentType getPaymentType() {

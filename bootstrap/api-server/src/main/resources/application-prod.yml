@@ -27,6 +27,7 @@ spring:
     schemas: g7app
     default-schema: g7app
     create-schemas: true
+    out-of-order: true
 
   data:
     redis:

@@ -12,7 +12,7 @@ import app.giftify.shared.domain.vo.Money;
  */
 public record ChargeDepositCommand(
 	Long memberId,
-	String orderId,
+	String orderNumber,
 	Money amount
 ) {
 	public ChargeDepositCommand {
@@ -20,9 +20,9 @@ public record ChargeDepositCommand(
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 				"[ChargeDepositCommand] memberId는 필수입니다.");
 		}
-		if (orderId == null || orderId.isBlank()) {
+		if (orderNumber == null || orderNumber.isBlank()) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ChargeDepositCommand] orderId는 필수입니다.");
+				"[ChargeDepositCommand] orderNumber는 필수입니다.");
 		}
 		if (amount == null || amount.isLessThanOrEqual(Money.zero())) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,

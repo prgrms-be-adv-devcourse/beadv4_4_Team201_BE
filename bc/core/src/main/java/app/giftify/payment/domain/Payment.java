@@ -18,7 +18,8 @@ import app.giftify.shared.domain.vo.Money;
 public class Payment extends BaseDomainModel {
 	private final PaymentType type;
 	private final PaymentMethod method;
-	private final String orderId; // uuid 를 생성할 때 앞쪽에 타임스탬프 포함하면 됨. 혹은 UUID7 스펙으로 생성하거나
+	private final Long orderId;
+	private final String orderNumber;
 	private final Long memberId;
 	private final Money originAmount;
 	private final Money paidAmount;
@@ -34,13 +35,14 @@ public class Payment extends BaseDomainModel {
 	private final LocalDateTime createdAt;
 
 	private Payment(Long id, PaymentType type, PaymentMethod method,
-		String orderId, Long memberId,
+		Long orderId, String orderNumber, Long memberId,
 		Money originAmount, Money paidAmount, Money refundedAmount, List<OrderItemSnapshot> orderItems,
 		PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
 		LocalDateTime paidAt, LocalDateTime createdAt
 	) {
 		super(id);
 		this.orderId = orderId;
+		this.orderNumber = orderNumber;
 		this.memberId = memberId;
 		this.type = type;
 		this.method = method;
@@ -76,7 +78,7 @@ public class Payment extends BaseDomainModel {
 		this.paidAt = paidAt;
 
 		registerEvent(new PaymentConfirmedEvent(
-			getId(), getMemberId(), getOrderId(), getType(), getPaidAmount(), paidAt
+			getId(), getMemberId(), getOrderNumber(), getType(), getPaidAmount(), paidAt
 		));
 	}
 
@@ -99,7 +101,7 @@ public class Payment extends BaseDomainModel {
 		}
 
 		registerEvent(new PaymentRefundedEvent(
-			getId(), getMemberId(), getOrderId(), getType(), refundAmount, reason, occurredAt
+			getId(), getMemberId(), getOrderNumber(), getType(), refundAmount, reason, occurredAt
 		));
 	}
 
@@ -111,7 +113,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.CANCELED.getResultStatus();
 
 		registerEvent(new PaymentCanceledEvent(
-			getId(), getMemberId(), getOrderId(), getType(), getPaidAmount(), reason, occurredAt
+			getId(), getMemberId(), getOrderNumber(), getType(), getPaidAmount(), reason, occurredAt
 		));
 	}
 
@@ -122,7 +124,7 @@ public class Payment extends BaseDomainModel {
 		}
 		this.status = PaymentEventType.FAILED.getResultStatus();
 
-		registerEvent(new PaymentFailedEvent(getId(), getOrderId(), occurredAt));
+		registerEvent(new PaymentFailedEvent(getId(), getOrderNumber(), occurredAt));
 	}
 
 	public void markAsReceived(LocalDateTime occurredAt) {
@@ -133,7 +135,7 @@ public class Payment extends BaseDomainModel {
 		this.status = PaymentEventType.RECEIVED.getResultStatus();
 
 		registerEvent(new PaymentReceivedEvent(
-			getId(), getMemberId(), getOrderId(), occurredAt
+			getId(), getMemberId(), getOrderNumber(), occurredAt
 		));
 	}
 
@@ -143,7 +145,7 @@ public class Payment extends BaseDomainModel {
 				"[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
 		}
 
-		registerEvent(new PaymentCancelFailedEvent(getId(), getOrderId(), errorMetadata, occurredAt));
+		registerEvent(new PaymentCancelFailedEvent(getId(), getOrderNumber(), errorMetadata, occurredAt));
 	}
 
 	// ========== 상태 조회 메서드 ========== //
@@ -172,8 +174,12 @@ public class Payment extends BaseDomainModel {
 
 	// ========== Getter ========== //
 
-	public String getOrderId() {
+	public Long getOrderId() {
 		return orderId;
+	}
+
+	public String getOrderNumber() {
+		return orderNumber;
 	}
 
 	public Long getMemberId() {
@@ -239,7 +245,7 @@ public class Payment extends BaseDomainModel {
 		if (getId() != null && payment.getId() != null) {
 			return Objects.equals(getId(), payment.getId());
 		}
-		return Objects.equals(orderId, payment.orderId);
+		return Objects.equals(orderNumber, payment.orderNumber);
 	}
 
 	@Override
@@ -247,14 +253,15 @@ public class Payment extends BaseDomainModel {
 		if (getId() != null) {
 			return Objects.hash(getId());
 		}
-		return Objects.hash(orderId);
+		return Objects.hash(orderNumber);
 	}
 
 	// ========== Builder ========== //
 
 	public static class Builder {
 		private Long id;
-		private String orderId;
+		private Long orderId;
+		private String orderNumber;
 		private Long memberId;
 		private Money originAmount;
 		private Money paidAmount;
@@ -274,8 +281,13 @@ public class Payment extends BaseDomainModel {
 			return this;
 		}
 
-		public Builder orderId(String orderId) {
+		public Builder orderId(Long orderId) {
 			this.orderId = orderId;
+			return this;
+		}
+
+		public Builder orderNumber(String orderNumber) {
+			this.orderNumber = orderNumber;
 			return this;
 		}
 
@@ -349,7 +361,7 @@ public class Payment extends BaseDomainModel {
 			return new Payment(
 				id,
 				type, method,
-				orderId, memberId,
+				orderId, orderNumber, memberId,
 				originAmount, paidAmount, refundedAmount, orderItems,
 				status, paymentKey, lastTransactionKey, approveCode,
 				paidAt, createdAt
@@ -363,7 +375,7 @@ public class Payment extends BaseDomainModel {
 		}
 
 		private void validateRequiredFields() {
-			requireNonBlank(orderId, "orderId");
+			requireNonBlank(orderNumber, "orderNumber");
 			requireNonNull(memberId, "memberId");
 			requireNonNull(type, "type");
 			requireNonNull(method, "method");
@@ -429,6 +441,7 @@ public class Payment extends BaseDomainModel {
 	) {
 		return builder()
 			.orderId(context.orderId())
+			.orderNumber(context.orderNumber())
 			.memberId(context.memberId())
 			.type(context.type())
 			.method(context.method())

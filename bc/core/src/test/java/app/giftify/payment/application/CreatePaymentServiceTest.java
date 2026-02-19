@@ -54,14 +54,15 @@ class CreatePaymentServiceTest {
 		void create_ReturnsExistingPayment_WhenIdempotencyKeyMatches() {
 			// given
 			Long memberId = 1L;
-			String orderId = "order-123";
+			Long orderId = 123L;
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
-				memberId, orderId,
+				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -69,6 +70,7 @@ class CreatePaymentServiceTest {
 			Payment existingPayment = Payment.builder()
 				.id(999L)
 				.orderId(orderId)
+				.orderNumber(orderNumber)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -78,7 +80,7 @@ class CreatePaymentServiceTest {
 				.status(PaymentStatus.PENDING)
 				.build();
 
-			given(paymentRepository.findByOrderId(orderId))
+			given(paymentRepository.findByOrderNumber(orderNumber))
 				.willReturn(Optional.of(existingPayment));
 
 			// when
@@ -86,7 +88,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(999L);
-			assertThat(result.orderId()).isEqualTo(orderId);
+			assertThat(result.orderNumber()).isEqualTo(orderNumber);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.paymentKey()).isNull();
 			assertThat(result.lastTransactionKey()).isNull();
@@ -101,14 +103,15 @@ class CreatePaymentServiceTest {
 		void create_CreatesNewCardPayment_Successfully() {
 			// given
 			Long memberId = 1L;
-			String orderId = "order-123";
+			Long orderId = 123L;
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
-				memberId, orderId,
+				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
 			);
@@ -117,6 +120,7 @@ class CreatePaymentServiceTest {
 			Payment savedPayment = Payment.builder()
 				.id(1L)
 				.orderId(orderId)
+				.orderNumber(orderNumber)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.CARD)
@@ -127,7 +131,7 @@ class CreatePaymentServiceTest {
 				.createdAt(createdAt)
 				.build();
 
-			given(paymentRepository.findByOrderId(orderId))
+			given(paymentRepository.findByOrderNumber(orderNumber))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
@@ -137,7 +141,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
-			assertThat(result.orderId()).isEqualTo(orderId);
+			assertThat(result.orderNumber()).isEqualTo(orderNumber);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.paymentKey()).isNull();
 			assertThat(result.lastTransactionKey()).isNull();
@@ -157,14 +161,15 @@ class CreatePaymentServiceTest {
 		void create_CreatesNewWalletPayment_AndCallsWalletDeduction() {
 			// given
 			Long memberId = 1L;
-			String orderId = "order-123";
+			Long orderId = 123L;
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
-				memberId, orderId,
+				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -173,6 +178,7 @@ class CreatePaymentServiceTest {
 			Payment savedPayment = Payment.builder()
 				.id(1L)
 				.orderId(orderId)
+				.orderNumber(orderNumber)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
@@ -185,7 +191,7 @@ class CreatePaymentServiceTest {
 
 			DeductWalletResult walletResult = DeductWalletResult.success(100L, Money.of(5000));
 
-			given(paymentRepository.findByOrderId(orderId))
+			given(paymentRepository.findByOrderNumber(orderNumber))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
@@ -197,7 +203,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(1L);
-			assertThat(result.orderId()).isEqualTo(orderId);
+			assertThat(result.orderNumber()).isEqualTo(orderNumber);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.paymentKey()).isNull();
 			assertThat(result.lastTransactionKey()).isNull();
@@ -209,7 +215,7 @@ class CreatePaymentServiceTest {
 			DeductWalletCommand capturedCommand = commandCaptor.getValue();
 			assertThat(capturedCommand.memberId()).isEqualTo(memberId);
 			assertThat(capturedCommand.paymentId()).isEqualTo(1L);
-			assertThat(capturedCommand.orderId()).isEqualTo(orderId);
+			assertThat(capturedCommand.orderId()).isEqualTo(orderNumber);
 			assertThat(capturedCommand.amount()).isEqualTo(amount);
 		}
 
@@ -218,7 +224,8 @@ class CreatePaymentServiceTest {
 		void create_ThrowsException_WhenWalletBalanceInsufficient() {
 			// given
 			Long memberId = 1L;
-			String orderId = "order-123";
+			Long orderId = 123L;
+			String orderNumber = "order-123";
 			Money requiredAmount = Money.of(10000);
 			Money currentBalance = Money.of(3000);
 			List<OrderItemSnapshot> orderItems = List.of(
@@ -226,7 +233,7 @@ class CreatePaymentServiceTest {
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
-				memberId, orderId,
+				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
 			);
@@ -234,6 +241,7 @@ class CreatePaymentServiceTest {
 			Payment savedPayment = Payment.builder()
 				.id(1L)
 				.orderId(orderId)
+				.orderNumber(orderNumber)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
@@ -247,7 +255,7 @@ class CreatePaymentServiceTest {
 				100L, requiredAmount, currentBalance
 			);
 
-			given(paymentRepository.findByOrderId(orderId))
+			given(paymentRepository.findByOrderNumber(orderNumber))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(any(Payment.class)))
 				.willReturn(savedPayment);
@@ -268,14 +276,15 @@ class CreatePaymentServiceTest {
 		void create_ReturnsExistingWalletPayment() {
 			// given
 			Long memberId = 1L;
-			String orderId = "order-123";
+			Long orderId = 123L;
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
-				memberId, orderId,
+				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
@@ -283,6 +292,7 @@ class CreatePaymentServiceTest {
 			Payment existingPayment = Payment.builder()
 				.id(999L)
 				.orderId(orderId)
+				.orderNumber(orderNumber)
 				.memberId(memberId)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
@@ -292,7 +302,7 @@ class CreatePaymentServiceTest {
 				.status(PaymentStatus.PENDING)
 				.build();
 
-			given(paymentRepository.findByOrderId(orderId))
+			given(paymentRepository.findByOrderNumber(orderNumber))
 				.willReturn(Optional.of(existingPayment));
 
 			// when
@@ -300,7 +310,7 @@ class CreatePaymentServiceTest {
 
 			// then
 			assertThat(result.paymentId()).isEqualTo(999L);
-			assertThat(result.orderId()).isEqualTo(orderId);
+			assertThat(result.orderNumber()).isEqualTo(orderNumber);
 			assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
 			assertThat(result.paymentKey()).isNull();
 			assertThat(result.lastTransactionKey()).isNull();
@@ -320,21 +330,22 @@ class CreatePaymentServiceTest {
 		void create_SavesPaymentWithCorrectValues() {
 			// given
 			Long memberId = 1L;
-			String orderId = "order-123";
+			Long orderId = 123L;
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			List<OrderItemSnapshot> orderItems = List.of(
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
 			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
-				memberId, orderId,
+				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
 			);
 
 			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
 
-			given(paymentRepository.findByOrderId(orderId))
+			given(paymentRepository.findByOrderNumber(orderNumber))
 				.willReturn(Optional.empty());
 			given(paymentRepository.save(paymentCaptor.capture()))
 				.willAnswer(invocation -> {
@@ -342,6 +353,7 @@ class CreatePaymentServiceTest {
 					return Payment.builder()
 						.id(1L)
 						.orderId(payment.getOrderId())
+						.orderNumber(payment.getOrderNumber())
 						.memberId(payment.getMemberId())
 						.type(payment.getType())
 						.method(payment.getMethod())
@@ -358,6 +370,7 @@ class CreatePaymentServiceTest {
 			// then
 			Payment capturedPayment = paymentCaptor.getValue();
 			assertThat(capturedPayment.getOrderId()).isEqualTo(orderId);
+			assertThat(capturedPayment.getOrderNumber()).isEqualTo(orderNumber);
 			assertThat(capturedPayment.getMemberId()).isEqualTo(memberId);
 			assertThat(capturedPayment.getType()).isEqualTo(PaymentType.FUNDING);
 			assertThat(capturedPayment.getMethod()).isEqualTo(PaymentMethod.CARD);

@@ -35,12 +35,12 @@ public class PaymentConfirmedEventHandler {
 		}
 
 		log.info("[PaymentConfirmedEventHandler] 예치금 충전 결제 완료. memberId={}, orderId={}, amount={}",
-			event.getMemberId(), event.getOrderId(), event.getPaidAmount());
+			event.getMemberId(), event.getOrderNumber(), event.getPaidAmount());
 
 		ChargeWalletCommand command = new ChargeWalletCommand(
 			event.getMemberId(),
 			event.getPaidAmount(),
-			event.getOrderId()
+			event.getOrderNumber()
 		);
 
 		chargeWalletUseCase.charge(command);
