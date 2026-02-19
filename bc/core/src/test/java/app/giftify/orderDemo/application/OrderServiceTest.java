@@ -5,15 +5,20 @@ import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
+import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
+import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.OrderStatus;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.orderDemo.domain.fixture.OrderFixture;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.InfraErrorCode;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
@@ -24,10 +29,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +54,9 @@ class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private OrderItemRepository orderItemRepository;
 
     @Mock
     private WishlistClient wishlistClient;
@@ -229,6 +235,152 @@ class OrderServiceTest {
         assertThat(result.getContent()).isEmpty(); // 주문이 없으면 빈 리스트
         assertThat(result.getTotalElements()).isZero();
         verify(orderRepository, times(1)).getByBuyerId(memberId, pageable);
+    }
+
+    @Nested
+    @DisplayName("주문 전체 취소 (cancelOrder)")
+    class CancelOrder {
+
+        private final Long memberId = 1L;
+        private final Long orderId = 10L;
+
+        @Test
+        @DisplayName("성공: 취소 가능한 아이템이 있는 주문을 취소하고 OrderCanceledEvent를 발행한다")
+        void given_paidOrder_when_cancelOrder_then_success() {
+            // given
+            Order order = spy(OrderFixture.createOrderWithItems(memberId, 2));
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            List<OrderItem> cancelableItems = new ArrayList<>(order.getItems());
+            Money expectedCancelAmount = Money.of("2000"); // 아이템 2개 × 1000원
+
+            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
+            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(cancelableItems);
+
+            // when
+            orderService.cancelOrder(memberId, orderId);
+
+            // then
+            verify(orderRepository).getByIdWithLock(orderId);
+            verify(orderItemRepository).getCancelableItemsByOrderId(orderId);
+            verify(order).cancel();
+
+            ArgumentCaptor<OrderCanceledEvent> captor = ArgumentCaptor.forClass(OrderCanceledEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().getCancelAmount()).isEqualTo(expectedCancelAmount);
+        }
+
+        @Test
+        @DisplayName("실패: 존재하지 않는 주문 ID로 요청 시 ORDER_NOT_FOUND 예외가 발생한다")
+        void given_nonExistentOrderId_when_cancelOrder_then_throwOrderNotFound() {
+            // given
+            given(orderRepository.getByIdWithLock(orderId))
+                    .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
+
+            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
+            verify(eventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패: 주문 소유자가 아닌 회원이 취소 요청 시 ORDER_OWNER_MISMATCH 예외가 발생한다")
+        void given_differentMember_when_cancelOrder_then_throwOwnerMismatch() {
+            // given
+            Long anotherMemberId = 999L;
+            Order order = OrderFixture.createOrderWithItems(memberId, 2); // buyerId = 1L
+
+            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
+
+            // when & then
+            assertThatThrownBy(() -> orderService.cancelOrder(anotherMemberId, orderId))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ORDER_OWNER_MISMATCH);
+
+            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
+            verify(eventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패: 이미 취소된 주문에 재취소 요청 시 ALREADY_CANCELED 예외가 발생한다")
+        void given_alreadyCanceledOrder_when_cancelOrder_then_throwAlreadyCanceled() {
+            // given
+            Order canceledOrder = OrderFixture.createOrderWithStatus(OrderStatus.CANCELED);
+            ReflectionTestUtils.setField(canceledOrder, "id", orderId);
+
+            given(orderRepository.getByIdWithLock(orderId)).willReturn(canceledOrder);
+            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(List.of());
+
+            // when & then
+            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ALREADY_CANCELED);
+
+            verify(eventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패: DB 락 획득 타임아웃 시 InfraException이 전파된다 (@Retryable 재시도 대상)")
+        void given_dbLockTimeout_when_cancelOrder_then_infraExceptionPropagates() {
+            // given
+            given(orderRepository.getByIdWithLock(orderId))
+                    .willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT, "비관적 락 획득 실패"));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+                    .isInstanceOf(InfraException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(InfraErrorCode.DB_LOCK_TIMEOUT);
+
+            // InfraException이 삼켜지지 않고 전파되어야 @Retryable이 재시도할 수 있음
+            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
+            verify(eventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패: 아이템 조회 중 일시적 DB 오류 발생 시 InfraException이 전파된다")
+        void given_dbErrorOnItemQuery_when_cancelOrder_then_infraExceptionPropagates() {
+            // given
+            Order order = OrderFixture.createOrderWithItems(memberId, 2);
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
+            given(orderItemRepository.getCancelableItemsByOrderId(orderId))
+                    .willThrow(new InfraException(InfraErrorCode.DB_TEMPORARY_ERROR, "일시적 DB 오류"));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+                    .isInstanceOf(InfraException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(InfraErrorCode.DB_TEMPORARY_ERROR);
+
+            verify(eventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패: 동시 취소 요청 시 비관적 락 이후 CANCELED 상태가 조회되면 ALREADY_CANCELED 예외가 발생한다")
+        void given_concurrentCancelRequests_when_orderAlreadyCanceledUnderLock_then_throwAlreadyCanceled() {
+            // given: 비관적 락으로 조회했더니 이미 다른 트랜잭션이 취소 완료한 상태
+            Order orderCanceledByOther = OrderFixture.createOrderWithStatus(OrderStatus.CANCELED);
+            ReflectionTestUtils.setField(orderCanceledByOther, "id", orderId);
+
+            given(orderRepository.getByIdWithLock(orderId)).willReturn(orderCanceledByOther);
+            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(List.of());
+
+            // when & then
+            assertThatThrownBy(() -> orderService.cancelOrder(memberId, orderId))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ALREADY_CANCELED);
+
+            verify(eventPublisher, never()).publish(any());
+        }
     }
 
     @Nested
