@@ -14,8 +14,7 @@ import java.util.Map;
 public interface OrderClient {
 
     @Retryable(
-            value = InfraException.class,
-            maxAttempts = 3,
+            retryFor = InfraException.class,
             backoff = @Backoff(delay = 500)
     )
     @PostExchange(url = "/bulk-amounts")
