@@ -24,6 +24,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework:spring-tx")
 
+    // Spring Modulith
+    implementation(libs.spring.modulith.core)
+    implementation(libs.spring.modulith.jpa)
+
     // QueryDSL
     implementation("com.querydsl:querydsl-jpa:${libs.versions.querydsl.get()}:jakarta")
     annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
