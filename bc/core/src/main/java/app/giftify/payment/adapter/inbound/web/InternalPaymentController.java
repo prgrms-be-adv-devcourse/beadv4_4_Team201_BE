@@ -12,16 +12,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import app.giftify.payment.adapter.inbound.web.dto.PaymentInfoResponse;
+import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
+import app.giftify.payment.application.inbound.InternalPaymentQueryUseCase;
+import app.giftify.security.common.annotation.InternalApiOnly;
+import app.giftify.shared.domain.vo.Money;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import app.giftify.payment.adapter.inbound.web.dto.PaymentInfoResponse;
-import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
-import app.giftify.payment.application.inbound.InternalPaymentQueryUseCase;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.security.common.annotation.InternalApiOnly;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,11 +75,11 @@ public class InternalPaymentController {
 	}
 
 	@PostMapping("/bulk-amounts")
-	public ResponseEntity<Map<Long, Money>> getBulkAmounts(
+	public Map<Long, Money> getBulkAmounts(
 		@RequestBody @NotEmpty @Size(max = 1000) List<Long> orderIds
 	) {
 		log.debug("[InternalPaymentController] bulk-amounts request. count={}", orderIds.size());
-		return ResponseEntity.ok(bulkPaymentAmountUseCase.getBulkAmounts(orderIds));
+		return bulkPaymentAmountUseCase.getBulkAmounts(orderIds);
 	}
 
 }
