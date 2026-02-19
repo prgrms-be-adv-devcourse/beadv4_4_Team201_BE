@@ -46,12 +46,28 @@ public class FundingCloseUseCase {
     }
 
     /**
-     * 목표 달성 펀딩 2주내 미수락 시 종료 (스케줄러용)
+     * 목표 달성 후 2주 내 미 수락 종료 (스케줄러용)
      */
-    public List<FundingCompleteResponseDto> closeUnacceptedAchievedFundings(LocalDateTime now) {
-//        펀딩 상태가 "목표 달성" 상태인지 확인
+    public List<FundingCompleteResponseDto> closeUnacceptedAchievedFundings() {
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+        List<Funding> fundings = fundingRepository.findByStatusAndAchievedAtBefore(FundingStatus.ACHIEVED, twoWeeksAgo);
 
-//        이미 수락/종료되었는지 확인
-        List<Funding> achievedFundings = fundingRepository.findAchievedFundingsBefore(now);
+        for (Funding funding : fundings) {
+            funding.close();
+            eventPublisher.publish(new FundingCanceledEvent(
+                    funding.getId(),
+                    funding.getWishlistItemId(),
+                    funding.getCurrentAmount()
+            ));
+        }
+
+        return fundings.stream()
+                .map(funding -> new FundingCompleteResponseDto(
+                        funding.getId(),
+                        funding.getWishlistItemId(),
+                        funding.getStatus(),
+                        funding.getClosedAt()
+                ))
+                .toList();
     }
 }

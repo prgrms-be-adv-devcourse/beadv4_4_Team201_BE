@@ -24,8 +24,8 @@ public class FundingScheduler {
     }
 
     @Scheduled(cron = "0 0 0 * * *")
-    public void closeAchievedFundings(LocalDateTime now) {
-       List<FundingCompleteResponseDto> achieved = fundingFacade.closeAchievedFundings(now);
+    public void closeAchievedFundings() {
+       List<FundingCompleteResponseDto> achieved = fundingFacade.closeAchievedFundings();
        log.info("목표 달성 펀딩 종료 건수: {}", achieved.size());
     }
 }

@@ -34,5 +34,5 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     List<Funding> findByProductIdAndStatus(Long productId, FundingStatus status);
 
-    List<Funding> findAchievedFundingsBefore(LocalDateTime deadline);
+    List<Funding> findByStatusAndAchievedAtBefore(FundingStatus status, LocalDateTime achievedAt);
 }

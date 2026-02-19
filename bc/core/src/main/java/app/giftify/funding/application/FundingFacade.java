@@ -138,7 +138,7 @@ public class FundingFacade {
     }
 
     @Transactional
-    public List<FundingCompleteResponseDto> closeAchievedFundings(LocalDateTime now) {
-        return fundingCloseUseCase.closeUnacceptedAchievedFundings(now);
+    public List<FundingCompleteResponseDto> closeAchievedFundings() {
+        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
     }
 }
