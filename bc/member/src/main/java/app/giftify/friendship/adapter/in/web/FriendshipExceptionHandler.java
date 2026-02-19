@@ -34,4 +34,11 @@ public class FriendshipExceptionHandler {
         return ResponseEntity.status(400)
                 .body(Map.of("code", "VALIDATION_ERROR", "message", errorMessage));
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleUnexpectedException(Exception e) {
+        log.error("[Friendship Unexpected Error] {}", e.getMessage(), e);
+        return ResponseEntity.status(500)
+                .body(Map.of("code", "INTERNAL_ERROR", "message", "서버 내부 오류가 발생했습니다."));
+    }
 }

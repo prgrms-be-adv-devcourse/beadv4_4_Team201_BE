@@ -1,6 +1,9 @@
 package app.giftify.friendship.adapter.in.web;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -9,7 +12,6 @@ import app.giftify.friendship.adapter.in.web.dto.*;
 import app.giftify.friendship.application.port.in.*;
 import app.giftify.friendship.domain.Friendship;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
-import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
@@ -51,7 +53,7 @@ public class FriendshipV2Controller {
             @CurrentMemberId Long memberId,
             @PathVariable Long friendshipId) {
         rejectFriendRequestUseCase.reject(friendshipId, memberId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(RsData.success(null));
     }
 
     @DeleteMapping("/api/v2/friends/{friendshipId}")
@@ -59,20 +61,22 @@ public class FriendshipV2Controller {
             @CurrentMemberId Long memberId,
             @PathVariable Long friendshipId) {
         removeFriendUseCase.remove(friendshipId, memberId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(RsData.success(null));
     }
 
     @GetMapping("/api/v2/members/{memberId}/friends")
     public ResponseEntity<RsData<List<FriendResponse>>> getFriends(
+            @CurrentMemberId Long currentMemberId,
             @PathVariable Long memberId) {
         List<Friendship> friendships = getFriendListUseCase.getFriends(memberId);
-        List<FriendResponse> friends = friendships.stream()
-                .map(f -> {
-                    Long friendId = f.getFriendId(memberId);
-                    Member friend = memberRepository.findById(friendId)
-                            .orElseThrow(() -> new MemberNotFoundException(friendId));
-                    return FriendResponse.from(friend);
-                })
+        List<Long> friendIds = friendships.stream()
+                .map(f -> f.getFriendId(memberId))
+                .toList();
+        Map<Long, Member> memberMap = memberRepository.findAllByIds(friendIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
+        List<FriendResponse> friends = friendIds.stream()
+                .map(memberMap::get)
+                .map(FriendResponse::from)
                 .toList();
         return ResponseEntity.ok(RsData.success(friends));
     }
@@ -81,12 +85,13 @@ public class FriendshipV2Controller {
     public ResponseEntity<RsData<List<FriendRequestResponse>>> getReceivedRequests(
             @CurrentMemberId Long memberId) {
         List<Friendship> requests = getFriendRequestsUseCase.getReceivedRequests(memberId);
+        List<Long> requesterIds = requests.stream()
+                .map(Friendship::getRequesterId)
+                .toList();
+        Map<Long, Member> memberMap = memberRepository.findAllByIds(requesterIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
         List<FriendRequestResponse> responses = requests.stream()
-                .map(f -> {
-                    Member requester = memberRepository.findById(f.getRequesterId())
-                            .orElseThrow(() -> new MemberNotFoundException(f.getRequesterId()));
-                    return FriendRequestResponse.of(f, requester);
-                })
+                .map(f -> FriendRequestResponse.of(f, memberMap.get(f.getRequesterId())))
                 .toList();
         return ResponseEntity.ok(RsData.success(responses));
     }
