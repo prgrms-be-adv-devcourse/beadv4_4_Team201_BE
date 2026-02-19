@@ -6,7 +6,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
@@ -24,7 +23,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     "app.giftify"
 })
 @EnableRetry
-@EnableAsync
 public class GiftifyApplication {
 
     public static void main(String[] args) {
