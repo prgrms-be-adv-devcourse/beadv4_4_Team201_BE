@@ -7,7 +7,7 @@ spring:
     password: ${DB_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
     hikari:
-      connection-init-sql: SET search_path TO public, g7app
+      connection-init-sql: SET search_path TO g7app, public
 
   data:
     redis:
@@ -18,7 +18,7 @@ spring:
 
   batch:
     jdbc:
-      initialize-schema: always   # Batch 메타데이터 테이블 자동 생성
+      initialize-schema: never
     job:
       enabled: false              # 기동 시 배치 잡 자동 실행 방지
 

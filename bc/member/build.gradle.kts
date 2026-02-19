@@ -28,7 +28,7 @@ dependencies {
 
     // Spring Modulith
     implementation(libs.spring.modulith.core)
-    implementation(libs.spring.modulith.jdbc)
+    implementation(libs.spring.modulith.jpa)
 
     // Lombok
     compileOnly(libs.lombok)
