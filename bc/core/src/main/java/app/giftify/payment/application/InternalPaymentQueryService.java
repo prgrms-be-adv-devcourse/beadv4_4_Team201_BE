@@ -39,10 +39,10 @@ public class InternalPaymentQueryService implements InternalPaymentQueryUseCase 
 	}
 
 	@Override
-	public Optional<InternalPaymentResult> findByOrderId(String orderId) {
-		log.debug("[InternalPaymentQueryService] 주문별 결제 조회. orderId={}", orderId);
+	public Optional<InternalPaymentResult> findByOrderNumber(String orderNumber) {
+		log.debug("[InternalPaymentQueryService] 주문별 결제 조회. orderNumber={}", orderNumber);
 
-		return paymentRepository.findByOrderId(orderId)
+		return paymentRepository.findByOrderNumber(orderNumber)
 			.map(this::toResultWithDecryption);
 	}
 

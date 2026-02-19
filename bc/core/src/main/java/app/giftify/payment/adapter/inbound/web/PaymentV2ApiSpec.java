@@ -31,7 +31,6 @@ public interface PaymentV2ApiSpec {
 
                     **참고**:
                     - orderId를 전달하지 않으면 자동 생성됩니다 (CHG-{UUID})
-                    - idempotencyKey는 서버에서 자동 생성됩니다
                     """
     )
     @ApiResponse(
@@ -65,7 +64,7 @@ public interface PaymentV2ApiSpec {
 
                     **승인 성공 시**:
                     - Payment 상태가 PAID로 변경
-                    - PaymentPaidEvent 발행 → 예치금 자동 충전
+                    - PaymentPaidExternalEvent 발행 → 예치금 자동 충전
 
                     **승인 실패 시**:
                     - PG사 에러 코드/메시지 반환

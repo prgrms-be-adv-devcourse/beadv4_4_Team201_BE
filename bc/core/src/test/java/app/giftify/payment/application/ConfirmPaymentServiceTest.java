@@ -34,7 +34,7 @@ import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
+import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -57,11 +57,12 @@ class ConfirmPaymentServiceTest {
 	@InjectMocks
 	private ConfirmPaymentService confirmPaymentService;
 
-	private Payment createPendingPayment(Long paymentId, Long memberId, String orderId, PaymentType type) {
+	private Payment createPendingPayment(Long paymentId, Long memberId, String orderNumber, PaymentType type) {
 		if (type == PaymentType.FUNDING) {
 			return Payment.builder()
 				.id(paymentId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.memberId(memberId)
 				.type(type)
 				.method(PaymentMethod.CARD)
@@ -75,7 +76,8 @@ class ConfirmPaymentServiceTest {
 		}
 		return Payment.builder()
 			.id(paymentId)
-			.orderId(orderId)
+			.orderId(123L)
+			.orderNumber(orderNumber)
 			.memberId(memberId)
 			.type(type)
 			.method(PaymentMethod.CARD)
@@ -97,17 +99,17 @@ class ConfirmPaymentServiceTest {
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			String paymentKey = "payment-key-123";
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderId, amount
+				paymentId, memberId, paymentKey, orderNumber, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(paymentKey, orderId, amount))
+			given(paymentGateway.confirm(paymentKey, orderNumber, amount))
 				.willReturn(TossConfirmResult.success(paymentKey, "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn("encrypted-payment-key");
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
@@ -121,26 +123,26 @@ class ConfirmPaymentServiceTest {
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 
 			verify(paymentRepository).findById(paymentId);
-			verify(paymentGateway).confirm(paymentKey, orderId, amount);
+			verify(paymentGateway).confirm(paymentKey, orderNumber, amount);
 			verify(encryptor).encrypt(paymentKey);
 			verify(paymentRepository).save(payment);
 		}
 
 		@Test
-		@DisplayName("결제 승인 시 PaymentPaidEvent를 발행한다")
-		void confirm_Payment_PublishesPaymentPaidEvent() {
+		@DisplayName("결제 승인 시 PaymentConfirmedEvent 내부 이벤트를 발행한다")
+		void confirm_Payment_PublishesPaymentConfirmedEvent() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			String paymentKey = "payment-key-123";
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderId, amount
+				paymentId, memberId, paymentKey, orderNumber, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
@@ -167,14 +169,14 @@ class ConfirmPaymentServiceTest {
 			Long paymentId = 2L;
 			Long memberId = 200L;
 			String paymentKey = "payment-key-456";
-			String orderId = "funding-order-456";
+			String orderNumber = "funding-order-456";
 			Money amount = Money.of(10000);
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderId, amount
+				paymentId, memberId, paymentKey, orderNumber, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.FUNDING);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.FUNDING);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
@@ -191,25 +193,25 @@ class ConfirmPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("결제 승인 시 PaymentConfirmedForSettlement 이벤트를 발행한다")
-		void confirm_Payment_PublishesPaymentConfirmedForSettlement() {
+		@DisplayName("결제 승인 시 PaymentPaidExternalEvent 이벤트를 발행한다")
+		void confirm_Payment_PublishesPaymentPaidExternalEvent() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			String paymentKey = "payment-key-123";
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			String encryptedKey = "encrypted-payment-key";
 			String transactionKey = "txn-key-001";
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderId, amount
+				paymentId, memberId, paymentKey, orderNumber, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(paymentKey, orderId, amount))
+			given(paymentGateway.confirm(paymentKey, orderNumber, amount))
 				.willReturn(TossConfirmResult.success(paymentKey, transactionKey, "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn(encryptedKey);
 			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
@@ -218,13 +220,13 @@ class ConfirmPaymentServiceTest {
 			confirmPaymentService.confirm(command);
 
 			// then
-			ArgumentCaptor<PaymentConfirmedForSettlement> captor =
-				ArgumentCaptor.forClass(PaymentConfirmedForSettlement.class);
+			ArgumentCaptor<PaymentPaidExternalEvent> captor =
+				ArgumentCaptor.forClass(PaymentPaidExternalEvent.class);
 			verify(eventPublisher).publish(captor.capture());
 
-			PaymentConfirmedForSettlement event = captor.getValue();
+			PaymentPaidExternalEvent event = captor.getValue();
 			assertThat(event.paymentId()).isEqualTo(paymentId);
-			assertThat(event.orderNumber()).isEqualTo(orderId);
+			assertThat(event.orderNumber()).isEqualTo(orderNumber);
 			assertThat(event.paymentKey()).isEqualTo(encryptedKey);
 			assertThat(event.transactionKey()).isEqualTo(transactionKey);
 			assertThat(event.paidAmount()).isEqualTo(amount);
@@ -245,17 +247,17 @@ class ConfirmPaymentServiceTest {
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			String paymentKey = "payment-key-123";
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderId, amount
+				paymentId, memberId, paymentKey, orderNumber, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(paymentKey, orderId, amount))
+			given(paymentGateway.confirm(paymentKey, orderNumber, amount))
 				.willReturn(TossConfirmResult.failure("INVALID_CARD", "카드 정보가 유효하지 않습니다"));
 
 			// when
@@ -355,14 +357,14 @@ class ConfirmPaymentServiceTest {
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			String paymentKey = "raw-payment-key";
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 
 			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderId, amount
+				paymentId, memberId, paymentKey, orderNumber, amount
 			);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE);
 			String encryptedPaymentKey = "encrypted-payment-key";
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));

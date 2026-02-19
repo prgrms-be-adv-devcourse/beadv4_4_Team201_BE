@@ -7,6 +7,7 @@ import app.giftify.funding.domain.FundingStatus;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public record MyFundingResponseDto(
         // 펀딩 정보
@@ -18,12 +19,21 @@ public record MyFundingResponseDto(
         LocalDateTime deadline,
 
         // ACHIEVED 이후에만 보여짐
-        List<FundingParticipantMember> participants,
+        List<ParticipantDto> participants,
 
         // 추가 정보
         double achievementRate,  // 달성률 (%)
         long daysRemaining       // 잔여 일수
         ) {
+
+    public record ParticipantDto(
+            Long participantId,
+            String nickName
+    ) {
+        public static ParticipantDto fromEntity(FundingParticipantMember member) {
+            return new ParticipantDto(member.getParticipantId(), member.getNickName());
+        }
+    }
 
     public static MyFundingResponseDto fromEntity(Funding funding) {
         double rate = 0.0;
@@ -58,6 +68,10 @@ public record MyFundingResponseDto(
             if (days < 0) days = 0;
         }
 
+        List<ParticipantDto> participantDtos = participants.stream()
+                .map(ParticipantDto::fromEntity)
+                .collect(Collectors.toList());
+
         return new MyFundingResponseDto(
                 funding.getId(),
                 funding.getWishlistItemId(),
@@ -65,7 +79,7 @@ public record MyFundingResponseDto(
                 funding.getCurrentAmount(),
                 funding.getStatus(),
                 funding.getDeadline(),
-                participants,
+                participantDtos,
                 100.0,
                 days
         );

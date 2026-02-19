@@ -5,6 +5,8 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET search_path TO g7app, public
 
   h2:
     console:
@@ -25,6 +27,7 @@ spring:
     schemas: g7app
     default-schema: g7app
     create-schemas: true
+    out-of-order: true
 
   data:
     redis:

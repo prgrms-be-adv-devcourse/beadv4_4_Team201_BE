@@ -1,18 +1,26 @@
 package app.giftify.payment.adapter.inbound.web;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import app.giftify.payment.adapter.inbound.web.dto.PaymentInfoResponse;
+import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
 import app.giftify.payment.application.inbound.InternalPaymentQueryUseCase;
 import app.giftify.security.common.annotation.InternalApiOnly;
+import app.giftify.shared.domain.vo.Money;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 public class InternalPaymentController {
 
 	private final InternalPaymentQueryUseCase internalPaymentQueryUseCase;
+	private final BulkPaymentAmountUseCase bulkPaymentAmountUseCase;
 
 	@GetMapping("/{paymentId}")
 	public ResponseEntity<PaymentInfoResponse> getById(
@@ -52,17 +61,25 @@ public class InternalPaymentController {
 			.orElse(ResponseEntity.notFound().build());
 	}
 
-	@GetMapping("/by-order/{orderId}")
-	public ResponseEntity<PaymentInfoResponse> getByOrderId(
-		@PathVariable("orderId") @NotBlank String orderId
+	@GetMapping("/by-order-number/{orderNumber}")
+	public ResponseEntity<PaymentInfoResponse> getByOrderNumber(
+		@PathVariable("orderNumber") @NotBlank String orderNumber
 	) {
-		log.debug("[InternalPaymentController] 주문별 결제 조회 요청. orderId=***{}",
-			orderId != null && orderId.length() > 4 ? orderId.substring(orderId.length() - 4) : "****");
+		log.debug("[InternalPaymentController] 주문별 결제 조회 요청. orderNumber=***{}",
+			orderNumber != null && orderNumber.length() > 4 ? orderNumber.substring(orderNumber.length() - 4) : "****");
 
-		return internalPaymentQueryUseCase.findByOrderId(orderId)
+		return internalPaymentQueryUseCase.findByOrderNumber(orderNumber)
 			.map(PaymentInfoResponse::from)
 			.map(ResponseEntity::ok)
 			.orElse(ResponseEntity.notFound().build());
+	}
+
+	@PostMapping("/bulk-amounts")
+	public Map<Long, Money> getBulkAmounts(
+		@RequestBody @NotEmpty @Size(max = 1000) List<Long> orderIds
+	) {
+		log.debug("[InternalPaymentController] bulk-amounts request. count={}", orderIds.size());
+		return bulkPaymentAmountUseCase.getBulkAmounts(orderIds);
 	}
 
 }
