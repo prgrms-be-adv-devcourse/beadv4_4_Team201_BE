@@ -215,18 +215,18 @@ class FriendshipV2ControllerTest {
     }
 
     @Nested
-    @DisplayName("GET /api/v2/members/{id}/friends")
+    @DisplayName("GET /api/v2/friends")
     class GetFriends {
 
         @Test
-        @DisplayName("친구 목록 조회 성공 시 200 OK 반환")
+        @DisplayName("내 친구 목록 조회 성공 시 200 OK 반환")
         void success_Returns200() throws Exception {
             // given
             given(getFriendListUseCase.getFriends(MEMBER_ID))
                     .willReturn(List.of(new FriendInfo(RECEIVER_ID, "친구")));
 
             // when & then
-            mockMvc.perform(get("/api/v2/members/{memberId}/friends", MEMBER_ID))
+            mockMvc.perform(get("/api/v2/friends"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.result").value("SUCCESS"))
                     .andExpect(jsonPath("$.data[0].id").value(RECEIVER_ID))

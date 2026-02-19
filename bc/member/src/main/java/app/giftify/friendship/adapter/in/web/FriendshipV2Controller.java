@@ -58,10 +58,9 @@ public class FriendshipV2Controller implements FriendshipV2ApiSpec {
         return ResponseEntity.ok(RsData.success(null));
     }
 
-    @GetMapping("/api/v2/members/{memberId}/friends")
+    @GetMapping("/api/v2/friends")
     public ResponseEntity<RsData<List<FriendResponse>>> getFriends(
-            @CurrentMemberId Long currentMemberId,
-            @PathVariable Long memberId) {
+            @CurrentMemberId Long memberId) {
         List<FriendResponse> responses = getFriendListUseCase.getFriends(memberId).stream()
                 .map(FriendResponse::from)
                 .toList();
