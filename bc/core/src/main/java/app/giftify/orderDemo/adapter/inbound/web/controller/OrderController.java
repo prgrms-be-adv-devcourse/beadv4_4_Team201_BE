@@ -73,6 +73,17 @@ public class OrderController implements OrderControllerSpec {
         return ResponseEntity.ok(body);
     }
 
+    @DeleteMapping("/{orderId}")
+    @Override
+    public ResponseEntity<RsData<Void>> cancelOrder(
+            @CurrentMemberId Long memberId,
+            @PathVariable Long orderId
+    ) {
+        orderService.cancelOrder(memberId, orderId);
+
+        return ResponseEntity.ok(RsData.success(null));
+    }
+
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {
         return new GetOrdersResponse(
                 content,

@@ -200,4 +200,8 @@ public class OrderService {
                 )
                 .toList();
     }
+
+    public void cancelOrder(Long memberId, Long orderId) {
+
+    }
 }
