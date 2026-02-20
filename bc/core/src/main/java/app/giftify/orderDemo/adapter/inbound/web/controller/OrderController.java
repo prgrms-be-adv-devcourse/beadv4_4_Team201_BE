@@ -3,11 +3,16 @@ package app.giftify.orderDemo.adapter.inbound.web.controller;
 import app.giftify.facade.CoreFacade;
 import app.giftify.facade.command.PlaceOrderCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.orderDemo.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
+import app.giftify.orderDemo.adapter.inbound.web.dto.response.OrderCancelResponse;
 import app.giftify.orderDemo.application.OrderService;
 import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.application.dto.OrderCancelSummary;
+import app.giftify.orderDemo.application.dto.OrderItemCancelResult;
+import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.security.common.CurrentMemberId;
@@ -85,6 +90,24 @@ public class OrderController implements OrderControllerSpec {
 
         return ResponseEntity.status(result.getStatusCode())
                 .body(RsData.success(result.getMessage()));
+    }
+
+    @Idempotent(prefix = PREFIX)
+    @DeleteMapping("/{orderId}/items")
+    @Override
+    public ResponseEntity<RsData<OrderCancelResponse>> cancelOrderItems(
+            @CurrentMemberId Long memberId,
+            @PathVariable Long orderId,
+            @RequestBody OrderCancelItemsRequest request) {
+        CancelOrderItemsCommand command = CancelOrderItemsCommand.of(orderId, memberId, request);
+
+        List<OrderItemCancelResult> results = orderService.requestCancelOrderItems(command);
+
+        OrderCancelSummary summary = OrderCancelSummary.of(results);
+        OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
+
+        return ResponseEntity.status(summary.overallResult().getStatusCode())
+                .body(RsData.success(response));
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {

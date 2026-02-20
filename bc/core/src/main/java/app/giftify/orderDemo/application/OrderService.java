@@ -3,6 +3,8 @@ package app.giftify.orderDemo.application;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.application.dto.OrderItemCancelResult;
+import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
@@ -172,6 +174,11 @@ public class OrderService {
 
         order.failCancel();
         targetItems.failCancel();
+    }
+
+    public List<OrderItemCancelResult> requestCancelOrderItems(CancelOrderItemsCommand command) {
+        // todo
+        return null;
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {
