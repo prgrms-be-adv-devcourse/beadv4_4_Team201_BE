@@ -17,12 +17,12 @@ public class WithdrawFundingUseCase {
     private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
 
     @Transactional
-    public void withdrawFunding(Long fundingId, Long participantId, Money amount) {
+    public void withdrawFunding(Long wishlistItemId, Long participantId, Money amount) {
         // 진행중이거나 달성 상태일 때만 가능 -> 도메인 내 메서드에서 처리
-        Funding funding = fundingRepository.findById(fundingId).
-                orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, fundingId));
+        Funding funding = fundingRepository.findActiveByWishlistItemId(wishlistItemId).
+                orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, wishlistItemId));
 
         funding.withdraw(amount.toBigDecimalValue().intValue());
-        fundingParticipantMemberRepository.deleteByFundingIdAndParticipantId(fundingId, participantId);
+        fundingParticipantMemberRepository.deleteByFundingIdAndParticipantId(funding.getId(), participantId);
     }
 }
