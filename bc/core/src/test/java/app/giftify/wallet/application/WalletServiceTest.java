@@ -26,6 +26,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -73,7 +74,14 @@ class WalletServiceTest {
 			assertThat(result.walletId()).isEqualTo(1L);
 			assertThat(result.memberId()).isEqualTo(memberId);
 			assertThat(result.chargedAmount()).isEqualTo(amount);
-			verify(historyRepository).record(any(WalletHistory.class));
+			verify(historyRepository).recordTransaction(
+				savedWallet.getId(),
+				TransactionType.CHARGE,
+				amount,
+				savedWallet.getBalance(),
+				ReferenceType.CHARGE,
+				chargeOrderId
+			);
 			verify(eventPublisher).publish(any(WalletChargedEvent.class));
 		}
 
@@ -151,7 +159,14 @@ class WalletServiceTest {
 			assertThat(result.withdrawnAmount()).isEqualTo(amount);
 			assertThat(result.balanceAfter()).isEqualTo(Money.of(5000));
 			assertThat(result.status()).isEqualTo(WithdrawStatus.PENDING);
-			verify(historyRepository).record(any(WalletHistory.class));
+			verify(historyRepository).recordTransaction(
+				eq(savedWallet.getId()),
+				eq(TransactionType.WITHDRAW),
+				eq(amount),
+				eq(savedWallet.getBalance()),
+				eq(ReferenceType.WITHDRAWAL),
+				any(String.class)
+			);
 		}
 
 		@Test

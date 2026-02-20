@@ -70,7 +70,14 @@ class WalletPaymentServiceTest {
 			assertThat(result.success()).isTrue();
 			assertThat(result.walletId()).isEqualTo(1L);
 			assertThat(result.balanceAfter()).isEqualTo(Money.of(5000));
-			verify(historyRepository).record(any(WalletHistory.class));
+			verify(historyRepository).recordTransaction(
+				savedWallet.getId(),
+				TransactionType.ORDER_DEDUCT,
+				amount,
+				savedWallet.getBalance(),
+				ReferenceType.PAYMENT,
+				orderNumber
+			);
 			verify(eventPublisher).publish(any(WalletDeductedEvent.class));
 		}
 

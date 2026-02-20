@@ -1,21 +1,23 @@
-package app.giftify.shared.domain.event.settlement;
+package app.giftify.shared.domain.event.wallet;
 
 import org.springframework.modulith.events.Externalized;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
-@Externalized("settlement.created::#{#this.getSettlementId()}")
-public class SettlementCreatedEvent extends BaseDomainEvent {
+@Externalized("wallet.settlement-failed::#{#this.getSettlementId()}")
+public class WalletSettlementFailedEvent extends BaseDomainEvent {
 	private final Long settlementId;
 	private final Long sellerId;
 	private final Money totalAmount;
+	private final String reason;
 
-	public SettlementCreatedEvent(Long settlementId, Long sellerId, Money totalAmount) {
+	public WalletSettlementFailedEvent(Long settlementId, Long sellerId, Money totalAmount, String reason) {
 		super();
 		this.settlementId = settlementId;
 		this.sellerId = sellerId;
 		this.totalAmount = totalAmount;
+		this.reason = reason;
 	}
 
 	public Long getSettlementId() {
@@ -28,5 +30,9 @@ public class SettlementCreatedEvent extends BaseDomainEvent {
 
 	public Money getTotalAmount() {
 		return totalAmount;
+	}
+
+	public String getReason() {
+		return reason;
 	}
 }
