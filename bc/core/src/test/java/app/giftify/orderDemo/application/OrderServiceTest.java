@@ -327,7 +327,7 @@ class OrderServiceTest {
         }
 
         @Test
-        @DisplayName("실패: 구매 확정된 주문(CONFIRMED)에 취소 요청 시 INVALID_STATUS_CANCEL 예외가 발생한다")
+        @DisplayName("실패: 구매 확정된 주문(CONFIRMED)에 취소 요청 시 INVALID_STATUS_TRANSITION 예외가 발생한다")
         void given_confirmedOrder_when_requestCancelOrder_then_throwInvalidStatusCancel() {
             // given
             Order order = OrderFixture.createOrderWithStatus(OrderStatus.CONFIRMED);
@@ -340,7 +340,7 @@ class OrderServiceTest {
             assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
-                    .isEqualTo(OrderErrorCode.INVALID_STATUS_CANCEL);
+                    .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
 
             verify(eventPublisher, never()).publish(any());
         }
@@ -449,7 +449,7 @@ class OrderServiceTest {
 
             ArgumentCaptor<OrderCanceledEvent> captor = ArgumentCaptor.forClass(OrderCanceledEvent.class);
             verify(eventPublisher).publish(captor.capture());
-            assertThat(captor.getValue().orderId()).isEqualTo(orderId);
+            assertThat(captor.getValue().getOrderId()).isEqualTo(orderId);
         }
 
         @Test
