@@ -72,7 +72,7 @@ class WalletPaymentServiceTest {
 			assertThat(result.balanceAfter()).isEqualTo(Money.of(5000));
 			verify(historyRepository).recordTransaction(
 				savedWallet.getId(),
-				TransactionType.PAYMENT,
+				TransactionType.ORDER_DEDUCT,
 				amount,
 				savedWallet.getBalance(),
 				ReferenceType.PAYMENT,

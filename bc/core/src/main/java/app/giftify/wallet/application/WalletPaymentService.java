@@ -58,7 +58,7 @@ public class WalletPaymentService implements DeductWalletUseCase {
 
 		historyRepository.recordTransaction(
 			savedWallet.getId(),
-			TransactionType.PAYMENT,
+			TransactionType.ORDER_DEDUCT,
 			command.amount(),
 			savedWallet.getBalance(),
 			ReferenceType.PAYMENT,

@@ -214,12 +214,12 @@ class WalletHistoryTest {
 		void create_PaymentType() {
 			// given & when
 			WalletHistory history = WalletHistory.create(
-				1L, TransactionType.PAYMENT, Money.of(3000), Money.of(7000),
+				1L, TransactionType.ORDER_DEDUCT, Money.of(3000), Money.of(7000),
 				ReferenceType.PAYMENT, "payment-123", LocalDateTime.now()
 			);
 
 			// then
-			assertThat(history.getTransactionType()).isEqualTo(TransactionType.PAYMENT);
+			assertThat(history.getTransactionType()).isEqualTo(TransactionType.ORDER_DEDUCT);
 		}
 	}
 }

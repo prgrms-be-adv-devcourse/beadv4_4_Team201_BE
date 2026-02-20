@@ -7,7 +7,7 @@ package app.giftify.wallet.domain;
 public enum TransactionType {
 	CHARGE("캐시 충전"),
 	WITHDRAW("출금"),
-	PAYMENT("결제"),
+	ORDER_DEDUCT("주문 차감"),
 	SETTLEMENT_PAYOUT("정산 입금"),
 	SETTLEMENT_CLAWBACK("정산 환수");
 
