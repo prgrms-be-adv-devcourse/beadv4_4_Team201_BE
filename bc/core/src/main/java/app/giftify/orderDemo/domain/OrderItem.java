@@ -9,6 +9,7 @@ import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,12 +17,15 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "order_item_v2")
+@Table(name = "order_item_v2", indexes = {
+        @Index(name = "idx_order_items_order_id_status", columnList = "order_id, status")
+})
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Getter
 @EntityListeners(AuditingEntityListener.class)
+@Slf4j
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,6 +63,13 @@ public class OrderItem {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
+
+    @Column
+    @Setter
+    private String originTransactionKey;
+
+    @Column
+    private LocalDateTime cancelRequestedAt;
 
     @Column
     private LocalDateTime cancelledAt;
@@ -154,7 +165,7 @@ public class OrderItem {
                 '}';
     }
 
-    public void toPaid() {
+    public void toPaid(String originTransactionKey) {
         if (this.status == OrderItemStatus.PAID) {
             return;
         }
@@ -165,6 +176,25 @@ public class OrderItem {
                     String.format("주문 아이템 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
             );
         }
+        status = OrderItemStatus.PAID;
+        this.originTransactionKey = originTransactionKey;
+    }
+
+    public void cancel(LocalDateTime cancelledAt) {
+        if (status == OrderItemStatus.CANCELED) {
+            log.warn("이미 취소된 주문입니다. orderId = {}, orderItemId = {}", order.getId(), id);
+        }
+
+        status = OrderItemStatus.CANCELED;
+        this.cancelledAt = cancelledAt;
+    }
+
+    public void pendingToCancel(LocalDateTime cancelRequestedAt) {
+        status = OrderItemStatus.CANCEL_PENDING;
+        this.cancelRequestedAt = cancelRequestedAt;
+    }
+
+    public void failCancel() {
         status = OrderItemStatus.PAID;
     }
 }
