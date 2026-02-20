@@ -16,11 +16,7 @@ public class ProductDocument {
     @Id
     private String id;
 
-    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
-            otherFields = {
-                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "ngram_analyzer"),
-                    @InnerField(suffix = "jamo", type = FieldType.Text, analyzer = "jamo_analyzer")
-            })
+    @Field(type = FieldType.Keyword)
     private String sellerNickname;
 
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),

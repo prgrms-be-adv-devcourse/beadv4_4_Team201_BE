@@ -14,6 +14,7 @@ import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -109,7 +110,7 @@ public class ProductEsAdapter implements ProductEsPort {
             // 1순위: 원본 검색어 ngram 매칭
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(keyword)
-                    .fields("name.ngram^3", "description.ngram^2", "sellerNickname.ngram")
+                    .fields("name.ngram")
                     .minimumShouldMatch("70%")
                     .boost(3f)
             ));
@@ -118,16 +119,24 @@ public class ProductEsAdapter implements ProductEsPort {
             if (!keywordNoSpaces.equals(keyword)) {
                 boolBuilder.should(s -> s.multiMatch(mm -> mm
                         .query(keywordNoSpaces)
-                        .fields("name.ngram^3", "description.ngram^2", "sellerNickname.ngram")
+                        .fields("name.ngram")
                         .minimumShouldMatch("70%")
                         .boost(3f)
                 ));
             }
 
-            // 2순위: 자모 분해(NFD) + 오타 허용 (음소 단위 매칭)
+            // 2순위: nori 형태소 매칭 (자연어 설명 검색)
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(keyword)
-                    .fields("name.jamo^2", "description.jamo", "sellerNickname.jamo")
+                    .fields("description")
+                    .operator(Operator.And)
+                    .boost(2f)
+            ));
+
+            // 3순위: 자모 분해(NFD) + 오타 허용 (음소 단위 매칭)
+            boolBuilder.should(s -> s.multiMatch(mm -> mm
+                    .query(keyword)
+                    .fields("name.jamo^2", "description.jamo")
                     .fuzziness("AUTO")
                     .boost(1f)
             ));
@@ -135,11 +144,19 @@ public class ProductEsAdapter implements ProductEsPort {
             if (!keywordNoSpaces.equals(keyword)) {
                 boolBuilder.should(s -> s.multiMatch(mm -> mm
                         .query(keywordNoSpaces)
-                        .fields("name.jamo^2", "description.jamo", "sellerNickname.jamo")
+                        .fields("name.jamo^2", "description.jamo")
                         .fuzziness("AUTO")
                         .boost(1f)
                 ));
             }
+
+            // 4순위: 판매자명 keyword 매칭
+            boolBuilder.should(s -> s.fuzzy(fz -> fz
+                    .field("sellerNickname")
+                    .value(keyword)
+                    .fuzziness("AUTO")
+                    .boost(0.5f)
+            ));
 
             boolBuilder.minimumShouldMatch("1");
         }
