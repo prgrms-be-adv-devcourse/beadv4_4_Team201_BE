@@ -1,9 +1,7 @@
 package app.giftify.settlement.adapter.outbound.aop;
 
-import app.giftify.settlement.domain.errorCode.InfraErrorCode;
-import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
-import app.giftify.settlement.domain.exception.InfraException;
-import app.giftify.settlement.domain.exception.PolicyException;
+import app.giftify.shared.api.exception.InfraErrorCode;
+import app.giftify.shared.api.exception.InfraException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -36,23 +34,9 @@ public class RepositoryExceptionTranslator {
         }
 
         if (e instanceof DataIntegrityViolationException dive) {
-            if (isFundingIdTypeUniqueConstraintViolation(dive)) {
-                throw new PolicyException(SettlementErrorCode.DUPLICATE_SETTLEMENT_ITEM);
-            } else {
-                return new InfraException(InfraErrorCode.DB_CONSTRAINT_VIOLATION, e);
-            }
+            return new InfraException(InfraErrorCode.DB_CONSTRAINT_VIOLATION, e);
         }
 
         return new InfraException(InfraErrorCode.UNKNOWN_INFRA_ERROR, e);
-    }
-
-    private boolean isFundingIdTypeUniqueConstraintViolation(DataIntegrityViolationException e) {
-        Throwable cause = e.getCause();
-        if (cause instanceof org.hibernate.exception.ConstraintViolationException cve) {
-            String constraintName = cve.getConstraintName();
-            String sqlState = cve.getSQLState();
-            return "23505".equals(sqlState) && "uk_funding_type".equalsIgnoreCase(constraintName);
-        }
-        return false;
     }
 }

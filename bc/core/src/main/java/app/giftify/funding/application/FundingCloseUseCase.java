@@ -1,15 +1,18 @@
 package app.giftify.funding.application;
 
+import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static app.giftify.funding.domain.exception.FundingErrorCode.ALREADY_TERMINATED;
 
@@ -41,14 +44,30 @@ public class FundingCloseUseCase {
 
         return FundingCompleteResponseDto.fromEntity(funding);
     }
-//
-//    /**
-//     * 목표 달성 펀딩 2주내 미수락 시 종료 (스케줄러용)
-//     */
-//    public List<FundingCompleteResponseDto> closeUnacceptedAchievedFundings() {
-//        LocalDateTime now = LocalDateTime.now();
-////        펀딩 상태가 "목표 달성" 상태인지 확인
-////        이미 수락/종료되었는지 확인
-//        List<Funding> achievedFundings = fundingRepository.findUnacceptedAchievedFundingsBefore(deadline);
-//    }
+
+    /**
+     * 목표 달성 후 2주 내 미 수락 종료 (스케줄러용)
+     */
+    public List<FundingCompleteResponseDto> closeUnacceptedAchievedFundings() {
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+        List<Funding> fundings = fundingRepository.findByStatusAndAchievedAtBefore(FundingStatus.ACHIEVED, twoWeeksAgo);
+
+        for (Funding funding : fundings) {
+            funding.close();
+            eventPublisher.publish(new FundingCanceledEvent(
+                    funding.getId(),
+                    funding.getWishlistItemId(),
+                    funding.getCurrentAmount()
+            ));
+        }
+
+        return fundings.stream()
+                .map(funding -> new FundingCompleteResponseDto(
+                        funding.getId(),
+                        funding.getWishlistItemId(),
+                        funding.getStatus(),
+                        funding.getClosedAt()
+                ))
+                .toList();
+    }
 }

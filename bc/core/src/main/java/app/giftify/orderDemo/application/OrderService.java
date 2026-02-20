@@ -2,21 +2,23 @@ package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
+import app.giftify.orderDemo.application.dto.OrderCancelResult;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
+import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
-import app.giftify.orderDemo.domain.Order;
-import app.giftify.orderDemo.domain.OrderItem;
-import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.orderDemo.domain.*;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
+import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
@@ -24,12 +26,16 @@ import app.giftify.shared.domain.vo.FundingSnapshot;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +43,7 @@ import java.util.stream.Collectors;
 
 @Service("orderV2Service")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -97,7 +104,74 @@ public class OrderService {
     public void markOrderAsPaid(@Valid MarkOrderAsPaidCommand command) {
         Order order = orderRepository.getByOrderNumber(command.orderNumber());
 
-        order.toPaid(command.paymentKey(), command.lastTransactionKey(), command.createdAt());
+        order.toPaid(command.paymentId(), command.lastTransactionKey());
+    }
+
+    @Retryable(
+            retryFor = { InfraException.class },
+            exceptionExpression = "@retryService.isRetryable(#root)",
+            backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
+    )
+    @Transactional
+    public OrderCancelResult requestCancelOrder(Long memberId, Long orderId) {
+        Order order = orderRepository.getByIdWithLock(orderId);
+
+        validateOwner(memberId, order.getBuyerId());
+
+        if (order.isAlreadyCanceled()) return OrderCancelResult.ALREADY_CANCELED;
+        if (order.isCancelPending()) return OrderCancelResult.IN_PROGRESS;
+
+        List<OrderItem> cancelableItems = orderItemRepository.getCancelableItemsByOrderId(orderId);
+        CancelTargetItems targetItems = new CancelTargetItems(cancelableItems);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (order.getStatus() == OrderStatus.CREATED) {
+            order.cancel(now);
+            targetItems.cancel(now);
+            return OrderCancelResult.CANCEL_SUCCESS;
+        }
+
+        order.pendingToCancel(now);
+        targetItems.pendingToCancel(now);
+
+        eventPublisher.publish(new OrderCancelRequestedEvent(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getPaymentId(),
+                order.getOriginTransactionKey(),
+                targetItems.calculateCancelAmount()
+        ));
+        return OrderCancelResult.CANCEL_PENDING;
+    }
+
+    @Transactional
+    public void completeCancel(Long orderId) {
+        Order order = orderRepository.getByIdWithLock(orderId);
+
+        List<OrderItem> pendingItems = orderItemRepository.getPendingCancelItemsByOrderId(orderId);
+        CancelTargetItems targetItems = new CancelTargetItems(pendingItems);
+
+        LocalDateTime canceledAt = LocalDateTime.now();
+
+        order.cancel(canceledAt);
+        targetItems.cancel(canceledAt);
+
+        eventPublisher.publish(new OrderCanceledEvent(
+                orderId,
+                targetItems.toSnapshot(order.getBuyerId())
+        ));
+    }
+
+    @Transactional
+    public void failCancel(Long orderId) {
+        Order order = orderRepository.getByIdWithLock(orderId);
+
+        List<OrderItem> pendingItems = orderItemRepository.getPendingCancelItemsByOrderId(orderId);
+        CancelTargetItems targetItems = new CancelTargetItems(pendingItems);
+
+        order.failCancel();
+        targetItems.failCancel();
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {

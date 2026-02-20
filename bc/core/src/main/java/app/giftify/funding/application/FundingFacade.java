@@ -147,8 +147,8 @@ public class FundingFacade {
         return fundingGetUseCase.getFriendFunding(friendId, id, memberId);
     }
 
-//    @Transactional
-//    public List<FundingCompleteResponseDto> closeAchievedFundings() {
-//        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
-//    }
+    @Transactional
+    public List<FundingCompleteResponseDto> closeAchievedFundings() {
+        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
+    }
 }

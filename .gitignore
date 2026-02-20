@@ -98,6 +98,7 @@ bin/
 .env.properties
 **/.env
 **/.env.properties
+CLAUDE.md
 
 ### contains Auth0 credentials
 docs/workthroughs/

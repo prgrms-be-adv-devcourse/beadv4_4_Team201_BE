@@ -162,4 +162,11 @@ public class Funding extends BaseJpaEntity {
     public void validateReceiver(Long memberId) {
         if (!memberId.equals(this.getReceiverId())) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
     }
+
+    public void updateProductInfo(Integer productPrice) {
+        if (this.status != FundingStatus.IN_PROGRESS) throw new FundingException(FundingErrorCode.NOT_IN_PROGRESS);
+        if (productPrice != null) {
+            this.targetAmount = productPrice;
+        }
+    }
 }
