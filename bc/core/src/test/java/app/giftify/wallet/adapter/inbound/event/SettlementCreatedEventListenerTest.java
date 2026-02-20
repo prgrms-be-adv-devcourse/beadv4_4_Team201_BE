@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
+import app.giftify.shared.domain.event.wallet.WalletSettlementCompletedEvent;
 import app.giftify.shared.domain.event.wallet.WalletPayoutFailedEvent;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
@@ -65,6 +66,27 @@ class SettlementCreatedEventListenerTest {
 		}
 
 		@Test
+		@DisplayName("성공 시 WalletSettlementCompletedEvent를 발행한다")
+		void publishesCompletedEvent() {
+			// given
+			SettlementCreatedEvent event = new SettlementCreatedEvent(1L, 100L, Money.of(50000));
+			willDoNothing().given(settlementPayoutUseCase).payout(any());
+
+			// when
+			sut.handle(event);
+
+			// then
+			ArgumentCaptor<WalletSettlementCompletedEvent> captor =
+				ArgumentCaptor.forClass(WalletSettlementCompletedEvent.class);
+			verify(eventPublisher).publish(captor.capture());
+
+			WalletSettlementCompletedEvent completedEvent = captor.getValue();
+			assertThat(completedEvent.getSettlementId()).isEqualTo(1L);
+			assertThat(completedEvent.getSellerId()).isEqualTo(100L);
+			assertThat(completedEvent.getTotalAmount()).isEqualTo(Money.of(50000));
+		}
+
+		@Test
 		@DisplayName("성공 시 WalletPayoutFailedEvent를 발행하지 않는다")
 		void doesNotPublishFailedEvent() {
 			// given
@@ -75,7 +97,7 @@ class SettlementCreatedEventListenerTest {
 			sut.handle(event);
 
 			// then
-			verify(eventPublisher, never()).publish(any());
+			verify(eventPublisher, never()).publish(any(WalletPayoutFailedEvent.class));
 		}
 	}
 
