@@ -1,7 +1,7 @@
 package app.giftify.settlement.application.outbound.port;
 
-import app.giftify.settlement.domain.SettlementItem;
-import app.giftify.settlement.domain.SettlementItemStatus;
+import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
 
 import java.time.LocalDateTime;
@@ -16,6 +16,8 @@ public interface SettlementItemRepository {
     List<Long> findPendingOrderIds(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 
     List<AmountSummaryProjection> getSettlementSumByOrderIds(List<Long> orderIds);
+
+    List<Long> findDistinctOrderIdsBetween(Long minOrderId, Long maxOrderId, int retryLimit);
 
     Long getMinOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 

@@ -1,15 +1,15 @@
 package app.giftify.settlement.adapter.inbound.event;
 
 
-import app.giftify.settlement.application.SettlementItemService;
+import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
-import app.giftify.settlement.domain.OrderItemSnapshot;
-import app.giftify.settlement.domain.OrderSnapshot;
-import app.giftify.settlement.domain.PaymentSnapshot;
-import app.giftify.settlement.domain.exception.SettlementException;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
+import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.domain.event.funding.FundingReceivedConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
@@ -39,12 +39,8 @@ public class SettlementSnapshotEventListener {
 
         try {
             settlementItemService.initializeSettlementItem(command);
-        } catch (SettlementException e) {
-            if (e.isRetryable()) {
-                log.warn("[SettlementEventHandler] 재시도 대상 예외 발생, fundingId={}, message={}", event.fundingId(), e.getMessage(), e);
-            } else {
-                log.info("[SettlementEventHandler] 처리 불가 도메인/비즈니스 예외 발생, fundingId={}, message={}", event.fundingId(), e.getMessage());
-            }
+        } catch (BusinessException e) {
+            log.warn("errorCode={}, message={}", e.getErrorCode(), e.getMessage(), e);
         } catch (Exception e) {
             log.error("[SettlementEventHandler] 예상치 못한 예외 발생, fundingId={}", event.fundingId(), e);
             throw e; // 필요시 재시도 가능하도록 상위로 던짐
