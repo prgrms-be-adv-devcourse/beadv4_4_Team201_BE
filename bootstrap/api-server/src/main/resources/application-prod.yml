@@ -29,6 +29,12 @@ spring:
     create-schemas: true
     out-of-order: true
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   data:
     redis:
       host: ${REDIS_HOST}
