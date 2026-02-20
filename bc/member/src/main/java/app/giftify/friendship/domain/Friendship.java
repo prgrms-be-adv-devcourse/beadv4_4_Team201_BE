@@ -4,22 +4,23 @@ import java.time.LocalDateTime;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.type.FriendshipStatus;
 
 public class Friendship extends BaseDomainModel {
 
     private final Long requesterId;
     private final Long receiverId;
-    private app.giftify.shared.domain.type.FriendshipStatus status;
+    private FriendshipStatus status;
     private final LocalDateTime createdAt;
     private LocalDateTime acceptedAt;
 
     public Friendship(Long id, Long requesterId, Long receiverId,
-                      app.giftify.shared.domain.type.FriendshipStatus status, LocalDateTime createdAt,
+                      FriendshipStatus status, LocalDateTime createdAt,
                       LocalDateTime acceptedAt) {
         super(id);
         this.requesterId = requesterId;
         this.receiverId = receiverId;
-        this.status = status != null ? status : app.giftify.shared.domain.type.FriendshipStatus.PENDING;
+        this.status = status != null ? status : FriendshipStatus.PENDING;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.acceptedAt = acceptedAt;
     }
@@ -29,20 +30,20 @@ public class Friendship extends BaseDomainModel {
             throw new FriendshipException(FriendshipErrorCode.SELF_FRIEND_REQUEST);
         }
         return new Friendship(null, requesterId, receiverId,
-                app.giftify.shared.domain.type.FriendshipStatus.PENDING, LocalDateTime.now(), null); // TODO : LocalDateTime 대신 파라미터 주입받기
+                FriendshipStatus.PENDING, LocalDateTime.now(), null); // TODO : LocalDateTime 대신 파라미터 주입받기
     }
 
     public void accept(Long memberId) {
         validateReceiver(memberId);
         validatePending();
-        this.status = app.giftify.shared.domain.type.FriendshipStatus.ACCEPTED;
+        this.status = FriendshipStatus.ACCEPTED;
         this.acceptedAt = LocalDateTime.now();
     }
 
     public void reject(Long memberId) {
         validateReceiver(memberId);
         validatePending();
-        this.status = app.giftify.shared.domain.type.FriendshipStatus.REJECTED;
+        this.status = FriendshipStatus.REJECTED;
     }
 
     public void validateMember(Long memberId) {
@@ -64,7 +65,7 @@ public class Friendship extends BaseDomainModel {
     }
 
     private void validatePending() {
-        if (this.status != app.giftify.shared.domain.type.FriendshipStatus.PENDING) {
+        if (this.status != FriendshipStatus.PENDING) {
             throw new FriendshipException(
                     FriendshipErrorCode.INVALID_FRIENDSHIP_STATUS,
                     "PENDING 상태에서만 수락/거절할 수 있습니다. 현재: " + this.status);
@@ -73,7 +74,7 @@ public class Friendship extends BaseDomainModel {
 
     public Long getRequesterId() { return requesterId; }
     public Long getReceiverId() { return receiverId; }
-    public app.giftify.shared.domain.type.FriendshipStatus getStatus() { return status; }
+    public FriendshipStatus getStatus() { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getAcceptedAt() { return acceptedAt; }
 }

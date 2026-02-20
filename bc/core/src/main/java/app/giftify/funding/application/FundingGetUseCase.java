@@ -14,6 +14,7 @@ import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.replica.MemberReplica;
 import app.giftify.replica.MemberReplicaRepository;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +36,7 @@ public class FundingGetUseCase {
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository participantMemberRepository;
     private final MemberReplicaRepository memberReplicaRepository;
+    private final FriendshipVerificationPort friendshipVerificationPort;
 
     /**
      * 전체 공개 단일 펀딩 조회
@@ -176,5 +178,27 @@ public class FundingGetUseCase {
     @Transactional(readOnly = true)
     public boolean checkFundingExistsByProductId(Long productId) {
         return fundingRepository.existsByProductIdAndStatusIn(productId, List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED));
+    }
+
+    /**
+     * 특정 친구의 진행 중인 펀딩 리스트 조회
+     */
+    public PageResponse<FundingResponseDto> getFriendFundings(int page, int size, Long memberId, Long friendId) {
+        if (!friendshipVerificationPort.areFriends(memberId, friendId)) {
+            throw new FundingException(FundingErrorCode.FORBIDDEN, "친구 관계가 아닙니다.");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdAndStatusIn(friendId, List.of(FundingStatus.IN_PROGRESS), pageable);
+        List<Funding> fundings = fundingPage.getContent();
+
+        MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(() ->
+                new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
+
+        List<FundingResponseDto> content = fundings.stream()
+                .map(funding -> FundingResponseDto.fromEntity(funding, friend.getNickname()))
+                .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, fundingPage.getTotalElements());
     }
 }

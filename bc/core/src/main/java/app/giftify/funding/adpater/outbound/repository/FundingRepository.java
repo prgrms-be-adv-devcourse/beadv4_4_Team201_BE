@@ -32,5 +32,7 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
 
     Boolean existsByProductIdAndStatusIn(Long productId, List<FundingStatus> statuses);
 
+    Page<Funding> findAllByReceiverIdAndStatusIn(Long friendId, List<FundingStatus> fundingStatuses, Pageable pageable);
+
 //    List<Funding> findUnacceptedAchievedFundingsBefore(LocalDateTime deadline);
 }
