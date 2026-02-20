@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.flyway.core)
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation(libs.spring.modulith.kafka)
 
     runtimeOnly(libs.h2)
     runtimeOnly(libs.postgresql)

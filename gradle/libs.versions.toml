@@ -61,9 +61,10 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 # Spring Modulith
 # =============================================================================
 spring-modulith-core = { module = "org.springframework.modulith:spring-modulith-starter-core", version.ref = "springModulith" }
-spring-modulith-jdbc = { module = "org.springframework.modulith:spring-modulith-starter-jdbc", version.ref = "springModulith" }
 spring-modulith-jpa = { module = "org.springframework.modulith:spring-modulith-starter-jpa", version.ref = "springModulith" }
 spring-modulith-test = { module = "org.springframework.modulith:spring-modulith-starter-test", version.ref = "springModulith" }
+spring-modulith-events-api = { module = "org.springframework.modulith:spring-modulith-events-api", version.ref = "springModulith" }
+spring-modulith-kafka = { module = "org.springframework.modulith:spring-modulith-events-kafka", version.ref = "springModulith" }
 
 # =============================================================================
 # Spring Security
