@@ -27,10 +27,14 @@ services:
       # TossPayments 환경 변수
       TOSSPAYMENTS_API_BASE_URL: ${TOSSPAYMENTS_API_BASE_URL:-https://api.tosspayments.com}
       TOSSPAYMENTS_SECRET_KEY: ${TOSSPAYMENTS_SECRET_KEY}
+      # Kafka 환경 변수
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
     ports:
       - "8080:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redpanda:
         condition: service_healthy
     networks:
       - giftify-network
@@ -53,6 +57,46 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - giftify-network
+
+  redpanda:
+    image: redpandadata/redpanda:v25.3.7
+    container_name: giftify-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --advertise-kafka-addr
+      - localhost:9092
+    ports:
+      - "9092:9092"
+      - "9644:9644"
+    volumes:
+      - redpanda_data:/var/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - giftify-network
+
+  redpanda-console:
+    image: redpandadata/console:v2.8.0
+    container_name: giftify-redpanda-console
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    depends_on:
+      redpanda:
+        condition: service_healthy
     networks:
       - giftify-network
 
@@ -116,6 +160,8 @@ services:
 #### Docker Volumes ####
 volumes:
   postgres_data:
+    driver: local
+  redpanda_data:
     driver: local
   prometheus_data:
     driver: local
