@@ -1,7 +1,7 @@
 package app.giftify.settlement.adapter.outbound.persistence.jpa;
 
-import app.giftify.settlement.domain.SettlementItem;
-import app.giftify.settlement.domain.SettlementItemStatus;
+import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +16,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     @Query("""
         SELECT DISTINCT s.orderId
         FROM SettlementItem s
-        WHERE s.lifeCycleMeta.status = :status
+        WHERE s.statusInfo.status = :status
           AND s.createdAt < :cutOffDateTime
           AND s.retryCount < :retryLimit
     """)
@@ -39,9 +39,21 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     List<AmountSummaryProjection> findSettlementSumByOrderIds(@Param("orderIds") List<Long> orderIds);
 
     @Query("""
+        SELECT DISTINCT s.orderId
+        FROM SettlementItem s
+        WHERE s.orderId BETWEEN :minOrderId AND :maxOrderId
+          AND s.retryCount < :retryLimit
+    """)
+    List<Long> findDistinctOrderIdsBetween(
+            @Param("minOrderId") Long minOrderId,
+            @Param("maxOrderId") Long maxOrderId,
+            @Param("retryLimit") int retryLimit
+    );
+
+    @Query("""
         SELECT MIN(s.orderId)
         FROM SettlementItem s
-        WHERE s.lifeCycleMeta.status = :status
+        WHERE s.statusInfo.status = :status
           AND s.createdAt < :cutOffDateTime
           AND s.retryCount < :retryLimit
     """)
@@ -54,7 +66,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     @Query("""
         SELECT MAX(s.orderId)
         FROM SettlementItem s
-        WHERE s.lifeCycleMeta.status = :status
+        WHERE s.statusInfo.status = :status
           AND s.createdAt < :cutOffDateTime
           AND s.retryCount < :retryLimit
     """)

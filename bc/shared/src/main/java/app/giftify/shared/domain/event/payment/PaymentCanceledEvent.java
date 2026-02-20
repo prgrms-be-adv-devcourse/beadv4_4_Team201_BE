@@ -1,10 +1,10 @@
 package app.giftify.shared.domain.event.payment;
 
-import java.time.LocalDateTime;
-
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
+
+import java.time.LocalDateTime;
 
 public class PaymentCanceledEvent extends BaseDomainEvent {
     private final Long paymentId;
@@ -14,18 +14,19 @@ public class PaymentCanceledEvent extends BaseDomainEvent {
     private final String reason;
     private final PaymentType type;
     private final LocalDateTime canceledAt;
+    private final Long orderId;
 
-    public PaymentCanceledEvent(Long paymentId, String sourceType, Long userId, Money amount, PaymentType type, String reason,
-		LocalDateTime canceledAt) {
+    public PaymentCanceledEvent(Long paymentId, String sourceType, Long userId, Money amount, String reason, PaymentType type, LocalDateTime canceledAt, Long orderId) {
         super();
         this.paymentId = paymentId;
         this.sourceType = sourceType;
         this.userId = userId;
         this.amount = amount;
-        this.type = type;
         this.reason = reason;
-		this.canceledAt = canceledAt;
-	}
+        this.type = type;
+        this.canceledAt = canceledAt;
+        this.orderId = orderId;
+    }
 
     public Long getPaymentId() {
         return paymentId;
@@ -55,17 +56,21 @@ public class PaymentCanceledEvent extends BaseDomainEvent {
         return canceledAt;
     }
 
+    public Long getOrderId() {
+        return orderId;
+    }
+
     @Override
     public String toString() {
         return "PaymentCanceledEvent{" +
-                "paymentId=" + paymentId + 
-                ", sourceType='" + sourceType + "'" + 
-                ", userId=" + userId + 
-                ", amount=" + amount + 
-                ", type=" + type + 
-                ", reason='" + reason + "'" + 
-                ", eventId='" + getEventId() + "'" + 
-                ", canceledAt=" + getOccurredAt() +
+                "paymentId=" + paymentId +
+                ", sourceType='" + sourceType + '\'' +
+                ", userId=" + userId +
+                ", amount=" + amount +
+                ", reason='" + reason + '\'' +
+                ", type=" + type +
+                ", canceledAt=" + canceledAt +
+                ", orderId=" + orderId +
                 '}';
     }
 }

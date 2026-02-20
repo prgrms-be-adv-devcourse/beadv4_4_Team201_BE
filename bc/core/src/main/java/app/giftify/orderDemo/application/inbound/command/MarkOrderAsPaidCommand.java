@@ -8,7 +8,7 @@ public record MarkOrderAsPaidCommand(
         @NotNull
         String orderNumber,
         @NotNull
-        String paymentKey,
+        Long paymentId,
         @NotNull
         String lastTransactionKey,
         @NotNull

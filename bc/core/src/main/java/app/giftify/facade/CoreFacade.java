@@ -45,7 +45,7 @@ public class CoreFacade {
 
         MarkOrderAsPaidCommand markOrderAsPaidCommand = new MarkOrderAsPaidCommand(
                 paymentResult.orderNumber(),
-                paymentResult.paymentKey(),
+                paymentResult.paymentId(),
                 paymentResult.lastTransactionKey(),
                 paymentResult.createdAt()
         );

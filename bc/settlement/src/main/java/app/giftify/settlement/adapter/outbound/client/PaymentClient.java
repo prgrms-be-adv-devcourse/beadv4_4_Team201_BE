@@ -1,6 +1,6 @@
 package app.giftify.settlement.adapter.outbound.client;
 
-import app.giftify.shared.api.exception.BusinessException;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.vo.Money;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -14,8 +14,7 @@ import java.util.Map;
 public interface PaymentClient {
 
     @Retryable(
-            value = BusinessException.class,
-            maxAttempts = 3,
+            retryFor = InfraException.class,
             backoff = @Backoff(delay = 500)
     )
     @PostExchange(url = "/bulk-amounts")
