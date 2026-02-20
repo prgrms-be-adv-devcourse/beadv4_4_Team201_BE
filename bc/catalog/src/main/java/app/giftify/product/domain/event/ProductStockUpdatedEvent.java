@@ -20,4 +20,16 @@ public class ProductStockUpdatedEvent extends BaseDomainEvent {
     public Long getProductId() {
         return result.productId();
     }
+
+    @Override
+    public String toString() {
+        return "ProductStockUpdatedEvent{" +
+                "productId=" + result.productId() +
+                ", sellerId=" + result.sellerId() +
+                ", beforeStock=" + result.beforeStock() +
+                ", afterStock=" + result.afterStock() +
+                ", delta=" + result.delta() +
+                ", changeType=" + result.changeType() +
+                '}';
+    }
 }
