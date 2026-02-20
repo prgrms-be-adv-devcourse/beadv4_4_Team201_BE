@@ -2,6 +2,7 @@ package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
+import app.giftify.orderDemo.application.dto.OrderCancelResult;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
@@ -111,10 +112,13 @@ public class OrderService {
             backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
     )
     @Transactional
-    public void requestCancelOrder(Long memberId, Long orderId) {
+    public OrderCancelResult requestCancelOrder(Long memberId, Long orderId) {
         Order order = orderRepository.getByIdWithLock(orderId);
 
         validateOwner(memberId, order.getBuyerId());
+
+        if (order.isAlreadyCanceled()) return OrderCancelResult.ALREADY_CANCELED;
+        if (order.isCancelPending()) return OrderCancelResult.IN_PROGRESS;
 
         List<OrderItem> cancelableItems = orderItemRepository.getCancelableItemsByOrderId(orderId);
         CancelTargetItems targetItems = new CancelTargetItems(cancelableItems);
@@ -124,7 +128,7 @@ public class OrderService {
         if (order.getStatus() == OrderStatus.CREATED) {
             order.cancel(now);
             targetItems.cancel(now);
-            return;
+            return OrderCancelResult.CANCEL_SUCCESS;
         }
 
         order.pendingToCancel(now);
@@ -137,6 +141,7 @@ public class OrderService {
                 order.getOriginTransactionKey(),
                 targetItems.calculateCancelAmount()
         ));
+        return OrderCancelResult.CANCEL_PENDING;
     }
 
     @Transactional

@@ -152,13 +152,6 @@ public class Order extends BaseAggregateRoot {
     }
 
     public void pendingToCancel(LocalDateTime cancelRequestedAt) {
-        if (status == OrderStatus.CANCEL_PENDING) {
-            throw new PolicyException(
-                    OrderErrorCode.IN_PROGRESS_CANCEL,
-                    String.format("이미 진행 중인 주문 취소 건입니다. orderId = %d", id)
-            );
-        }
-
         validateStatusForCancel();
 
         status = OrderStatus.CANCEL_PENDING;
@@ -167,6 +160,14 @@ public class Order extends BaseAggregateRoot {
 
     public void failCancel() {
         status = OrderStatus.PAID;
+    }
+
+    public boolean isAlreadyCanceled() {
+        return status == OrderStatus.CANCELED;
+    }
+
+    public boolean isCancelPending() {
+        return status == OrderStatus.CANCEL_PENDING;
     }
 
     private static String generateOrderNumber() {
@@ -192,13 +193,6 @@ public class Order extends BaseAggregateRoot {
     }
 
     private void validateStatusForCancel() {
-        if (status == OrderStatus.CANCELED) {
-            throw new PolicyException(
-                    OrderErrorCode.ALREADY_CANCELED,
-                    String.format("이미 주문 취소가 완료되었습니다. orderId = %d", id)
-            );
-        }
-
         if (status == OrderStatus.CONFIRMED) {
             throw new PolicyException(
                     OrderErrorCode.INVALID_STATUS_CANCEL,
