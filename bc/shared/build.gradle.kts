@@ -5,6 +5,8 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.spring.modulith.events.api)
+
     // Test
     testImplementation(libs.spring.boot.starter.test)
 }
