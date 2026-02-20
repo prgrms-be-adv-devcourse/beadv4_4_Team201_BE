@@ -1,8 +1,11 @@
 package app.giftify.shared.domain.event.wallet;
 
+import org.springframework.modulith.events.Externalized;
+
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
+@Externalized("wallet.settlement-completed::#{#this.getSettlementId()}")
 public class WalletSettlementCompletedEvent extends BaseDomainEvent {
 	private final Long settlementId;
 	private final Long sellerId;
