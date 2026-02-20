@@ -152,7 +152,7 @@ public interface FundingV2ApiSpec {
             description = "친구로 등록된 사용자들의 진행 중(IN_PROGRESS)인 펀딩 리스트를 조회합니다."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "친구 펀딩 단건 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "친구들 펀딩 리스트 조회 성공"),
             @ApiResponse(responseCode = "403", description = "친구 관계 아님 (F008)"),
             @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)"),
             @ApiResponse(responseCode = "404", description = "수령자를 찾을 수 없음 (F012)")
