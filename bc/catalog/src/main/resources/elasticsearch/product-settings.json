@@ -1,5 +1,12 @@
 {
   "analysis": {
+    "char_filter": {
+      "whitespace_remove": {
+        "type": "pattern_replace",
+        "pattern": "\\s+",
+        "replacement": ""
+      }
+    },
     "filter": {
       "nfd_filter": {
         "type": "icu_transform",
@@ -24,6 +31,9 @@
       },
       "ngram_analyzer": {
         "type": "custom",
+        "char_filter": [
+          "whitespace_remove"
+        ],
         "tokenizer": "ngram_tokenizer",
         "filter": [
           "lowercase"

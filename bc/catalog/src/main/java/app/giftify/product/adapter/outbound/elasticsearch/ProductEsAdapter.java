@@ -105,9 +105,8 @@ public class ProductEsAdapter implements ProductEsPort {
         // 키워드가 있으면 스코어 기반 검색 수행
         if (command.keyword() != null && !command.keyword().isBlank()) {
             String keyword = command.keyword();
-            String keywordNoSpaces = keyword.replaceAll("\\s+", "");
 
-            // 1순위: 원본 검색어 ngram 매칭
+            // 1순위: ngram 부분 매칭
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(keyword)
                     .fields("name.ngram")
@@ -115,40 +114,21 @@ public class ProductEsAdapter implements ProductEsPort {
                     .boost(3f)
             ));
 
-            // 공백 제거 검색어가 원본과 다를 경우 추가 매칭
-            if (!keywordNoSpaces.equals(keyword)) {
-                boolBuilder.should(s -> s.multiMatch(mm -> mm
-                        .query(keywordNoSpaces)
-                        .fields("name.ngram")
-                        .minimumShouldMatch("70%")
-                        .boost(3f)
-                ));
-            }
-
-            // 2순위: nori 형태소 매칭 (자연어 설명 검색)
+            // 2순위: nori 형태소 매칭
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(keyword)
-                    .fields("description")
+                    .fields("name", "description")
                     .operator(Operator.And)
                     .boost(2f)
             ));
 
-            // 3순위: 자모 분해(NFD) + 오타 허용 (음소 단위 매칭)
+            // 3순위: jamo 오타 보정
             boolBuilder.should(s -> s.multiMatch(mm -> mm
                     .query(keyword)
                     .fields("name.jamo^2", "description.jamo")
                     .fuzziness("AUTO")
                     .boost(1f)
             ));
-
-            if (!keywordNoSpaces.equals(keyword)) {
-                boolBuilder.should(s -> s.multiMatch(mm -> mm
-                        .query(keywordNoSpaces)
-                        .fields("name.jamo^2", "description.jamo")
-                        .fuzziness("AUTO")
-                        .boost(1f)
-                ));
-            }
 
             // 4순위: 판매자명 keyword 매칭
             boolBuilder.should(s -> s.fuzzy(fz -> fz
