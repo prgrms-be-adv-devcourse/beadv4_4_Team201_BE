@@ -107,28 +107,6 @@ public class Order extends BaseAggregateRoot {
         return order;
     }
 
-    private static String generateOrderNumber() {
-        return "ORD-"
-                + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase()
-                + "-"
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-    }
-
-    private void addItem(OrderItem item) {
-        items.add(item);
-        item.setOrder(this);
-    }
-
-    private void setTotalAmount() {
-        this.totalAmount = items.stream()
-                .map(OrderItem::getAmount)
-                .reduce(Money.zero(), Money::plus);
-    }
-
-    private void setQuantity(long quantity) {
-        this.quantity = quantity;
-    }
-
     public OrderSnapshot toSnapshot() {
         List<OrderItemSnapshot> itemSnapshots = items.stream()
                 .map(OrderItem::toSnapshot)
@@ -166,23 +144,66 @@ public class Order extends BaseAggregateRoot {
         items.forEach(i -> i.toPaid(originTransactionKey));
     }
 
-    public void cancel() {
-        if (status == OrderStatus.CANCELED) {
-            throw new PolicyException(
-                    OrderErrorCode.ALREADY_CANCELED,
-                    String.format("이미 취소된 주문입니다. orderId = %s", id)
-            );
-        }
+    public void cancel(LocalDateTime cancelledAt) {
+        validateStatusForCancel();
+
+        status = OrderStatus.CANCELED;
+        this.cancelledAt = cancelledAt;
     }
 
     public void pendingToCancel(LocalDateTime cancelRequestedAt) {
-        if (status == OrderStatus.CANCELED || status == OrderStatus.CANCEL_PENDING) {
+        if (status == OrderStatus.CANCEL_PENDING) {
             throw new PolicyException(
-                    OrderErrorCode.ALREADY_CANCELED,
-                    String.format("이미 취소(요청)된 주문입니다. orderId = %s", id)
+                    OrderErrorCode.IN_PROGRESS_CANCEL,
+                    String.format("이미 진행 중인 주문 취소 건입니다. orderId = %d", id)
             );
         }
+
+        validateStatusForCancel();
+
         status = OrderStatus.CANCEL_PENDING;
         this.cancelRequestedAt = cancelRequestedAt;
+    }
+
+    public void failCancel() {
+        status = OrderStatus.PAID;
+    }
+
+    private static String generateOrderNumber() {
+        return "ORD-"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase()
+                + "-"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+    }
+
+    private void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+
+    private void setTotalAmount() {
+        this.totalAmount = items.stream()
+                .map(OrderItem::getAmount)
+                .reduce(Money.zero(), Money::plus);
+    }
+
+    private void setQuantity(long quantity) {
+        this.quantity = quantity;
+    }
+
+    private void validateStatusForCancel() {
+        if (status == OrderStatus.CANCELED) {
+            throw new PolicyException(
+                    OrderErrorCode.ALREADY_CANCELED,
+                    String.format("이미 주문 취소가 완료되었습니다. orderId = %d", id)
+            );
+        }
+
+        if (status == OrderStatus.CONFIRMED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_CANCEL,
+                    String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
+            );
+        }
     }
 }

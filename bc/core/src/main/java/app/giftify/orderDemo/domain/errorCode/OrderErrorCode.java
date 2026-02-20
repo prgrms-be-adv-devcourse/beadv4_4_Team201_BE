@@ -32,6 +32,8 @@ public enum OrderErrorCode implements ErrorCode {
 
     INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT.value(), "ORDER-119", "잘못된 상태 변경 요청입니다."),
     ALREADY_CANCELED(HttpStatus.OK.value(), "ORDER-120", "이미 취소된 주문입니다."),
+    IN_PROGRESS_CANCEL(HttpStatus.ACCEPTED.value(), "ORDER-121", "취소가 진행 중입니다."),
+    INVALID_STATUS_CANCEL(HttpStatus.BAD_REQUEST.value(), "ORDER-122", "취소가 불가능한 주문 상태입니다."),
     ;
 
     private final int statusCode;

@@ -11,4 +11,6 @@ public interface OrderItemRepository {
     OrderItem getOrderItemById(Long id);
 
     List<OrderItem> getCancelableItemsByOrderId(Long orderId);
+
+    List<OrderItem> getPendingCancelItemsByOrderId(Long orderId);
 }

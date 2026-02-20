@@ -10,10 +10,7 @@ import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
 import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
-import app.giftify.orderDemo.domain.CancelTargetItems;
-import app.giftify.orderDemo.domain.Order;
-import app.giftify.orderDemo.domain.OrderItem;
-import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.orderDemo.domain.*;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.InfraException;
@@ -24,10 +21,10 @@ import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
-import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +41,7 @@ import java.util.stream.Collectors;
 
 @Service("orderV2Service")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -121,20 +119,48 @@ public class OrderService {
         List<OrderItem> cancelableItems = orderItemRepository.getCancelableItemsByOrderId(orderId);
         CancelTargetItems targetItems = new CancelTargetItems(cancelableItems);
 
-        Money cancelAmount = targetItems.calculateCancelAmount();
+        LocalDateTime now = LocalDateTime.now();
 
-        LocalDateTime cancelRequestedAt = LocalDateTime.now();
+        if (order.getStatus() == OrderStatus.CREATED) {
+            order.cancel(now);
+            targetItems.cancel(now);
+            return;
+        }
 
-        order.pendingToCancel(cancelRequestedAt);
-        targetItems.pendingToCancel(cancelRequestedAt);
+        order.pendingToCancel(now);
+        targetItems.pendingToCancel(now);
 
         eventPublisher.publish(new OrderCancelRequestedEvent(
                 order.getId(),
                 order.getOrderNumber(),
                 order.getPaymentId(),
                 order.getOriginTransactionKey(),
-                cancelAmount
+                targetItems.calculateCancelAmount()
         ));
+    }
+
+    @Transactional
+    public void completeCancel(Long orderId) {
+        Order order = orderRepository.getByIdWithLock(orderId);
+
+        List<OrderItem> pendingItems = orderItemRepository.getPendingCancelItemsByOrderId(orderId);
+        CancelTargetItems targetItems = new CancelTargetItems(pendingItems);
+
+        LocalDateTime canceledAt = LocalDateTime.now();
+
+        order.cancel(canceledAt);
+        targetItems.cancel(canceledAt);
+    }
+
+    @Transactional
+    public void failCancel(Long orderId) {
+        Order order = orderRepository.getByIdWithLock(orderId);
+
+        List<OrderItem> pendingItems = orderItemRepository.getPendingCancelItemsByOrderId(orderId);
+        CancelTargetItems targetItems = new CancelTargetItems(pendingItems);
+
+        order.failCancel();
+        targetItems.failCancel();
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {

@@ -60,7 +60,7 @@ public interface OrderControllerSpec {
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
-    ResponseEntity<RsData<Void>> cancelOrder(
+    ResponseEntity<RsData<String>> cancelOrder(
             @Parameter(hidden = true) Long memberId,
             @PathVariable Long orderId
     );

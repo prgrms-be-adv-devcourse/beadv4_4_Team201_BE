@@ -73,9 +73,10 @@ public class OrderController implements OrderControllerSpec {
         return ResponseEntity.ok(body);
     }
 
+    @Idempotent(prefix = PREFIX)
     @DeleteMapping("/{orderId}")
     @Override
-    public ResponseEntity<RsData<Void>> cancelOrder(
+    public ResponseEntity<RsData<String>> cancelOrder(
             @CurrentMemberId Long memberId,
             @PathVariable Long orderId
     ) {

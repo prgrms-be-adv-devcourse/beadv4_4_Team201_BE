@@ -31,4 +31,9 @@ public class OrderItemAdapter implements OrderItemRepository {
     public List<OrderItem> getCancelableItemsByOrderId(Long orderId) {
         return jpaOrderItemRepository.findCancelableItemsByOrderId(orderId);
     }
+
+    @Override
+    public List<OrderItem> getPendingCancelItemsByOrderId(Long orderId) {
+        return jpaOrderItemRepository.findPendingCancelItemsByOrderId(orderId);
+    }
 }

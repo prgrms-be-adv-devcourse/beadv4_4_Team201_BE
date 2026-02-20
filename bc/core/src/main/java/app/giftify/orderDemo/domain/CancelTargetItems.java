@@ -17,7 +17,11 @@ public record CancelTargetItems(List<OrderItem> items) {
         items.forEach(i -> i.pendingToCancel(cancelRequestedAt));
     }
 
-    public void cancel() {
-        items.forEach(OrderItem::cancel);
+    public void cancel(LocalDateTime canceledAt) {
+        items.forEach(i -> i.cancel(canceledAt));
+    }
+
+    public void failCancel() {
+        items.forEach(OrderItem::failCancel);
     }
 }

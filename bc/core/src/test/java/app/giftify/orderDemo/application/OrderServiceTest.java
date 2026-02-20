@@ -248,7 +248,7 @@ class OrderServiceTest {
         @DisplayName("성공: 취소 가능한 아이템이 있는 주문을 CANCEL_PENDING 상태로 변경하고 OrderCancelRequestedEvent를 발행한다")
         void given_paidOrder_when_requestCancelOrder_then_success() {
             // given
-            Order order = spy(OrderFixture.createOrderWithItems(memberId, 2));
+            Order order = spy(OrderFixture.createOrderWithStatus(OrderStatus.PAID));
             ReflectionTestUtils.setField(order, "id", orderId);
 
             List<OrderItem> cancelableItems = new ArrayList<>(order.getItems());
@@ -308,7 +308,7 @@ class OrderServiceTest {
         }
 
         @Test
-        @DisplayName("실패: 취소 요청이 이미 진행 중인 주문(CANCEL_PENDING)에 재요청 시 ALREADY_CANCELED 예외가 발생한다")
+        @DisplayName("실패: 취소 요청이 이미 진행 중인 주문(CANCEL_PENDING)에 재요청 시 IN_PROGRESS_CANCEL 예외가 발생한다")
         void given_cancelPendingOrder_when_requestCancelOrder_then_throwAlreadyCanceled() {
             // given
             Order cancelPendingOrder = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
@@ -321,7 +321,7 @@ class OrderServiceTest {
             assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
-                    .isEqualTo(OrderErrorCode.ALREADY_CANCELED);
+                    .isEqualTo(OrderErrorCode.IN_PROGRESS_CANCEL);
 
             verify(eventPublisher, never()).publish(any());
         }

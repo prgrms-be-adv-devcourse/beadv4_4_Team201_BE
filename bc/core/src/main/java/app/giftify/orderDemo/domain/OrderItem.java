@@ -180,17 +180,21 @@ public class OrderItem {
         this.originTransactionKey = originTransactionKey;
     }
 
-    public void cancel() {
+    public void cancel(LocalDateTime cancelledAt) {
         if (status == OrderItemStatus.CANCELED) {
             log.warn("이미 취소된 주문입니다. orderId = {}, orderItemId = {}", order.getId(), id);
         }
 
         status = OrderItemStatus.CANCELED;
-        cancelledAt = LocalDateTime.now();
+        this.cancelledAt = cancelledAt;
     }
 
     public void pendingToCancel(LocalDateTime cancelRequestedAt) {
         status = OrderItemStatus.CANCEL_PENDING;
         this.cancelRequestedAt = cancelRequestedAt;
+    }
+
+    public void failCancel() {
+        status = OrderItemStatus.PAID;
     }
 }
