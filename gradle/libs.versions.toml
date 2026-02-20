@@ -56,7 +56,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
-
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop"}
 # =============================================================================
 # Spring Modulith
 # =============================================================================

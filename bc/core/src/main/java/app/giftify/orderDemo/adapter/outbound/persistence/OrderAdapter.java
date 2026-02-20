@@ -39,4 +39,13 @@ public class OrderAdapter implements OrderRepository {
         return jpaOrderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new PolicyException(OrderErrorCode.ORDER_NOT_FOUND, "orderNumber = " + orderNumber));
     }
+
+    @Override
+    public Order getByIdWithLock(Long id) {
+        return jpaOrderRepository.findByIdWithLock(id)
+                .orElseThrow(() -> new PolicyException(
+                        OrderErrorCode.ORDER_NOT_FOUND,
+                        String.format("주문이 존재하지 않습니다. orderId = %d", id))
+                );
+    }
 }

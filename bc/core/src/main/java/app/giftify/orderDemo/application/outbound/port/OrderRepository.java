@@ -12,4 +12,6 @@ public interface OrderRepository {
     Order getById(Long orderId);
 
     Order getByOrderNumber(String orderNumber);
+
+    Order getByIdWithLock(Long id);
 }

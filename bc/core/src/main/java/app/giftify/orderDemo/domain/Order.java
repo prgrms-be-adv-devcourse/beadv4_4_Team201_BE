@@ -58,13 +58,16 @@ public class Order extends BaseAggregateRoot {
     private List<OrderItem> items = new ArrayList<>();
 
     @Column(unique = true)
-    private String paymentKey;
+    private Long paymentId;
 
     @Column
-    private String lastTransactionKey;
+    private String originTransactionKey;
 
     @Column
     private LocalDateTime paidAt;
+
+    @Column
+    private LocalDateTime cancelRequestedAt;
 
     @Column
     private LocalDateTime cancelledAt;
@@ -104,6 +107,76 @@ public class Order extends BaseAggregateRoot {
         return order;
     }
 
+    public OrderSnapshot toSnapshot() {
+        List<OrderItemSnapshot> itemSnapshots = items.stream()
+                .map(OrderItem::toSnapshot)
+                .toList();
+
+        return OrderSnapshot.builder()
+                .orderId(id)
+                .orderNumber(orderNumber)
+                .buyerId(buyerId)
+                .orderItemSnapshots(itemSnapshots)
+                .totalAmount(totalAmount)
+                .paymentMethod(paymentMethod)
+                .status(status)
+                .createdAt(createdAt)
+                .build();
+    }
+
+    public void toPaid(Long paymentId, String originTransactionKey) {
+        if (this.status == OrderStatus.PAID) {
+            return;
+        }
+
+        if (status != OrderStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
+            );
+        }
+
+        this.paymentId = paymentId;
+        this.originTransactionKey = originTransactionKey;
+        this.paidAt = LocalDateTime.now();
+        this.status = OrderStatus.PAID;
+
+        items.forEach(i -> i.toPaid(originTransactionKey));
+    }
+
+    public void cancel(LocalDateTime cancelledAt) {
+        validateStatusForCancel();
+
+        status = OrderStatus.CANCELED;
+        this.cancelledAt = cancelledAt;
+    }
+
+    public void pendingToCancel(LocalDateTime cancelRequestedAt) {
+        validateStatusForCancel();
+
+        status = OrderStatus.CANCEL_PENDING;
+        this.cancelRequestedAt = cancelRequestedAt;
+    }
+
+    public void failCancel() {
+        if (status != OrderStatus.CANCEL_PENDING) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
+            );
+        }
+
+        status = OrderStatus.PAID;
+    }
+
+    public boolean isAlreadyCanceled() {
+        return status == OrderStatus.CANCELED;
+    }
+
+    public boolean isCancelPending() {
+        return status == OrderStatus.CANCEL_PENDING;
+    }
+
     private static String generateOrderNumber() {
         return "ORD-"
                 + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase()
@@ -126,40 +199,12 @@ public class Order extends BaseAggregateRoot {
         this.quantity = quantity;
     }
 
-    public OrderSnapshot toSnapshot() {
-        List<OrderItemSnapshot> itemSnapshots = items.stream()
-                .map(OrderItem::toSnapshot)
-                .toList();
-
-        return OrderSnapshot.builder()
-                .orderId(id)
-                .orderNumber(orderNumber)
-                .buyerId(buyerId)
-                .orderItemSnapshots(itemSnapshots)
-                .totalAmount(totalAmount)
-                .paymentMethod(paymentMethod)
-                .status(status)
-                .createdAt(createdAt)
-                .build();
-    }
-
-    public void toPaid(String paymentKey, String lastTransactionKey, LocalDateTime paidAt) {
-        if (this.status == OrderStatus.PAID) {
-            return;
-        }
-
-        if (status != OrderStatus.CREATED) {
+    private void validateStatusForCancel() {
+        if (status == OrderStatus.CONFIRMED) {
             throw new PolicyException(
                     OrderErrorCode.INVALID_STATUS_TRANSITION,
-                    String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
+                    String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
             );
         }
-
-        this.paymentKey = paymentKey;
-        this.lastTransactionKey = lastTransactionKey;
-        this.paidAt = paidAt;
-        this.status = OrderStatus.PAID;
-
-        items.forEach(OrderItem::toPaid);
     }
 }
