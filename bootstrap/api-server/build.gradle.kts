@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":bc:catalog"))
     implementation(project(":bc:core"))
     implementation(project(":bc:settlement"))
+    implementation(project(":bc:notification"))
     implementation(project(":support:common"))
     implementation(project(":support:logging"))
     implementation(project(":support:security"))
