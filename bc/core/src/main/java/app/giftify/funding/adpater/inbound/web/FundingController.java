@@ -123,6 +123,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 특정 친구의 진행 중인 펀딩 리스트 조회
+    @Override
     @GetMapping("/friend/{friendId}/list")
     public ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFriendFundings(
             @PathVariable("friendId") Long friendId,
@@ -134,7 +135,15 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     // 특정 친구의 특정 펀딩 조회
-
+    @Override
+    @GetMapping("/friend/{friendId}/{id}")
+    public ResponseEntity<RsData<FundingResponseDto>> getFriendFunding(
+            @PathVariable("friendId") Long friendId,
+            @PathVariable("id") Long id,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
+        FundingResponseDto funding = fundingFacade.getFriendFunding(friendId, id, memberId);
+        return ResponseEntity.ok(RsData.success(funding));
+    }
 
     // 내 친구들의 펀딩 리스트 조회
 }

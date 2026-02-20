@@ -201,4 +201,25 @@ public class FundingGetUseCase {
 
         return PageResponse.of(content, page, size, fundingPage.getTotalElements());
     }
+
+    /**
+     * 특정 친구의 진행 중인 단건 펀딩 조회
+     */
+    public FundingResponseDto getFriendFunding(Long friendId, Long id, Long memberId) {
+        if (!friendshipVerificationPort.areFriends(memberId, friendId)) {
+            throw new FundingException(FundingErrorCode.FORBIDDEN, "친구 관계가 아닙니다.");
+        }
+
+        Funding funding = fundingRepository.findByIdAndStatus(id, FundingStatus.IN_PROGRESS)
+                .orElseThrow(()-> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
+
+        MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(()->
+                new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
+
+        return FundingResponseDto.fromEntity(funding, friend.getNickname());
+    }
+
+    /**
+     * 내 친구들의 진행 중인 펀딩 리스트 조회
+     */
 }

@@ -327,6 +327,16 @@ VALUES
 ALTER TABLE wallet_history
     ALTER COLUMN id RESTART WITH 100;
 
+-- -----------------------------------------------------------------------------
+-- 17. FRIENDSHIPS(소셜) -
+-- -----------------------------------------------------------------------------
+    INSERT INTO friendships (id, requester_id, receiver_id, status, accepted_at,
+                             created_at, updated_at, created_by, updated_by)
+    VALUES (1, 2, 3, 'ACCEPTED', '2026-02-07 12:00:00', '2026-02-07 12:00:00', '2026-02-07 12:00:00','SYSTEM','SYSTEM');
+
+ALTER TABLE friendships
+    ALTER COLUMN id RESTART WITH 100;
+
 -- =============================================================================
 -- Seed Data Summary (Flyway V1.2.0~V1.2.4 동기화)
 -- =============================================================================
