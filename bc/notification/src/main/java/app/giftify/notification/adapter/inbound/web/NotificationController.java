@@ -24,17 +24,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
-public class NotificationController {
+public class NotificationController implements NotificationV2ApiSpec {
 
 	private final NotificationQueryUseCase queryUseCase;
 	private final NotificationCommandUseCase commandUseCase;
 	private final SseSubscribeUseCase sseSubscribeUseCase;
 
+	@Override
 	@GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter subscribe(@CurrentMemberId Long memberId) {
 		return sseSubscribeUseCase.subscribe(memberId);
 	}
 
+	@Override
 	@GetMapping
 	public ResponseEntity<RsData<Page<NotificationResponse>>> getNotifications(
 		@CurrentMemberId Long memberId,
@@ -45,6 +47,7 @@ public class NotificationController {
 		return ResponseEntity.ok(RsData.success(page));
 	}
 
+	@Override
 	@GetMapping("/unread")
 	public ResponseEntity<RsData<Page<NotificationResponse>>> getUnreadNotifications(
 		@CurrentMemberId Long memberId,
@@ -55,6 +58,7 @@ public class NotificationController {
 		return ResponseEntity.ok(RsData.success(page));
 	}
 
+	@Override
 	@GetMapping("/unread/count")
 	public ResponseEntity<RsData<UnreadCountResponse>> getUnreadCount(
 		@CurrentMemberId Long memberId
@@ -63,6 +67,7 @@ public class NotificationController {
 		return ResponseEntity.ok(RsData.success(new UnreadCountResponse(count)));
 	}
 
+	@Override
 	@PatchMapping("/{notificationId}/read")
 	public ResponseEntity<RsData<Void>> markAsRead(
 		@CurrentMemberId Long memberId,
@@ -72,6 +77,7 @@ public class NotificationController {
 		return ResponseEntity.ok(RsData.success(null));
 	}
 
+	@Override
 	@PatchMapping("/read-all")
 	public ResponseEntity<RsData<Void>> markAllAsRead(
 		@CurrentMemberId Long memberId
