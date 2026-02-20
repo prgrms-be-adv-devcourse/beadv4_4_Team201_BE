@@ -20,4 +20,8 @@ public class InfraException extends BaseException {
     public InfraErrorCode getErrorCode() {
         return (InfraErrorCode) super.getErrorCode();
     }
+
+    public InfraException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause.getMessage(), cause);
+    }
 }

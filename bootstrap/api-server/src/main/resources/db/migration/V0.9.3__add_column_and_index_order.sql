@@ -7,5 +7,5 @@ ALTER TABLE order_item_v2
     ADD COLUMN cancel_requested_at TIMESTAMP WITH TIME ZONE;
 
 -- order_v2: 주문 전체 취소 일자 추가
-ALTER TABLE order
+ALTER TABLE order_v2
     ADD COLUMN cancel_requested_at TIMESTAMP WITH TIME ZONE;

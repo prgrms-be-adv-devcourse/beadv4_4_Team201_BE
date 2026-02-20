@@ -7,9 +7,8 @@ import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -29,8 +28,7 @@ public class ProductEventListener {
     }
 
     // 재고 이력 생성
-    @TransactionalEventListener
-    @Async
+    @ApplicationModuleListener
     public void handleStockUpdated(ProductStockUpdatedEvent event) {
         Long productId = event.getProductId();
         log.info("[product] 상품 재고량 갱신 이벤트를 받았습니다.  | productId: {}", productId);

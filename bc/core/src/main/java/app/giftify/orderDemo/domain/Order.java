@@ -159,6 +159,13 @@ public class Order extends BaseAggregateRoot {
     }
 
     public void failCancel() {
+        if (status != OrderStatus.CANCEL_PENDING) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
+            );
+        }
+
         status = OrderStatus.PAID;
     }
 
@@ -195,7 +202,7 @@ public class Order extends BaseAggregateRoot {
     private void validateStatusForCancel() {
         if (status == OrderStatus.CONFIRMED) {
             throw new PolicyException(
-                    OrderErrorCode.INVALID_STATUS_CANCEL,
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
                     String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
             );
         }

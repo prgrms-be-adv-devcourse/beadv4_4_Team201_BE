@@ -2,9 +2,9 @@ package app.giftify.settlement.adapter.outbound.persistence;
 
 import app.giftify.settlement.adapter.outbound.persistence.jpa.JpaOrderItemSnapshotRepository;
 import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
-import app.giftify.settlement.domain.OrderItemSnapshot;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
-import app.giftify.settlement.domain.exception.PolicyException;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
