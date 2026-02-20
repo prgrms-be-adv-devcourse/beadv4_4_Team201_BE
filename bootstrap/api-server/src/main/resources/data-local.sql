@@ -205,15 +205,15 @@ ALTER TABLE funding_participant_member
 -- 12. ORDER_V2 (주문) — V1.2.4
 -- -----------------------------------------------------------------------------
 INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
-                      payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at,
+                      payment_id, origin_transaction_key, paid_at, confirmed_at, cancelled_at,
                       created_at, updated_at)
 VALUES
     (1, 2, 'ORD-20260205-A1B2C3D4E5F6-20260205170000', 359000.00, 1, 'CARD', 'PAID',
-     'toss_pk_20260205_0001', 'toss_tx_20260205_0001', '2026-02-05 17:05:00', NULL, NULL,
+     1, 'toss_tx_20260205_0001', '2026-02-05 17:05:00', NULL, NULL,
      '2026-02-05 17:00:00', '2026-02-05 17:05:00'),
 
     (2, 2, 'ORD-20260205-B2C3D4E5F6G7-20260205171000', 23000.00, 1, 'CARD', 'CONFIRMED',
-     'toss_pk_20260205_0002', 'toss_tx_20260205_0002', '2026-02-05 17:15:00', '2026-02-06 10:00:00', NULL,
+     2, 'toss_tx_20260205_0002', '2026-02-05 17:15:00', '2026-02-06 10:00:00', NULL,
      '2026-02-05 17:10:00', '2026-02-06 10:00:00'),
 
     (3, 5, 'ORD-20260207-C3D4E5F6G7H8-20260207120000', 415000.00, 1, 'CARD', 'CREATED',
@@ -221,11 +221,11 @@ VALUES
      '2026-02-07 12:00:00', '2026-02-07 12:00:00'),
 
     (4, 6, 'ORD-20260208-D4E5F6G7H8I9-20260208140000', 448000.00, 2, 'KAKAO_PAY', 'PAID',
-     'toss_pk_20260208_0004', 'toss_tx_20260208_0004', '2026-02-08 14:05:00', NULL, NULL,
+     NULL, NULL, NULL, NULL, NULL,
      '2026-02-08 14:00:00', '2026-02-08 14:05:00'),
 
     (5, 5, 'ORD-20260208-E5F6G7H8I9J0-20260208150000', 89000.00, 1, 'CARD', 'CANCELED',
-     'toss_pk_20260208_0005', 'toss_tx_20260208_0005', '2026-02-08 15:05:00', NULL, '2026-02-08 16:00:00',
+     NULL, NULL, NULL, NULL, '2026-02-08 16:00:00',
      '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
 ALTER TABLE order_v2
@@ -252,7 +252,7 @@ VALUES
      415000.00, 415000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00'),
 
     (6, 5, 5, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
-     89000.00, 89000.00, 'CANCELLED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00');
+     89000.00, 89000.00, 'CANCELED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
 ALTER TABLE order_item_v2
     ALTER COLUMN id RESTART WITH 100;

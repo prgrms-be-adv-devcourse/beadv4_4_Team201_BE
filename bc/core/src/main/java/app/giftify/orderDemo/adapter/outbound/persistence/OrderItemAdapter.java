@@ -8,6 +8,8 @@ import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository("orderItemV2Adapter")
 @RequiredArgsConstructor
 public class OrderItemAdapter implements OrderItemRepository {
@@ -23,5 +25,15 @@ public class OrderItemAdapter implements OrderItemRepository {
     public OrderItem getOrderItemById(Long id) {
         return jpaOrderItemRepository.findById(id)
                 .orElseThrow(() -> new PolicyException(OrderErrorCode.ORDER_ITEM_NOT_FOUND));
+    }
+
+    @Override
+    public List<OrderItem> getCancelableItemsByOrderId(Long orderId) {
+        return jpaOrderItemRepository.findCancelableItemsByOrderId(orderId);
+    }
+
+    @Override
+    public List<OrderItem> getPendingCancelItemsByOrderId(Long orderId) {
+        return jpaOrderItemRepository.findPendingCancelItemsByOrderId(orderId);
     }
 }
