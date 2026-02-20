@@ -1,6 +1,7 @@
 package app.giftify.wallet.application;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
@@ -24,7 +25,7 @@ public class WalletSettlementService implements SettlementPayoutUseCase {
 	private final WalletHistoryRepository historyRepository;
 
 	@Override
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void payout(SettlementPayoutCommand command) {
 		if (historyRepository
 			.existsByReferenceIdAndReferenceType(command.referenceId(), ReferenceType.SETTLEMENT)
@@ -45,7 +46,8 @@ public class WalletSettlementService implements SettlementPayoutUseCase {
 
 		historyRepository.recordTransaction(
 			wallet.getId(),
-			command.amount().isPositive() ? TransactionType.SETTLEMENT_PAYOUT : TransactionType.SETTLEMENT_CLAWBACK, // 정산 지급/차감 분기
+			command.amount().isPositive() ? TransactionType.SETTLEMENT_PAYOUT :
+				TransactionType.SETTLEMENT_CLAWBACK, // 정산 지급/차감 분기
 			command.amount().abs(),
 			wallet.getBalance(),
 			ReferenceType.SETTLEMENT,
