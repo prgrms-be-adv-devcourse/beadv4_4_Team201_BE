@@ -57,6 +57,7 @@ public interface OrderControllerSpec {
 
     @Operation(summary = "주문 전체 취소", description = "로그인된 회원 ID와 주문 ID로 주문을 전체 취소합니다.")
     @ApiResponse(responseCode = "200", description = "주문 취소 성공")
+    @ApiResponse(responseCode = "202", description = "주문 취소 접수 완료 또는 이미 처리 중인 취소 건")
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
