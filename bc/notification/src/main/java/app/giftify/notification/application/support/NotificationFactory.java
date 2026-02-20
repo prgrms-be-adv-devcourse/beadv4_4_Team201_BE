@@ -1,0 +1,51 @@
+package app.giftify.notification.application.support;
+
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import app.giftify.notification.application.CloudEventEnvelope;
+import app.giftify.notification.domain.Notification;
+import app.giftify.notification.domain.NotificationType;
+
+@Component
+public class NotificationFactory {
+
+	public Notification createSingle(
+		Long recipientId, NotificationType type,
+		String referenceId, String referenceType,
+		CloudEventEnvelope sourceEvent
+	) {
+		return new Notification(
+			recipientId, type,
+			type.getTitle(), resolveContent(type),
+			referenceId, referenceType,
+			sourceEvent.id(), sourceEvent.type(), sourceEvent.source()
+		);
+	}
+
+	public List<Notification> createForMultipleRecipients(
+		List<Long> recipientIds, NotificationType type,
+		String referenceId, String referenceType,
+		CloudEventEnvelope sourceEvent
+	) {
+		return recipientIds.stream()
+			.map(id -> createSingle(id, type, referenceId, referenceType, sourceEvent))
+			.toList();
+	}
+
+	private String resolveContent(NotificationType type) {
+		return switch (type) {
+			case FUNDING_CREATED -> "위시리스트 아이템에 새로운 펀딩이 시작되었습니다";
+			case FUNDING_ACHIEVED -> "펀딩이 목표 금액을 달성했습니다";
+			case FUNDING_EXPIRED -> "펀딩이 기한이 지나 만료되었습니다";
+			case FUNDING_CANCELED -> "펀딩이 취소되었습니다";
+			case FRIEND_REQUEST_RECEIVED -> "새로운 친구 요청을 확인해보세요";
+			case FRIEND_REQUEST_ACCEPTED -> "친구 요청이 수락되어 친구가 되었습니다";
+			case PAYMENT_SUCCEEDED -> "결제가 성공적으로 처리되었습니다";
+			case PAYMENT_FAILED -> "결제 처리 중 문제가 발생했습니다";
+			case PAYMENT_CANCEL_SUCCEEDED -> "결제 취소가 정상적으로 처리되었습니다";
+			case PAYMENT_CANCEL_FAILED -> "결제 취소 처리 중 문제가 발생했습니다";
+		};
+	}
+}
