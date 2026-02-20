@@ -121,4 +121,19 @@ public class FundingController implements FundingV2ApiSpec {
         PageResponse<MyFundingSummaryDto> fundings = fundingFacade.getMyFundings(page, size, status, memberId);
         return ResponseEntity.ok(RsData.success(fundings));
     }
+
+    // 특정 친구의 펀딩 리스트 조회
+//    @GetMapping("/{friendId}/list")
+//    public ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFriendFundings(
+//            @RequestParam(value = "page", defaultValue = "0") int page,
+//            @RequestParam(value = "size", defaultValue = "10") int size,
+//            @RequestParam(value = "status", required = false) FundingStatus status,
+//            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
+//
+//    }
+
+    // 특정 친구의 특정 펀딩 조회
+
+
+    // 내 친구들의 펀딩 리스트 조회
 }

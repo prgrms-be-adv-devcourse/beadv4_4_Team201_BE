@@ -16,7 +16,7 @@ import app.giftify.friendship.application.port.in.FriendInfo;
 import app.giftify.friendship.application.port.in.FriendRequestInfo;
 import app.giftify.friendship.application.port.out.FriendshipRepositoryPort;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.friendship.domain.FriendshipStatus;
+import app.giftify.shared.domain.type.FriendshipStatus;
 import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
