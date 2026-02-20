@@ -18,6 +18,7 @@ import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
+import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
@@ -155,6 +156,11 @@ public class OrderService {
 
         order.cancel(canceledAt);
         targetItems.cancel(canceledAt);
+
+        eventPublisher.publish(new OrderCanceledEvent(
+                orderId,
+                targetItems.toSnapshot(order.getBuyerId())
+        ));
     }
 
     @Transactional

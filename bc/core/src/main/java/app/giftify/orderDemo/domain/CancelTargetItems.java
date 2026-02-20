@@ -1,5 +1,6 @@
 package app.giftify.orderDemo.domain;
 
+import app.giftify.shared.domain.vo.CanceledItemSnapshot;
 import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
@@ -23,5 +24,17 @@ public record CancelTargetItems(List<OrderItem> items) {
 
     public void failCancel() {
         items.forEach(OrderItem::failCancel);
+    }
+
+    public List<CanceledItemSnapshot> toSnapshot(Long buyerId) {
+        return items.stream()
+                .map(i -> new CanceledItemSnapshot(
+                        i.getId(),
+                        buyerId,
+                        i.getTargetId(),
+                        i.getTargetType(),
+                        i.getAmount())
+                )
+                .toList();
     }
 }

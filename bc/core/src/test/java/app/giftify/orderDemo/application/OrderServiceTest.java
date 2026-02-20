@@ -20,6 +20,7 @@ import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
+import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
@@ -426,7 +427,7 @@ class OrderServiceTest {
         private final Long orderId = 10L;
 
         @Test
-        @DisplayName("성공: CANCEL_PENDING 상태 주문의 취소를 확정하여 CANCELED로 변경한다")
+        @DisplayName("성공: CANCEL_PENDING 상태 주문의 취소를 확정하여 CANCELED로 변경하고 OrderCanceledEvent를 발행한다")
         void given_cancelPendingOrder_when_completeCancel_then_statusCanceled() {
             // given
             Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
@@ -445,6 +446,10 @@ class OrderServiceTest {
             verify(orderRepository).getByIdWithLock(orderId);
             verify(orderItemRepository).getPendingCancelItemsByOrderId(orderId);
             assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
+
+            ArgumentCaptor<OrderCanceledEvent> captor = ArgumentCaptor.forClass(OrderCanceledEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().orderId()).isEqualTo(orderId);
         }
 
         @Test
@@ -514,7 +519,7 @@ class OrderServiceTest {
     class MarkOrderAsPaid {
 
         @Test
-        @DisplayName("성공: 주문을 조회하여 결제 완료 상태로 변경한다")
+        @DisplayName("성공: 주문을 조회하여 결제 완료 상태로 변경하고 주문 취소 완료 이벤트를 발행한다")
         void success() {
             // given
             Order order = spy(OrderFixture.createOrderWithItems(1L, 2)); // 엔티티 메서드 호출 확인을 위해 spy 사용
