@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.payment.domain.event.PaymentConfirmedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
@@ -51,18 +53,18 @@ class WalletDeductedEventHandlerTest {
 	class FundingPaymentTests {
 
 		@Test
-		@DisplayName("FUNDING 결제가 완료되면 PaymentPaidEvent를 발행한다")
-		void handle_PublishesPaymentPaidEvent_WhenPaymentTypeIsFunding() {
+		@DisplayName("FUNDING 결제가 완료되면 PaymentConfirmedEvent와 PaymentPaidExternalEvent를 발행한다")
+		void handle_PublishesPaymentPaidExternalEvent_WhenPaymentTypeIsFunding() {
 			// given
 			Long paymentId = 1L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-123";
+			String orderNumber = "ORDER-123";
 			Money amount = Money.of(50000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 10, 30, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
@@ -72,7 +74,8 @@ class WalletDeductedEventHandlerTest {
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
@@ -88,16 +91,35 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<PaymentConfirmedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentConfirmedEvent.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
+			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
 
-			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
-			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
-			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(paidEvent.getOrderId()).isEqualTo(orderId);
-			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.FUNDING);
-			assertThat(paidEvent.getPaidAmount()).isEqualTo(amount);
-			assertThat(paidEvent.getPaidAt()).isEqualTo(deductedAt);
+			List<Object> capturedEvents = eventCaptor.getAllValues();
+			PaymentConfirmedEvent internalEvent = capturedEvents.stream()
+				.filter(PaymentConfirmedEvent.class::isInstance)
+				.map(e -> (PaymentConfirmedEvent)e)
+				.findFirst().orElseThrow();
+
+			assertThat(internalEvent.getPaymentId()).isEqualTo(paymentId);
+			assertThat(internalEvent.getMemberId()).isEqualTo(memberId);
+			assertThat(internalEvent.getOrderNumber()).isEqualTo(orderNumber);
+			assertThat(internalEvent.getPaymentType()).isEqualTo(PaymentType.FUNDING);
+			assertThat(internalEvent.getPaidAmount()).isEqualTo(amount);
+			assertThat(internalEvent.getPaidAt()).isEqualTo(deductedAt);
+
+			PaymentPaidExternalEvent externalEvent = capturedEvents.stream()
+				.filter(PaymentPaidExternalEvent.class::isInstance)
+				.map(e -> (PaymentPaidExternalEvent)e)
+				.findFirst().orElseThrow();
+
+			assertThat(externalEvent.paymentId()).isEqualTo(paymentId);
+			assertThat(externalEvent.orderNumber()).isEqualTo(orderNumber);
+			assertThat(externalEvent.memberId()).isEqualTo(memberId);
+			assertThat(externalEvent.paidAmount()).isEqualTo(amount);
+			assertThat(externalEvent.type()).isEqualTo(PaymentType.FUNDING);
+			assertThat(externalEvent.method()).isEqualTo(PaymentMethod.DEPOSIT);
+			assertThat(externalEvent.paymentKey()).isNull();
+			assertThat(externalEvent.transactionKey()).isNull();
 		}
 
 		@Test
@@ -107,12 +129,12 @@ class WalletDeductedEventHandlerTest {
 			Long paymentId = 1L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-123";
+			String orderNumber = "ORDER-123";
 			Money amount = Money.of(50000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 10, 30, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
@@ -122,7 +144,8 @@ class WalletDeductedEventHandlerTest {
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
@@ -152,24 +175,25 @@ class WalletDeductedEventHandlerTest {
 	class PointChargePaymentTests {
 
 		@Test
-		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 PaymentPaidEvent를 발행한다")
-		void handle_PublishesPaymentPaidEvent_WhenPaymentTypeIsPointCharge() {
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 PaymentPaidExternalEvent를 발행한다")
+		void handle_PublishesPaymentPaidExternalEvent_WhenPaymentTypeIsPointCharge() {
 			// given
 			Long paymentId = 2L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-456";
+			String orderNumber = "ORDER-456";
 			Money amount = Money.of(30000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 11, 0, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.type(PaymentType.DEPOSIT_CHARGE)
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
@@ -201,18 +225,19 @@ class WalletDeductedEventHandlerTest {
 			Long paymentId = 2L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-456";
+			String orderNumber = "ORDER-456";
 			Money amount = Money.of(30000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 11, 0, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.type(PaymentType.DEPOSIT_CHARGE)
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
@@ -249,12 +274,12 @@ class WalletDeductedEventHandlerTest {
 			Long paymentId = 999L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-NOTFOUND";
+			String orderNumber = "ORDER-NOTFOUND";
 			Money amount = Money.of(10000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 13, 0, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.empty());
@@ -277,12 +302,12 @@ class WalletDeductedEventHandlerTest {
 			Long paymentId = 4L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-PAID";
+			String orderNumber = "ORDER-PAID";
 			Money amount = Money.of(10000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 14, 0, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
@@ -292,7 +317,8 @@ class WalletDeductedEventHandlerTest {
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
@@ -327,12 +353,12 @@ class WalletDeductedEventHandlerTest {
 			Long paymentId = 5L;
 			Long walletId = 100L;
 			Long memberId = 200L;
-			String orderId = "ORDER-SAVE";
+			String orderNumber = "ORDER-SAVE";
 			Money amount = Money.of(40000);
 			LocalDateTime deductedAt = LocalDateTime.of(2024, 1, 15, 15, 0, 0);
 
 			WalletDeductedEvent event = new WalletDeductedEvent(
-				walletId, memberId, paymentId, orderId, amount, deductedAt
+				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
 			List<OrderItemSnapshot> orderItems = List.of(
@@ -342,7 +368,8 @@ class WalletDeductedEventHandlerTest {
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
-				.orderId(orderId)
+				.orderId(123L)
+				.orderNumber(orderNumber)
 				.type(PaymentType.FUNDING)
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
@@ -360,7 +387,7 @@ class WalletDeductedEventHandlerTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher).publish(any(PaymentConfirmedEvent.class));
+			verify(eventPublisher, times(2)).publish(any());
 		}
 	}
 }

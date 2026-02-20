@@ -44,7 +44,7 @@ public class CoreFacade {
         PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);
 
         MarkOrderAsPaidCommand markOrderAsPaidCommand = new MarkOrderAsPaidCommand(
-                paymentResult.orderId(),
+                paymentResult.orderNumber(),
                 paymentResult.paymentKey(),
                 paymentResult.lastTransactionKey(),
                 paymentResult.createdAt()
@@ -56,10 +56,10 @@ public class CoreFacade {
         return new PlaceOrderResult(orderSnapshot.orderId());
     }
 
-    // todo: 추후 Funding 도메인 책임으로 전환
     private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
         return new CreateFundingPaymentCommand(
                 orderSnapshot.buyerId(),
+                orderSnapshot.orderId(),
                 orderSnapshot.orderNumber(),
                 orderSnapshot.paymentMethod(),
                 orderSnapshot.totalAmount(),

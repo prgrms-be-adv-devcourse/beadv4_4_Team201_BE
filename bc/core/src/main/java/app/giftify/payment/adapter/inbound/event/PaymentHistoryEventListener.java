@@ -28,44 +28,44 @@ public class PaymentHistoryEventListener {
 
 	@ApplicationModuleListener
 	public void onPaymentConfirmed(PaymentConfirmedEvent event) {
-		saveHistory(event.getPaymentId(), event.getOrderId(),
+		saveHistory(event.getPaymentId(), event.getOrderNumber(),
 			PaymentEventType.PAID, event.getEventId(), event.getOccurredAt(), null);
 	}
 
 	@ApplicationModuleListener
 	public void onPaymentCanceled(PaymentCanceledEvent event) {
-		saveHistory(event.getPaymentId(), event.getOrderId(),
+		saveHistory(event.getPaymentId(), event.getOrderNumber(),
 			PaymentEventType.CANCELED, event.getEventId(), event.getOccurredAt(), null);
 	}
 
 	@ApplicationModuleListener
 	public void onPaymentRefunded(PaymentRefundedEvent event) {
-		saveHistory(event.getPaymentId(), event.getOrderId(),
+		saveHistory(event.getPaymentId(), event.getOrderNumber(),
 			PaymentEventType.REFUNDED, event.getEventId(), event.getOccurredAt(), null);
 	}
 
 	@ApplicationModuleListener
 	public void onPaymentReceived(PaymentReceivedEvent event) {
-		saveHistory(event.getPaymentId(), event.getOrderId(),
+		saveHistory(event.getPaymentId(), event.getOrderNumber(),
 			PaymentEventType.RECEIVED, event.getEventId(), event.getOccurredAt(), null);
 	}
 
 	@ApplicationModuleListener
 	public void onPaymentFailed(PaymentFailedEvent event) {
-		saveHistory(event.getPaymentId(), event.getOrderId(),
+		saveHistory(event.getPaymentId(), event.getOrderNumber(),
 			PaymentEventType.FAILED, event.getEventId(), event.getOccurredAt(), null);
 	}
 
 	@ApplicationModuleListener
 	public void onPaymentCancelFailed(PaymentCancelFailedEvent event) {
-		saveHistory(event.getPaymentId(), event.getOrderId(),
+		saveHistory(event.getPaymentId(), event.getOrderNumber(),
 			PaymentEventType.CANCEL_FAILED, event.getEventId(), event.getOccurredAt(),
 			event.getErrorMetadata());
 	}
 
-	private void saveHistory(Long paymentId, String orderId, PaymentEventType eventType,
+	private void saveHistory(Long paymentId, String orderNumber, PaymentEventType eventType,
 		String eventId, LocalDateTime occurredAt, String metadata) {
-		String historyKey = PaymentHistoryKeyGenerator.generate(orderId, eventType, eventId);
+		String historyKey = PaymentHistoryKeyGenerator.generate(orderNumber, eventType, eventId);
 		PaymentHistory history = metadata != null
 			? PaymentHistory.withMetadata(paymentId, historyKey, eventType, occurredAt, metadata)
 			: PaymentHistory.create(paymentId, historyKey, eventType, occurredAt);

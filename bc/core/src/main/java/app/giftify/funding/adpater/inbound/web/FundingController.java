@@ -104,8 +104,9 @@ public class FundingController implements FundingV2ApiSpec {
     @GetMapping("/my/{id}")
     public ResponseEntity<RsData<MyFundingResponseDto>> getMyFunding(
             @PathVariable("id") Long id,
+            @RequestParam(value = "status", required = false) FundingStatus status,
             @Parameter(hidden = true) @CurrentMemberId Long memberId) {
-        MyFundingResponseDto funding = fundingFacade.getMyFunding(id, memberId);
+        MyFundingResponseDto funding = fundingFacade.getMyFunding(id, status, memberId);
         return ResponseEntity.ok(RsData.success(funding));
     }
 
@@ -115,8 +116,9 @@ public class FundingController implements FundingV2ApiSpec {
     public ResponseEntity<RsData<PageResponse<MyFundingSummaryDto>>> getMyFundings(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "status", required = false) FundingStatus status,
             @Parameter(hidden = true) @CurrentMemberId Long memberId) {
-        PageResponse<MyFundingSummaryDto> fundings = fundingFacade.getMyFundings(page, size, memberId);
+        PageResponse<MyFundingSummaryDto> fundings = fundingFacade.getMyFundings(page, size, status, memberId);
         return ResponseEntity.ok(RsData.success(fundings));
     }
 }

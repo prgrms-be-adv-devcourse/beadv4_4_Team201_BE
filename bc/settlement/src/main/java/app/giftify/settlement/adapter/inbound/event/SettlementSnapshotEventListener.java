@@ -13,7 +13,7 @@ import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.domain.event.funding.FundingReceivedConfirmedEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
-import app.giftify.shared.domain.event.payment.PaymentConfirmedForSettlement;
+import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +71,7 @@ public class SettlementSnapshotEventListener {
     }
 
     @ApplicationModuleListener
-    public void handlePaymentConfirmedEvent(PaymentConfirmedForSettlement event) {
+    public void handlePaymentPaidExternalEvent(PaymentPaidExternalEvent event) {
         paymentSnapshotRepository.save(new PaymentSnapshot(
                 event.paymentId(),
                 event.orderNumber(),

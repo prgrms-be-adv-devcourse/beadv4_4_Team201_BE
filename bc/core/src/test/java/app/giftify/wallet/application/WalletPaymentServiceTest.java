@@ -51,14 +51,14 @@ class WalletPaymentServiceTest {
 			// given
 			Long memberId = 1L;
 			Long paymentId = 100L;
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(5000);
-			DeductWalletCommand command = new DeductWalletCommand(memberId, paymentId, orderId, amount);
+			DeductWalletCommand command = new DeductWalletCommand(memberId, paymentId, orderNumber, amount);
 
 			Wallet wallet = Wallet.restore(new WalletSnapshot(1L, memberId, Money.of(10000)));
 			Wallet savedWallet = Wallet.restore(new WalletSnapshot(1L, memberId, Money.of(5000)));
 
-			given(historyRepository.existsByReferenceIdAndReferenceType(orderId, ReferenceType.PAYMENT))
+			given(historyRepository.existsByReferenceIdAndReferenceType(orderNumber, ReferenceType.PAYMENT))
 				.willReturn(false);
 			given(walletRepository.findByMemberId(memberId)).willReturn(Optional.of(wallet));
 			given(walletRepository.save(any(Wallet.class))).willReturn(savedWallet);
@@ -80,11 +80,11 @@ class WalletPaymentServiceTest {
 			// given
 			Long memberId = 1L;
 			Long paymentId = 100L;
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(5000);
-			DeductWalletCommand command = new DeductWalletCommand(memberId, paymentId, orderId, amount);
+			DeductWalletCommand command = new DeductWalletCommand(memberId, paymentId, orderNumber, amount);
 
-			given(historyRepository.existsByReferenceIdAndReferenceType(orderId, ReferenceType.PAYMENT))
+			given(historyRepository.existsByReferenceIdAndReferenceType(orderNumber, ReferenceType.PAYMENT))
 				.willReturn(true);
 
 			// when & then
@@ -102,11 +102,11 @@ class WalletPaymentServiceTest {
 			// given
 			Long memberId = 1L;
 			Long paymentId = 100L;
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(5000);
-			DeductWalletCommand command = new DeductWalletCommand(memberId, paymentId, orderId, amount);
+			DeductWalletCommand command = new DeductWalletCommand(memberId, paymentId, orderNumber, amount);
 
-			given(historyRepository.existsByReferenceIdAndReferenceType(orderId, ReferenceType.PAYMENT))
+			given(historyRepository.existsByReferenceIdAndReferenceType(orderNumber, ReferenceType.PAYMENT))
 				.willReturn(false);
 			given(walletRepository.findByMemberId(memberId)).willReturn(Optional.empty());
 

@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":bc:shared"))
     implementation(project(":support:security"))
     implementation(project(":support:jpa"))
-    implementation(project(":support:web"))
     implementation(project(":support:common"))
 
     // Spring Boot Starters
@@ -26,7 +25,7 @@ dependencies {
 
     // Spring Modulith (버전 명시)
     implementation("org.springframework.modulith:spring-modulith-starter-core:$springModulithVersion")
-    implementation("org.springframework.modulith:spring-modulith-starter-jdbc:$springModulithVersion")
+    implementation("org.springframework.modulith:spring-modulith-starter-jpa:$springModulithVersion")
 
     // API Documentation
     implementation(libs.springdoc.openapi)

@@ -8,10 +8,12 @@ import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FundingAcceptUseCase {
@@ -26,6 +28,7 @@ public class FundingAcceptUseCase {
         if (!memberId.equals(funding.getReceiverId())) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
 
         funding.accept();
+        log.info("[Funding] 펀딩 수락" + fundingId);
 
         // 이벤트 발행
         eventPublisher.publish(new FundingAcceptedEvent(

@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 public class Funding extends BaseJpaEntity {
 
     @Version
-    private Long version;
+    private long version;
 
     @Column(nullable = false)
     private Long wishlistItemId;

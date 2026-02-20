@@ -1,21 +1,24 @@
 package giftify.support.web.manager;
 
+import app.giftify.shared.api.exception.IdempotencyErrorCode;
+import app.giftify.shared.api.exception.InfraException;
 import app.giftify.support.common.AbstractRedisTest;
 import app.giftify.support.common.config.RedisConfig;
+import giftify.support.web.idempotency.IdempotencyStatus;
+import giftify.support.web.idempotency.IdempotencyValue;
 import giftify.support.web.idempotency.manager.IdempotencyManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataRedisTest
 @Import({IdempotencyManager.class, RedisConfig.class})
@@ -27,87 +30,120 @@ class IdempotencyManagerTest extends AbstractRedisTest {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private final String testKey = "IDEM:TEST:12345";
-    private final String testHash = "abc123hash";
+    private final String key = "IDEM:ORDER:TEST_KEY";
+    private final String payloadHash = "abc123hash";
 
     @BeforeEach
     void cleanUp() {
         redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
-    @Nested
-    @DisplayName("키 선점 테스트 (attemptLock)")
-    class AttemptLockTest {
+    // --- 1. 선점 (attemptLock) 테스트 ---
 
-        @Test
-        @DisplayName("성공: Redis에 키가 없으면 선점에 성공하고 true를 반환한다")
-        void should_return_true_when_key_is_absent() {
-            // when
-            boolean result = idempotencyManager.attemptLock(testKey, testHash, 10);
+    @Test
+    @DisplayName("최초 요청 시 Redis에 PROCESSING 상태로 키가 생성되고 true를 반환한다")
+    void attemptLock_success_first_time() {
+        // when
+        boolean success = idempotencyManager.attemptLock(key, payloadHash, 10);
 
-            // then
-            assertThat(result).isTrue();
-            String storedHash = (String) redisTemplate.opsForValue().get(testKey);
-            assertThat(storedHash).isEqualTo(testHash);
-        }
+        // then
+        assertThat(success).isTrue();
 
-        @Test
-        @DisplayName("실패: 이미 동일한 키가 존재하면 false를 반환한다")
-        void should_return_false_when_key_already_exists() {
-            // given
-            redisTemplate.opsForValue().set(testKey, testHash);
+        IdempotencyValue stored = (IdempotencyValue) redisTemplate.opsForValue().get(key);
+        assertThat(stored).isNotNull();
+        assertThat(stored.status()).isEqualTo(IdempotencyStatus.PROCESSING);
+        assertThat(stored.payloadHash()).isEqualTo(payloadHash);
 
-            // when
-            boolean result = idempotencyManager.attemptLock(testKey, testHash, 10);
-
-            // then
-            assertThat(result).isFalse();
-        }
-
-        @Test
-        @DisplayName("검증: 저장된 데이터의 TTL이 설정한 시간과 일치해야 한다")
-        void should_have_correct_ttl() {
-            // given
-            long ttlMinutes = 5;
-            idempotencyManager.attemptLock(testKey, testHash, ttlMinutes);
-
-            // when
-            Long expire = redisTemplate.getExpire(testKey, TimeUnit.MINUTES);
-
-            // then
-            assertThat(expire).isNotNull().isGreaterThan(0).isLessThanOrEqualTo(ttlMinutes);
-        }
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+        assertThat(ttl).isGreaterThan(0).isLessThanOrEqualTo(10);
     }
 
-    @Nested
-    @DisplayName("해시 조회 및 삭제 테스트")
-    class HashAndRemoveTest {
+    @Test
+    @DisplayName("이미 동일한 키가 존재하면 선점에 실패하고 false를 반환한다")
+    void attemptLock_fail_if_already_exists() {
+        // given
+        idempotencyManager.attemptLock(key, payloadHash, 10);
 
-        @Test
-        @DisplayName("조회: 키가 존재하면 Optional에 해시값이 담겨야 한다")
-        void getStoredHash_should_return_hash_when_present() {
-            // given
-            redisTemplate.opsForValue().set(testKey, testHash);
+        // when
+        boolean secondAttempt = idempotencyManager.attemptLock(key, payloadHash, 10);
 
-            // when
-            Optional<String> result = idempotencyManager.getStoredHash(testKey);
+        // then
+        assertThat(secondAttempt).isFalse();
+    }
 
-            // then
-            assertThat(result).isPresent().contains(testHash);
-        }
+    // --- 2. 업데이트 (updateToCompleted) 테스트 ---
 
-        @Test
-        @DisplayName("삭제: removeKey 호출 시 Redis에서 해당 키가 사라져야 한다")
-        void removeKey_should_delete_from_redis() {
-            // given
-            redisTemplate.opsForValue().set(testKey, testHash);
+    @Test
+    @DisplayName("기존 키가 살아있을 때 업데이트하면 기존 TTL을 유지하며 COMPLETED로 변경된다")
+    void updateToCompleted_maintains_existing_ttl(){
+        // given
+        idempotencyManager.attemptLock(key, payloadHash, 60); // 60분 설정
 
-            // when
-            idempotencyManager.removeKey(testKey);
+        // when
+        idempotencyManager.updateToCompleted(key, payloadHash);
 
-            // then
-            Boolean exists = redisTemplate.hasKey(testKey);
-            assertThat(exists).isFalse();
-        }
+        // then
+        IdempotencyValue stored = (IdempotencyValue) redisTemplate.opsForValue().get(key);
+        assertThat(stored.status()).isEqualTo(IdempotencyStatus.COMPLETED);
+
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+        assertThat(ttl).isGreaterThan(50); // TTL이 유지되고 있는지 확인
+    }
+
+    @Test
+    @DisplayName("키가 이미 만료된 후 업데이트가 호출되면 기본 TTL(24시간)로 새로 생성한다")
+    void updateToCompleted_falls_back_to_default_ttl() {
+        // given: 키가 없는 상태
+
+        // when
+        idempotencyManager.updateToCompleted(key, payloadHash);
+
+        // then
+        IdempotencyValue stored = (IdempotencyValue) redisTemplate.opsForValue().get(key);
+        assertThat(stored.status()).isEqualTo(IdempotencyStatus.COMPLETED);
+
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.HOURS);
+        assertThat(ttl).isEqualTo(23L); // 약 24시간 (조회 시점에 따라 23이 될 수 있음)
+    }
+
+    // --- 3. 조회 (getStoredValue) 테스트 ---
+
+    @Test
+    @DisplayName("정상적으로 저장된 값을 조회한다")
+    void getStoredValue_success() {
+        // given
+        idempotencyManager.attemptLock(key, payloadHash, 10);
+
+        // when
+        IdempotencyValue result = idempotencyManager.getStoredValue(key);
+
+        // then
+        assertThat(result.status()).isEqualTo(IdempotencyStatus.PROCESSING);
+        assertThat(result.payloadHash()).isEqualTo(payloadHash);
+    }
+
+    @Test
+    @DisplayName("조회 시 키가 존재하지 않으면 상태 불일치 예외를 던진다")
+    void getStoredValue_fail_when_missing() {
+        // when & then
+        assertThatThrownBy(() -> idempotencyManager.getStoredValue(key))
+                .isInstanceOf(InfraException.class)
+                .hasFieldOrPropertyWithValue("errorCode", IdempotencyErrorCode.IDEMPOTENCY_STATE_INCONSISTENT);
+    }
+
+    // --- 4. 삭제 (removeKey) 테스트 ---
+
+    @Test
+    @DisplayName("키 삭제 호출 시 Redis에서 데이터가 완전히 제거된다")
+    void removeKey_removes_data_from_redis() {
+        // given
+        idempotencyManager.attemptLock(key, payloadHash, 10);
+
+        // when
+        idempotencyManager.removeKey(key);
+
+        // then
+        Boolean exists = redisTemplate.hasKey(key);
+        assertThat(exists).isFalse();
     }
 }

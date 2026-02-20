@@ -19,7 +19,7 @@ public record PaymentChargeResponse(
 	public static PaymentChargeResponse from(PaymentCreatedResult result, Money paidAmount) {
 		return new PaymentChargeResponse(
 			result.paymentId(),
-			result.orderId(),
+			result.orderNumber(),
 			paidAmount.amount(),
 			result.status().name()
 		);

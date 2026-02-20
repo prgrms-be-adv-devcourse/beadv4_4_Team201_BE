@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
@@ -32,8 +31,7 @@ public interface OrderControllerSpec {
     )
     ResponseEntity<RsData<PlaceOrderResult>> placeOrder(
             @Parameter(hidden = true) Long memberId,
-            @RequestBody PlaceOrderRequest request,
-            HttpServletRequest httpServletRequest
+            @RequestBody PlaceOrderRequest request
     );
 
     @Operation(summary = "주문 목록 조회", description = "로그인된 회원 ID로 주문 목록을 조회합니다.")

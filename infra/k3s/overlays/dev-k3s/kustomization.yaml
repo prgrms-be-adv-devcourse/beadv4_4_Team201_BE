@@ -25,8 +25,6 @@ patches:
                 env:
                   - name: SPRING_SQL_INIT_MODE
                     value: "never"
-                  - name: SPRING_BATCH_JDBC_INITIALIZE_SCHEMA 
-                    value: "always" # 이거 prod 에서는 직접 테이블 만들게 바꿔야 함
                 resources:
                   requests:
                     memory: "256Mi"

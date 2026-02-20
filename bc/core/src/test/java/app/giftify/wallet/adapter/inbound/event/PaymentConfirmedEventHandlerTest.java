@@ -43,15 +43,15 @@ class PaymentConfirmedEventHandlerTest {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
 			LocalDateTime paidAt = LocalDateTime.now();
 
 			PaymentConfirmedEvent event = new PaymentConfirmedEvent(
-				paymentId, memberId, orderId, PaymentType.DEPOSIT_CHARGE, amount, paidAt
+				paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE, amount, paidAt
 			);
 
-			ChargeWalletResult chargeResult = new ChargeWalletResult(1L, memberId, amount, amount, orderId);
+			ChargeWalletResult chargeResult = new ChargeWalletResult(1L, memberId, amount, amount, orderNumber);
 			given(chargeWalletUseCase.charge(any(ChargeWalletCommand.class))).willReturn(chargeResult);
 
 			// when
@@ -64,7 +64,7 @@ class PaymentConfirmedEventHandlerTest {
 			ChargeWalletCommand capturedCommand = commandCaptor.getValue();
 			assertThat(capturedCommand.memberId()).isEqualTo(memberId);
 			assertThat(capturedCommand.amount()).isEqualTo(amount);
-			assertThat(capturedCommand.chargeOrderId()).isEqualTo(orderId);
+			assertThat(capturedCommand.chargeOrderId()).isEqualTo(orderNumber);
 		}
 
 		@Test

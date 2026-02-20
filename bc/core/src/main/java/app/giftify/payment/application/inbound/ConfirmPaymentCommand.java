@@ -11,14 +11,14 @@ import app.giftify.shared.domain.vo.Money;
  * @param paymentId       승인할 Payment ID
  * @param requesterId     요청자 ID (소유자 검증용)
  * @param paymentKey      PG사에서 받은 결제 키 (암호화 저장됨)
- * @param orderId         주문 ID (PG 승인 요청용)
+ * @param orderNumber     주문 번호 (PG 승인 요청용)
  * @param requestedAmount 요청 금액 (조작 방지 검증용)
  */
 public record ConfirmPaymentCommand(
 	Long paymentId,
 	Long requesterId,
 	String paymentKey,
-	String orderId,
+	String orderNumber,
 	Money requestedAmount
 ) {
 	public ConfirmPaymentCommand {
@@ -34,9 +34,9 @@ public record ConfirmPaymentCommand(
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 				"[ConfirmPaymentCommand] paymentKey는 필수입니다.");
 		}
-		if (orderId == null || orderId.isBlank()) {
+		if (orderNumber == null || orderNumber.isBlank()) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[ConfirmPaymentCommand] orderId는 필수입니다.");
+				"[ConfirmPaymentCommand] orderNumber는 필수입니다.");
 		}
 		if (requestedAmount == null) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
