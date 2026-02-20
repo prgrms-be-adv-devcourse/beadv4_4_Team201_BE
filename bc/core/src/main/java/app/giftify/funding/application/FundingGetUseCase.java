@@ -23,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -210,7 +211,7 @@ public class FundingGetUseCase {
             throw new FundingException(FundingErrorCode.FORBIDDEN, "친구 관계가 아닙니다.");
         }
 
-        Funding funding = fundingRepository.findByIdAndStatus(id, FundingStatus.IN_PROGRESS)
+        Funding funding = fundingRepository.findByIdAndReceiverIdAndStatus(id, friendId, FundingStatus.IN_PROGRESS)
                 .orElseThrow(()-> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
         MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(()->
@@ -222,4 +223,32 @@ public class FundingGetUseCase {
     /**
      * 내 친구들의 진행 중인 펀딩 리스트 조회
      */
+    public PageResponse<FundingResponseDto> getFriendsFundings(int page, int size, Long memberId) {
+        List<Long> friendIds = friendshipVerificationPort.getFriendIds(memberId);
+        if (friendIds.isEmpty()) {
+            return PageResponse.of(Collections.emptyList(), page, size, 0);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdInAndStatus(friendIds, FundingStatus.IN_PROGRESS, pageable);
+        List<Funding> fundings = fundingPage.getContent();
+
+        Set<Long> receiverIds = fundings.stream()
+                .map(Funding::getReceiverId)
+                .collect(Collectors.toSet());
+
+        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberReplica::getId, r -> r));
+
+        List<FundingResponseDto> content = fundings.stream()
+                .map(funding -> {
+                    String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
+                            .map(MemberReplica::getNickname)
+                            .orElse("알 수 없음");
+                    return FundingResponseDto.fromEntity(funding, receiverNickname);
+                })
+                .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, fundingPage.getTotalElements());
+    }
 }

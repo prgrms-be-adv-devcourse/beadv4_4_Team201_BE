@@ -1,5 +1,7 @@
 package app.giftify.shared.domain.port;
 
+import java.util.List;
+
 /**
  * 다른 모듈의 친구 관계를 확인하기 위한 Port 인터페이스
  *
@@ -19,4 +21,12 @@ public interface FriendshipVerificationPort {
      * @return 친구 관계가 맞으면 {@code true}, 아니면 {@code false}
      */
     boolean areFriends(Long memberId, Long friendId);
+
+    /**
+     * 특정 사용자의 모든 친구 ID 목록을 조회합니다.
+     *
+     * @param memberId 사용자의 ID
+     * @return 친구 ID 목록
+     */
+    List<Long> getFriendIds(Long memberId);
 }
