@@ -147,8 +147,8 @@ class NotificationEventHandlerTest {
 			Long paymentId = 3L;
 			Long userId = 300L;
 			PaymentCanceledEvent event = new PaymentCanceledEvent(
-				paymentId, "FUNDING", userId, Money.of(3000), PaymentType.FUNDING,
-				"사용자 요청", LocalDateTime.now()
+				paymentId, "FUNDING", userId, Money.of(3000),
+				"사용자 요청", PaymentType.FUNDING, LocalDateTime.now(), 1L
 			);
 
 			CloudEventMeta meta = new CloudEventMeta(
