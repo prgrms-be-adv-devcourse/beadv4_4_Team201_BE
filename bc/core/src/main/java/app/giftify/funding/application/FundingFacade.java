@@ -137,8 +137,8 @@ public class FundingFacade {
         return fundingGetUseCase.getMyFundings(page, size, status, memberId);
     }
 
-//    @Transactional
-//    public List<FundingCompleteResponseDto> closeAchievedFundings() {
-//        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
-//    }
+    @Transactional
+    public List<FundingCompleteResponseDto> closeAchievedFundings() {
+        return fundingCloseUseCase.closeUnacceptedAchievedFundings();
+    }
 }

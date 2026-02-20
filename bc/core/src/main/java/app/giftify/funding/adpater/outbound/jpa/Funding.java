@@ -172,4 +172,11 @@ public class Funding extends BaseJpaEntity {
         }
         this.currentAmount -= amount;
     }
+
+    public void updateProductInfo(Integer productPrice) {
+        if (this.status != FundingStatus.IN_PROGRESS) throw new FundingException(FundingErrorCode.NOT_IN_PROGRESS);
+        if (productPrice != null) {
+            this.targetAmount = productPrice;
+        }
+    }
 }
