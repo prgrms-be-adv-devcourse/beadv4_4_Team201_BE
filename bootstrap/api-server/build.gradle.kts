@@ -31,5 +31,9 @@ dependencies {
     runtimeOnly(libs.flyway.postgresql)
     runtimeOnly(libs.micrometer.prometheus)
 
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.modulith.jpa)
     testImplementation(libs.rest.assured)
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.awaitility:awaitility")
 }
