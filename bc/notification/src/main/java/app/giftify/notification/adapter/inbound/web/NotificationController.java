@@ -3,17 +3,20 @@ package app.giftify.notification.adapter.inbound.web;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import app.giftify.notification.adapter.inbound.web.dto.NotificationResponse;
 import app.giftify.notification.adapter.inbound.web.dto.UnreadCountResponse;
 import app.giftify.notification.application.inbound.NotificationCommandUseCase;
 import app.giftify.notification.application.inbound.NotificationQueryUseCase;
+import app.giftify.notification.application.inbound.SseSubscribeUseCase;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,12 @@ public class NotificationController {
 
 	private final NotificationQueryUseCase queryUseCase;
 	private final NotificationCommandUseCase commandUseCase;
+	private final SseSubscribeUseCase sseSubscribeUseCase;
+
+	@GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public SseEmitter subscribe(@CurrentMemberId Long memberId) {
+		return sseSubscribeUseCase.subscribe(memberId);
+	}
 
 	@GetMapping
 	public ResponseEntity<RsData<Page<NotificationResponse>>> getNotifications(
