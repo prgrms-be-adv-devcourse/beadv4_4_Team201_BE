@@ -3,13 +3,13 @@ package app.giftify.shared.domain.event.wallet;
 import app.giftify.shared.domain.event.BaseDomainEvent;
 import app.giftify.shared.domain.vo.Money;
 
-public class WalletPayoutFailedEvent extends BaseDomainEvent {
+public class WalletSettlementFailedEvent extends BaseDomainEvent {
 	private final Long settlementId;
 	private final Long sellerId;
 	private final Money totalAmount;
 	private final String reason;
 
-	public WalletPayoutFailedEvent(Long settlementId, Long sellerId, Money totalAmount, String reason) {
+	public WalletSettlementFailedEvent(Long settlementId, Long sellerId, Money totalAmount, String reason) {
 		super();
 		this.settlementId = settlementId;
 		this.sellerId = sellerId;

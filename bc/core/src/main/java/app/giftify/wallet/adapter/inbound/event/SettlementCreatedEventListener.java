@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
 import app.giftify.shared.domain.event.wallet.WalletSettlementCompletedEvent;
-import app.giftify.shared.domain.event.wallet.WalletPayoutFailedEvent;
+import app.giftify.shared.domain.event.wallet.WalletSettlementFailedEvent;
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
 import app.giftify.wallet.application.inbound.SettlementPayoutUseCase;
 import app.giftify.wallet.domain.WalletException;
@@ -45,7 +45,7 @@ public class SettlementCreatedEventListener {
 				event.getSettlementId(), e.getMessage()
 			);
 
-			eventPublisher.publish(new WalletPayoutFailedEvent(
+			eventPublisher.publish(new WalletSettlementFailedEvent(
 				event.getSettlementId(),
 				event.getSellerId(),
 				event.getTotalAmount(),

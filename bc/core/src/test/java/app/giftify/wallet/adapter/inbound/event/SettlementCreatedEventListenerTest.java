@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
 import app.giftify.shared.domain.event.wallet.WalletSettlementCompletedEvent;
-import app.giftify.shared.domain.event.wallet.WalletPayoutFailedEvent;
+import app.giftify.shared.domain.event.wallet.WalletSettlementFailedEvent;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
 import app.giftify.wallet.application.inbound.SettlementPayoutUseCase;
@@ -97,7 +97,7 @@ class SettlementCreatedEventListenerTest {
 			sut.handle(event);
 
 			// then
-			verify(eventPublisher, never()).publish(any(WalletPayoutFailedEvent.class));
+			verify(eventPublisher, never()).publish(any(WalletSettlementFailedEvent.class));
 		}
 	}
 
@@ -117,11 +117,11 @@ class SettlementCreatedEventListenerTest {
 			sut.handle(event);
 
 			// then
-			ArgumentCaptor<WalletPayoutFailedEvent> captor =
-				ArgumentCaptor.forClass(WalletPayoutFailedEvent.class);
+			ArgumentCaptor<WalletSettlementFailedEvent> captor =
+				ArgumentCaptor.forClass(WalletSettlementFailedEvent.class);
 			verify(eventPublisher).publish(captor.capture());
 
-			WalletPayoutFailedEvent failedEvent = captor.getValue();
+			WalletSettlementFailedEvent failedEvent = captor.getValue();
 			assertThat(failedEvent.getSettlementId()).isEqualTo(2L);
 			assertThat(failedEvent.getSellerId()).isEqualTo(200L);
 			assertThat(failedEvent.getTotalAmount()).isEqualTo(Money.of(-30000));
