@@ -26,7 +26,7 @@ import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.payment.domain.event.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCanceledForOrder;
+import app.giftify.shared.domain.event.payment.PaymentCanceledExternalEvent;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
@@ -45,10 +45,11 @@ class CancelPaymentServiceTest {
 	private CancelPaymentService cancelPaymentService;
 
 	// DEPOSIT_CHARGE(예치금 충전)는 orderItems가 불필요하므로 테스트에 적합
-	private Payment createPendingPayment(Long paymentId, Long memberId, String orderId) {
+	private Payment createPendingPayment(Long paymentId, Long memberId, String orderNumber) {
 		return Payment.builder()
 			.id(paymentId)
-			.orderId(orderId)
+			.orderId(123L)
+			.orderNumber(orderNumber)
 			.memberId(memberId)
 			.type(PaymentType.DEPOSIT_CHARGE)
 			.method(PaymentMethod.CARD)
@@ -59,10 +60,11 @@ class CancelPaymentServiceTest {
 			.build();
 	}
 
-	private Payment createPaidPayment(Long paymentId, Long memberId, String orderId) {
+	private Payment createPaidPayment(Long paymentId, Long memberId, String orderNumber) {
 		return Payment.builder()
 			.id(paymentId)
-			.orderId(orderId)
+			.orderId(123L)
+			.orderNumber(orderNumber)
 			.memberId(memberId)
 			.type(PaymentType.DEPOSIT_CHARGE)
 			.method(PaymentMethod.CARD)
@@ -222,11 +224,11 @@ class CancelPaymentServiceTest {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
-			String orderId = "order-123";
+			String orderNumber = "order-123";
 			String reason = "고객 변심";
 			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, reason);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
@@ -245,7 +247,7 @@ class CancelPaymentServiceTest {
 
 			assertThat(event.getPaymentId()).isEqualTo(paymentId);
 			assertThat(event.getMemberId()).isEqualTo(memberId);
-			assertThat(event.getOrderId()).isEqualTo(orderId);
+			assertThat(event.getOrderNumber()).isEqualTo(orderNumber);
 			assertThat(event.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 			assertThat(event.getPaidAmount()).isEqualTo(Money.of(10000));
 			assertThat(event.getReason()).isEqualTo(reason);
@@ -253,16 +255,16 @@ class CancelPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("PaymentCanceledForOrder 이벤트가 올바른 정보로 발행된다")
-		void cancel_PaymentCanceledForOrder_PublishedCorrectly() {
+		@DisplayName("PaymentCanceledExternalEvent 이벤트가 올바른 정보로 발행된다")
+		void cancel_PaymentCanceledExternalEvent_PublishedCorrectly() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
-			String orderId = "order-456";
+			String orderNumber = "order-456";
 			String reason = "재고 부족";
 			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, SYSTEM_REQUESTER_ID, reason);
 
-			Payment payment = createPendingPayment(paymentId, memberId, orderId);
+			Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
@@ -274,13 +276,13 @@ class CancelPaymentServiceTest {
 			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
 
-			PaymentCanceledForOrder event = eventCaptor.getAllValues().stream()
-				.filter(PaymentCanceledForOrder.class::isInstance)
-				.map(e -> (PaymentCanceledForOrder)e)
+			PaymentCanceledExternalEvent event = eventCaptor.getAllValues().stream()
+				.filter(PaymentCanceledExternalEvent.class::isInstance)
+				.map(e -> (PaymentCanceledExternalEvent)e)
 				.findFirst().orElseThrow();
 
 			assertThat(event.paymentId()).isEqualTo(paymentId);
-			assertThat(event.orderId()).isEqualTo(orderId);
+			assertThat(event.orderNumber()).isEqualTo(orderNumber);
 			assertThat(event.reason()).isEqualTo(reason);
 			assertThat(event.occurredAt()).isNotNull();
 			assertThat(event.eventId()).isNotNull();

@@ -14,7 +14,7 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentRefundedForSettlement;
+import app.giftify.shared.domain.event.payment.PaymentRefundedExternalEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -67,7 +67,7 @@ public class RefundPaymentService implements RefundPaymentUseCase {
 			.distinct()
 			.toList();
 
-		eventPublisher.publish(PaymentRefundedForSettlement.create(
+		eventPublisher.publish(PaymentRefundedExternalEvent.create(
 			savedPayment.getId(),
 			command.refundAmount(),
 			sellerIds,

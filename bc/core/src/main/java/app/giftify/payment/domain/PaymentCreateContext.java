@@ -9,7 +9,8 @@ import app.giftify.shared.domain.type.PaymentType;
  */
 public record PaymentCreateContext(
 	Long memberId,
-	String orderId,
+	Long orderId,
+	String orderNumber,
 	PaymentType type,
 	PaymentMethod method
 ) {
@@ -21,9 +22,9 @@ public record PaymentCreateContext(
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 				"[PaymentCreateContext] memberId는 필수입니다.");
 		}
-		if (orderId == null || orderId.isBlank()) {
+		if (orderNumber == null || orderNumber.isBlank()) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[PaymentCreateContext] orderId는 필수입니다.");
+				"[PaymentCreateContext] orderNumber는 필수입니다.");
 		}
 		if (type == null) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,

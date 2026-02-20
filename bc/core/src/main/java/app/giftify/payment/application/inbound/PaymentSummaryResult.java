@@ -8,7 +8,7 @@ import app.giftify.shared.domain.vo.Money;
 
 public record PaymentSummaryResult(
 	Long paymentId,
-	String orderId,
+	String orderNumber,
 	Money paidAmount,
 	PaymentStatus status,
 	LocalDateTime createdAt
@@ -22,7 +22,7 @@ public record PaymentSummaryResult(
 	public static PaymentSummaryResult from(Payment payment) {
 		return new PaymentSummaryResult(
 			payment.getId(),
-			payment.getOrderId(),
+			payment.getOrderNumber(),
 			payment.getPaidAmount(),
 			payment.getStatus(),
 			payment.getPaidAt()

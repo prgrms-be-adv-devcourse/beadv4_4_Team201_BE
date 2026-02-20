@@ -2,6 +2,7 @@ package app.giftify.member.application.port.out;
 
 import app.giftify.member.domain.member.Member;
 
+import java.util.List;
 import java.util.Optional;
 
 // 시스템이 데이터베이스에 회원 정보 요청
@@ -21,4 +22,6 @@ public interface MemberRepositoryPort {
 
     // 중복하는 닉네임 확인용
     Optional<Member> findByNickname(String nickname);
+
+    List<Member> findAllByIds(List<Long> ids);
 }

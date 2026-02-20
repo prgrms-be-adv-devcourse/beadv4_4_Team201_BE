@@ -10,7 +10,7 @@ import app.giftify.shared.domain.vo.Money;
 
 public record PaymentDetailResult(
 	Long paymentId,
-	String orderId,
+	String orderNumber,
 	PaymentType type,
 	PaymentMethod method,
 	Money originAmount,
@@ -21,7 +21,7 @@ public record PaymentDetailResult(
 	public static PaymentDetailResult from(Payment payment) {
 		return new PaymentDetailResult(
 			payment.getId(),
-			payment.getOrderId(),
+			payment.getOrderNumber(),
 			payment.getType(),
 			payment.getMethod(),
 			payment.getOriginAmount(),

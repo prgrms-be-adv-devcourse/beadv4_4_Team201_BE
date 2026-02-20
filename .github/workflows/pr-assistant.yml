@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main, develop ]
     types: [ opened, synchronize, reopened ]
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: '디버깅을 위한 상세 로그 출력'
+        type: boolean
+        default: false
 
 jobs:
   # 1. 빌드 및 테스트
@@ -20,6 +26,7 @@ jobs:
       # PR에서는 jar 불필요
       upload-jar: false
       publish-build-scan: true
+      verbose: ${{ inputs.verbose || false }}
 
   # 2. 커버리지 리포트 PR 코멘트
   coverage-report:

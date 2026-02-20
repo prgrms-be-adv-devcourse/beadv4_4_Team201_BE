@@ -11,7 +11,8 @@ import app.giftify.shared.domain.vo.Money;
 
 public record CreateFundingPaymentCommand(
 	Long memberId,
-	String orderId,
+	Long orderId,
+	String orderNumber,
 	PaymentMethod method,
 	Money expectedAmount,
 	List<OrderItemSnapshot> orderItems
@@ -21,9 +22,9 @@ public record CreateFundingPaymentCommand(
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
 				"[CreateFundingPaymentCommand] memberId는 필수입니다.");
 		}
-		if (orderId == null || orderId.isBlank()) {
+		if (orderNumber == null || orderNumber.isBlank()) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[CreateFundingPaymentCommand] orderId는 필수입니다.");
+				"[CreateFundingPaymentCommand] orderNumber는 필수입니다.");
 		}
 		if (method == null) {
 			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
