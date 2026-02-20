@@ -26,7 +26,6 @@ import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.domain.Wallet;
 import app.giftify.wallet.domain.WalletErrorCode;
 import app.giftify.wallet.domain.WalletException;
-import app.giftify.wallet.domain.WalletHistory;
 import app.giftify.wallet.domain.event.WalletChargedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.vo.Money;
@@ -75,16 +74,14 @@ public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase
 		Wallet savedWallet = walletRepository.save(wallet);
 
 		// 4. 이력 기록
-		WalletHistory history = WalletHistory.create(
+		historyRepository.recordTransaction(
 			savedWallet.getId(),
 			TransactionType.CHARGE,
 			command.amount(),
 			savedWallet.getBalance(),
 			ReferenceType.CHARGE,
-			command.chargeOrderId(),
-			LocalDateTime.now()
+			command.chargeOrderId()
 		);
-		historyRepository.record(history);
 
 		// 5. 이벤트 발행
 		eventPublisher.publish(new WalletChargedEvent(
@@ -132,16 +129,14 @@ public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase
 
 		// 3. 이력 기록
 		String transactionId = "WD-" + command.memberId() + "-" + System.currentTimeMillis();
-		WalletHistory history = WalletHistory.create(
+		historyRepository.recordTransaction(
 			savedWallet.getId(),
 			TransactionType.WITHDRAW,
 			command.amount(),
 			savedWallet.getBalance(),
 			ReferenceType.WITHDRAWAL,
-			transactionId,
-			LocalDateTime.now()
+			transactionId
 		);
-		historyRepository.record(history);
 
 		log.info("[Wallet] 출금 요청. walletId={}, memberId={}, amount={}, balanceAfter={}, transactionId={}",
 			savedWallet.getId(), command.memberId(), command.amount(), savedWallet.getBalance(), transactionId);
