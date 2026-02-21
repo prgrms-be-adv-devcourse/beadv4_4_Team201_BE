@@ -154,12 +154,12 @@ public class Order extends BaseAggregateRoot {
     public void pendingToCancel(LocalDateTime cancelRequestedAt) {
         validateStatusForCancel();
 
-        status = OrderStatus.CANCEL_PENDING;
+        status = OrderStatus.PARTIAL_CANCELING;
         this.cancelRequestedAt = cancelRequestedAt;
     }
 
     public void failCancel() {
-        if (status != OrderStatus.CANCEL_PENDING) {
+        if (status != OrderStatus.PARTIAL_CANCELING) {
             throw new PolicyException(
                     OrderErrorCode.INVALID_STATUS_TRANSITION,
                     String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
@@ -174,7 +174,15 @@ public class Order extends BaseAggregateRoot {
     }
 
     public boolean isCancelPending() {
-        return status == OrderStatus.CANCEL_PENDING;
+        return status == OrderStatus.PARTIAL_CANCELING;
+    }
+
+    public boolean isCancelable() {
+        return status != OrderStatus.CANCELED && status != OrderStatus.CONFIRMED && status != OrderStatus.CANCELING;
+    }
+
+    public void updateStatus(List<OrderItemStatus> itemStatuses) {
+        this.status = OrderStatus.deriveStatus(itemStatuses);
     }
 
     private static String generateOrderNumber() {
