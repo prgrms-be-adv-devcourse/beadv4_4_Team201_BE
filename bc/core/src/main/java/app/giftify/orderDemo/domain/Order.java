@@ -124,11 +124,7 @@ public class Order extends BaseAggregateRoot {
                 .build();
     }
 
-    public void toPaid(Long paymentId, String originTransactionKey) {
-        if (this.status == OrderStatus.PAID) {
-            return;
-        }
-
+    public void paid(Long paymentId, String originTransactionKey) {
         if (status != OrderStatus.CREATED) {
             throw new PolicyException(
                     OrderErrorCode.INVALID_STATUS_TRANSITION,
@@ -141,48 +137,39 @@ public class Order extends BaseAggregateRoot {
         this.paidAt = LocalDateTime.now();
         this.status = OrderStatus.PAID;
 
-        items.forEach(i -> i.toPaid(originTransactionKey));
+        items.forEach(i -> i.paid(originTransactionKey));
     }
 
-    public void cancel(LocalDateTime cancelledAt) {
-        validateStatusForCancel();
+    public void synchronizeStatus() {
+        this.status = OrderStatus.deriveStatus(getItemStatuses());
 
-        status = OrderStatus.CANCELED;
-        this.cancelledAt = cancelledAt;
+        if (status == OrderStatus.CANCELING){
+            cancelRequestedAt = LocalDateTime.now();
+        } else if (status == OrderStatus.CANCELED) {
+            cancelledAt = LocalDateTime.now();
+        }
     }
 
-    public void pendingToCancel(LocalDateTime cancelRequestedAt) {
-        validateStatusForCancel();
+    public void cancelAll() {
+        validateFullCancelable();
 
-        status = OrderStatus.PARTIAL_CANCELING;
-        this.cancelRequestedAt = cancelRequestedAt;
-    }
-
-    public void failCancel() {
-        if (status != OrderStatus.PARTIAL_CANCELING) {
-            throw new PolicyException(
-                    OrderErrorCode.INVALID_STATUS_TRANSITION,
-                    String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
-            );
+        if (this.status == OrderStatus.CREATED) {
+            this.items.forEach(OrderItem::canceled);
+            canceled();
         }
 
-        status = OrderStatus.PAID;
+        if (this.status == OrderStatus.PAID) {
+            this.items.forEach(OrderItem::canceling);
+            canceling();;
+        }
+
+        throw new PolicyException(OrderErrorCode.INVALID_STATUS_TRANSITION);
     }
 
-    public boolean isAlreadyCanceled() {
-        return status == OrderStatus.CANCELED;
-    }
-
-    public boolean isCancelPending() {
-        return status == OrderStatus.PARTIAL_CANCELING;
-    }
-
-    public boolean isCancelable() {
-        return status != OrderStatus.CANCELED && status != OrderStatus.CONFIRMED && status != OrderStatus.CANCELING;
-    }
-
-    public void updateStatus(List<OrderItemStatus> itemStatuses) {
-        this.status = OrderStatus.deriveStatus(itemStatuses);
+    public List<OrderItem> getCancelingItems() {
+        return items.stream()
+                .filter(OrderItem::isCanceling)
+                .toList();
     }
 
     private static String generateOrderNumber() {
@@ -207,12 +194,84 @@ public class Order extends BaseAggregateRoot {
         this.quantity = quantity;
     }
 
-    private void validateStatusForCancel() {
-        if (status == OrderStatus.CONFIRMED) {
-            throw new PolicyException(
-                    OrderErrorCode.INVALID_STATUS_TRANSITION,
-                    String.format("주문 취소가 불가능한 상태입니다. orderId = %d, status = %s", id, status)
+    private boolean isAllItemsFullCancelable() {
+        OrderItem firstItem = items.get(0);
+        OrderItemStatus firstStatus = firstItem.getStatus();
+
+        if (!firstItem.isCancelable())
+            return false;
+
+        return items.stream()
+                .allMatch(item -> item.getStatus() == firstStatus);
+    }
+
+    private void canceling() {
+        this.status = OrderStatus.CANCELING;
+        this.cancelRequestedAt = LocalDateTime.now();
+    }
+
+    private void canceled() {
+        this.status = OrderStatus.CANCELED;
+        this.cancelledAt = LocalDateTime.now();
+    }
+
+    private void validateFullCancelable() {
+        if (items.isEmpty()) {
+            throw new DomainException(
+                    OrderErrorCode.ORDER_ITEM_NOT_FOUND,
+                    String.format("주문 취소 항목이 존재하지 않습니다. orderId = %d", id)
             );
         }
+
+        if (!status.isFullCancelable()) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 전체 취소가 불가능한 주문 상태입니다. orderId = %d, status = %s", id, status)
+            );
+        }
+
+        if (!isAllItemsFullCancelable()) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 전체 취소가 불가능한 항목이 포함되어 있거나 상태가 일치하지 않습니다. orderId = %d", id)
+            );
+        }
+    }
+
+    public List<OrderItem> validatePartialCancelable(List<Long> requestedItemIds) {
+        List<OrderItem> targets = items.stream()
+                .filter(item -> requestedItemIds.contains(item.getId()))
+                .toList();
+
+        if (targets.isEmpty()) {
+            throw new DomainException(
+                    OrderErrorCode.ORDER_ITEM_NOT_FOUND,
+                    String.format("주문 취소 항목이 존재하지 않습니다. orderId = %d", id)
+            );
+        }
+
+        if (targets.size() != requestedItemIds.size()) {
+            throw new DomainException(
+                    OrderErrorCode.INVALID_ORDER_ITEM,
+                    String.format("주문 부분 취소 항목 중 주문에 존재하지 않은 항목이 존재합니다. orderId = %d", id)
+            );
+        }
+
+        boolean allCancelable = targets.stream().allMatch(OrderItem::isCancelable);
+
+        if (!allCancelable) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 부분 취소가 불가능한 주문 항목이 포함되어 있습니다. orderId = %d", id)
+            );
+        }
+
+        return targets;
+    }
+
+    private List<OrderItemStatus> getItemStatuses() {
+        return items.stream()
+                .map(OrderItem::getStatus)
+                .toList();
     }
 }

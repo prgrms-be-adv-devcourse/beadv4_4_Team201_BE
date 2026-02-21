@@ -9,12 +9,11 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResp
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.OrderCancelResponse;
 import app.giftify.orderDemo.application.OrderService;
-import app.giftify.orderDemo.domain.OrderCancelResultCode;
 import app.giftify.orderDemo.application.dto.OrderCancelSummary;
-import app.giftify.orderDemo.application.dto.OrderItemCancelResult;
 import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
+import app.giftify.orderDemo.domain.ResultCode;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import app.giftify.support.common.annotation.Idempotent;
@@ -86,10 +85,10 @@ public class OrderController implements OrderControllerSpec {
             @CurrentMemberId Long memberId,
             @PathVariable Long orderId
     ) {
-        OrderCancelResultCode result = orderService.requestCancelOrder(memberId, orderId);
+        ResultCode resultCode = orderService.requestCancelOrder(memberId, orderId);
 
-        return ResponseEntity.status(result.getStatusCode())
-                .body(RsData.success(result.getMessage()));
+        return ResponseEntity.status(resultCode.getStatusCode())
+                .body(RsData.success(resultCode.getMessage()));
     }
 
     @Idempotent(prefix = PREFIX)
@@ -101,12 +100,11 @@ public class OrderController implements OrderControllerSpec {
             @RequestBody OrderCancelItemsRequest request) {
         CancelOrderItemsCommand command = CancelOrderItemsCommand.of(orderId, memberId, request);
 
-        List<OrderItemCancelResult> results = orderService.requestCancelOrderItems(command);
+        OrderCancelSummary summary = orderService.requestCancelOrderItems(command);
 
-        OrderCancelSummary summary = OrderCancelSummary.of(results);
         OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
 
-        return ResponseEntity.status(summary.orderCancelResultCode().getStatusCode())
+        return ResponseEntity.status(summary.overallResultCode().getStatusCode())
                 .body(RsData.success(response));
     }
 

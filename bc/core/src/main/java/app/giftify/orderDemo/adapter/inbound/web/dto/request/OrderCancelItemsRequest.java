@@ -8,11 +8,6 @@ import java.util.List;
 
 public record OrderCancelItemsRequest(
         @NotNull @NotEmpty @Valid
-        List<OrderCancelItemRequest> items
+        List<Long> itemIds
 ) {
-    public List<Long> getIds() {
-        return items.stream()
-                .map(OrderCancelItemRequest::itemId)
-                .toList();
-    }
 }

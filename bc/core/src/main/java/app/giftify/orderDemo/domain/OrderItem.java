@@ -165,36 +165,47 @@ public class OrderItem {
                 '}';
     }
 
-    public void toPaid(String originTransactionKey) {
-        if (this.status == OrderItemStatus.PAID) {
-            return;
-        }
-
+    public void paid(String originTransactionKey) {
         if (status != OrderItemStatus.CREATED) {
             throw new PolicyException(
                     OrderErrorCode.INVALID_STATUS_TRANSITION,
                     String.format("주문 아이템 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
             );
         }
+
         status = OrderItemStatus.PAID;
         this.originTransactionKey = originTransactionKey;
     }
 
-    public void cancel(LocalDateTime cancelledAt) {
-        if (status == OrderItemStatus.CANCELED) {
-            log.warn("이미 취소된 주문입니다. orderId = {}, orderItemId = {}", order.getId(), id);
-        }
-
-        status = OrderItemStatus.CANCELED;
-        this.cancelledAt = cancelledAt;
+    public void canceling() {
+        this.status = OrderItemStatus.CANCELING;
+        this.cancelRequestedAt = LocalDateTime.now();
     }
 
-    public void pendingToCancel(LocalDateTime cancelRequestedAt) {
-        status = OrderItemStatus.CANCELING;
-        this.cancelRequestedAt = cancelRequestedAt;
+    public void canceled() {
+        this.status = OrderItemStatus.CANCELED;
+        this.cancelledAt = LocalDateTime.now();
     }
 
     public void failCancel() {
         status = OrderItemStatus.PAID;
+    }
+
+    public boolean isCancelable() {
+        return status == OrderItemStatus.CREATED || status == OrderItemStatus.PAID;
+    }
+
+    public ResultCode decideCancelResult() {
+        return switch (this.status) {
+            case OrderItemStatus.CREATED -> ResultCode.SUCCESS;
+            case OrderItemStatus.PAID -> ResultCode.ACCEPTED;
+            case OrderItemStatus.CANCELING -> ResultCode.IN_PROGRESS;
+            case OrderItemStatus.CANCELED -> ResultCode.ALREADY_PROCESSED;
+            case OrderItemStatus.CONFIRMED -> ResultCode.FAIL;
+        };
+    }
+
+    public boolean isCanceling() {
+        return status == OrderItemStatus.CANCELING;
     }
 }

@@ -1,5 +1,6 @@
 package app.giftify.orderDemo.domain;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public enum OrderStatus {
@@ -41,5 +42,9 @@ public enum OrderStatus {
         return itemStatuses.stream()
                 .distinct()
                 .count() == 1;
+    }
+
+    public boolean isFullCancelable() {
+        return EnumSet.of(CREATED, PAID).contains(this);
     }
 }

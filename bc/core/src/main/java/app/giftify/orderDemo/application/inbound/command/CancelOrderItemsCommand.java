@@ -13,7 +13,7 @@ public record CancelOrderItemsCommand(
         return new CancelOrderItemsCommand(
                 orderId,
                 memberId,
-                request.getIds()
+                request.itemIds()
         );
     }
 }

@@ -16,7 +16,7 @@ class OrderTest {
 
     @Test
     @DisplayName("성공: 주문 생성 상태에서 결제 완료로 정상 전이된다")
-    void toPaid_success() {
+    void paid_success() {
         // given
         Order order = OrderFixture.createOrderWithStatus(OrderStatus.CREATED);
         Long paymentId = 1L;
@@ -24,7 +24,7 @@ class OrderTest {
         LocalDateTime paidAt = LocalDateTime.now();
 
         // when
-        order.toPaid(paymentId, lastTransactionKey);
+        order.paid(paymentId, lastTransactionKey);
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
@@ -35,12 +35,12 @@ class OrderTest {
 
     @Test
     @DisplayName("성공: 주문이 결제 완료되면 모든 주문 아이템도 완료 상태가 된다")
-    void toPaid_items_propagation() {
+    void paid_items_propagation() {
         // given
         Order order = OrderFixture.createOrderWithItems(1L, 2); // 아이템 2개 포함
 
         // when
-        order.toPaid(1L, "tx");
+        order.paid(1L, "tx");
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
@@ -49,13 +49,13 @@ class OrderTest {
 
     @Test
     @DisplayName("실패: 주문 생성 상태 외에 결제 완료 처리하면 예외가 발생한다")
-    void toPaid_fail_invalid_status() {
+    void paid_fail_invalid_status() {
         // given
         Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELED);
 
         // when & then
         assertThatThrownBy(() ->
-                order.toPaid(1L, "tx")
+                order.paid(1L, "tx")
         )
                 .isInstanceOf(PolicyException.class)
                 .hasMessageContaining(String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", order.getStatus()))
