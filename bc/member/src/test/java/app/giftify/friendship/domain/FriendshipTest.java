@@ -12,7 +12,7 @@ class FriendshipTest {
 
         assertThat(friendship.getRequesterId()).isEqualTo(1L);
         assertThat(friendship.getReceiverId()).isEqualTo(2L);
-        assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.PENDING);
+        assertThat(friendship.getStatus()).isEqualTo(app.giftify.shared.domain.type.FriendshipStatus.PENDING);
         assertThat(friendship.getAcceptedAt()).isNull();
     }
 
@@ -28,7 +28,7 @@ class FriendshipTest {
 
         friendship.accept(2L);
 
-        assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.ACCEPTED);
+        assertThat(friendship.getStatus()).isEqualTo(app.giftify.shared.domain.type.FriendshipStatus.ACCEPTED);
         assertThat(friendship.getAcceptedAt()).isNotNull();
     }
 
@@ -55,7 +55,7 @@ class FriendshipTest {
 
         friendship.reject(2L);
 
-        assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.REJECTED);
+        assertThat(friendship.getStatus()).isEqualTo(app.giftify.shared.domain.type.FriendshipStatus.REJECTED);
     }
 
     @Test
