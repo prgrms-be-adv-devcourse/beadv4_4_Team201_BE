@@ -2,7 +2,7 @@ package app.giftify.friendship.adapter.in.web.dto;
 
 import java.time.LocalDateTime;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.friendship.domain.FriendshipStatus;
+import app.giftify.shared.domain.type.FriendshipStatus;
 
 public record FriendshipResponse(
         Long id,

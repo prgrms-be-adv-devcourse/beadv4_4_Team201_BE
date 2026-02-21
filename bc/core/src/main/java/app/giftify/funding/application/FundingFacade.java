@@ -137,8 +137,23 @@ public class FundingFacade {
         return fundingGetUseCase.getMyFundings(page, size, status, memberId);
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<FundingResponseDto> getFriendFundings(int page, int size, Long memberId, Long friendId) {
+        return fundingGetUseCase.getFriendFundings(page, size, memberId, friendId);
+    }
+
+    @Transactional(readOnly = true)
+    public FundingResponseDto getFriendFunding(Long friendId, Long id, Long memberId) {
+        return fundingGetUseCase.getFriendFunding(friendId, id, memberId);
+    }
+
     @Transactional
     public List<FundingCompleteResponseDto> closeAchievedFundings() {
         return fundingCloseUseCase.closeUnacceptedAchievedFundings();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<FundingResponseDto> getFriendsFundings(int page, int size, Long memberId) {
+        return fundingGetUseCase.getFriendsFundings(page, size, memberId);
     }
 }

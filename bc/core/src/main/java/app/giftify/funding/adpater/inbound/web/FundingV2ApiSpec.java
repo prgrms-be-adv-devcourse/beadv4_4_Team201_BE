@@ -117,4 +117,48 @@ public interface FundingV2ApiSpec {
             @RequestParam(value = "status", required = false) FundingStatus status,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
+    @Operation(
+            summary = "친구의 진행 중인 펀딩 목록 조회",
+            description = "친구로 등록된 사용자의 진행 중(IN_PROGRESS) 펀딩 목록을 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "친구 펀딩 목록 조회 성공"),
+            @ApiResponse(responseCode = "403", description = "친구 관계 아님 (F008)"),
+            @ApiResponse(responseCode = "404", description = "수령자를 찾을 수 없음 (F012)")
+    })
+    ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFriendFundings(
+            @PathVariable("friendId") Long friendId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "친구의 진행 중인 단건 펀딩 조회",
+            description = "친구로 등록된 사용자의 진행 중(IN_PROGRESS)인 단건 펀딩을 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "친구 펀딩 단건 조회 성공"),
+            @ApiResponse(responseCode = "403", description = "친구 관계 아님 (F008)"),
+            @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)"),
+            @ApiResponse(responseCode = "404", description = "수령자를 찾을 수 없음 (F012)")
+    })
+    ResponseEntity<RsData<FundingResponseDto>> getFriendFunding(
+            @PathVariable("friendId") Long friendId,
+            @PathVariable("id") Long id,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "내 친구들의 진행 중인 펀딩 리스트 조회",
+            description = "친구로 등록된 사용자들의 진행 중(IN_PROGRESS)인 펀딩 리스트를 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "친구들 펀딩 리스트 조회 성공"),
+            @ApiResponse(responseCode = "403", description = "친구 관계 아님 (F008)"),
+            @ApiResponse(responseCode = "404", description = "펀딩을 찾을 수 없음 (F006)"),
+            @ApiResponse(responseCode = "404", description = "수령자를 찾을 수 없음 (F012)")
+    })
+    ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFriendsFundings(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
