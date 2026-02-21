@@ -42,7 +42,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     // Apache Commons
-    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 
     // Test
     testImplementation(libs.spring.boot.starter.test)
@@ -51,7 +51,8 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
-    testImplementation("org.testcontainers:elasticsearch")
+    testImplementation("org.testcontainers:testcontainers-elasticsearch")
+    testImplementation(libs.testcontainers.junit)
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
 
     // Retry

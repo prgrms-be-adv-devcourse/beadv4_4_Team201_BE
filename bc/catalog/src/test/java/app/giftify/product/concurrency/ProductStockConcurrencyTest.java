@@ -1,6 +1,6 @@
 package app.giftify.product.concurrency;
 
-import app.giftify.product.ProductTestApplication;
+import app.giftify.product.ProductJpaTestApplication;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
 import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = ProductTestApplication.class)
+@SpringBootTest(classes = ProductJpaTestApplication.class)
 @Import(ProductStockConcurrencyTest.TestConfig.class)
 @ActiveProfiles("test")
 class ProductStockConcurrencyTest {
