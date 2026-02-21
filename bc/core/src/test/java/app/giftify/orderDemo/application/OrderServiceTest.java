@@ -11,7 +11,7 @@ import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.OrderStatus;
-import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.domain.OrderCancelResultCode;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.orderDemo.domain.fixture.OrderFixture;
 import app.giftify.shared.api.exception.DomainException;
@@ -260,11 +260,11 @@ class OrderServiceTest {
             given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(cancelableItems);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            OrderCancelResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.CANCEL_PENDING);
-            assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCEL_PENDING);
+            assertThat(result).isEqualTo(OrderCancelResultCode.ACCEPTED);
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.PARTIAL_CANCELING);
 
             ArgumentCaptor<OrderCancelRequestedEvent> captor = ArgumentCaptor.forClass(OrderCancelRequestedEvent.class);
             verify(eventPublisher).publish(captor.capture());
@@ -284,10 +284,10 @@ class OrderServiceTest {
             given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(cancelableItems);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            OrderCancelResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.CANCEL_SUCCESS);
+            assertThat(result).isEqualTo(OrderCancelResultCode.SUCCESS);
             assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
             verify(eventPublisher, never()).publish(any());
         }
@@ -301,10 +301,10 @@ class OrderServiceTest {
             given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            OrderCancelResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.ALREADY_CANCELED);
+            assertThat(result).isEqualTo(OrderCancelResultCode.ALREADY_PROCESSED);
             verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
             verify(eventPublisher, never()).publish(any());
         }
@@ -313,15 +313,15 @@ class OrderServiceTest {
         @DisplayName("멱등: 취소 처리 중인 주문에 재요청 시 IN_PROGRESS를 반환하고 추가 처리를 하지 않는다")
         void given_cancelPendingOrder_when_requestCancelOrder_then_returnInProgress() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PARTIAL_CANCELING);
 
             given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            OrderCancelResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.IN_PROGRESS);
+            assertThat(result).isEqualTo(OrderCancelResultCode.IN_PROGRESS);
             verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
             verify(eventPublisher, never()).publish(any());
         }
@@ -430,7 +430,7 @@ class OrderServiceTest {
         @DisplayName("성공: CANCEL_PENDING 상태 주문의 취소를 확정하여 CANCELED로 변경하고 OrderCanceledEvent를 발행한다")
         void given_cancelPendingOrder_when_completeCancel_then_statusCanceled() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PARTIAL_CANCELING);
             ReflectionTestUtils.setField(order, "id", orderId);
 
             List<OrderItem> pendingItems = new ArrayList<>(order.getItems());
@@ -479,7 +479,7 @@ class OrderServiceTest {
         @DisplayName("성공: CANCEL_PENDING 상태 주문 취소 실패 처리 시 PAID 상태로 복구한다")
         void given_cancelPendingOrder_when_failCancel_then_statusRestored() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PARTIAL_CANCELING);
             ReflectionTestUtils.setField(order, "id", orderId);
 
             List<OrderItem> pendingItems = new ArrayList<>(order.getItems());

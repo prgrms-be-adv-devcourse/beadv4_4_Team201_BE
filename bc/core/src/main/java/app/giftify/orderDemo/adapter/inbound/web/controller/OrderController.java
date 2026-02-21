@@ -9,7 +9,7 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResp
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.OrderCancelResponse;
 import app.giftify.orderDemo.application.OrderService;
-import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.domain.OrderCancelResultCode;
 import app.giftify.orderDemo.application.dto.OrderCancelSummary;
 import app.giftify.orderDemo.application.dto.OrderItemCancelResult;
 import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
@@ -86,7 +86,7 @@ public class OrderController implements OrderControllerSpec {
             @CurrentMemberId Long memberId,
             @PathVariable Long orderId
     ) {
-        OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+        OrderCancelResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
         return ResponseEntity.status(result.getStatusCode())
                 .body(RsData.success(result.getMessage()));
@@ -106,7 +106,7 @@ public class OrderController implements OrderControllerSpec {
         OrderCancelSummary summary = OrderCancelSummary.of(results);
         OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
 
-        return ResponseEntity.status(summary.overallResult().getStatusCode())
+        return ResponseEntity.status(summary.orderCancelResultCode().getStatusCode())
                 .body(RsData.success(response));
     }
 

@@ -15,7 +15,7 @@ public record OrderCancelResponse(
     public static OrderCancelResponse of(Long orderId, OrderCancelSummary result) {
         return new OrderCancelResponse(
                 orderId,
-                result.overallResult().name(),
+                result.orderCancelResultCode().name(),
                 result.totalCancelAmount(),
                 result.items()
         );

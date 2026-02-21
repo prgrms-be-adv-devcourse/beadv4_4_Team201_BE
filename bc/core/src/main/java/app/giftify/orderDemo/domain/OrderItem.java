@@ -190,7 +190,7 @@ public class OrderItem {
     }
 
     public void pendingToCancel(LocalDateTime cancelRequestedAt) {
-        status = OrderItemStatus.CANCEL_PENDING;
+        status = OrderItemStatus.CANCELING;
         this.cancelRequestedAt = cancelRequestedAt;
     }
 

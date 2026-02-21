@@ -1,6 +1,7 @@
 package app.giftify.orderDemo.application.outbound.port;
 
 import app.giftify.orderDemo.domain.OrderItem;
+import app.giftify.orderDemo.domain.OrderItemStatus;
 
 import java.util.List;
 
@@ -13,4 +14,10 @@ public interface OrderItemRepository {
     List<OrderItem> getCancelableItemsByOrderId(Long orderId);
 
     List<OrderItem> getPendingCancelItemsByOrderId(Long orderId);
+
+    List<OrderItem> getAllByOrderIdAndIdIn(Long orderId, List<Long> itemIds);
+
+    List<OrderItemStatus> getStatusesByOrderId(Long orderId);
+
+    void flush();
 }

@@ -2,8 +2,9 @@ package app.giftify.orderDemo.application;
 
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
-import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.application.dto.OrderCancelProcessingResult;
 import app.giftify.orderDemo.application.dto.OrderItemCancelResult;
+import app.giftify.orderDemo.domain.OrderCancelResultCode;
 import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
@@ -38,9 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("orderV2Service")
@@ -52,6 +51,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final EventPublisher eventPublisher;
     private final WishlistClient wishlistClient;
+    private final OrderCancelProcessor orderCancelProcessor;
 
     @Transactional
     public OrderSnapshot createOrder(@Valid CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
@@ -115,13 +115,13 @@ public class OrderService {
             backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
     )
     @Transactional
-    public OrderCancelResult requestCancelOrder(Long memberId, Long orderId) {
+    public OrderCancelResultCode requestCancelOrder(Long memberId, Long orderId) {
         Order order = orderRepository.getByIdWithLock(orderId);
 
         validateOwner(memberId, order.getBuyerId());
 
-        if (order.isAlreadyCanceled()) return OrderCancelResult.ALREADY_CANCELED;
-        if (order.isCancelPending()) return OrderCancelResult.IN_PROGRESS;
+        if (order.isAlreadyCanceled()) return OrderCancelResultCode.ALREADY_PROCESSED;
+        if (order.isCancelPending()) return OrderCancelResultCode.IN_PROGRESS;
 
         List<OrderItem> cancelableItems = orderItemRepository.getCancelableItemsByOrderId(orderId);
         CancelTargetItems targetItems = new CancelTargetItems(cancelableItems);
@@ -131,7 +131,7 @@ public class OrderService {
         if (order.getStatus() == OrderStatus.CREATED) {
             order.cancel(now);
             targetItems.cancel(now);
-            return OrderCancelResult.CANCEL_SUCCESS;
+            return OrderCancelResultCode.SUCCESS;
         }
 
         order.pendingToCancel(now);
@@ -144,7 +144,7 @@ public class OrderService {
                 order.getOriginTransactionKey(),
                 targetItems.calculateCancelAmount()
         ));
-        return OrderCancelResult.CANCEL_PENDING;
+        return OrderCancelResultCode.ACCEPTED;
     }
 
     @Transactional
@@ -176,9 +176,45 @@ public class OrderService {
         targetItems.failCancel();
     }
 
+    @Transactional
     public List<OrderItemCancelResult> requestCancelOrderItems(CancelOrderItemsCommand command) {
-        // todo
-        return null;
+        Order order = orderRepository.getByIdWithLock(command.orderId());
+
+        validateOwner(command.memberId(), order.getBuyerId());
+        validateCancelable(order);
+
+        List<OrderItem> requestItems = orderItemRepository.getAllByOrderIdAndIdIn(
+                command.orderId(),
+                command.itemIds()
+        );
+
+        OrderCancelProcessingResult processingResult = orderCancelProcessor.process(requestItems);
+
+        orderItemRepository.flush();    // orderItem 취소 상태 변경 바로 반영
+
+        List<OrderItemStatus> currentAllStatuses = orderItemRepository.getStatusesByOrderId(order.getId());
+        order.updateStatus(currentAllStatuses);
+
+        if (!processingResult.pendingItems().items().isEmpty()) {
+            eventPublisher.publish(new OrderCancelRequestedEvent(
+                    order.getId(),
+                    order.getOrderNumber(),
+                    order.getPaymentId(),
+                    order.getOriginTransactionKey(),
+                    processingResult.pendingItems().calculateCancelAmount()
+            ));
+        }
+
+        return processingResult.results();
+    }
+
+    private static void validateCancelable(Order order) {
+        if (!order.isCancelable()) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_CANCEL,
+                    String.format("취소가 불가능한 상태입니다. status = %s", order.getStatus())
+            );
+        }
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {
