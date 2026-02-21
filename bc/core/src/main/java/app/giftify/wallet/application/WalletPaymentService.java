@@ -10,7 +10,6 @@ import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.domain.Wallet;
 import app.giftify.wallet.domain.WalletErrorCode;
 import app.giftify.wallet.domain.WalletException;
-import app.giftify.wallet.domain.WalletHistory;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -57,16 +56,14 @@ public class WalletPaymentService implements DeductWalletUseCase {
 
 		Wallet savedWallet = walletRepository.save(wallet);
 
-		WalletHistory history = WalletHistory.create(
+		historyRepository.recordTransaction(
 			savedWallet.getId(),
-			TransactionType.PAYMENT,
+			TransactionType.ORDER_DEDUCT,
 			command.amount(),
 			savedWallet.getBalance(),
 			ReferenceType.PAYMENT,
-			command.orderId(),
-			LocalDateTime.now()
+			command.orderId()
 		);
-		historyRepository.record(history);
 
 		eventPublisher.publish(new WalletDeductedEvent(
 			savedWallet.getId(),
