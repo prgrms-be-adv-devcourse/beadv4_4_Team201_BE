@@ -156,11 +156,13 @@ public class Order extends BaseAggregateRoot {
         if (this.status == OrderStatus.CREATED) {
             this.items.forEach(OrderItem::canceled);
             canceled();
+            return;
         }
 
         if (this.status == OrderStatus.PAID) {
             this.items.forEach(OrderItem::canceling);
-            canceling();;
+            canceling();
+            return;
         }
 
         throw new PolicyException(OrderErrorCode.INVALID_STATUS_TRANSITION);

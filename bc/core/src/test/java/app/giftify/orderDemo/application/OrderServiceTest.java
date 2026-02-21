@@ -64,6 +64,9 @@ class OrderServiceTest {
     @Mock
     private EventPublisher eventPublisher;
 
+    @Mock
+    private OrderCancelProcessor orderCancelProcessor;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -305,7 +308,7 @@ class OrderServiceTest {
         @DisplayName("멱등: 취소 처리 중인 주문에 재요청 시 IN_PROGRESS를 반환하고 추가 처리를 하지 않는다")
         void given_cancelPendingOrder_when_requestCanceledOrder_then_returnInProgress() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PARTIAL_CANCELING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELING);
 
             given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
@@ -414,10 +417,10 @@ class OrderServiceTest {
         private final Long orderId = 10L;
 
         @Test
-        @DisplayName("성공: CANCEL_PENDING 상태 주문의 취소를 확정하여 CANCELED로 변경하고 OrderCanceledEvent를 발행한다")
+        @DisplayName("성공: CANCELING 상태 주문의 취소를 확정하여 CANCELED로 변경하고 OrderCanceledEvent를 발행한다")
         void given_cancelPendingOrder_when_completeCancel_then_statusCanceled() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PARTIAL_CANCELING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELING);
             ReflectionTestUtils.setField(order, "id", orderId);
 
             given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
@@ -459,7 +462,7 @@ class OrderServiceTest {
         @DisplayName("성공: 주문 취소 실패 처리 시 주문 아이템 복구 후 상태를 복구한다")
         void given_cancelPendingOrder_when_failCancel_then_statusRestored() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PARTIAL_CANCELING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELING);
             ReflectionTestUtils.setField(order, "id", orderId);
 
             given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);

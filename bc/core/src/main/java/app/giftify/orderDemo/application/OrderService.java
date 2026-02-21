@@ -119,7 +119,16 @@ public class OrderService {
         order.cancelAll();
 
         if (order.getStatus() == OrderStatus.CANCELED) return ResultCode.SUCCESS;
-        if (order.getStatus() == OrderStatus.CANCELING) return ResultCode.ACCEPTED;
+        if (order.getStatus() == OrderStatus.CANCELING) {
+            eventPublisher.publish(new OrderCancelRequestedEvent(
+                    order.getId(),
+                    order.getOrderNumber(),
+                    order.getPaymentId(),
+                    order.getOriginTransactionKey(),
+                    order.getTotalAmount()
+            ));
+            return ResultCode.ACCEPTED;
+        }
 
         throw new PolicyException(
                 OrderErrorCode.INVALID_STATUS_CANCEL,
