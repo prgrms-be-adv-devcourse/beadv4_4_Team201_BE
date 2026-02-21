@@ -37,7 +37,7 @@ class WithdrawFundingUseCaseTest {
 
     @Test
     @DisplayName("펀딩 기여금 출금에 성공한다.")
-    void withdrawFunding_Success() {
+    void withdrawByWishlistItem_Success() {
         // given
         Long fundingId = 1L;
         Long participantId = 1L;
@@ -48,7 +48,7 @@ class WithdrawFundingUseCaseTest {
         given(fundingRepository.findById(fundingId)).willReturn(Optional.of(mockFunding));
 
         // when
-        withdrawFundingUseCase.withdrawFunding(fundingId, participantId, amount);
+        withdrawFundingUseCase.withdrawByWishlistItem(fundingId, participantId, amount);
 
         // then
         then(fundingRepository).should(times(1)).findById(fundingId);
@@ -60,7 +60,7 @@ class WithdrawFundingUseCaseTest {
 
     @Test
     @DisplayName("존재하지 않는 펀딩 ID로 출금 시 예외가 발생한다.")
-    void withdrawFunding_Fail_FundingNotFound() {
+    void withdrawFunding_Fail_ByWishlistItemNotFound() {
         // given
         Long nonExistentFundingId = 999L;
         Long participantId = 1L;
@@ -70,7 +70,7 @@ class WithdrawFundingUseCaseTest {
 
         // when & then
         assertThrows(FundingException.class, () -> {
-            withdrawFundingUseCase.withdrawFunding(nonExistentFundingId, participantId, amount);
+            withdrawFundingUseCase.withdrawByWishlistItem(nonExistentFundingId, participantId, amount);
         });
 
         then(fundingRepository).should(times(1)).findById(nonExistentFundingId);
@@ -79,7 +79,7 @@ class WithdrawFundingUseCaseTest {
 
     @Test
     @DisplayName("펀딩이 진행 중이거나 달성 상태가 아니면 출금할 수 없다.")
-    void withdrawFunding_Fail_InvalidStatus() throws Exception {
+    void withdrawByWishlistItem_Fail_InvalidStatus() throws Exception {
         // given
         Long fundingId = 1L;
         Long participantId = 1L;
@@ -95,7 +95,7 @@ class WithdrawFundingUseCaseTest {
 
         // when & then
         FundingException exception = assertThrows(FundingException.class, () -> {
-            withdrawFundingUseCase.withdrawFunding(fundingId, participantId, amount);
+            withdrawFundingUseCase.withdrawByWishlistItem(fundingId, participantId, amount);
         });
         
         // 에러 코드가 INVALID_STATUS_FOR_WITHDRAWAL인지 확인
