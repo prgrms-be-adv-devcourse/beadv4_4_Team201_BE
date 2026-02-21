@@ -197,7 +197,7 @@ public class Order extends BaseAggregateRoot {
     }
 
     private boolean isAllItemsFullCancelable() {
-        OrderItem firstItem = items.get(0);
+        OrderItem firstItem = items.getFirst();
         OrderItemStatus firstStatus = firstItem.getStatus();
 
         if (!firstItem.isCancelable())

@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +28,6 @@ class OrderTest {
         Order order = OrderFixture.createOrderWithStatus(OrderStatus.CREATED);
         Long paymentId = 1L;
         String lastTransactionKey = "TX_KEY_456";
-        LocalDateTime paidAt = LocalDateTime.now();
 
         // when
         order.paid(paymentId, lastTransactionKey);
@@ -252,7 +250,7 @@ class OrderTest {
             // given - PAID 주문의 아이템 중 하나만 CANCELING
             Order order = OrderFixture.createOrderWithItems(1L, 2);
             order.paid(1L, "tx");
-            ReflectionTestUtils.setField(order.getItems().get(0), "status", OrderItemStatus.CANCELING);
+            ReflectionTestUtils.setField(order.getItems().getFirst(), "status", OrderItemStatus.CANCELING);
 
             // when
             order.synchronizeStatus();
@@ -267,7 +265,7 @@ class OrderTest {
             // given - PAID 주문의 아이템 중 하나만 CANCELED
             Order order = OrderFixture.createOrderWithItems(1L, 2);
             order.paid(1L, "tx");
-            ReflectionTestUtils.setField(order.getItems().get(0), "status", OrderItemStatus.CANCELED);
+            ReflectionTestUtils.setField(order.getItems().getFirst(), "status", OrderItemStatus.CANCELED);
 
             // when
             order.synchronizeStatus();

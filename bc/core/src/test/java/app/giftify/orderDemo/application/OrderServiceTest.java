@@ -5,7 +5,6 @@ import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderSnapshot;
@@ -56,16 +55,10 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private OrderItemRepository orderItemRepository;
-
-    @Mock
     private WishlistClient wishlistClient;
 
     @Mock
     private EventPublisher eventPublisher;
-
-    @Mock
-    private OrderCancelProcessor orderCancelProcessor;
 
     @InjectMocks
     private OrderService orderService;
@@ -156,8 +149,8 @@ class OrderServiceTest {
 
         // then
         // OrderItem의 targetId가 fundingId와 일치하는지 확인
-        assertThat(result.orderItemSnapshots().get(0).targetId()).isEqualTo(fundingId);
-        assertThat(result.orderItemSnapshots().get(0).targetType()).isEqualTo(TargetType.FUNDING);
+        assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(fundingId);
+        assertThat(result.orderItemSnapshots().getFirst().targetType()).isEqualTo(TargetType.FUNDING);
     }
 
     @Test
