@@ -121,4 +121,38 @@ public class FundingController implements FundingV2ApiSpec {
         PageResponse<MyFundingSummaryDto> fundings = fundingFacade.getMyFundings(page, size, status, memberId);
         return ResponseEntity.ok(RsData.success(fundings));
     }
+
+    // 특정 친구의 진행 중인 펀딩 리스트 조회
+    @Override
+    @GetMapping("/friend/{friendId}/list")
+    public ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFriendFundings(
+            @PathVariable("friendId") Long friendId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
+        PageResponse<FundingResponseDto> fundings = fundingFacade.getFriendFundings(page, size, memberId, friendId);
+        return ResponseEntity.ok(RsData.success(fundings));
+    }
+
+    // 특정 친구의 특정 펀딩 조회
+    @Override
+    @GetMapping("/friend/{friendId}/{id}")
+    public ResponseEntity<RsData<FundingResponseDto>> getFriendFunding(
+            @PathVariable("friendId") Long friendId,
+            @PathVariable("id") Long id,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
+        FundingResponseDto funding = fundingFacade.getFriendFunding(friendId, id, memberId);
+        return ResponseEntity.ok(RsData.success(funding));
+    }
+
+    // 내 친구들의 펀딩 리스트 조회
+    @Override
+    @GetMapping("/friends/list")
+    public ResponseEntity<RsData<PageResponse<FundingResponseDto>>> getFriendsFundings(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
+        PageResponse<FundingResponseDto> fundings = fundingFacade.getFriendsFundings(page, size, memberId);
+        return ResponseEntity.ok(RsData.success(fundings));
+    }
 }

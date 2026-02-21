@@ -2,7 +2,7 @@ package app.giftify.friendship.adapter.out.jpa.entity;
 
 import java.time.LocalDateTime;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import app.giftify.friendship.domain.FriendshipStatus;
+import app.giftify.shared.domain.type.FriendshipStatus;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;

@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import app.giftify.friendship.adapter.out.jpa.entity.FriendshipJpaEntity;
 import app.giftify.friendship.adapter.out.jpa.repository.FriendshipJpaRepository;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.friendship.domain.FriendshipStatus;
+import app.giftify.shared.domain.type.FriendshipStatus;
 
 @ExtendWith(MockitoExtension.class)
 class FriendshipPersistenceAdapterTest {
