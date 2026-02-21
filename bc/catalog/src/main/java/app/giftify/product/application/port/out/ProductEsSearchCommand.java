@@ -1,7 +1,7 @@
 package app.giftify.product.application.port.out;
 
-import app.giftify.product.adapter.inbound.web.ProductSearchSortType;
 import app.giftify.product.domain.ProductCategory;
+import app.giftify.product.domain.ProductSearchSortType;
 
 public record ProductEsSearchCommand(
         String keyword,

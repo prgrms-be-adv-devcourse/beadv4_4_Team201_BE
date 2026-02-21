@@ -28,7 +28,6 @@ public class ProductDocument {
 
     @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer"),
             otherFields = {
-                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "ngram_analyzer", searchAnalyzer = "ngram_analyzer"),
                     @InnerField(suffix = "jamo", type = FieldType.Text, analyzer = "jamo_analyzer")
             })
     private String description;

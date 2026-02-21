@@ -1,4 +1,4 @@
-package app.giftify.product.adapter.inbound.web;
+package app.giftify.product.domain;
 
 public enum ProductSearchSortType {
     LATEST,

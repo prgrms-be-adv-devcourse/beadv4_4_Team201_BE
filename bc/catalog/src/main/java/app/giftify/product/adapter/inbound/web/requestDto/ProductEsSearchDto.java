@@ -1,7 +1,7 @@
 package app.giftify.product.adapter.inbound.web.requestDto;
 
-import app.giftify.product.adapter.inbound.web.ProductSearchSortType;
 import app.giftify.product.domain.ProductCategory;
+import app.giftify.product.domain.ProductSearchSortType;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
