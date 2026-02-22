@@ -175,6 +175,7 @@ class OrderServiceTest {
                 PaymentMethod.DEPOSIT,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
+                LocalDateTime.now(),
                 LocalDateTime.now()
         );
         OrderSummary view2 = new OrderSummary(
@@ -184,6 +185,7 @@ class OrderServiceTest {
                 Money.of("20000"),
                 OrderStatus.CREATED,
                 PaymentMethod.DEPOSIT,
+                LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now()

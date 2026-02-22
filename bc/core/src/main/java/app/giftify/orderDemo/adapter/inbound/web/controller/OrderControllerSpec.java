@@ -63,6 +63,13 @@ public interface OrderControllerSpec {
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
+    @Parameter(
+            name = "X-Idempotency-Key",
+            description = "멱등성 검증을 위한 고유 키 (UUID 권장)",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     ResponseEntity<RsData<String>> cancelOrder(
             @Parameter(hidden = true) Long memberId,
             @PathVariable Long orderId
@@ -74,6 +81,13 @@ public interface OrderControllerSpec {
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
+    @Parameter(
+            name = "X-Idempotency-Key",
+            description = "멱등성 검증을 위한 고유 키 (UUID 권장)",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     ResponseEntity<RsData<OrderCancelResponse>> cancelOrderItems(
             @Parameter(hidden = true) Long memberId,
             @PathVariable Long orderId,

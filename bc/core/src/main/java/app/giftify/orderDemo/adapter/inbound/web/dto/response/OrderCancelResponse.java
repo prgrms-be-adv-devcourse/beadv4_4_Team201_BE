@@ -8,14 +8,12 @@ import java.util.List;
 
 public record OrderCancelResponse(
         Long orderId,
-        String overallResultCode,
         Money totalCancelAmount,
         List<OrderItemCancelResult> items
 ) {
     public static OrderCancelResponse of(Long orderId, OrderCancelSummary result) {
         return new OrderCancelResponse(
                 orderId,
-                result.overallResultCode().name(),
                 result.cancelAmount(),
                 result.items()
         );

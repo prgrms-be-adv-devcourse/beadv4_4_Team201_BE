@@ -74,6 +74,8 @@ public class OrderItem {
     @Column
     private LocalDateTime cancelledAt;
 
+    // todo: 확정일 필드 추가
+
     @CreatedDate
     private LocalDateTime createdAt;
 

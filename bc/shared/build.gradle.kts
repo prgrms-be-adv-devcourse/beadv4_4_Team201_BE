@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation("com.fasterxml.jackson.core:jackson-annotations")
     // Test
     testImplementation(libs.spring.boot.starter.test)
 }

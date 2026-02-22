@@ -104,8 +104,7 @@ public class OrderController implements OrderControllerSpec {
 
         OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
 
-        return ResponseEntity.status(summary.overallResultCode().getStatusCode())
-                .body(RsData.success(response));
+        return ResponseEntity.ok(RsData.success(response));
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {
