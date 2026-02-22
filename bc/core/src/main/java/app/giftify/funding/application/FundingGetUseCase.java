@@ -14,6 +14,7 @@ import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.replica.MemberReplica;
 import app.giftify.replica.MemberReplicaRepository;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +37,7 @@ public class FundingGetUseCase {
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository participantMemberRepository;
     private final MemberReplicaRepository memberReplicaRepository;
+    private final FriendshipVerificationPort friendshipVerificationPort;
 
     /**
      * 전체 공개 단일 펀딩 조회
@@ -176,5 +179,76 @@ public class FundingGetUseCase {
     @Transactional(readOnly = true)
     public boolean checkFundingExistsByProductId(Long productId) {
         return fundingRepository.existsByProductIdAndStatusIn(productId, List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED));
+    }
+
+    /**
+     * 특정 친구의 진행 중인 펀딩 리스트 조회
+     */
+    public PageResponse<FundingResponseDto> getFriendFundings(int page, int size, Long memberId, Long friendId) {
+        if (!friendshipVerificationPort.areFriends(memberId, friendId)) {
+            throw new FundingException(FundingErrorCode.FORBIDDEN, "친구 관계가 아닙니다.");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdAndStatusIn(friendId, List.of(FundingStatus.IN_PROGRESS), pageable);
+        List<Funding> fundings = fundingPage.getContent();
+
+        MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(() ->
+                new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
+
+        List<FundingResponseDto> content = fundings.stream()
+                .map(funding -> FundingResponseDto.fromEntity(funding, friend.getNickname()))
+                .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, fundingPage.getTotalElements());
+    }
+
+    /**
+     * 특정 친구의 진행 중인 단건 펀딩 조회
+     */
+    public FundingResponseDto getFriendFunding(Long friendId, Long id, Long memberId) {
+        if (!friendshipVerificationPort.areFriends(memberId, friendId)) {
+            throw new FundingException(FundingErrorCode.FORBIDDEN, "친구 관계가 아닙니다.");
+        }
+
+        Funding funding = fundingRepository.findByIdAndReceiverIdAndStatus(id, friendId, FundingStatus.IN_PROGRESS)
+                .orElseThrow(()-> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
+
+        MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(()->
+                new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
+
+        return FundingResponseDto.fromEntity(funding, friend.getNickname());
+    }
+
+    /**
+     * 내 친구들의 진행 중인 펀딩 리스트 조회
+     */
+    public PageResponse<FundingResponseDto> getFriendsFundings(int page, int size, Long memberId) {
+        List<Long> friendIds = friendshipVerificationPort.getFriendIds(memberId);
+        if (friendIds.isEmpty()) {
+            return PageResponse.of(Collections.emptyList(), page, size, 0);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdInAndStatus(friendIds, FundingStatus.IN_PROGRESS, pageable);
+        List<Funding> fundings = fundingPage.getContent();
+
+        Set<Long> receiverIds = fundings.stream()
+                .map(Funding::getReceiverId)
+                .collect(Collectors.toSet());
+
+        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberReplica::getId, r -> r));
+
+        List<FundingResponseDto> content = fundings.stream()
+                .map(funding -> {
+                    String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
+                            .map(MemberReplica::getNickname)
+                            .orElse("알 수 없음");
+                    return FundingResponseDto.fromEntity(funding, receiverNickname);
+                })
+                .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, fundingPage.getTotalElements());
     }
 }

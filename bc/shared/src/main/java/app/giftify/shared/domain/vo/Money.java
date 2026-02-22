@@ -89,6 +89,14 @@ public record Money(@JsonValue BigDecimal amount) implements Comparable<Money> {
 		return this.amount.compareTo(BigDecimal.ZERO) < 0;
 	}
 
+	public boolean isPositive() {
+		return this.amount.compareTo(BigDecimal.ZERO) > 0;
+	}
+
+	public Money abs() {
+		return isNegative() ? negate() : this;
+	}
+
 	public String toPlainString() {
 		return this.amount.toPlainString();
 	}
