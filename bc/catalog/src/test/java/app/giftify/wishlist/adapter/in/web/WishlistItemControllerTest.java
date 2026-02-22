@@ -5,6 +5,7 @@ import app.giftify.wishlist.adapter.in.web.controller.WishlistItemController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
@@ -45,13 +46,16 @@ class WishlistItemControllerTest {
     @MockitoBean
     private RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
+    @MockitoBean
+    private GetWishlistUseCase getWishlistUseCase;
+
     private static final Long MEMBER_ID = 10L;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(
-                        new WishlistItemController(addWishlistItemUseCase, getWishlistItemUseCase, removeWishlistItemUseCase))
+                        new WishlistItemController(addWishlistItemUseCase, getWishlistItemUseCase, removeWishlistItemUseCase, getWishlistUseCase))
                 .setControllerAdvice(new WishlistExceptionHandler())
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
                     @Override

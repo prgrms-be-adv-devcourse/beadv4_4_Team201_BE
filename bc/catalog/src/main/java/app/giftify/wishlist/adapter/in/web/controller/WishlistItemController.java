@@ -1,17 +1,20 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.security.common.util.SecurityUtil;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistItemResponse;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
+import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2/wishlists/items")
@@ -21,6 +24,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
     private final AddWishlistItemUseCase addWishlistItemUseCase;
     private final GetWishlistItemUseCase getWishlistItemUseCase;
     private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
+    private final GetWishlistUseCase getWishlistUseCase;
 
     @Override
     @GetMapping("/me")
@@ -30,7 +34,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
         List<WishlistItemResponse> items = getWishlistItemUseCase.getWishlistItems(memberId)
                 .stream()
                 .map(WishlistItemResponse::from)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(items);
     }
 
@@ -77,5 +81,26 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
         removeWishlistItemUseCase.removeWishlistItem(command);
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 타인의 위시리스트 아이템 목록 조회
+     * 로그인 상태 : 친구 관계라면 PUBLIC + FRIENDS_ONLY / 친구가 아니면 PUBLIC
+     * 비로그인 상태 : PUBLIC
+     */
+    @Override
+    @GetMapping("/{memberId}")
+    public ResponseEntity<RsData<List<WishlistItemResponse>>> getWishlistItems(
+            @PathVariable("memberId") Long targetMemberId
+    ) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId().orElse(null);
+
+        List<WishlistItemDetail> details = getWishlistUseCase.getWishlistItemDetails(targetMemberId, currentMemberId);
+
+        List<WishlistItemResponse> response = details.stream()
+                .map(WishlistItemResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(RsData.success(response));
     }
 }

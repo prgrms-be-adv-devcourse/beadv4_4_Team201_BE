@@ -1,10 +1,5 @@
 package app.giftify.wishlist.adapter.out.jpa.adapter;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Component;
-
 import app.giftify.wishlist.adapter.out.jpa.entity.WishlistJpaEntity;
 import app.giftify.wishlist.adapter.out.jpa.mapper.WishlistMapper;
 import app.giftify.wishlist.adapter.out.jpa.repository.WishlistJpaRepository;
@@ -12,6 +7,10 @@ import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -40,13 +39,19 @@ public class WishlistAdapter implements WishlistRepositoryPort {
     @Override
     public Optional<Wishlist> findByMemberIdAndVisibility(Long memberId, Visibility visibility) {
         return wishlistRepository.findByMemberIdAndVisibility(memberId, visibility)
-            .map(WishlistMapper::toDomain);
+                .map(WishlistMapper::toDomain);
     }
 
     @Override
     public List<Wishlist> findByMemberIdInAndVisibility(List<Long> memberIds, Visibility visibility) {
         return wishlistRepository.findByMemberIdInAndVisibility(memberIds, visibility)
-            .stream().map(WishlistMapper::toDomain).toList();
+                .stream().map(WishlistMapper::toDomain).toList();
+    }
+
+    @Override
+    public Optional<Wishlist> findByMemberIdAndVisibilityIn(Long memberId, List<Visibility> visibilities) {
+        return wishlistRepository.findByMemberIdAndVisibilityIn(memberId, visibilities)
+                .map(WishlistMapper::toDomain);
     }
 
     @Override
