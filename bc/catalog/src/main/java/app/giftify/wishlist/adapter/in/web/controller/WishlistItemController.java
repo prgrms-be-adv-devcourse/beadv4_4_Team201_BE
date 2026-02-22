@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/wishlists/items")
+@RequestMapping("/api/v2/wishlists")
 @RequiredArgsConstructor
 @Validated
 public class WishlistItemController implements WishlistItemV2ApiSpec {
@@ -27,7 +27,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
     private final GetWishlistUseCase getWishlistUseCase;
 
     @Override
-    @GetMapping("/me")
+    @GetMapping("/me/items")
     public ResponseEntity<List<WishlistItemResponse>> getAllProducts(
             @CurrentMemberId Long memberId
     ) {
@@ -39,18 +39,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
     }
 
     @Override
-    @GetMapping("/me/check")
-    public ResponseEntity<?> isExistProduct(
-            @CurrentMemberId Long memberId,
-            @RequestParam(name = "productId") Long productId
-    ) {
-        boolean exists = getWishlistItemUseCase.isItemExists(memberId, productId);
-
-        return ResponseEntity.ok(exists);
-    }
-
-    @Override
-    @PostMapping("/add")
+    @PostMapping("/me/items/add")
     public ResponseEntity<WishlistItemResponse> addProduct(
             @CurrentMemberId Long memberId,
             @RequestParam(name = "productId") Long productId
@@ -68,7 +57,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
     }
 
     @Override
-    @DeleteMapping("/remove")
+    @DeleteMapping("/me/items/remove")
     public ResponseEntity<Void> removeProduct(
             @CurrentMemberId Long memberId,
             @RequestParam(name = "productId") Long productId
@@ -89,7 +78,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
      * 비로그인 상태 : PUBLIC
      */
     @Override
-    @GetMapping("/{memberId}")
+    @GetMapping("/{memberId}/items")
     public ResponseEntity<RsData<List<WishlistItemResponse>>> getWishlistItems(
             @PathVariable("memberId") Long targetMemberId
     ) {

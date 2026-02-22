@@ -27,16 +27,6 @@ public interface WishlistItemV2ApiSpec {
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
-    @Operation(summary = "위시리스트 아이템 존재 여부 확인", description = "특정 상품이 위시리스트에 담겨있는지 확인합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "확인 성공")
-    })
-    ResponseEntity<?> isExistProduct(
-            @Parameter(hidden = true) @CurrentMemberId Long memberId,
-            @Parameter(description = "상품 ID", required = true, example = "1")
-            @RequestParam(name = "productId") Long productId
-    );
-
     @Operation(summary = "위시리스트 아이템 추가", description = "위시리스트에 상품을 추가합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "추가 성공"),
