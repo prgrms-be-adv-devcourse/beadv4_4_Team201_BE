@@ -1,6 +1,5 @@
 package app.giftify.orderDemo.application.inbound.command;
 
-import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.type.OrderItemType;
@@ -27,17 +26,17 @@ public record CreateOrderItemCommand (
         @NotNull
         OrderItemType orderItemType
 ){
-    public static CreateOrderItemCommand of(PlaceOrderItemRequest request, WishlistItemSnapshot wishlistItemSnapshot, Long fundingId) {
-        TargetType targetType = determinTargetType(fundingId, request.orderItemType());
+    public static CreateOrderItemCommand of(OrderItemType orderItemType, long requestedWishlistId, long receiverId, Money requestAmount, WishlistItemSnapshot wishlistItemSnapshot, Long fundingId) {
+        TargetType targetType = determinTargetType(fundingId, orderItemType);
 
         return new CreateOrderItemCommand(
-                fundingId == null ? request.wishlistItemId() : fundingId,
+                fundingId == null ? requestedWishlistId : fundingId,
                 targetType,
-                request.receiverId(),
+                receiverId,
                 wishlistItemSnapshot.sellerId(),
                 Money.of(wishlistItemSnapshot.productPrice()),
-                request.amount(),
-                request.orderItemType()
+                requestAmount,
+                orderItemType
         );
     }
 

@@ -97,8 +97,8 @@ public class OrderController implements OrderControllerSpec {
     public ResponseEntity<RsData<OrderCancelResponse>> cancelOrderItems(
             @CurrentMemberId Long memberId,
             @PathVariable Long orderId,
-            @RequestBody OrderCancelItemsRequest request) {
-        CancelOrderItemsCommand command = CancelOrderItemsCommand.of(orderId, memberId, request);
+            @Valid @RequestBody OrderCancelItemsRequest request) {
+        CancelOrderItemsCommand command = new CancelOrderItemsCommand(orderId, memberId, request.itemIds());
 
         OrderCancelSummary summary = orderService.requestCancelOrderItems(command);
 

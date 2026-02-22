@@ -219,7 +219,10 @@ public class OrderService {
     private static CreateOrderItemCommand generateOrderItemCommand(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap, PlaceOrderItemRequest itemRequest) {
         WishlistItemSnapshot wishlistItemSnapshot = getWishlistItemSnapshot(wishlistItemSnapshotMap, itemRequest);
         return CreateOrderItemCommand.of(
-                itemRequest,
+                itemRequest.orderItemType(),
+                itemRequest.wishlistItemId(),
+                itemRequest.receiverId(),
+                itemRequest.amount(),
                 wishlistItemSnapshot,
                 fundingIdMap.getOrDefault(itemRequest.wishlistItemId(), null)
         );
