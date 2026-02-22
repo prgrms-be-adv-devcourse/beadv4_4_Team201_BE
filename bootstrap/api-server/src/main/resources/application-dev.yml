@@ -16,7 +16,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   elasticsearch:
-    uris: http://localhost:9200 # ES는 HTTP REST API로 통신하기 때문에 전체 URL을 지정하는 uris를 사용
+    uris: ${ES_URIS:http://localhost:9200} # ES는 HTTP REST API로 통신하기 때문에 전체 URL을 지정하는 uris를 사용
 
   data:
     redis:

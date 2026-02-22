@@ -20,7 +20,7 @@ import java.util.List;
  * - ES에 한 번 색인된 데이터는 ES 볼륨이 살아있는 한 그대로 유지
  * - init 실행 후 init 프로필을 빼고 재시작해도 ES 데이터에는 영향없음
  */
-@Profile({"local", "dev", "init"})
+@Profile({"local", "init"})
 @Component
 @RequiredArgsConstructor
 @Slf4j
