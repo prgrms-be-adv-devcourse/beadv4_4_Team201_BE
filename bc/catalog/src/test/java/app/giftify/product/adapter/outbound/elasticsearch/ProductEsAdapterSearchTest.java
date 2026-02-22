@@ -5,6 +5,7 @@ import app.giftify.product.adapter.outbound.elasticsearch.document.ProductDocume
 import app.giftify.product.adapter.outbound.elasticsearch.repository.ProductEsRepository;
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
+import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductSearchSortType;
 import app.giftify.shared.api.paging.PageResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ class ProductEsAdapterSearchTest {
     private ElasticsearchOperations elasticsearchOperations;
 
     @BeforeEach
-    void setUp() throws InterruptedException {
+    void setUp() {
         productEsRepository.deleteAll();
 
         List<ProductDocument> documents = List.of(
@@ -141,7 +142,7 @@ class ProductEsAdapterSearchTest {
 
         assertThat(result.content()).isNotEmpty();
         assertThat(result.content()).allMatch(
-                p -> p.category() == app.giftify.product.domain.ProductCategory.TOYS
+                p -> p.category() == ProductCategory.TOYS
         );
     }
 

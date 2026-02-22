@@ -21,19 +21,18 @@ public class ProductSearchQueryBuilder {
         }
 
         if (command.minPrice() != null || command.maxPrice() != null) {
-            boolBuilder.filter(f -> f.range(r -> {
-                var numberRange = r.number(n -> {
-                    n.field("price");
-                    if (command.minPrice() != null) {
-                        n.gte(command.minPrice().doubleValue());
-                    }
-                    if (command.maxPrice() != null) {
-                        n.lte(command.maxPrice().doubleValue());
-                    }
-                    return n;
-                });
-                return r;
-            }));
+            boolBuilder.filter(f -> f.range(r ->
+                    r.number(price -> {
+                        price.field("price");
+                        if (command.minPrice() != null) {
+                            price.gte(command.minPrice().doubleValue());
+                        }
+                        if (command.maxPrice() != null) {
+                            price.lte(command.maxPrice().doubleValue());
+                        }
+                        return price;
+                    })
+            ));
         }
 
         // ----- should 절

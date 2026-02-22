@@ -13,17 +13,18 @@ import java.time.Duration;
 public class TestContainersElasticsearchConfig {
 
     private static final String ES_BASE_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:9.2.4";
+    private static final String ES_TEST_IMAGE_NAME = "es-test:" + ES_BASE_IMAGE.split(":")[1];
     private static final DockerImageName ES_TEST_IMAGE;
 
     static {
-        new ImageFromDockerfile("es-test:" + ES_BASE_IMAGE.split(":")[1], false)
+        new ImageFromDockerfile(ES_TEST_IMAGE_NAME, false)
                 .withDockerfileFromBuilder(builder -> builder
                         .from(ES_BASE_IMAGE)
                         .run("elasticsearch-plugin install --batch analysis-nori analysis-icu")
                         .build())
-                .get(); // 이미지 빌드 실행
+                .get();
 
-        ES_TEST_IMAGE = DockerImageName.parse("es-test")
+        ES_TEST_IMAGE = DockerImageName.parse(ES_TEST_IMAGE_NAME)
                 .asCompatibleSubstituteFor(ES_BASE_IMAGE);
     }
 
