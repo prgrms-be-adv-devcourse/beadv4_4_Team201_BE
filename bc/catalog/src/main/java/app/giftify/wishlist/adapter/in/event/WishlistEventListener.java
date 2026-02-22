@@ -2,6 +2,7 @@ package app.giftify.wishlist.adapter.in.event;
 
 import app.giftify.shared.domain.event.funding.*;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.vo.FundingDetail;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Wishlist;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -37,10 +40,14 @@ public class WishlistEventListener {
      * 펀딩 - 위시리스트아이템 상태 전이
      */
     @ApplicationModuleListener
-    public void handleFundingCreated(FundingCreatedEvent event) {
-        updateStatus(event.getWishlistItemId(),
-                WishlistItemStatus.IN_PROGRESS,
-                "[Wishlist] 위시리스트상품의 펀딩이 시작되었습니다.");
+    public void handleFundingListCreated(FundingCreatedEventV2 event) {
+        List<FundingDetail> fundingDetails = event.getFundings();
+
+        for (FundingDetail detail : fundingDetails) {
+            updateStatus(detail.wishlistItemId(),
+                    WishlistItemStatus.IN_PROGRESS,
+                    "[Wishlist] 위시리스트상품의 펀딩이 시작되었습니다.");
+        }
     }
 
     @ApplicationModuleListener
