@@ -51,13 +51,12 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
-    testImplementation("org.testcontainers:testcontainers-elasticsearch")
+    testImplementation(libs.testcontainers.elasticsearch)
     testImplementation(libs.testcontainers.junit)
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")
-
+    testImplementation(libs.spring.boot.testcontainers)
     // Retry
     implementation("org.springframework.retry:spring-retry")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation(libs.spring.boot.starter.aop)
 }
 
 tasks.test {
