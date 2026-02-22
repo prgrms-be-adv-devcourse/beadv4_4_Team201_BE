@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,12 +25,10 @@ import app.giftify.friendship.application.port.in.SendFriendRequestUseCase;
 import app.giftify.friendship.domain.Friendship;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@Validated
 public class FriendshipV2Controller implements FriendshipV2ApiSpec {
 
 	private final SendFriendRequestUseCase sendFriendRequestUseCase;
@@ -44,7 +42,7 @@ public class FriendshipV2Controller implements FriendshipV2ApiSpec {
 	@PostMapping("/api/v2/friends/request")
 	public ResponseEntity<RsData<FriendshipResponse>> sendRequest(
 		@CurrentMemberId Long memberId,
-		@RequestBody @Valid SendFriendRequestDto request) {
+		@Valid @RequestBody SendFriendRequestDto request) {
 		Friendship friendship = sendFriendRequestUseCase.sendRequest(memberId, request.receiverId());
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(RsData.success(FriendshipResponse.from(friendship)));
