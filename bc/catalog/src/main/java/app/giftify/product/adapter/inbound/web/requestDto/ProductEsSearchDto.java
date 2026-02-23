@@ -1,5 +1,6 @@
 package app.giftify.product.adapter.inbound.web.requestDto;
 
+import app.giftify.product.application.port.out.ProductEsSearchCommand;
 import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductSearchSortType;
 import jakarta.validation.constraints.Min;
@@ -20,4 +21,16 @@ public class ProductEsSearchDto {
 
     @Min(value = 1, message = "size must be >= 1")
     private int size = 20;
+
+    public static ProductEsSearchCommand toCommand(ProductEsSearchDto dto) {
+        return new ProductEsSearchCommand(
+                dto.getKeyword(),
+                dto.getMinPrice(),
+                dto.getMaxPrice(),
+                dto.getCategory(),
+                dto.getSort(),
+                dto.getPage(),
+                dto.getSize()
+        );
+    }
 }

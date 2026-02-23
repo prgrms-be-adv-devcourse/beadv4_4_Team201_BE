@@ -6,7 +6,6 @@ import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
 import app.giftify.product.adapter.inbound.web.responseDto.StockHistoryDto;
 import app.giftify.product.application.port.in.*;
-import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.domain.ProductStockHistory;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.security.common.CurrentMemberId;
@@ -39,7 +38,8 @@ public class ProductController implements ProductV2ApiSpec {
     private final ProductUpdateUseCase productUpdateUseCase;
     private final StockHistorySearchUseCase stockHistorySearchUseCase;
     private final ProductEsSearchUseCase productEsSearchUseCase;
-    private final ProductEsPort productEsPort;
+    private final ProductEsSyncUseCase productEsSyncUseCase;
+//    private final ProductEsPort productEsPort;
 
     // 상품 등록
     @PostMapping
@@ -167,7 +167,7 @@ public class ProductController implements ProductV2ApiSpec {
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public ResponseEntity<RsData<String>> syncProductsToEs() {
-        int count = productEsPort.syncAll();
+        int count = productEsSyncUseCase.syncAll();
         return ResponseEntity.ok(RsData.success(null, "ES 상품 데이터 재동기화 완료: " + count + "건"));
     }
 
@@ -177,7 +177,7 @@ public class ProductController implements ProductV2ApiSpec {
     public ResponseEntity<RsData<PageResponse<ProductDto>>> searchProductsByEs(
             @Valid @ModelAttribute ProductEsSearchDto searchDto
     ) {
-        PageResponse<ProductResult> resultPage = productEsSearchUseCase.searchByEs(searchDto);
+        PageResponse<ProductResult> resultPage = productEsSearchUseCase.searchByEs(ProductEsSearchDto.toCommand(searchDto));
 
         List<ProductDto> dtoList = resultPage.content().stream()
                 .map(ProductDto::from)

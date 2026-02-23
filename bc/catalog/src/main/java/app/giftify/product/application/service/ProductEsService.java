@@ -1,7 +1,7 @@
 package app.giftify.product.application.service;
 
-import app.giftify.product.adapter.inbound.web.requestDto.ProductEsSearchDto;
 import app.giftify.product.application.port.in.ProductEsSearchUseCase;
+import app.giftify.product.application.port.in.ProductEsSyncUseCase;
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
@@ -11,21 +11,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ProductEsSearchService implements ProductEsSearchUseCase {
+public class ProductEsService implements ProductEsSyncUseCase, ProductEsSearchUseCase {
 
     private final ProductEsPort productEsPort;
 
     @Override
-    public PageResponse<ProductResult> searchByEs(ProductEsSearchDto searchDto) {
-        ProductEsSearchCommand command = new ProductEsSearchCommand(
-                searchDto.getKeyword(),
-                searchDto.getMinPrice(),
-                searchDto.getMaxPrice(),
-                searchDto.getCategory(),
-                searchDto.getSort(),
-                searchDto.getPage(),
-                searchDto.getSize()
-        );
+    public int syncAll() {
+        return productEsPort.syncAll();
+    }
+
+    @Override
+    public PageResponse<ProductResult> searchByEs(ProductEsSearchCommand command) {
         return productEsPort.searchProducts(command);
     }
 }
