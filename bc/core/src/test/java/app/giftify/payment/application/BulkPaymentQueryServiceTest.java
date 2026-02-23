@@ -24,7 +24,7 @@ import app.giftify.shared.domain.vo.Money;
 class BulkPaymentQueryServiceTest {
 
 	private static final List<PaymentStatus> SETTLED_STATUSES = List.of(
-		PaymentStatus.PAID, PaymentStatus.RECEIVED, PaymentStatus.REFUNDED
+		PaymentStatus.PAID, PaymentStatus.CANCELED
 	);
 
 	@Mock
@@ -66,7 +66,7 @@ class BulkPaymentQueryServiceTest {
 	@Test
 	@DisplayName("전액 환불된 건은 netAmount=0으로 반환한다")
 	void getBulkAmounts_fullRefundReturnsZero() {
-		Payment payment = buildPayment(1L, 101L, "ORD-CCC", Money.of(50000), Money.of(50000), PaymentStatus.REFUNDED);
+		Payment payment = buildPayment(1L, 101L, "ORD-CCC", Money.of(50000), Money.of(50000), PaymentStatus.CANCELED);
 
 		when(paymentRepository.findAllByOrderIdInAndStatusIn(List.of(101L), SETTLED_STATUSES))
 			.thenReturn(List.of(payment));
