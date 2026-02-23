@@ -34,4 +34,6 @@ public interface FundingParticipantMemberRepository extends JpaRepository<Fundin
     FundingParticipantMember findByFundingAndParticipantId(Funding funding, Long participantId);
 
     List<FundingParticipantMember> findByFundingId(Long id);
+
+    void deleteByFundingIdAndParticipantId(Long fundingId, Long participantId);
 }
