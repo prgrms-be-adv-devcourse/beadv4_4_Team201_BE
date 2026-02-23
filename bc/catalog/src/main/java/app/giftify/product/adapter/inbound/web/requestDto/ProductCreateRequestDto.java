@@ -1,5 +1,6 @@
 package app.giftify.product.adapter.inbound.web.requestDto;
 
+import app.giftify.product.domain.ProductCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,7 +17,9 @@ public record ProductCreateRequestDto(
         Integer price,
         @NotNull(message = "재고 입력은 필수입니다.")
         @PositiveOrZero(message = "재고는 0이상이어야 합니다.")
-        Integer stock
+        Integer stock,
+        @NotNull(message = "카테고리 설정은 필수입니다.")
+        ProductCategory category
 ) {
     public ProductCreateRequestDto {
         name = StringUtils.trimToNull(name);

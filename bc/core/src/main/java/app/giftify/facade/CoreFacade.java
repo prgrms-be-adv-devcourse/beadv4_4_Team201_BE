@@ -4,10 +4,10 @@ import app.giftify.facade.command.PlaceOrderCommand;
 import app.giftify.facade.mapper.OrderItemSnapshotMapper;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.funding.application.FundingFacade;
-import app.giftify.orderDemo.application.OrderService;
-import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
-import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
-import app.giftify.orderDemo.domain.OrderSnapshot;
+import app.giftify.order.application.OrderService;
+import app.giftify.order.application.inbound.command.CreateOrderCommand;
+import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
 import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
@@ -63,7 +63,7 @@ public class CoreFacade {
                 orderSnapshot.orderNumber(),
                 orderSnapshot.paymentMethod(),
                 orderSnapshot.totalAmount(),
-                OrderItemSnapshotMapper.fromOrderDemoList(orderSnapshot.orderItemSnapshots())
+                OrderItemSnapshotMapper.fromOrderList(orderSnapshot.orderItemSnapshots())
         );
     }
 

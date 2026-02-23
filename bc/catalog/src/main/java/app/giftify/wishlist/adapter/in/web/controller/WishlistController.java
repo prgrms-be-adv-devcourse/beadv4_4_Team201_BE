@@ -1,57 +1,92 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.security.common.util.SecurityUtil;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
+import app.giftify.wishlist.adapter.in.web.responseDto.WishlistItemResponse;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistResponse;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
+import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/wishlist")
+@RequestMapping("/api/v2/wishlists")
 @RequiredArgsConstructor
 @Validated
-public class WishlistController {
+public class WishlistController implements WishlistV2ApiSpec {
 
-	private final UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
-	private final GetWishlistUseCase getWishlistUseCase;
+    private final UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
+    private final GetWishlistUseCase getWishlistUseCase;
+    private final MemberRepository memberRepository;
 
-	// 위시리스트 조회
-	// 현재 로그인한 사용자의 위시리스트 기본 정보 조회
-	@GetMapping("/me")
-	public ResponseEntity<WishlistResponse> getMyInfo(
-		@CurrentMemberId Long memberId
-	) {
-		return ResponseEntity.ok(WishlistResponse.from(getWishlistUseCase.getOrCreateWishlistByMemberId(memberId)));
-	}
+    // 내 위시리스트 기본 정보 + 아이템 목록 조회
+    @Override
+    @GetMapping("/me")
+    public ResponseEntity<WishlistResponse> getMyWishlist(
+            @CurrentMemberId Long memberId
+    ) {
+        Wishlist wishlist = getWishlistUseCase.getOrCreateWishlistByMemberId(memberId);
 
-	// 위시리스트 설정 변경
-	// PUBLIC / PRIVATE / FRIENDS_ONLY
-	@PatchMapping("/me/settings")
-	public ResponseEntity<WishlistResponse> updateSettings(
-		@CurrentMemberId Long memberId,
-		@RequestBody @Valid UpdateWishlistSettingsRequest request
-	) {
-		Visibility visibility = Visibility.from(request.visibility());
+        String nickname = memberRepository.findById(memberId)
+                .map(m -> m.getNickname())
+                .orElse(null);
 
-		UpdateWishlistSettingsUseCase.UpdateSettingsCommand command = new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(
-			memberId,
-			visibility
-		);
+        List<WishlistItemResponse> items = getWishlistUseCase.getMyWishlistItemDetails(memberId)
+                .stream()
+                .map(WishlistItemResponse::from)
+                .toList();
 
-		Wishlist updatedWishlist = updateWishlistSettingsUseCase.updateSettings(command);
+        return ResponseEntity.ok(WishlistResponse.from(wishlist, nickname, items));
+    }
 
-		return ResponseEntity.ok(WishlistResponse.from(updatedWishlist));
-	}
+    // 위시리스트 공개 범위 설정
+    @Override
+    @PatchMapping("/me/settings")
+    public ResponseEntity<WishlistResponse> updateSettings(
+            @CurrentMemberId Long memberId,
+            @RequestBody @Valid UpdateWishlistSettingsRequest request
+    ) {
+        Visibility visibility = Visibility.from(request.visibility());
+
+        UpdateWishlistSettingsUseCase.UpdateSettingsCommand command = new UpdateWishlistSettingsUseCase.UpdateSettingsCommand(
+                memberId,
+                visibility
+        );
+
+        Wishlist updatedWishlist = updateWishlistSettingsUseCase.updateSettings(command);
+
+        return ResponseEntity.ok(WishlistResponse.from(updatedWishlist));
+    }
+
+    /**
+     * 타인의 위시리스트 아이템 목록 조회
+     * 로그인 상태 : 친구 관계라면 PUBLIC + FRIENDS_ONLY / 친구가 아니면 PUBLIC
+     * 비로그인 상태 : PUBLIC
+     */
+    @Override
+    @GetMapping("/{memberId}")
+    public ResponseEntity<RsData<List<WishlistItemResponse>>> getWishlistItems(
+            @PathVariable("memberId") Long targetMemberId
+    ) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId().orElse(null);
+
+        List<WishlistItemDetail> details = getWishlistUseCase.getWishlistItemDetails(targetMemberId, currentMemberId);
+
+        List<WishlistItemResponse> response = details.stream()
+                .map(WishlistItemResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(RsData.success(response));
+    }
 }

@@ -51,3 +51,68 @@ patches:
                   initialDelaySeconds: 5
                 livenessProbe:
                   initialDelaySeconds: 10
+
+  # --- IngressRoute: *.localhost → *.chan99k.dev ---
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: api-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-api.chan99k.dev`)"
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: grafana-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-grafana.chan99k.dev`)"
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: prometheus-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-prometheus.chan99k.dev`)"
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: redpanda-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-redpanda.chan99k.dev`)"
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: redpanda-console-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-redpanda-console.chan99k.dev`)"
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: elasticsearch-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-elasticsearch.chan99k.dev`)"
+
+  # --- Elasticsearch: EC2 로컬 빌드 이미지 사용 ---
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never

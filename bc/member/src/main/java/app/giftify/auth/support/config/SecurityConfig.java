@@ -45,9 +45,9 @@ public class SecurityConfig {
                         "/actuator/health/**",
                         "/error",
                         "/api/v2/products/{id:\\d+}",
-                        "/api/v2/products/search",
+                        "/api/v2/products/search/**",
                         "/api/v2/wishlists/search",
-                        "/api/v2/wishlists/*" // NOTE :: 단일 세그먼트 전체 공개 주의, wishlistController apiV2 올릴 때 수정하여 다시 확인하기
+                        "/api/v2/wishlists/public/*" // NOTE :: 단일 세그먼트 전체 공개 주의, wishlistController apiV2 올릴 때 수정하여 다시 확인하기
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
@@ -88,6 +88,9 @@ public class SecurityConfig {
                         log.info("Permitting access to /h2-console/**");
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
+
+                    // 비로그인 허용 + 로그인 시 토큰 처리 필요한 엔드포인트
+                    auth.requestMatchers("/api/v2/wishlists/{memberId:\\d+}").permitAll();
 
                     // 나머지 모든 요청은 인증 필요 (공개 엔드포인트는 publicSecurityFilterChain에서 처리)
                     auth.anyRequest().authenticated();

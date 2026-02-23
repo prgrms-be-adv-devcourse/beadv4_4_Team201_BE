@@ -2,180 +2,231 @@ package app.giftify.order.domain;
 
 import java.time.LocalDateTime;
 
-import app.giftify.order.domain.vo.Money;
-import app.giftify.order.domain.vo.Quantity;
-import app.giftify.shared.domain.base.BaseDomainModel;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import app.giftify.order.domain.errorCode.OrderErrorCode;
+import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
+import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
+import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.Money;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-public class OrderItem extends BaseDomainModel {
+@Entity
+@Table(name = "order_items", indexes = {
+        @Index(name = "idx_order_items_order_id_status", columnList = "order_id, status")
+})
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+@Slf4j
+public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private final Long orderId; // 주문 식별자
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
 
-    private final Long targetSnapshotId; // 주문한 아이템의 스냅샷 ID
-    private final TargetType targetType; // 주문한 아이템의 유형 (일반|펀딩|예치금|쿠폰)
+    @Column(nullable = false)
+    private Long targetId;
 
-    private final Long sellerId; // 판매자 식별자
-    private final Long receiverId; // 구매 확정 주체 식별자
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TargetType targetType;
 
-    private Quantity quantity; // 수량
-    private Money price; // 단가 기준 금액
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderItemType orderItemType;
 
-    private LocalDateTime confirmedAt;
+    @Column(nullable = false)
+    private Long sellerId;
+
+    @Column(nullable = false)
+    private Long receiverId;
+
+    @Convert(converter = MoneyConverter.class)
+    @Column(nullable = false, precision = 19, scale = 2)
+    private Money price;
+
+    @Convert(converter = MoneyConverter.class)
+    @Column(nullable = false, precision = 19, scale = 2)
+    private Money amount;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderItemStatus status;
+
+    @Column
+    @Setter
+    private String originTransactionKey;
+
+    @Column
+    private LocalDateTime cancelRequestedAt;
+
+    @Column
     private LocalDateTime cancelledAt;
-    private final LocalDateTime createdAt;
 
-    protected OrderItem(
-            Long id,
-            Long orderId,
-            Long targetSnapshotId,
+    // todo: 확정일 필드 추가
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    public static OrderItem create(
+            Long targetId,
             TargetType targetType,
+            OrderItemType orderItemType,
             Long sellerId,
             Long receiverId,
             Money price,
-            Quantity quantity,
-            LocalDateTime createdAt,
-            LocalDateTime confirmedAt,
-            LocalDateTime cancelledAt
+            Money amount
     ) {
-        super(id);
-        this.orderId = orderId;
-        this.targetSnapshotId = targetSnapshotId;
-        this.targetType = targetType;
-        this.sellerId = sellerId;
-        this.receiverId = receiverId;
-        this.price = price;
-        this.quantity = quantity;
-        this.createdAt = createdAt;
-        this.confirmedAt = confirmedAt;
-        this.cancelledAt = cancelledAt;
+        if (targetId == null) throw new DomainException(OrderErrorCode.INVALID_TARGET_ID);
+        if (targetType == null) throw new DomainException(OrderErrorCode.INVALID_TARGET_TYPE);
+        if (orderItemType == null) throw new DomainException(OrderErrorCode.INVALID_ORDER_TYPE);
+        if (sellerId == null) throw new DomainException(OrderErrorCode.INVALID_SELLER_ID);
+        if (receiverId == null) throw new DomainException(OrderErrorCode.INVALID_RECEIVER_ID);
+        if (price == null || price.isLessThanOrEqual(Money.zero())) throw new DomainException(OrderErrorCode.INVALID_PRICE);
+        if (amount == null) throw new DomainException(OrderErrorCode.INVALID_AMOUNT);
+
+        if (amount.isGreaterThan(price)) throw new DomainException(OrderErrorCode.AMOUNT_EXCEEDS_PRICE);
+
+        return OrderItem.builder()
+                .targetId(targetId)
+                .targetType(targetType)
+                .orderItemType(orderItemType)
+                .sellerId(sellerId)
+                .receiverId(receiverId)
+                .price(price)
+                .amount(amount)
+                .status(OrderItemStatus.CREATED)
+                .build();
     }
 
-    public Long getOrderId() {
-        return orderId;
+    void setOrder(Order order) {
+        this.order = order;
     }
 
-    public Long getTargetSnapshotId() {
-        return targetSnapshotId;
+    public OrderItemSnapshot toSnapshot() {
+        return OrderItemSnapshot.builder()
+                .orderItemId(id)
+                .targetId(targetId)
+                .targetType(targetType)
+                .orderItemType(orderItemType)
+                .sellerId(sellerId)
+                .receiverId(receiverId)
+                .price(price)
+                .amount(amount)
+                .status(status)
+                .build();
     }
 
-    public TargetType getTargetType() {
-        return targetType;
+    public void updateTargetToFunding(Long fundingId) {
+        this.targetId = fundingId;
+        this.targetType = TargetType.FUNDING;
+
+        if (order == null) throw new PolicyException(OrderErrorCode.ORDER_ITEM_NOT_ASSOCIATED);
+
+        OrderItemCreatedEvent event = new OrderItemCreatedEvent(
+                id,
+                targetId,
+                targetType,
+                orderItemType,
+                order.getId(),
+                sellerId,
+                price,
+                amount
+        );
+
+        order.registerEvent(event);
     }
 
-    public Long getSellerId() {
-        return sellerId;
+    @Override
+    public String toString() {
+        Long orderId = (order != null ? order.getId() : null);
+        return "OrderItem{" +
+                "id=" + id +
+                ", orderId=" + orderId +
+                ", wishlistItemId=" + targetId +
+                ", targetType=" + targetType +
+                ", orderItemType=" + orderItemType +
+                ", sellerId=" + sellerId +
+                ", receiverId=" + receiverId +
+                ", price=" + price +
+                ", amount=" + amount +
+                '}';
     }
 
-    public Long getReceiverId() {
-        return receiverId;
-    }
-
-    public Money getPrice() {
-        return price;
-    }
-
-    public Quantity getQuantity() {
-        return quantity;
-    }
-
-    public LocalDateTime getConfirmedAt() {
-        return confirmedAt;
-    }
-
-    public LocalDateTime getCancelledAt() {
-        return cancelledAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private Long id;
-        private Long orderId;
-        private Long targetSnapshotId;
-        private TargetType targetType;
-        private Long sellerId;
-        private Long receiverId;
-        private Money price;
-        private Quantity quantity;
-        private LocalDateTime createdAt;
-        private LocalDateTime confirmedAt;
-        private LocalDateTime cancelledAt;
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder orderId(Long orderId) {
-            this.orderId = orderId;
-            return this;
-        }
-
-        public Builder targetSnapshotId(Long targetSnapshotId) {
-            this.targetSnapshotId = targetSnapshotId;
-            return this;
-        }
-
-        public Builder targetType(TargetType targetType) {
-            this.targetType = targetType;
-            return this;
-        }
-
-        public Builder sellerId(Long sellerId) {
-            this.sellerId = sellerId;
-            return this;
-        }
-
-        public Builder receiverId(Long receiverId) {
-            this.receiverId = receiverId;
-            return this;
-        }
-
-        public Builder price(Money price) {
-            this.price = price;
-            return this;
-        }
-
-        public Builder quantity(Quantity quantity) {
-            this.quantity = quantity;
-            return this;
-        }
-
-        public Builder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        public Builder confirmedAt(LocalDateTime confirmedAt) {
-            this.confirmedAt = confirmedAt;
-            return this;
-        }
-
-        public Builder cancelledAt(LocalDateTime cancelledAt) {
-            this.cancelledAt = cancelledAt;
-            return this;
-        }
-
-        public OrderItem build() {
-            return new OrderItem(
-                    id,
-                    orderId,
-                    targetSnapshotId,
-                    targetType,
-                    sellerId,
-                    receiverId,
-                    price,
-                    quantity,
-                    createdAt,
-                    confirmedAt,
-                    cancelledAt
+    public void paid(String originTransactionKey) {
+        if (status != OrderItemStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 아이템 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
             );
         }
+
+        status = OrderItemStatus.PAID;
+        this.originTransactionKey = originTransactionKey;
+    }
+
+    public void canceling() {
+        this.status = OrderItemStatus.CANCELING;
+        this.cancelRequestedAt = LocalDateTime.now();
+    }
+
+    public void canceled() {
+        this.status = OrderItemStatus.CANCELED;
+        this.cancelledAt = LocalDateTime.now();
+    }
+
+    public void failCancel() {
+        status = OrderItemStatus.PAID;
+    }
+
+    public boolean isCancelable() {
+        return status == OrderItemStatus.CREATED || status == OrderItemStatus.PAID;
+    }
+
+    public ResultCode decideCancelResult() {
+        return switch (this.status) {
+            case OrderItemStatus.CREATED -> ResultCode.SUCCESS;
+            case OrderItemStatus.PAID -> ResultCode.ACCEPTED;
+            case OrderItemStatus.CANCELING -> ResultCode.IN_PROGRESS;
+            case OrderItemStatus.CANCELED -> ResultCode.ALREADY_PROCESSED;
+            case OrderItemStatus.CONFIRMED -> ResultCode.FAIL;
+        };
+    }
+
+    public boolean isCanceling() {
+        return status == OrderItemStatus.CANCELING;
     }
 }
