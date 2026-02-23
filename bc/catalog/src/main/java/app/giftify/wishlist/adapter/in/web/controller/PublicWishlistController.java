@@ -1,19 +1,19 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.product.application.support.ProductSupport;
-import app.giftify.product.domain.Product;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.adapter.in.web.responseDto.MemberWishlistSummaryResponse;
-import app.giftify.wishlist.adapter.in.web.responseDto.PublicWishlistResponse;
 import app.giftify.wishlist.application.port.in.GetPublicWishlistUseCase;
 import app.giftify.wishlist.core.domain.Wishlist;
-import app.giftify.wishlist.core.domain.WishlistItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,43 +55,43 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
 
     // TODO 레거시 코드 제거
     // 타인의 PUBLIC 위시리스트 상세
-    @Override
-    @GetMapping("/public/{memberId}")
-    public ResponseEntity<RsData<PublicWishlistResponse>> getPublicWishlist(
-            @PathVariable("memberId") Long memberId
-    ) {
-        List<WishlistItem> items = getPublicWishlistUseCase.getPublicWishlistItems(memberId);
-        if (items.isEmpty()) {
-            return ResponseEntity.ok(RsData.success(null));  // 비공개이거나 아이템 없음
-        }
-
-        // productId → Product 매핑 (한번에 벌크 조회)
-        var productIds = items.stream().map(WishlistItem::getProductId).toList();
-        var productMap = productSupport.findAllById(productIds).stream()
-                .collect(Collectors.toMap(Product::getId, p -> p));
-
-        // 닉네임 조회
-        String nickname = memberRepository.findById(memberId)
-                .map(Member::getNickname).orElse("알 수 없음");
-
-        // 응답 조합
-        var itemDtos = items.stream().map(item -> {
-            var product = productMap.get(item.getProductId());
-            return PublicWishlistResponse.PublicWishlistItemDto.builder()
-                    .wishlistItemId(item.getId())
-                    .productId(item.getProductId())
-                    .productName(product != null ? product.getName() : "삭제된 상품")
-                    .price(product != null ? product.getPrice() : 0)
-                    .addedAt(item.getAddedAt())
-                    .build();
-        }).toList();
-
-        var response = PublicWishlistResponse.builder()
-                .memberId(memberId)
-                .nickname(nickname)
-                .items(itemDtos)
-                .build();
-
-        return ResponseEntity.ok(RsData.success(response));
-    }
+//    @Override
+//    @GetMapping("/public/{memberId}")
+//    public ResponseEntity<RsData<PublicWishlistResponse>> getPublicWishlist(
+//            @PathVariable("memberId") Long memberId
+//    ) {
+//        List<WishlistItem> items = getPublicWishlistUseCase.getPublicWishlistItems(memberId);
+//        if (items.isEmpty()) {
+//            return ResponseEntity.ok(RsData.success(null));  // 비공개이거나 아이템 없음
+//        }
+//
+//        // productId → Product 매핑 (한번에 벌크 조회)
+//        var productIds = items.stream().map(WishlistItem::getProductId).toList();
+//        var productMap = productSupport.findAllById(productIds).stream()
+//                .collect(Collectors.toMap(Product::getId, p -> p));
+//
+//        // 닉네임 조회
+//        String nickname = memberRepository.findById(memberId)
+//                .map(Member::getNickname).orElse("알 수 없음");
+//
+//        // 응답 조합
+//        var itemDtos = items.stream().map(item -> {
+//            var product = productMap.get(item.getProductId());
+//            return PublicWishlistResponse.PublicWishlistItemDto.builder()
+//                    .wishlistItemId(item.getId())
+//                    .productId(item.getProductId())
+//                    .productName(product != null ? product.getName() : "삭제된 상품")
+//                    .price(product != null ? product.getPrice() : 0)
+//                    .addedAt(item.getAddedAt())
+//                    .build();
+//        }).toList();
+//
+//        var response = PublicWishlistResponse.builder()
+//                .memberId(memberId)
+//                .nickname(nickname)
+//                .items(itemDtos)
+//                .build();
+//
+//        return ResponseEntity.ok(RsData.success(response));
+//    }
 }
