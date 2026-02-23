@@ -8,7 +8,7 @@ VALUES
     (1, 3, '에어팟 프로 2세대', '애플 정품 노이즈 캔슬링 이어폰', 359000, 50, 'ACTIVE',
      'products/1/airpods-pro-2.jpg', 'ELECTRONICS', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (2, 3, '스타벅스 텀블러', '리유저블 콜드컵 710ml 그린', 23000, 50, 'ACTIVE',
-     'products/2/starbucks-tumbler.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+     'products/2/starbucks-tumbler.jpg', 'KITCHEN', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (3, 3, '닌텐도 스위치 OLED', '화이트 에디션 새상품', 415000, 50, 'ACTIVE',
      'products/3/nintendo-switch-oled.jpg', 'ELECTRONICS', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (4, 3, '다이슨 에어랩', '컴플리트 롱 니켈/코퍼', 699000, 50, 'ACTIVE',
@@ -56,10 +56,10 @@ SELECT setval('wishlist_item_id_seq', (SELECT MAX(id) FROM wishlist_item));
 
 INSERT INTO cart_item (id, cart_id, target_type, target_id, amount, wishlist_item_status)
 VALUES
-    (1, 2, 'GENERAL_PRODUCT', 1, 359000.00, NULL),
-    (2, 5, 'GENERAL_PRODUCT', 4, 699000.00, NULL),
-    (3, 5, 'GENERAL_PRODUCT', 2, 23000.00, NULL),
-    (4, 6, 'GENERAL_PRODUCT', 3, 415000.00, NULL),
-    (5, 6, 'GENERAL_PRODUCT', 5, 89000.00, NULL);
+    (1, 2, 'FUNDING_PENDING', 1, 359000.00, NULL),
+    (2, 5, 'FUNDING_PENDING', 4, 699000.00, NULL),
+    (3, 5, 'FUNDING_PENDING', 2, 23000.00, NULL),
+    (4, 6, 'FUNDING_PENDING', 3, 415000.00, NULL),
+    (5, 6, 'FUNDING_PENDING', 5, 89000.00, NULL);
 
 SELECT setval('cart_item_id_seq', (SELECT MAX(id) FROM cart_item));
