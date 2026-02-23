@@ -1,9 +1,5 @@
 package app.giftify.order.adapter.outbound.persistence;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
-
 import app.giftify.order.adapter.outbound.persistence.jpa.JpaOrderRepository;
 import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.Order;
@@ -11,6 +7,11 @@ import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -45,5 +46,10 @@ public class OrderAdapter implements OrderRepository {
     public Order getByIdWithItemsAndLock(Long id) {
         return jpaOrderRepository.findByIdWithItemsAndLock(id)
                 .orElseThrow(() -> new PolicyException(OrderErrorCode.ORDER_NOT_FOUND, "orderId = " + id));
+    }
+
+    @Override
+    public List<Order> getAllByIdInWithItems(List<Long> ids) {
+        return jpaOrderRepository.findAllByIdInWithItems(ids);
     }
 }
