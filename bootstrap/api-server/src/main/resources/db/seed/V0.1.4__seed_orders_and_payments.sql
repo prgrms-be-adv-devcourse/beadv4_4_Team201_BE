@@ -3,7 +3,7 @@
 -- =============================================================================
 
 -- Orders
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
                       payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at,
                       created_at, updated_at)
 VALUES
@@ -27,10 +27,10 @@ VALUES
      'toss_pk_20260208_0005', 'toss_tx_20260208_0005', '2026-02-08 15:05:00', NULL, '2026-02-08 16:00:00',
      '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
-SELECT setval('order_v2_id_seq', (SELECT MAX(id) FROM order_v2));
+SELECT setval('orders_id_seq', (SELECT MAX(id) FROM orders));
 
 -- Order Items
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
                            price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
@@ -50,7 +50,7 @@ VALUES
     (6, 5, 5, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
      89000.00, 89000.00, 'CANCELLED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
-SELECT setval('order_item_v2_id_seq', (SELECT MAX(id) FROM order_item_v2));
+SELECT setval('order_items_id_seq', (SELECT MAX(id) FROM order_items));
 
 -- Payments
 INSERT INTO payment (id, idempotency_key, type, method, order_id, member_id,

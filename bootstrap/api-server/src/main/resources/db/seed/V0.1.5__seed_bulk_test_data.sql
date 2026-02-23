@@ -10839,7 +10839,7 @@ VALUES
 -- -----------------------------------------------------------------------------
 -- ORDER_V2 (10000 rows)
 -- -----------------------------------------------------------------------------
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (1000, 1009, 'ORD-TEST-00000001', 151530, 1, 'TOSS_PAY', 'PAID', 'toss_pk_test_001000', 'toss_tx_test_001000', '2023-11-24 00:05:00', NULL, NULL, '2023-11-24 00:00:00', '2023-11-24 00:00:00'),
     (1001, 1043, 'ORD-TEST-00000002', 368935, 1, 'KAKAO_PAY', 'PAID', 'toss_pk_test_001001', 'toss_tx_test_001001', '2023-06-16 00:05:00', NULL, NULL, '2023-06-16 00:00:00', '2023-06-16 00:00:00'),
@@ -11342,7 +11342,7 @@ VALUES
     (1498, 1014, 'ORD-TEST-00000499', 361185, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_001498', 'toss_tx_test_001498', '2023-09-29 00:05:00', '2023-10-03 00:00:00', NULL, '2023-09-29 00:00:00', '2023-09-29 00:00:00'),
     (1499, 1039, 'ORD-TEST-00000500', 62532, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_001499', 'toss_tx_test_001499', '2023-07-31 00:05:00', '2023-08-06 00:00:00', NULL, '2023-07-31 00:00:00', '2023-07-31 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (1500, 1044, 'ORD-TEST-00000501', 367140, 1, 'CARD', 'PAID', 'toss_pk_test_001500', 'toss_tx_test_001500', '2024-01-30 00:05:00', NULL, NULL, '2024-01-30 00:00:00', '2024-01-30 00:00:00'),
     (1501, 1007, 'ORD-TEST-00000502', 497115, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_001501', 'toss_tx_test_001501', '2023-03-22 00:05:00', '2023-03-29 00:00:00', NULL, '2023-03-22 00:00:00', '2023-03-22 00:00:00'),
@@ -11845,7 +11845,7 @@ VALUES
     (1998, 1039, 'ORD-TEST-00000999', 297147, 1, 'NAVER_PAY', 'CANCELED', 'toss_pk_test_001998', 'toss_tx_test_001998', '2023-09-25 00:05:00', NULL, '2023-09-26 00:00:00', '2023-09-25 00:00:00', '2023-09-25 00:00:00'),
     (1999, 1043, 'ORD-TEST-00001000', 480221, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_001999', 'toss_tx_test_001999', '2023-03-26 00:05:00', '2023-04-03 00:00:00', NULL, '2023-03-26 00:00:00', '2023-03-26 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (2000, 1007, 'ORD-TEST-00001001', 66078, 1, 'TOSS_PAY', 'CANCELED', 'toss_pk_test_002000', 'toss_tx_test_002000', '2023-05-11 00:05:00', NULL, '2023-05-12 16:00:00', '2023-05-11 00:00:00', '2023-05-11 00:00:00'),
     (2001, 1011, 'ORD-TEST-00001002', 497701, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_002001', 'toss_tx_test_002001', '2023-07-21 00:05:00', '2023-07-25 00:00:00', NULL, '2023-07-21 00:00:00', '2023-07-21 00:00:00'),
@@ -12348,7 +12348,7 @@ VALUES
     (2498, 1022, 'ORD-TEST-00001499', 90880, 1, 'TOSS_PAY', 'CANCELED', 'toss_pk_test_002498', 'toss_tx_test_002498', '2023-05-28 00:05:00', NULL, '2023-05-29 19:00:00', '2023-05-28 00:00:00', '2023-05-28 00:00:00'),
     (2499, 1007, 'ORD-TEST-00001500', 47615, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_002499', 'toss_tx_test_002499', '2023-11-28 00:05:00', '2023-11-29 00:00:00', NULL, '2023-11-28 00:00:00', '2023-11-28 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (2500, 1008, 'ORD-TEST-00001501', 354943, 1, 'TOSS_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-08-12 00:00:00', '2023-08-12 00:00:00'),
     (2501, 1007, 'ORD-TEST-00001502', 346720, 1, 'KAKAO_PAY', 'CONFIRMED', 'toss_pk_test_002501', 'toss_tx_test_002501', '2023-08-01 00:05:00', '2023-08-15 00:00:00', NULL, '2023-08-01 00:00:00', '2023-08-01 00:00:00'),
@@ -12851,7 +12851,7 @@ VALUES
     (2998, 1008, 'ORD-TEST-00001999', 264156, 1, 'KAKAO_PAY', 'PAID', 'toss_pk_test_002998', 'toss_tx_test_002998', '2023-12-31 00:05:00', NULL, NULL, '2023-12-31 00:00:00', '2023-12-31 00:00:00'),
     (2999, 1028, 'ORD-TEST-00002000', 462602, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_002999', 'toss_tx_test_002999', '2023-09-28 00:05:00', '2023-09-30 00:00:00', NULL, '2023-09-28 00:00:00', '2023-09-28 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (3000, 1043, 'ORD-TEST-00002001', 258174, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_003000', 'toss_tx_test_003000', '2023-01-17 00:05:00', '2023-01-29 00:00:00', NULL, '2023-01-17 00:00:00', '2023-01-17 00:00:00'),
     (3001, 1009, 'ORD-TEST-00002002', 493234, 1, 'NAVER_PAY', 'PAID', 'toss_pk_test_003001', 'toss_tx_test_003001', '2023-03-02 00:05:00', NULL, NULL, '2023-03-02 00:00:00', '2023-03-02 00:00:00'),
@@ -13354,7 +13354,7 @@ VALUES
     (3498, 1037, 'ORD-TEST-00002499', 425058, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_003498', 'toss_tx_test_003498', '2023-02-24 00:05:00', '2023-03-05 00:00:00', NULL, '2023-02-24 00:00:00', '2023-02-24 00:00:00'),
     (3499, 1046, 'ORD-TEST-00002500', 457070, 1, 'NAVER_PAY', 'CANCELED', 'toss_pk_test_003499', 'toss_tx_test_003499', '2023-12-29 00:05:00', NULL, '2023-12-29 06:00:00', '2023-12-29 00:00:00', '2023-12-29 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (3500, 1011, 'ORD-TEST-00002501', 408286, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_003500', 'toss_tx_test_003500', '2023-10-16 00:05:00', '2023-10-24 00:00:00', NULL, '2023-10-16 00:00:00', '2023-10-16 00:00:00'),
     (3501, 1009, 'ORD-TEST-00002502', 261085, 1, 'NAVER_PAY', 'CONFIRMED', 'toss_pk_test_003501', 'toss_tx_test_003501', '2023-03-21 00:05:00', '2023-03-25 00:00:00', NULL, '2023-03-21 00:00:00', '2023-03-21 00:00:00'),
@@ -13857,7 +13857,7 @@ VALUES
     (3998, 1032, 'ORD-TEST-00002999', 218633, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_003998', 'toss_tx_test_003998', '2023-09-06 00:05:00', '2023-09-07 00:00:00', NULL, '2023-09-06 00:00:00', '2023-09-06 00:00:00'),
     (3999, 1009, 'ORD-TEST-00003000', 22711, 1, 'NAVER_PAY', 'CONFIRMED', 'toss_pk_test_003999', 'toss_tx_test_003999', '2023-04-28 00:05:00', '2023-05-09 00:00:00', NULL, '2023-04-28 00:00:00', '2023-04-28 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (4000, 1048, 'ORD-TEST-00003001', 27709, 1, 'KAKAO_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-05-20 00:00:00', '2023-05-20 00:00:00'),
     (4001, 1046, 'ORD-TEST-00003002', 353553, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_004001', 'toss_tx_test_004001', '2023-07-25 00:05:00', '2023-07-28 00:00:00', NULL, '2023-07-25 00:00:00', '2023-07-25 00:00:00'),
@@ -14360,7 +14360,7 @@ VALUES
     (4498, 1029, 'ORD-TEST-00003499', 61789, 1, 'ACCOUNT_TRANSFER', 'CANCELED', 'toss_pk_test_004498', 'toss_tx_test_004498', '2023-09-24 00:05:00', NULL, '2023-09-24 06:00:00', '2023-09-24 00:00:00', '2023-09-24 00:00:00'),
     (4499, 1041, 'ORD-TEST-00003500', 488080, 1, 'NAVER_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-09-27 00:00:00', '2023-09-27 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (4500, 1035, 'ORD-TEST-00003501', 283506, 1, 'ACCOUNT_TRANSFER', 'PAID', 'toss_pk_test_004500', 'toss_tx_test_004500', '2023-07-21 00:05:00', NULL, NULL, '2023-07-21 00:00:00', '2023-07-21 00:00:00'),
     (4501, 1047, 'ORD-TEST-00003502', 158143, 1, 'KAKAO_PAY', 'PAID', 'toss_pk_test_004501', 'toss_tx_test_004501', '2023-06-14 00:05:00', NULL, NULL, '2023-06-14 00:00:00', '2023-06-14 00:00:00'),
@@ -14863,7 +14863,7 @@ VALUES
     (4998, 1033, 'ORD-TEST-00003999', 273062, 1, 'CARD', 'PAID', 'toss_pk_test_004998', 'toss_tx_test_004998', '2024-01-11 00:05:00', NULL, NULL, '2024-01-11 00:00:00', '2024-01-11 00:00:00'),
     (4999, 1049, 'ORD-TEST-00004000', 413125, 1, 'NAVER_PAY', 'CANCELED', 'toss_pk_test_004999', 'toss_tx_test_004999', '2023-11-04 00:05:00', NULL, '2023-11-05 19:00:00', '2023-11-04 00:00:00', '2023-11-04 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (5000, 1002, 'ORD-TEST-00004001', 121890, 1, 'ACCOUNT_TRANSFER', 'PAID', 'toss_pk_test_005000', 'toss_tx_test_005000', '2023-10-01 00:05:00', NULL, NULL, '2023-10-01 00:00:00', '2023-10-01 00:00:00'),
     (5001, 1041, 'ORD-TEST-00004002', 418774, 1, 'NAVER_PAY', 'PAID', 'toss_pk_test_005001', 'toss_tx_test_005001', '2023-03-01 00:05:00', NULL, NULL, '2023-03-01 00:00:00', '2023-03-01 00:00:00'),
@@ -15366,7 +15366,7 @@ VALUES
     (5498, 1033, 'ORD-TEST-00004499', 170927, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_005498', 'toss_tx_test_005498', '2024-01-26 00:05:00', '2024-01-29 00:00:00', NULL, '2024-01-26 00:00:00', '2024-01-26 00:00:00'),
     (5499, 1012, 'ORD-TEST-00004500', 145977, 1, 'CARD', 'CANCELED', 'toss_pk_test_005499', 'toss_tx_test_005499', '2023-02-08 00:05:00', NULL, '2023-02-10 00:00:00', '2023-02-08 00:00:00', '2023-02-08 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (5500, 1048, 'ORD-TEST-00004501', 83843, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_005500', 'toss_tx_test_005500', '2023-09-04 00:05:00', '2023-09-05 00:00:00', NULL, '2023-09-04 00:00:00', '2023-09-04 00:00:00'),
     (5501, 1026, 'ORD-TEST-00004502', 332044, 1, 'NAVER_PAY', 'CONFIRMED', 'toss_pk_test_005501', 'toss_tx_test_005501', '2023-03-24 00:05:00', '2023-04-01 00:00:00', NULL, '2023-03-24 00:00:00', '2023-03-24 00:00:00'),
@@ -15869,7 +15869,7 @@ VALUES
     (5998, 1047, 'ORD-TEST-00004999', 445035, 1, 'KAKAO_PAY', 'PAID', 'toss_pk_test_005998', 'toss_tx_test_005998', '2023-04-13 00:05:00', NULL, NULL, '2023-04-13 00:00:00', '2023-04-13 00:00:00'),
     (5999, 1023, 'ORD-TEST-00005000', 17423, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_005999', 'toss_tx_test_005999', '2023-09-09 00:05:00', '2023-09-11 00:00:00', NULL, '2023-09-09 00:00:00', '2023-09-09 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (6000, 1008, 'ORD-TEST-00005001', 195713, 1, 'CARD', 'PAID', 'toss_pk_test_006000', 'toss_tx_test_006000', '2023-11-27 00:05:00', NULL, NULL, '2023-11-27 00:00:00', '2023-11-27 00:00:00'),
     (6001, 1034, 'ORD-TEST-00005002', 365347, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_006001', 'toss_tx_test_006001', '2023-10-14 00:05:00', '2023-10-25 00:00:00', NULL, '2023-10-14 00:00:00', '2023-10-14 00:00:00'),
@@ -16372,7 +16372,7 @@ VALUES
     (6498, 1046, 'ORD-TEST-00005499', 247731, 1, 'TOSS_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-05-03 00:00:00', '2023-05-03 00:00:00'),
     (6499, 1036, 'ORD-TEST-00005500', 12531, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_006499', 'toss_tx_test_006499', '2023-01-02 00:05:00', '2023-01-11 00:00:00', NULL, '2023-01-02 00:00:00', '2023-01-02 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (6500, 1032, 'ORD-TEST-00005501', 57176, 1, 'ACCOUNT_TRANSFER', 'PAID', 'toss_pk_test_006500', 'toss_tx_test_006500', '2023-03-04 00:05:00', NULL, NULL, '2023-03-04 00:00:00', '2023-03-04 00:00:00'),
     (6501, 1015, 'ORD-TEST-00005502', 428550, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_006501', 'toss_tx_test_006501', '2023-01-02 00:05:00', '2023-01-03 00:00:00', NULL, '2023-01-02 00:00:00', '2023-01-02 00:00:00'),
@@ -16875,7 +16875,7 @@ VALUES
     (6998, 1006, 'ORD-TEST-00005999', 19633, 1, 'NAVER_PAY', 'PAID', 'toss_pk_test_006998', 'toss_tx_test_006998', '2024-01-25 00:05:00', NULL, NULL, '2024-01-25 00:00:00', '2024-01-25 00:00:00'),
     (6999, 1014, 'ORD-TEST-00006000', 88439, 1, 'ACCOUNT_TRANSFER', 'PAID', 'toss_pk_test_006999', 'toss_tx_test_006999', '2023-04-02 00:05:00', NULL, NULL, '2023-04-02 00:00:00', '2023-04-02 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (7000, 1004, 'ORD-TEST-00006001', 22652, 1, 'ACCOUNT_TRANSFER', 'CANCELED', 'toss_pk_test_007000', 'toss_tx_test_007000', '2023-12-15 00:05:00', NULL, '2023-12-15 14:00:00', '2023-12-15 00:00:00', '2023-12-15 00:00:00'),
     (7001, 1036, 'ORD-TEST-00006002', 413148, 1, 'TOSS_PAY', 'PAID', 'toss_pk_test_007001', 'toss_tx_test_007001', '2023-03-24 00:05:00', NULL, NULL, '2023-03-24 00:00:00', '2023-03-24 00:00:00'),
@@ -17378,7 +17378,7 @@ VALUES
     (7498, 1018, 'ORD-TEST-00006499', 160836, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_007498', 'toss_tx_test_007498', '2023-12-31 00:05:00', '2024-01-06 00:00:00', NULL, '2023-12-31 00:00:00', '2023-12-31 00:00:00'),
     (7499, 1014, 'ORD-TEST-00006500', 331527, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_007499', 'toss_tx_test_007499', '2023-06-20 00:05:00', '2023-07-04 00:00:00', NULL, '2023-06-20 00:00:00', '2023-06-20 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (7500, 1047, 'ORD-TEST-00006501', 408957, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_007500', 'toss_tx_test_007500', '2023-02-18 00:05:00', '2023-03-01 00:00:00', NULL, '2023-02-18 00:00:00', '2023-02-18 00:00:00'),
     (7501, 1015, 'ORD-TEST-00006502', 301331, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_007501', 'toss_tx_test_007501', '2023-07-29 00:05:00', '2023-08-11 00:00:00', NULL, '2023-07-29 00:00:00', '2023-07-29 00:00:00'),
@@ -17881,7 +17881,7 @@ VALUES
     (7998, 1026, 'ORD-TEST-00006999', 199982, 1, 'NAVER_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-10-24 00:00:00', '2023-10-24 00:00:00'),
     (7999, 1033, 'ORD-TEST-00007000', 340111, 1, 'KAKAO_PAY', 'PAID', 'toss_pk_test_007999', 'toss_tx_test_007999', '2023-05-23 00:05:00', NULL, NULL, '2023-05-23 00:00:00', '2023-05-23 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (8000, 1045, 'ORD-TEST-00007001', 402827, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_008000', 'toss_tx_test_008000', '2023-11-09 00:05:00', '2023-11-19 00:00:00', NULL, '2023-11-09 00:00:00', '2023-11-09 00:00:00'),
     (8001, 1010, 'ORD-TEST-00007002', 251645, 1, 'CARD', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-09-05 00:00:00', '2023-09-05 00:00:00'),
@@ -18384,7 +18384,7 @@ VALUES
     (8498, 1029, 'ORD-TEST-00007499', 215679, 1, 'ACCOUNT_TRANSFER', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-06-08 00:00:00', '2023-06-08 00:00:00'),
     (8499, 1018, 'ORD-TEST-00007500', 14373, 1, 'TOSS_PAY', 'CONFIRMED', 'toss_pk_test_008499', 'toss_tx_test_008499', '2023-05-01 00:05:00', '2023-05-05 00:00:00', NULL, '2023-05-01 00:00:00', '2023-05-01 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (8500, 1047, 'ORD-TEST-00007501', 301875, 1, 'ACCOUNT_TRANSFER', 'CONFIRMED', 'toss_pk_test_008500', 'toss_tx_test_008500', '2023-09-17 00:05:00', '2023-09-18 00:00:00', NULL, '2023-09-17 00:00:00', '2023-09-17 00:00:00'),
     (8501, 1029, 'ORD-TEST-00007502', 179964, 1, 'CARD', 'CONFIRMED', 'toss_pk_test_008501', 'toss_tx_test_008501', '2023-02-10 00:05:00', '2023-02-22 00:00:00', NULL, '2023-02-10 00:00:00', '2023-02-10 00:00:00'),
@@ -18887,7 +18887,7 @@ VALUES
     (8998, 1034, 'ORD-TEST-00007999', 17389, 1, 'NAVER_PAY', 'PAID', 'toss_pk_test_008998', 'toss_tx_test_008998', '2023-08-15 00:05:00', NULL, NULL, '2023-08-15 00:00:00', '2023-08-15 00:00:00'),
     (8999, 2, 'ORD-TEST-00008000', 152912, 1, 'ACCOUNT_TRANSFER', 'CANCELED', 'toss_pk_test_008999', 'toss_tx_test_008999', '2023-08-02 00:05:00', NULL, '2023-08-02 21:00:00', '2023-08-02 00:00:00', '2023-08-02 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (9000, 1029, 'ORD-TEST-00008001', 416551, 1, 'TOSS_PAY', 'PAID', 'toss_pk_test_009000', 'toss_tx_test_009000', '2023-01-28 00:05:00', NULL, NULL, '2023-01-28 00:00:00', '2023-01-28 00:00:00'),
     (9001, 1026, 'ORD-TEST-00008002', 484418, 1, 'KAKAO_PAY', 'CONFIRMED', 'toss_pk_test_009001', 'toss_tx_test_009001', '2023-11-11 00:05:00', '2023-11-20 00:00:00', NULL, '2023-11-11 00:00:00', '2023-11-11 00:00:00'),
@@ -19390,7 +19390,7 @@ VALUES
     (9498, 1019, 'ORD-TEST-00008499', 98089, 1, 'CARD', 'PAID', 'toss_pk_test_009498', 'toss_tx_test_009498', '2023-02-26 00:05:00', NULL, NULL, '2023-02-26 00:00:00', '2023-02-26 00:00:00'),
     (9499, 1006, 'ORD-TEST-00008500', 35200, 1, 'TOSS_PAY', 'PAID', 'toss_pk_test_009499', 'toss_tx_test_009499', '2023-11-26 00:05:00', NULL, NULL, '2023-11-26 00:00:00', '2023-11-26 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (9500, 1003, 'ORD-TEST-00008501', 481448, 1, 'CARD', 'PAID', 'toss_pk_test_009500', 'toss_tx_test_009500', '2023-03-04 00:05:00', NULL, NULL, '2023-03-04 00:00:00', '2023-03-04 00:00:00'),
     (9501, 1041, 'ORD-TEST-00008502', 462711, 1, 'KAKAO_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-12-09 00:00:00', '2023-12-09 00:00:00'),
@@ -19893,7 +19893,7 @@ VALUES
     (9998, 1019, 'ORD-TEST-00008999', 288066, 1, 'TOSS_PAY', 'CREATED', NULL, NULL, NULL, NULL, NULL, '2023-03-09 00:00:00', '2023-03-09 00:00:00'),
     (9999, 1031, 'ORD-TEST-00009000', 206037, 1, 'TOSS_PAY', 'CANCELED', 'toss_pk_test_009999', 'toss_tx_test_009999', '2023-04-29 00:05:00', NULL, '2023-04-29 16:00:00', '2023-04-29 00:00:00', '2023-04-29 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (10000, 1020, 'ORD-TEST-00009001', 103289, 1, 'NAVER_PAY', 'CANCELED', 'toss_pk_test_010000', 'toss_tx_test_010000', '2023-08-05 00:05:00', NULL, '2023-08-06 21:00:00', '2023-08-05 00:00:00', '2023-08-05 00:00:00'),
     (10001, 1009, 'ORD-TEST-00009002', 323641, 1, 'KAKAO_PAY', 'CONFIRMED', 'toss_pk_test_010001', 'toss_tx_test_010001', '2023-12-12 00:05:00', '2023-12-17 00:00:00', NULL, '2023-12-12 00:00:00', '2023-12-12 00:00:00'),
@@ -20396,7 +20396,7 @@ VALUES
     (10498, 1001, 'ORD-TEST-00009499', 447340, 1, 'NAVER_PAY', 'CONFIRMED', 'toss_pk_test_010498', 'toss_tx_test_010498', '2023-05-09 00:05:00', '2023-05-13 00:00:00', NULL, '2023-05-09 00:00:00', '2023-05-09 00:00:00'),
     (10499, 1024, 'ORD-TEST-00009500', 215676, 1, 'KAKAO_PAY', 'CONFIRMED', 'toss_pk_test_010499', 'toss_tx_test_010499', '2023-05-17 00:05:00', '2023-05-22 00:00:00', NULL, '2023-05-17 00:00:00', '2023-05-17 00:00:00');
 
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status, payment_key, last_transaction_key, paid_at, confirmed_at, cancelled_at, created_at, updated_at)
 VALUES
     (10500, 1015, 'ORD-TEST-00009501', 402559, 1, 'KAKAO_PAY', 'CONFIRMED', 'toss_pk_test_010500', 'toss_tx_test_010500', '2024-02-03 00:05:00', '2024-02-13 00:00:00', NULL, '2024-02-03 00:00:00', '2024-02-03 00:00:00'),
     (10501, 1049, 'ORD-TEST-00009502', 58708, 1, 'ACCOUNT_TRANSFER', 'PAID', 'toss_pk_test_010501', 'toss_tx_test_010501', '2023-05-10 00:05:00', NULL, NULL, '2023-05-10 00:00:00', '2023-05-10 00:00:00'),
@@ -20903,7 +20903,7 @@ VALUES
 -- -----------------------------------------------------------------------------
 -- ORDER_ITEM_V2 (15000 rows)
 -- -----------------------------------------------------------------------------
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (1000, 3781, 5362, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1086, 1029, 183641, 183641, 'CANCELLED', '2023-03-31 00:00:00', '2023-03-31 00:00:00', '2023-03-31 00:00:00'),
     (1001, 7193, 6302, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1069, 1047, 131984, 131984, 'PAID', NULL, '2023-02-02 00:00:00', '2023-02-02 00:00:00'),
@@ -21406,7 +21406,7 @@ VALUES
     (1498, 5627, 3538, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1068, 1021, 99518, 99518, 'PAID', NULL, '2023-07-17 00:00:00', '2023-07-17 00:00:00'),
     (1499, 2414, 10125, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1060, 1008, 122785, 122785, 'PAID', NULL, '2024-01-04 00:00:00', '2024-01-04 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (1500, 3497, 2446, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1061, 1033, 77064, 77064, 'PAID', NULL, '2023-03-04 00:00:00', '2023-03-04 00:00:00'),
     (1501, 6899, 6647, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1052, 2, 160900, 160900, 'PAID', NULL, '2023-12-08 00:00:00', '2023-12-08 00:00:00'),
@@ -21909,7 +21909,7 @@ VALUES
     (1998, 10127, 7670, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1082, 1032, 67312, 67312, 'CREATED', NULL, '2023-05-02 00:00:00', '2023-05-02 00:00:00'),
     (1999, 3211, 4324, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1082, 1041, 168812, 168812, 'PAID', NULL, '2023-09-26 00:00:00', '2023-09-26 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (2000, 7394, 3258, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1057, 1021, 179580, 179580, 'PAID', NULL, '2023-05-10 00:00:00', '2023-05-10 00:00:00'),
     (2001, 7933, 9208, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1074, 1010, 157586, 157586, 'CREATED', NULL, '2023-07-31 00:00:00', '2023-07-31 00:00:00'),
@@ -22412,7 +22412,7 @@ VALUES
     (2498, 5202, 6250, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1076, 1024, 109144, 109144, 'PAID', NULL, '2023-02-12 00:00:00', '2023-02-12 00:00:00'),
     (2499, 7785, 3871, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1084, 1044, 105420, 105420, 'CANCELLED', '2023-01-28 00:00:00', '2023-01-28 00:00:00', '2023-01-28 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (2500, 7789, 5609, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1052, 2, 66047, 66047, 'PAID', NULL, '2023-02-09 00:00:00', '2023-02-09 00:00:00'),
     (2501, 9759, 6028, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1052, 1039, 180551, 180551, 'PAID', NULL, '2023-09-07 00:00:00', '2023-09-07 00:00:00'),
@@ -22915,7 +22915,7 @@ VALUES
     (2998, 5120, 6686, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1065, 1047, 32796, 32796, 'PAID', NULL, '2023-09-18 00:00:00', '2023-09-18 00:00:00'),
     (2999, 4419, 4265, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1079, 1034, 146544, 146544, 'CANCELLED', '2023-02-25 00:00:00', '2023-02-25 00:00:00', '2023-02-25 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (3000, 5985, 9051, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1067, 1008, 101765, 101765, 'CREATED', NULL, '2023-01-13 00:00:00', '2023-01-13 00:00:00'),
     (3001, 8501, 6054, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1062, 1032, 44833, 44833, 'PAID', NULL, '2023-01-24 00:00:00', '2023-01-24 00:00:00'),
@@ -23418,7 +23418,7 @@ VALUES
     (3498, 6279, 10915, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1072, 1039, 36736, 36736, 'PAID', NULL, '2023-11-13 00:00:00', '2023-11-13 00:00:00'),
     (3499, 8410, 5410, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1051, 1000, 194772, 194772, 'PAID', NULL, '2023-07-05 00:00:00', '2023-07-05 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (3500, 9040, 7013, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1081, 1012, 78609, 78609, 'PAID', NULL, '2023-12-11 00:00:00', '2023-12-11 00:00:00'),
     (3501, 5765, 6859, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1086, 1046, 81447, 81447, 'PAID', NULL, '2023-03-28 00:00:00', '2023-03-28 00:00:00'),
@@ -23921,7 +23921,7 @@ VALUES
     (3998, 7496, 3211, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1080, 1035, 71490, 71490, 'PAID', NULL, '2023-01-04 00:00:00', '2023-01-04 00:00:00'),
     (3999, 4065, 10052, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1066, 1002, 104533, 104533, 'CREATED', NULL, '2023-03-15 00:00:00', '2023-03-15 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (4000, 2224, 9232, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1070, 1002, 93995, 93995, 'PAID', NULL, '2023-07-16 00:00:00', '2023-07-16 00:00:00'),
     (4001, 1855, 10169, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1060, 1046, 38006, 38006, 'CREATED', NULL, '2023-10-20 00:00:00', '2023-10-20 00:00:00'),
@@ -24424,7 +24424,7 @@ VALUES
     (4498, 2916, 10227, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1073, 1041, 175305, 175305, 'PAID', NULL, '2023-05-17 00:00:00', '2023-05-17 00:00:00'),
     (4499, 4614, 4926, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1070, 1025, 47629, 47629, 'CREATED', NULL, '2023-04-07 00:00:00', '2023-04-07 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (4500, 10521, 6460, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 1010, 29174, 29174, 'CANCELLED', '2023-02-09 00:00:00', '2023-02-09 00:00:00', '2023-02-09 00:00:00'),
     (4501, 2978, 9335, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1078, 2, 189954, 189954, 'CREATED', NULL, '2023-01-23 00:00:00', '2023-01-23 00:00:00'),
@@ -24927,7 +24927,7 @@ VALUES
     (4998, 1917, 6349, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1075, 1037, 85876, 85876, 'CREATED', NULL, '2023-12-14 00:00:00', '2023-12-14 00:00:00'),
     (4999, 8512, 7222, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1054, 1038, 54241, 54241, 'PAID', NULL, '2023-08-26 00:00:00', '2023-08-26 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (5000, 9593, 2962, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1057, 1046, 187348, 187348, 'PAID', NULL, '2023-01-23 00:00:00', '2023-01-23 00:00:00'),
     (5001, 8559, 10922, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1088, 1024, 50565, 50565, 'CANCELLED', '2023-05-24 00:00:00', '2023-05-24 00:00:00', '2023-05-24 00:00:00'),
@@ -25430,7 +25430,7 @@ VALUES
     (5498, 4521, 5134, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1080, 1018, 85480, 85480, 'PAID', NULL, '2023-04-30 00:00:00', '2023-04-30 00:00:00'),
     (5499, 1972, 6465, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1061, 1018, 78357, 78357, 'PAID', NULL, '2024-01-21 00:00:00', '2024-01-21 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (5500, 8844, 6515, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1070, 1000, 144946, 144946, 'PAID', NULL, '2023-03-17 00:00:00', '2023-03-17 00:00:00'),
     (5501, 4755, 10086, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1057, 1032, 176516, 176516, 'CREATED', NULL, '2023-10-01 00:00:00', '2023-10-01 00:00:00'),
@@ -25933,7 +25933,7 @@ VALUES
     (5998, 3796, 1380, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1054, 1008, 38633, 38633, 'PAID', NULL, '2023-08-24 00:00:00', '2023-08-24 00:00:00'),
     (5999, 3239, 4038, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1050, 1036, 88789, 88789, 'CANCELLED', '2023-04-24 00:00:00', '2023-04-24 00:00:00', '2023-04-24 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (6000, 5190, 3851, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1059, 1000, 145740, 145740, 'CANCELLED', '2023-03-12 00:00:00', '2023-03-12 00:00:00', '2023-03-12 00:00:00'),
     (6001, 5867, 2386, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1086, 1034, 181461, 181461, 'CANCELLED', '2023-07-04 00:00:00', '2023-07-04 00:00:00', '2023-07-04 00:00:00'),
@@ -26436,7 +26436,7 @@ VALUES
     (6498, 4341, 6206, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1089, 1032, 120535, 120535, 'CREATED', NULL, '2023-04-02 00:00:00', '2023-04-02 00:00:00'),
     (6499, 9885, 5065, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1071, 1031, 198175, 198175, 'PAID', NULL, '2023-10-15 00:00:00', '2023-10-15 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (6500, 1137, 6936, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1082, 1032, 128465, 128465, 'PAID', NULL, '2023-09-06 00:00:00', '2023-09-06 00:00:00'),
     (6501, 10715, 8137, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1080, 1001, 129872, 129872, 'CANCELLED', '2023-07-28 00:00:00', '2023-07-28 00:00:00', '2023-07-28 00:00:00'),
@@ -26939,7 +26939,7 @@ VALUES
     (6998, 3608, 8571, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1077, 1029, 187737, 187737, 'CREATED', NULL, '2023-08-21 00:00:00', '2023-08-21 00:00:00'),
     (6999, 2458, 4116, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1071, 1033, 171860, 171860, 'PAID', NULL, '2023-11-06 00:00:00', '2023-11-06 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (7000, 7743, 2923, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1073, 1000, 25320, 25320, 'CREATED', NULL, '2023-02-11 00:00:00', '2023-02-11 00:00:00'),
     (7001, 4359, 2710, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1055, 1014, 186472, 186472, 'CANCELLED', '2023-11-17 00:00:00', '2023-11-17 00:00:00', '2023-11-17 00:00:00'),
@@ -27442,7 +27442,7 @@ VALUES
     (7498, 2536, 4308, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1079, 1008, 156618, 156618, 'PAID', NULL, '2023-02-24 00:00:00', '2023-02-24 00:00:00'),
     (7499, 2728, 3090, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1058, 1012, 30365, 30365, 'PAID', NULL, '2023-06-05 00:00:00', '2023-06-05 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (7500, 5294, 10151, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1082, 1024, 70024, 70024, 'PAID', NULL, '2023-08-01 00:00:00', '2023-08-01 00:00:00'),
     (7501, 7934, 9260, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1050, 1010, 169470, 169470, 'PAID', NULL, '2023-06-12 00:00:00', '2023-06-12 00:00:00'),
@@ -27945,7 +27945,7 @@ VALUES
     (7998, 2612, 2542, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1087, 1044, 151219, 151219, 'PAID', NULL, '2023-12-29 00:00:00', '2023-12-29 00:00:00'),
     (7999, 2001, 10978, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1068, 1026, 194290, 194290, 'PAID', NULL, '2023-01-31 00:00:00', '2023-01-31 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (8000, 7164, 10387, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1087, 1014, 199989, 199989, 'PAID', NULL, '2023-04-03 00:00:00', '2023-04-03 00:00:00'),
     (8001, 5015, 3268, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1060, 1026, 138520, 138520, 'PAID', NULL, '2023-12-21 00:00:00', '2023-12-21 00:00:00'),
@@ -28448,7 +28448,7 @@ VALUES
     (8498, 3756, 7531, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1, 1033, 104088, 104088, 'CREATED', NULL, '2023-07-01 00:00:00', '2023-07-01 00:00:00'),
     (8499, 1728, 3220, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1073, 1009, 108228, 108228, 'CREATED', NULL, '2023-10-28 00:00:00', '2023-10-28 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (8500, 2793, 5355, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1063, 1048, 93071, 93071, 'PAID', NULL, '2023-04-22 00:00:00', '2023-04-22 00:00:00'),
     (8501, 10364, 6910, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1086, 1019, 116757, 116757, 'PAID', NULL, '2023-11-05 00:00:00', '2023-11-05 00:00:00'),
@@ -28951,7 +28951,7 @@ VALUES
     (8998, 7462, 2949, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1069, 1005, 182297, 182297, 'PAID', NULL, '2023-12-01 00:00:00', '2023-12-01 00:00:00'),
     (8999, 8082, 1232, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 1034, 13082, 13082, 'CREATED', NULL, '2023-05-11 00:00:00', '2023-05-11 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (9000, 5655, 4336, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1071, 1046, 150426, 150426, 'PAID', NULL, '2023-04-27 00:00:00', '2023-04-27 00:00:00'),
     (9001, 6625, 2737, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1, 1002, 119265, 119265, 'PAID', NULL, '2023-12-09 00:00:00', '2023-12-09 00:00:00'),
@@ -29454,7 +29454,7 @@ VALUES
     (9498, 4100, 9024, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1066, 1019, 69152, 69152, 'PAID', NULL, '2023-08-16 00:00:00', '2023-08-16 00:00:00'),
     (9499, 5367, 1857, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1052, 1046, 58869, 58869, 'PAID', NULL, '2023-07-16 00:00:00', '2023-07-16 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (9500, 9887, 5368, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1087, 1001, 150590, 150590, 'PAID', NULL, '2023-06-26 00:00:00', '2023-06-26 00:00:00'),
     (9501, 7822, 5792, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1060, 1008, 179934, 179934, 'PAID', NULL, '2023-01-05 00:00:00', '2023-01-05 00:00:00'),
@@ -29957,7 +29957,7 @@ VALUES
     (9998, 9548, 6461, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1078, 1037, 182123, 182123, 'PAID', NULL, '2023-06-08 00:00:00', '2023-06-08 00:00:00'),
     (9999, 5890, 2224, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1083, 1017, 190444, 190444, 'PAID', NULL, '2023-06-02 00:00:00', '2023-06-02 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (10000, 3717, 8139, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1068, 1042, 82688, 82688, 'PAID', NULL, '2023-10-25 00:00:00', '2023-10-25 00:00:00'),
     (10001, 6237, 4651, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1076, 1001, 106507, 106507, 'CANCELLED', '2023-08-30 00:00:00', '2023-08-30 00:00:00', '2023-08-30 00:00:00'),
@@ -30460,7 +30460,7 @@ VALUES
     (10498, 7161, 9872, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1073, 1002, 109191, 109191, 'PAID', NULL, '2023-04-03 00:00:00', '2023-04-03 00:00:00'),
     (10499, 6327, 4504, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1074, 1049, 28736, 28736, 'CANCELLED', '2023-04-16 00:00:00', '2023-04-16 00:00:00', '2023-04-16 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (10500, 9505, 2569, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1081, 1016, 144741, 144741, 'PAID', NULL, '2023-08-20 00:00:00', '2023-08-20 00:00:00'),
     (10501, 9612, 7222, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1079, 1029, 131811, 131811, 'PAID', NULL, '2023-02-07 00:00:00', '2023-02-07 00:00:00'),
@@ -30963,7 +30963,7 @@ VALUES
     (10998, 4110, 6649, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1078, 1003, 116519, 116519, 'PAID', NULL, '2023-02-08 00:00:00', '2023-02-08 00:00:00'),
     (10999, 9163, 1243, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1057, 1037, 133676, 133676, 'PAID', NULL, '2024-01-30 00:00:00', '2024-01-30 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (11000, 3929, 9188, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1056, 1002, 45043, 45043, 'PAID', NULL, '2023-10-21 00:00:00', '2023-10-21 00:00:00'),
     (11001, 5219, 6883, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1069, 1042, 85589, 85589, 'PAID', NULL, '2023-08-11 00:00:00', '2023-08-11 00:00:00'),
@@ -31466,7 +31466,7 @@ VALUES
     (11498, 3656, 5896, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1076, 1045, 169224, 169224, 'PAID', NULL, '2024-01-25 00:00:00', '2024-01-25 00:00:00'),
     (11499, 5291, 2751, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1086, 1028, 63007, 63007, 'PAID', NULL, '2023-06-20 00:00:00', '2023-06-20 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (11500, 8304, 2765, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1082, 1033, 57246, 57246, 'CREATED', NULL, '2023-09-23 00:00:00', '2023-09-23 00:00:00'),
     (11501, 7077, 4368, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1063, 1007, 62982, 62982, 'PAID', NULL, '2024-01-27 00:00:00', '2024-01-27 00:00:00'),
@@ -31969,7 +31969,7 @@ VALUES
     (11998, 6922, 1338, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1078, 1049, 180521, 180521, 'CREATED', NULL, '2023-02-05 00:00:00', '2023-02-05 00:00:00'),
     (11999, 3859, 8306, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1058, 1021, 152565, 152565, 'CANCELLED', '2024-01-13 00:00:00', '2024-01-13 00:00:00', '2024-01-13 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (12000, 9945, 8800, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1054, 1014, 45790, 45790, 'CREATED', NULL, '2023-11-30 00:00:00', '2023-11-30 00:00:00'),
     (12001, 3848, 9418, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1078, 1021, 75583, 75583, 'PAID', NULL, '2023-03-19 00:00:00', '2023-03-19 00:00:00'),
@@ -32472,7 +32472,7 @@ VALUES
     (12498, 2742, 2446, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1067, 1019, 129719, 129719, 'PAID', NULL, '2023-07-08 00:00:00', '2023-07-08 00:00:00'),
     (12499, 4481, 4634, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1085, 1020, 186452, 186452, 'PAID', NULL, '2023-02-03 00:00:00', '2023-02-03 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (12500, 6854, 8455, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1065, 1048, 122145, 122145, 'PAID', NULL, '2023-01-09 00:00:00', '2023-01-09 00:00:00'),
     (12501, 7812, 8602, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1080, 1000, 151989, 151989, 'CREATED', NULL, '2023-04-08 00:00:00', '2023-04-08 00:00:00'),
@@ -32975,7 +32975,7 @@ VALUES
     (12998, 8086, 5965, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1071, 1041, 112828, 112828, 'PAID', NULL, '2023-11-03 00:00:00', '2023-11-03 00:00:00'),
     (12999, 4679, 10919, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1082, 1049, 44624, 44624, 'PAID', NULL, '2023-02-06 00:00:00', '2023-02-06 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (13000, 7470, 2390, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1055, 1037, 161279, 161279, 'PAID', NULL, '2023-06-23 00:00:00', '2023-06-23 00:00:00'),
     (13001, 9513, 9476, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1058, 1016, 45402, 45402, 'PAID', NULL, '2023-12-23 00:00:00', '2023-12-23 00:00:00'),
@@ -33478,7 +33478,7 @@ VALUES
     (13498, 4884, 3093, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1055, 2, 187541, 187541, 'PAID', NULL, '2024-01-21 00:00:00', '2024-01-21 00:00:00'),
     (13499, 9613, 8471, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1063, 1029, 128180, 128180, 'PAID', NULL, '2023-06-02 00:00:00', '2023-06-02 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (13500, 3835, 5813, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1067, 1049, 74123, 74123, 'CANCELLED', '2023-06-13 00:00:00', '2023-06-13 00:00:00', '2023-06-13 00:00:00'),
     (13501, 7979, 5899, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1080, 2, 136240, 136240, 'PAID', NULL, '2023-09-15 00:00:00', '2023-09-15 00:00:00'),
@@ -33981,7 +33981,7 @@ VALUES
     (13998, 8372, 1941, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 1017, 47994, 47994, 'PAID', NULL, '2023-06-30 00:00:00', '2023-06-30 00:00:00'),
     (13999, 3543, 8602, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1072, 1038, 107994, 107994, 'PAID', NULL, '2023-10-26 00:00:00', '2023-10-26 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (14000, 6296, 4799, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1066, 1040, 194498, 194498, 'PAID', NULL, '2023-03-05 00:00:00', '2023-03-05 00:00:00'),
     (14001, 1895, 8655, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1066, 1018, 68857, 68857, 'PAID', NULL, '2023-01-28 00:00:00', '2023-01-28 00:00:00'),
@@ -34484,7 +34484,7 @@ VALUES
     (14498, 7142, 9397, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 1008, 141814, 141814, 'CANCELLED', '2023-11-25 00:00:00', '2023-11-25 00:00:00', '2023-11-25 00:00:00'),
     (14499, 3128, 5537, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1050, 1045, 176283, 176283, 'PAID', NULL, '2023-03-12 00:00:00', '2023-03-12 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (14500, 2663, 1524, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1053, 1036, 188167, 188167, 'PAID', NULL, '2023-03-31 00:00:00', '2023-03-31 00:00:00'),
     (14501, 4120, 8626, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1051, 1008, 120162, 120162, 'PAID', NULL, '2023-07-20 00:00:00', '2023-07-20 00:00:00'),
@@ -34987,7 +34987,7 @@ VALUES
     (14998, 2282, 3696, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1060, 1010, 40969, 40969, 'PAID', NULL, '2023-03-27 00:00:00', '2023-03-27 00:00:00'),
     (14999, 8198, 6913, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1088, 1001, 160513, 160513, 'PAID', NULL, '2024-01-24 00:00:00', '2024-01-24 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (15000, 3281, 5467, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1066, 1031, 140863, 140863, 'PAID', NULL, '2023-11-25 00:00:00', '2023-11-25 00:00:00'),
     (15001, 4344, 8920, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1059, 1008, 130012, 130012, 'CANCELLED', '2023-08-31 00:00:00', '2023-08-31 00:00:00', '2023-08-31 00:00:00'),
@@ -35490,7 +35490,7 @@ VALUES
     (15498, 8393, 6965, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1084, 1043, 193640, 193640, 'PAID', NULL, '2023-09-14 00:00:00', '2023-09-14 00:00:00'),
     (15499, 4830, 6283, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1056, 1019, 132062, 132062, 'PAID', NULL, '2023-09-30 00:00:00', '2023-09-30 00:00:00');
 
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id, price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (15500, 10661, 1167, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1073, 1025, 185961, 185961, 'PAID', NULL, '2023-03-29 00:00:00', '2023-03-29 00:00:00'),
     (15501, 6454, 10363, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 1089, 1020, 145656, 145656, 'PAID', NULL, '2023-03-16 00:00:00', '2023-03-16 00:00:00'),
@@ -79323,8 +79323,8 @@ SELECT setval('wishlist_item_id_seq', (SELECT MAX(id) FROM wishlist_item));
 SELECT setval('cart_item_id_seq', (SELECT MAX(id) FROM cart_item));
 SELECT setval('funding_id_seq', (SELECT MAX(id) FROM funding));
 SELECT setval('funding_participant_member_id_seq', (SELECT MAX(id) FROM funding_participant_member));
-SELECT setval('order_v2_id_seq', (SELECT MAX(id) FROM order_v2));
-SELECT setval('order_item_v2_id_seq', (SELECT MAX(id) FROM order_item_v2));
+SELECT setval('orders_id_seq', (SELECT MAX(id) FROM orders));
+SELECT setval('order_items_id_seq', (SELECT MAX(id) FROM order_items));
 SELECT setval('payment_id_seq', (SELECT MAX(id) FROM payment));
 SELECT setval('payment_history_id_seq', (SELECT MAX(id) FROM payment_history));
 SELECT setval('wallet_history_id_seq', (SELECT MAX(id) FROM wallet_history));
@@ -79339,8 +79339,8 @@ SELECT setval('settlement_item_id_seq', (SELECT MAX(id) FROM settlement_item));
 -- funding_member: max_id=1053
 -- funding_participant_member: max_id=1130
 -- members: max_id=1089
--- order_item_v2: max_id=15999
--- order_v2: max_id=10999
+-- order_items: max_id=15999
+-- orders: max_id=10999
 -- payment: max_id=10999
 -- payment_history: max_id=10999
 -- product: max_id=10999
