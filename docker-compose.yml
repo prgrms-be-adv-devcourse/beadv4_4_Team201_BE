@@ -173,6 +173,7 @@ services:
     environment:
       - discovery.type=single-node # 클러스터 구성없이 단일 노드로 동작. 로컬/개발 환경에서 표준적인 설정
       - xpack.security.enabled=false # ES 8.x부터 보안이 기본 활성화라서, 개발 환경에서 인증 없이 접근하려면 꺼야 함 (배포 환경은 true, prod.yml에 name & pw 환경변수 필수)
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # 힙 메모리 설정
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     healthcheck:
@@ -180,7 +181,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
     networks:
       - giftify-network
 
