@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: minio-console-ingress
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`minio.localhost`)
+      kind: Rule
+      services:
+        - name: minio
+          port: 9001
