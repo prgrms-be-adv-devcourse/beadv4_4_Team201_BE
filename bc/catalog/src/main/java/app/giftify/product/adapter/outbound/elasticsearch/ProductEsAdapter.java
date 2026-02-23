@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Component;
 
@@ -88,9 +87,33 @@ public class ProductEsAdapter implements ProductEsPort {
         // 실제 검색 실행
         SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(nativeQuery, ProductDocument.class);
 
+        // 결과가 없으면 바로 반환
+        if (searchHits.getTotalHits() == 0) {
+            return PageResponse.of(List.of(), command.page(), command.size(), 0);
+        }
+
+        // N+1 방지를 위한 ID 벌크 조회
+        List<Long> productIds = searchHits.getSearchHits().stream()
+                .map(hit -> Long.parseLong(hit.getId()))
+                .toList();
+
+        Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+                .map(productMapper::toDomain)
+                .collect(Collectors.toMap(Product::getId, product -> product));
+
         List<ProductResult> results = searchHits.getSearchHits().stream()
-                .map(SearchHit::getContent)
-                .map(ProductEsMapper::toProductResult)
+                .map(hit -> {
+                    ProductDocument doc = hit.getContent();
+                    Product product = productMap.get(Long.parseLong(doc.getId()));
+
+                    // RDB에 해당 상품이 없는 경우는 결과에서 제외
+                    if (product == null) {
+                        return null;
+                    }
+
+                    return ProductEsMapper.toProductResult(doc, product);
+                })
+                .filter(java.util.Objects::nonNull) // null인 경우 제외
                 .toList();
 
         long totalElements = searchHits.getTotalHits();

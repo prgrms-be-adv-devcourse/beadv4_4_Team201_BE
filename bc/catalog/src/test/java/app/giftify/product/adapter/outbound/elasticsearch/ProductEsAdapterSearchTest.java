@@ -3,10 +3,13 @@ package app.giftify.product.adapter.outbound.elasticsearch;
 import app.giftify.product.ProductEsTestApplication;
 import app.giftify.product.adapter.outbound.elasticsearch.document.ProductDocument;
 import app.giftify.product.adapter.outbound.elasticsearch.repository.ProductEsRepository;
+import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
+import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
 import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductSearchSortType;
+import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.api.paging.PageResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +30,9 @@ class ProductEsAdapterSearchTest {
     private ProductEsRepository productEsRepository;
 
     @Autowired
+    private ProductRepository productJpaRepository;
+
+    @Autowired
     private ProductEsAdapter productEsAdapter;
 
     @Autowired
@@ -35,19 +41,29 @@ class ProductEsAdapterSearchTest {
     @BeforeEach
     void setUp() {
         productEsRepository.deleteAll();
+        productJpaRepository.deleteAllInBatch();
 
-        List<ProductDocument> documents = List.of(
-                createDocument("1", "테스트셀러", "에어팟 프로 2세대", "애플 무선 이어폰", 359000, "ELECTRONICS", "ACTIVE"),
-                createDocument("2", "테스트셀러", "다이슨 에어랩", "다이슨 헤어 스타일러", 599000, "BEAUTY", "ACTIVE"),
-                createDocument("3", "테스트셀러", "레고 클래식 미디움 조립 박스", "레고 블록 장난감", 38000, "TOYS", "ACTIVE"),
-                createDocument("4", "테스트셀러", "레고 테크닉 슈퍼카", "레고 자동차 장난감", 62000, "TOYS", "ACTIVE"),
-                createDocument("5", "테스트셀러", "맥북 에어 M3", "애플 노트북", 1590000, "ELECTRONICS", "ACTIVE"),
-                createDocument("6", "테스트셀러", "스타벅스 텀블러", "스타벅스 한정판 텀블러", 35000, "LIVING", "ACTIVE"),
-                createDocument("7", "테스트셀러", "나이키 에어포스 1", "나이키 운동화", 139000, "FASHION", "ACTIVE"),
-                createDocument("8", "테스트셀러", "고디바 초콜릿 세트", "벨기에 프리미엄 초콜릿", 45000, "FOODS", "ACTIVE"),
-                createDocument("9", "테스트셀러", "닌텐도 스위치 프로 컨트롤러", "닌텐도 게임 컨트롤러", 69000, "ELECTRONICS", "ACTIVE"),
-                createDocument("10", "테스트셀러", "강아지 하네스 에어 메쉬", "반려견 산책용 하네스", 25000, "PET", "INACTIVE")
-        );
+        // 1. RDB 데이터 setup - 검색 시 품절/활성화 여부를 RDB에서 조회하므로 필요
+        List<ProductJpa> savedEntities = productJpaRepository.saveAll(List.of(
+                createJpaEntity("에어팟 프로 2세대", "애플 무선 이어폰", 359000, 10, ProductCategory.ELECTRONICS, ProductStatus.ACTIVE),
+                createJpaEntity("다이슨 에어랩", "다이슨 헤어 스타일러", 599000, 5, ProductCategory.BEAUTY, ProductStatus.ACTIVE),
+                createJpaEntity("레고 클래식 미디움 조립 박스", "레고 블록 장난감", 38000, 20, ProductCategory.TOYS, ProductStatus.ACTIVE),
+                createJpaEntity("레고 테크닉 슈퍼카", "레고 자동차 장난감", 62000, 15, ProductCategory.TOYS, ProductStatus.ACTIVE),
+                createJpaEntity("맥북 에어 M3", "애플 노트북", 1590000, 3, ProductCategory.ELECTRONICS, ProductStatus.ACTIVE),
+                createJpaEntity("스타벅스 텀블러", "스타벅스 한정판 텀블러", 35000, 50, ProductCategory.LIVING, ProductStatus.ACTIVE),
+                createJpaEntity("나이키 에어포스 1", "나이키 운동화", 139000, 30, ProductCategory.FASHION, ProductStatus.ACTIVE),
+                createJpaEntity("고디바 초콜릿 세트", "벨기에 프리미엄 초콜릿", 45000, 25, ProductCategory.FOODS, ProductStatus.ACTIVE),
+                createJpaEntity("닌텐도 스위치 프로 컨트롤러", "닌텐도 게임 컨트롤러", 69000, 8, ProductCategory.ELECTRONICS, ProductStatus.ACTIVE),
+                createJpaEntity("강아지 하네스 에어 메쉬", "반려견 산책용 하네스", 25000, 10, ProductCategory.PET, ProductStatus.INACTIVE)
+        ));
+
+        // 2. ES에 도큐먼트 저장 - JPA 자동 생성된 ID로 매핑
+        List<ProductDocument> documents = savedEntities.stream()
+                .map(jpa -> createDocument(
+                        jpa.getId().toString(), "테스트셀러", jpa.getName(), jpa.getDescription(),
+                        jpa.getPrice(), jpa.getCategory().name(), jpa.getStatus().name()
+                ))
+                .toList();
 
         productEsRepository.saveAll(documents);
         elasticsearchOperations.indexOps(ProductDocument.class).refresh();
@@ -60,8 +76,11 @@ class ProductEsAdapterSearchTest {
 
         PageResponse<ProductResult> result = productEsAdapter.searchProducts(command);
 
-        assertThat(result.content()).isNotEmpty();
-        assertThat(result.content().get(0).name()).contains("에어팟");
+        ProductResult firstResult = result.content().get(0);
+
+        assertThat(firstResult.name()).contains("에어팟");
+        assertThat(firstResult.isSoldout()).as("재고가 있으므로 품절이 아니어야 함").isFalse();
+        assertThat(firstResult.isActive()).as("활성화된 상품이어야 함").isTrue();
     }
 
     @Test
@@ -211,5 +230,19 @@ class ProductEsAdapterSearchTest {
                 id, sellerNickname, name, description, price,
                 category, status, "image-" + id, LocalDateTime.now()
         );
+    }
+
+    private ProductJpa createJpaEntity(String name, String description, int price, int stock,
+                                       ProductCategory category, ProductStatus status) {
+        return ProductJpa.builder()
+                .sellerId(1L)
+                .name(name)
+                .description(description)
+                .price(price)
+                .stock(stock)
+                .status(status)
+                .category(category)
+                .imageKey("image")
+                .build();
     }
 }

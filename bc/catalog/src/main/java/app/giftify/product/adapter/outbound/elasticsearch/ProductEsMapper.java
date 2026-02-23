@@ -4,6 +4,7 @@ import app.giftify.product.adapter.outbound.elasticsearch.document.ProductDocume
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductCategory;
+import app.giftify.product.domain.ProductStatus;
 
 public class ProductEsMapper {
 
@@ -21,7 +22,8 @@ public class ProductEsMapper {
         );
     }
 
-    public static ProductResult toProductResult(ProductDocument document) {
+    // 프론트 반환용 도큐먼트 -> ProductResult
+    public static ProductResult toProductResult(ProductDocument document, Product product) {
         return new ProductResult(
                 Long.parseLong(document.getId()),
                 document.getSellerNickname(),
@@ -29,7 +31,9 @@ public class ProductEsMapper {
                 document.getDescription(),
                 document.getPrice(),
                 ProductCategory.valueOf(document.getCategory()),
-                document.getImageKey(),
+                product.getImageKey(),
+                product.getStock() == 0,      // RDB의 최신 품절 여부
+                product.getStatus() == ProductStatus.ACTIVE, // RDB의 최신 활성화 여부
                 document.getCreatedAt()
         );
     }
