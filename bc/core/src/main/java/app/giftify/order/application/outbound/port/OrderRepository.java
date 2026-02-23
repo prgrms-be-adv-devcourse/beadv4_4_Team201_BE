@@ -3,7 +3,6 @@ package app.giftify.order.application.outbound.port;
 import app.giftify.order.domain.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -19,6 +18,4 @@ public interface OrderRepository {
     Order getByIdWithItemsAndLock(Long id);
 
     List<Order> getAllByIdInWithItems(List<Long> ids);
-
-    List<Order> getAllByIdInWithItemsLock(List<Long> ids);
 }
