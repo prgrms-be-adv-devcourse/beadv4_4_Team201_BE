@@ -32,6 +32,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -135,7 +136,7 @@ public class OrderService {
         );
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public OrderCancelSummary requestCancelOrderItems(CancelOrderItemsCommand command) {
         Order order = orderRepository.getByIdWithItemsAndLock(command.orderId());
 
