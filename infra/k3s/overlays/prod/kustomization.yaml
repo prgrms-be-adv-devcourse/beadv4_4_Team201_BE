@@ -93,8 +93,17 @@ patches:
       group: traefik.io
       version: v1alpha1
       kind: IngressRoute
-      name: minio-console-ingress
+      name: elasticsearch-ingress
     patch: |-
       - op: replace
         path: /spec/routes/0/match
-        value: "Host(`giftify-minio.chan99k.dev`)"
+        value: "Host(`giftify-elasticsearch.chan99k.dev`)"
+
+  # --- Elasticsearch: EC2 로컬 빌드 이미지 사용 ---
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
