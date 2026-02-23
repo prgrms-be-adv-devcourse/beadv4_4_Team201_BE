@@ -31,14 +31,23 @@ Pod이 모두 Running 상태인지 확인:
 kubectl get pods -n argocd
 ```
 
-## 2. ArgoCD Image Updater 설치
+## 2. NetworkPolicy 제거
+
+ArgoCD 기본 NetworkPolicy가 Traefik(kube-system)에서 오는 트래픽을 차단하므로
+argocd-server의 NetworkPolicy를 삭제:
+
+```bash
+kubectl delete networkpolicy argocd-server-network-policy -n argocd
+```
+
+## 3. ArgoCD Image Updater 설치
 
 ```bash
 kubectl apply -n argocd \
   -f https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
 ```
 
-## 3. GHCR 인증 Secret 생성
+## 4. GHCR 인증 Secret 생성
 
 Image Updater가 private GHCR에 접근하기 위한 인증 정보:
 
@@ -50,7 +59,7 @@ kubectl create secret docker-registry ghcr-creds \
   --docker-password=$GH_PAT
 ```
 
-## 4. Git 레포 인증 Secret 생성
+## 5. Git 레포 인증 Secret 생성
 
 ArgoCD가 private Git 레포에 접근하기 위한 인증 정보:
 
@@ -64,7 +73,7 @@ kubectl label secret repo-creds -n argocd \
   argocd.argoproj.io/secret-type=repository
 ```
 
-## 5. ArgoCD Server --insecure 설정
+## 6. ArgoCD Server --insecure 설정
 
 Cloudflare Tunnel -> Traefik -> ArgoCD 경로에서 HTTP로 접근하므로
 ArgoCD의 내장 HTTPS redirect를 비활성화:
@@ -75,7 +84,7 @@ kubectl patch deployment argocd-server -n argocd \
   -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--insecure"}]'
 ```
 
-## 6. Application + IngressRoute + Image Updater config 적용
+## 7. Application + IngressRoute + Image Updater config 적용
 
 ```bash
 kubectl apply -f infra/k3s/base/apps/argocd/application.yaml
@@ -83,7 +92,7 @@ kubectl apply -f infra/k3s/base/apps/argocd/ingress.yaml
 kubectl apply -f infra/k3s/base/apps/argocd/image-updater/config.yaml
 ```
 
-## 7. 초기 비밀번호 확인
+## 8. 초기 비밀번호 확인
 
 ```bash
 kubectl get secret argocd-initial-admin-secret -n argocd \
@@ -93,7 +102,7 @@ kubectl get secret argocd-initial-admin-secret -n argocd \
 - Username: `admin`
 - Password: 위 명령어 출력값
 
-## 8. 검증
+## 9. 검증
 
 1. ArgoCD UI 접속: `http://giftify-argocd.chan99k.dev`
 2. admin으로 로그인
