@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BulkPaymentQueryService implements BulkPaymentAmountUseCase {
 
 	private static final List<PaymentStatus> SETTLED_STATUSES = List.of(
-		PaymentStatus.PAID, PaymentStatus.RECEIVED, PaymentStatus.REFUNDED
+		PaymentStatus.PAID, PaymentStatus.CANCELED
 	);
 
 	private final PaymentRepository paymentRepository;
