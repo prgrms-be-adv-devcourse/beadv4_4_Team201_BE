@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository("orderV2Adapter")
 @RequiredArgsConstructor
 @Slf4j
@@ -44,5 +46,10 @@ public class OrderAdapter implements OrderRepository {
     public Order getByIdWithItemsAndLock(Long id) {
         return jpaOrderRepository.findByIdWithItemsAndLock(id)
                 .orElseThrow(() -> new PolicyException(OrderErrorCode.ORDER_NOT_FOUND, "orderId = " + id));
+    }
+
+    @Override
+    public List<Order> getAllByIdInWithItems(List<Long> ids) {
+        return jpaOrderRepository.findAllByIdInWithItems(ids);
     }
 }

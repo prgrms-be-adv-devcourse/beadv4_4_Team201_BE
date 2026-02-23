@@ -15,8 +15,7 @@ import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.*;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.api.exception.PolicyException;
+import app.giftify.shared.api.exception.*;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import app.giftify.shared.domain.event.order.OrderCanceledEvent;
@@ -186,6 +185,47 @@ public class OrderService {
 
         targetItems.failCancel();
         order.synchronizeStatus();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Money> calculateTotalAmounts(List<Long> orderIds) {
+        if (orderIds.isEmpty()) return Map.of();
+
+        try {
+            return orderRepository.getAllByIdInWithItems(orderIds).stream()
+                    .collect(Collectors.toMap(
+                            Order::getId,
+                            this::getValidatedAmount
+                    ));
+        } catch (BusinessException e) {
+            ErrorCode errorCode = e.getErrorCode();
+            log.error("[주문 금액 집계 실패] 비즈니스 예외 발생 - errorCode: {}, message = {}", errorCode.getCode(), errorCode.getMessage(), e);
+        } catch (InfraException e) {
+            InfraErrorCode errorCode = e.getErrorCode();
+            if (errorCode.isRetryable()) throw e;
+            log.error("[주문 금액 집계 실패] 인프라 예외 발생 - errorCode: {}, message = {}", errorCode.getCode(), errorCode.getMessage(), e);
+        } catch (Exception e) {
+            log.error("[주문 금액 집계 실패] 알 수 없는 예외 발생", e);
+        }
+
+        return Map.of();
+    }
+
+    private Money calculateItemsSum(Order order) {
+        return order.getItems().stream()
+                .map(OrderItem::getAmount)
+                .reduce(Money.zero(), Money::plus);
+    }
+
+    private Money getValidatedAmount(Order order) {
+        Money itemTotalAmount = calculateItemsSum(order);
+
+        if (!order.getTotalAmount().equals(itemTotalAmount)) {
+            log.error("주문 금액 불일치 - orderId: {}, DB기록: {}, 아이템합계: {}",
+                    order.getId(), order.getTotalAmount(), itemTotalAmount);
+        }
+
+        return order.getTotalAmount();
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {

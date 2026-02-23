@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface JpaOrderRepository extends JpaRepository<Order, Long> {
@@ -24,4 +25,7 @@ public interface JpaOrderRepository extends JpaRepository<Order, Long> {
             @QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")
     })
     Optional<Order> findByIdWithItemsAndLock(@Param("id") Long id);
+
+    @Query("select distinct o from Order o join fetch o.items where o.id in :ids")
+    List<Order> findAllByIdInWithItems(@Param("ids") List<Long> ids);
 }
