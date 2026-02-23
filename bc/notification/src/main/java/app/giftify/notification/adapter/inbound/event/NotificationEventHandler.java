@@ -15,9 +15,9 @@ import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,42 +32,6 @@ public class NotificationEventHandler {
 	private final NotificationFactory notificationFactory;
 	private final NotificationRepository notificationRepository;
 	private final NotificationPushPort pushPort;
-
-	@ApplicationModuleListener
-	public void handlePaymentSucceeded(PaymentSucceededEvent event) {
-		log.info("[Notification] PaymentSucceededEvent: paymentId={}", event.getPaymentId());
-		var meta = typeRegistry.resolve(event.getClass());
-		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.getPaymentId());
-		createAndPush(event.getUserId(), meta.notificationType(),
-			String.valueOf(event.getPaymentId()), "PAYMENT", ce);
-	}
-
-	@ApplicationModuleListener
-	public void handlePaymentFailed(PaymentFailedEvent event) {
-		log.info("[Notification] PaymentFailedEvent: paymentId={}", event.getPaymentId());
-		var meta = typeRegistry.resolve(event.getClass());
-		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.getPaymentId());
-		createAndPush(event.getUserId(), meta.notificationType(),
-			String.valueOf(event.getPaymentId()), "PAYMENT", ce);
-	}
-
-	@ApplicationModuleListener
-	public void handlePaymentCanceled(PaymentCanceledEvent event) {
-		log.info("[Notification] PaymentCanceledEvent: paymentId={}", event.getPaymentId());
-		var meta = typeRegistry.resolve(event.getClass());
-		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.getPaymentId());
-		createAndPush(event.getUserId(), meta.notificationType(),
-			String.valueOf(event.getPaymentId()), "PAYMENT", ce);
-	}
-
-	@ApplicationModuleListener
-	public void handlePaymentRefunded(PaymentRefundedEvent event) {
-		log.info("[Notification] PaymentRefundedEvent: paymentId={}", event.getPaymentId());
-		var meta = typeRegistry.resolve(event.getClass());
-		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.getPaymentId());
-		createAndPush(event.getUserId(), meta.notificationType(),
-			String.valueOf(event.getPaymentId()), "PAYMENT", ce);
-	}
 
 	// -- Funding 이벤트 (receiverId 미포함, 이벤트 필드 추가 후 활성화) --
 
@@ -93,6 +57,44 @@ public class NotificationEventHandler {
 	public void handleFundingCanceled(FundingCanceledEvent event) {
 		log.info("[Notification] FundingCanceledEvent: fundingId={}", event.getFundingId());
 		// TODO: event에 receiverId + participantIds 추가 후 활성화
+	}
+
+	// -- Payment 이벤트 --
+
+	@ApplicationModuleListener
+	public void handlePaymentSucceeded(PaymentSucceededEvent event) {
+		log.info("[Notification] PaymentSucceededEvent: paymentId={}", event.data().paymentId());
+		var meta = typeRegistry.resolve(event.getClass());
+		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.data().paymentId());
+		createAndPush(event.data().memberId(), meta.notificationType(),
+			String.valueOf(event.data().paymentId()), "PAYMENT", ce);
+	}
+
+	@ApplicationModuleListener
+	public void handlePaymentFailed(PaymentFailedEvent event) {
+		log.info("[Notification] PaymentFailedEvent: paymentId={}", event.data().paymentId());
+		var meta = typeRegistry.resolve(event.getClass());
+		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.data().paymentId());
+		createAndPush(event.data().memberId(), meta.notificationType(),
+			String.valueOf(event.data().paymentId()), "PAYMENT", ce);
+	}
+
+	@ApplicationModuleListener
+	public void handlePaymentCanceled(PaymentCanceledEvent event) {
+		log.info("[Notification] PaymentCanceledEvent: paymentId={}", event.data().paymentId());
+		var meta = typeRegistry.resolve(event.getClass());
+		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.data().paymentId());
+		createAndPush(event.data().memberId(), meta.notificationType(),
+			String.valueOf(event.data().paymentId()), "PAYMENT", ce);
+	}
+
+	@ApplicationModuleListener
+	public void handlePaymentCancelFailed(PaymentCancelFailedEvent event) {
+		log.info("[Notification] PaymentCancelFailedEvent: paymentId={}", event.data().paymentId());
+		var meta = typeRegistry.resolve(event.getClass());
+		CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "payment-" + event.data().paymentId());
+		createAndPush(event.data().memberId(), meta.notificationType(),
+			String.valueOf(event.data().paymentId()), "PAYMENT", ce);
 	}
 
 	// -- 헬퍼 --

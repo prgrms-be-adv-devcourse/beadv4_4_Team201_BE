@@ -10,9 +10,9 @@ import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentRefundedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 
 @Component
@@ -34,7 +34,7 @@ public class CloudEventTypeRegistry {
 		PaymentSucceededEvent.class, new CloudEventMeta("app.giftify.payment.succeeded", SOURCE_PAYMENT, NotificationType.PAYMENT_SUCCEEDED),
 		PaymentFailedEvent.class, new CloudEventMeta("app.giftify.payment.failed", SOURCE_PAYMENT, NotificationType.PAYMENT_FAILED),
 		PaymentCanceledEvent.class, new CloudEventMeta("app.giftify.payment.canceled", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_SUCCEEDED),
-		PaymentRefundedEvent.class, new CloudEventMeta("app.giftify.payment.refunded", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_FAILED)
+		PaymentCancelFailedEvent.class, new CloudEventMeta("app.giftify.payment.cancel-failed", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_FAILED)
 	);
 
 	public CloudEventMeta resolve(Class<?> eventClass) {
