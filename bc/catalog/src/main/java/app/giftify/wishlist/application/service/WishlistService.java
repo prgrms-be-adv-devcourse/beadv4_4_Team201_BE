@@ -59,16 +59,21 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     public List<WishlistItemDetail> getWishlistItemDetails(Long targetMemberId, Long currentMemberId) {
         Wishlist wishlist = wishlistSupport.getWishlistByMemberId(targetMemberId);
 
-        // Visibility 체크
-        List<Visibility> visibilities;
-        if (currentMemberId != null && friendshipVerificationPort.areFriends(currentMemberId, targetMemberId)) {
-            visibilities = List.of(Visibility.PUBLIC, Visibility.FRIENDS_ONLY);
-        } else {
-            visibilities = List.of(Visibility.PUBLIC);
-        }
+        // 본인 위시리스트는 항상 접근 가능
+        boolean isOwner = currentMemberId != null && currentMemberId.equals(targetMemberId);
 
-        if (!visibilities.contains(wishlist.getVisibility())) {
-            throw new WishlistNotAccessibleException(); // 조회 권한이 없는 위시리스트일 때
+        if (!isOwner) {
+            // Visibility 체크
+            List<Visibility> visibilities;
+            if (currentMemberId != null && friendshipVerificationPort.areFriends(currentMemberId, targetMemberId)) {
+                visibilities = List.of(Visibility.PUBLIC, Visibility.FRIENDS_ONLY);
+            } else {
+                visibilities = List.of(Visibility.PUBLIC);
+            }
+
+            if (!visibilities.contains(wishlist.getVisibility())) {
+                throw new WishlistNotAccessibleException();
+            }
         }
 
         List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
