@@ -6,10 +6,7 @@ import app.giftify.order.application.inbound.command.CreateOrderCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderRepository;
-import app.giftify.order.domain.Order;
-import app.giftify.order.domain.OrderSnapshot;
-import app.giftify.order.domain.OrderStatus;
-import app.giftify.order.domain.ResultCode;
+import app.giftify.order.domain.*;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.order.domain.fixture.OrderFixture;
 import app.giftify.shared.api.exception.DomainException;
@@ -571,6 +568,185 @@ class OrderServiceTest {
 
             // 상태가 변하지 않았는지 확인
             assertThat(cancelledOrder.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        }
+    }
+
+    @Nested
+    @DisplayName("주문 금액 집계 (calculateTotalAmounts)")
+    class CalculateTotalAmounts {
+
+        @Test
+        @DisplayName("성공: 빈 리스트 입력 시 repository 호출 없이 빈 Map을 반환한다")
+        void given_emptyOrderIds_when_calculateTotalAmounts_then_returnEmptyMap() {
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(List.of());
+
+            // then
+            assertThat(result).isEmpty();
+            verify(orderRepository, never()).getAllByIdInWithItems(any());
+        }
+
+        @Test
+        @DisplayName("성공: PAID 상태 아이템이 있는 주문의 정산 가능 금액을 반환한다")
+        void given_paidItems_when_calculateTotalAmounts_then_returnPayableAmount() {
+            // given
+            Long orderId1 = 1L;
+            Long orderId2 = 2L;
+
+            Order order1 = OrderFixture.createOrderWithItems(1L, 2); // 아이템 2개, 각 1000원
+            Order order2 = OrderFixture.createOrderWithItems(2L, 3); // 아이템 3개, 각 1000원
+            ReflectionTestUtils.setField(order1, "id", orderId1);
+            ReflectionTestUtils.setField(order2, "id", orderId2);
+            order1.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+            order2.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+
+            List<Long> orderIds = List.of(orderId1, orderId2);
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order1, order2));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(orderId1)).isEqualTo(Money.of("2000"));
+            assertThat(result.get(orderId2)).isEqualTo(Money.of("3000"));
+        }
+
+        @Test
+        @DisplayName("성공: CREATED 상태 아이템은 정산 대상이 아니므로 payableAmount가 0원이다")
+        void given_createdItems_when_calculateTotalAmounts_then_returnZeroPayableAmount() {
+            // given
+            Long orderId = 1L;
+            Order order = OrderFixture.createOrderWithItems(1L, 2); // CREATED 상태 (기본값)
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            List<Long> orderIds = List.of(orderId);
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(orderId)).isEqualTo(Money.zero());
+        }
+
+        @Test
+        @DisplayName("성공: PAID/CANCELED 혼합 시 PAID 아이템 금액만 합산된다")
+        void given_mixedPaidAndCanceledItems_when_calculateTotalAmounts_then_returnOnlyPaidAmount() {
+            // given
+            Long orderId = 1L;
+            Order order = OrderFixture.createOrderWithItems(1L, 2); // 아이템 2개, 각 1000원
+            ReflectionTestUtils.setField(order, "id", orderId);
+            ReflectionTestUtils.setField(order.getItems().get(0), "status", OrderItemStatus.PAID);
+            ReflectionTestUtils.setField(order.getItems().get(1), "status", OrderItemStatus.CANCELED);
+
+            List<Long> orderIds = List.of(orderId);
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result.get(orderId)).isEqualTo(Money.of("1000"));
+        }
+
+        @Test
+        @DisplayName("성공: 특정 주문에서 BusinessException 발생 시 해당 주문만 제외하고 나머지는 정상 반환한다")
+        void given_businessExceptionOnOneOrder_when_calculateTotalAmounts_then_excludeFailedOrder() {
+            // given
+            Long orderId1 = 1L;
+            Long orderId2 = 2L;
+            List<Long> orderIds = List.of(orderId1, orderId2);
+
+            Order order1 = spy(OrderFixture.createOrderWithItems(1L, 2));
+            Order order2 = OrderFixture.createOrderWithItems(2L, 2);
+            ReflectionTestUtils.setField(order1, "id", orderId1);
+            ReflectionTestUtils.setField(order2, "id", orderId2);
+            order2.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+
+            doThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND)).when(order1).getPayableAmount();
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order1, order2));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then - order1은 제외, order2만 포함
+            assertThat(result).hasSize(1);
+            assertThat(result).containsKey(orderId2);
+            assertThat(result).doesNotContainKey(orderId1);
+        }
+
+        @Test
+        @DisplayName("성공: 특정 주문에서 retryable=false InfraException 발생 시 해당 주문만 제외하고 나머지는 정상 반환한다")
+        void given_nonRetryableInfraExceptionOnOneOrder_when_calculateTotalAmounts_then_excludeFailedOrder() {
+            // given
+            Long orderId1 = 1L;
+            Long orderId2 = 2L;
+            List<Long> orderIds = List.of(orderId1, orderId2);
+
+            Order order1 = spy(OrderFixture.createOrderWithItems(1L, 2));
+            Order order2 = OrderFixture.createOrderWithItems(2L, 2);
+            ReflectionTestUtils.setField(order1, "id", orderId1);
+            ReflectionTestUtils.setField(order2, "id", orderId2);
+            order2.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+
+            doThrow(new InfraException(InfraErrorCode.DB_CONSTRAINT_VIOLATION)).when(order1).getPayableAmount(); // retryable=false
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order1, order2));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then - order1은 제외, order2만 포함
+            assertThat(result).hasSize(1);
+            assertThat(result).containsKey(orderId2);
+            assertThat(result).doesNotContainKey(orderId1);
+        }
+
+        @Test
+        @DisplayName("실패: 특정 주문에서 retryable=true InfraException 발생 시 예외가 외부로 전파된다")
+        void given_retryableInfraExceptionOnOneOrder_when_calculateTotalAmounts_then_throwInfraException() {
+            // given
+            Long orderId = 1L;
+            List<Long> orderIds = List.of(orderId);
+
+            Order order = spy(OrderFixture.createOrderWithItems(1L, 2));
+            ReflectionTestUtils.setField(order, "id", orderId);
+
+            doThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT)).when(order).getPayableAmount(); // retryable=true
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.calculateTotalAmounts(orderIds))
+                    .isInstanceOf(InfraException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(InfraErrorCode.DB_LOCK_TIMEOUT);
+        }
+
+        @Test
+        @DisplayName("성공: 특정 주문에서 RuntimeException 발생 시 해당 주문만 제외하고 나머지는 정상 반환한다")
+        void given_runtimeExceptionOnOneOrder_when_calculateTotalAmounts_then_excludeFailedOrder() {
+            // given
+            Long orderId1 = 1L;
+            Long orderId2 = 2L;
+            List<Long> orderIds = List.of(orderId1, orderId2);
+
+            Order order1 = spy(OrderFixture.createOrderWithItems(1L, 2));
+            Order order2 = OrderFixture.createOrderWithItems(2L, 2);
+            ReflectionTestUtils.setField(order1, "id", orderId1);
+            ReflectionTestUtils.setField(order2, "id", orderId2);
+            order2.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+
+            doThrow(new RuntimeException("예상치 못한 오류")).when(order1).getPayableAmount();
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order1, order2));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then - order1은 제외, order2만 포함
+            assertThat(result).hasSize(1);
+            assertThat(result).containsKey(orderId2);
+            assertThat(result).doesNotContainKey(orderId1);
         }
     }
 }
