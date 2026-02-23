@@ -24,9 +24,8 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.payment.domain.event.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCanceledExternalEvent;
+import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
@@ -100,7 +99,7 @@ class CancelPaymentServiceTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher, times(2)).publish(any());
+			verify(eventPublisher).publish(any());
 		}
 
 		@Test
@@ -123,7 +122,7 @@ class CancelPaymentServiceTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher, times(2)).publish(any());
+			verify(eventPublisher).publish(any());
 		}
 
 		@Test
@@ -208,14 +207,10 @@ class CancelPaymentServiceTest {
 			verify(paymentRepository).save(any(Payment.class));
 
 			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
+			verify(eventPublisher).publish(eventCaptor.capture());
+			PaymentCanceledEvent event = (PaymentCanceledEvent) eventCaptor.getValue();
 
-			PaymentCanceledEvent internalEvent = eventCaptor.getAllValues().stream()
-				.filter(PaymentCanceledEvent.class::isInstance)
-				.map(e -> (PaymentCanceledEvent)e)
-				.findFirst().orElseThrow();
-
-			assertThat(internalEvent.getReason()).isNull();
+			assertThat(event.data().reason()).isNull();
 		}
 
 		@Test
@@ -238,54 +233,17 @@ class CancelPaymentServiceTest {
 
 			// then
 			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
+			verify(eventPublisher).publish(eventCaptor.capture());
+			PaymentCanceledEvent event = (PaymentCanceledEvent) eventCaptor.getValue();
 
-			PaymentCanceledEvent event = eventCaptor.getAllValues().stream()
-				.filter(PaymentCanceledEvent.class::isInstance)
-				.map(e -> (PaymentCanceledEvent)e)
-				.findFirst().orElseThrow();
-
-			assertThat(event.getPaymentId()).isEqualTo(paymentId);
-			assertThat(event.getMemberId()).isEqualTo(memberId);
-			assertThat(event.getOrderNumber()).isEqualTo(orderNumber);
-			assertThat(event.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
-			assertThat(event.getPaidAmount()).isEqualTo(Money.of(10000));
-			assertThat(event.getReason()).isEqualTo(reason);
-			assertThat(event.getCanceledAt()).isNotNull();
+			assertThat(event.data().paymentId()).isEqualTo(paymentId);
+			assertThat(event.data().memberId()).isEqualTo(memberId);
+			assertThat(event.data().orderNumber()).isEqualTo(orderNumber);
+			assertThat(event.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
+			assertThat(event.data().amount()).isEqualTo(Money.of(10000));
+			assertThat(event.data().reason()).isEqualTo(reason);
+			assertThat(event.time()).isNotNull();
 		}
 
-		@Test
-		@DisplayName("PaymentCanceledExternalEvent 이벤트가 올바른 정보로 발행된다")
-		void cancel_PaymentCanceledExternalEvent_PublishedCorrectly() {
-			// given
-			Long paymentId = 1L;
-			Long memberId = 100L;
-			String orderNumber = "order-456";
-			String reason = "재고 부족";
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, SYSTEM_REQUESTER_ID, reason);
-
-			Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
-
-			// when
-			cancelPaymentService.cancel(command);
-
-			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
-
-			PaymentCanceledExternalEvent event = eventCaptor.getAllValues().stream()
-				.filter(PaymentCanceledExternalEvent.class::isInstance)
-				.map(e -> (PaymentCanceledExternalEvent)e)
-				.findFirst().orElseThrow();
-
-			assertThat(event.paymentId()).isEqualTo(paymentId);
-			assertThat(event.orderNumber()).isEqualTo(orderNumber);
-			assertThat(event.reason()).isEqualTo(reason);
-			assertThat(event.occurredAt()).isNotNull();
-			assertThat(event.eventId()).isNotNull();
-		}
 	}
 }
