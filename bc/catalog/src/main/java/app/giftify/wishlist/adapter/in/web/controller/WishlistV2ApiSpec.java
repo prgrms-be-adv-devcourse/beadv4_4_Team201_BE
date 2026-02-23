@@ -30,15 +30,6 @@ public interface WishlistV2ApiSpec {
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
-    @Operation(summary = "내 위시리스트 기본 정보 조회 (레거시)", description = "현재 로그인한 사용자의 위시리스트 기본 정보를 조회합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
-    })
-    ResponseEntity<WishlistResponse> getMyInfo(
-            @Parameter(hidden = true) @CurrentMemberId Long memberId
-    );
-
     @Operation(summary = "위시리스트 설정 변경", description = "위시리스트 공개 설정을 변경합니다. (PUBLIC / PRIVATE / FRIENDS_ONLY)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "설정 변경 성공"),

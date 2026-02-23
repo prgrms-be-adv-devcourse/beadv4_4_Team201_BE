@@ -52,16 +52,6 @@ public class WishlistController implements WishlistV2ApiSpec {
         return ResponseEntity.ok(WishlistResponse.from(wishlist, nickname, items));
     }
 
-    // TODO 레거시 코드 제거
-    // 내 위시리스트 기본 정보 조회 (레거시)
-    @Override
-    @GetMapping("/me2")
-    public ResponseEntity<WishlistResponse> getMyInfo(
-            @CurrentMemberId Long memberId
-    ) {
-        return ResponseEntity.ok(WishlistResponse.from(getWishlistUseCase.getOrCreateWishlistByMemberId(memberId)));
-    }
-
     // 위시리스트 공개 범위 설정
     @Override
     @PatchMapping("/me/settings")
