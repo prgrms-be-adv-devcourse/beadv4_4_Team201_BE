@@ -486,6 +486,125 @@ class OrderServiceTest {
     }
 
     @Nested
+    @DisplayName("주문 금액 집계 (calculateTotalAmounts)")
+    class CalculateTotalAmounts {
+
+        @Test
+        @DisplayName("성공: 빈 리스트 입력 시 repository 호출 없이 빈 Map을 반환한다")
+        void given_emptyOrderIds_when_calculateTotalAmounts_then_returnEmptyMap() {
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(List.of());
+
+            // then
+            assertThat(result).isEmpty();
+            verify(orderRepository, never()).getAllByIdInWithItems(any());
+        }
+
+        @Test
+        @DisplayName("성공: 정상 주문 목록 조회 시 orderId를 키, totalAmount를 값으로 한 Map을 반환한다")
+        void given_validOrderIds_when_calculateTotalAmounts_then_returnMappedResult() {
+            // given
+            Long orderId1 = 1L;
+            Long orderId2 = 2L;
+
+            Order order1 = OrderFixture.createOrderWithItems(1L, 2); // totalAmount = 2000원
+            Order order2 = OrderFixture.createOrderWithItems(2L, 3); // totalAmount = 3000원
+            ReflectionTestUtils.setField(order1, "id", orderId1);
+            ReflectionTestUtils.setField(order2, "id", orderId2);
+
+            List<Long> orderIds = List.of(orderId1, orderId2);
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order1, order2));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(orderId1)).isEqualTo(Money.of("2000"));
+            assertThat(result.get(orderId2)).isEqualTo(Money.of("3000"));
+        }
+
+        @Test
+        @DisplayName("성공: DB의 totalAmount와 아이템 합계가 불일치해도 totalAmount 기준으로 반환한다")
+        void given_amountMismatch_when_calculateTotalAmounts_then_returnTotalAmount() {
+            // given
+            Long orderId = 1L;
+            Order order = OrderFixture.createOrderWithItems(1L, 2); // 아이템 합계: 2000원
+            ReflectionTestUtils.setField(order, "id", orderId);
+            ReflectionTestUtils.setField(order, "totalAmount", Money.of("99999")); // DB 기록 불일치 시뮬레이션
+
+            List<Long> orderIds = List.of(orderId);
+            given(orderRepository.getAllByIdInWithItems(orderIds)).willReturn(List.of(order));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then - 불일치 시 로그만 남기고 totalAmount 기준으로 반환
+            assertThat(result.get(orderId)).isEqualTo(Money.of("99999"));
+        }
+
+        @Test
+        @DisplayName("성공: BusinessException 발생 시 예외를 삼키고 빈 Map을 반환한다")
+        void given_businessException_when_calculateTotalAmounts_then_returnEmptyMap() {
+            // given
+            List<Long> orderIds = List.of(1L);
+            given(orderRepository.getAllByIdInWithItems(orderIds))
+                    .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("성공: retryable=false InfraException 발생 시 예외를 삼키고 빈 Map을 반환한다")
+        void given_nonRetryableInfraException_when_calculateTotalAmounts_then_returnEmptyMap() {
+            // given
+            List<Long> orderIds = List.of(1L);
+            given(orderRepository.getAllByIdInWithItems(orderIds))
+                    .willThrow(new InfraException(InfraErrorCode.DB_CONSTRAINT_VIOLATION)); // retryable=false
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("실패: retryable=true InfraException 발생 시 예외가 외부로 전파된다")
+        void given_retryableInfraException_when_calculateTotalAmounts_then_throwInfraException() {
+            // given
+            List<Long> orderIds = List.of(1L);
+            given(orderRepository.getAllByIdInWithItems(orderIds))
+                    .willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT)); // retryable=true
+
+            // when & then
+            assertThatThrownBy(() -> orderService.calculateTotalAmounts(orderIds))
+                    .isInstanceOf(InfraException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(InfraErrorCode.DB_LOCK_TIMEOUT);
+        }
+
+        @Test
+        @DisplayName("성공: RuntimeException 발생 시 예외를 삼키고 빈 Map을 반환한다")
+        void given_runtimeException_when_calculateTotalAmounts_then_returnEmptyMap() {
+            // given
+            List<Long> orderIds = List.of(1L);
+            given(orderRepository.getAllByIdInWithItems(orderIds))
+                    .willThrow(new RuntimeException("예상치 못한 오류"));
+
+            // when
+            Map<Long, Money> result = orderService.calculateTotalAmounts(orderIds);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+    }
+
+    @Nested
     @DisplayName("결제 완료 처리 (markOrderAsPaid)")
     class MarkOrderAsPaid {
 
