@@ -29,12 +29,17 @@ services:
       TOSSPAYMENTS_SECRET_KEY: ${TOSSPAYMENTS_SECRET_KEY}
       # Kafka 환경 변수
       KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      # Elasticsearch 환경 변수
+      ES_URIS: http://elasticsearch:9200
+
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
       redpanda:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     networks:
       - giftify-network
@@ -80,7 +85,7 @@ services:
     volumes:
       - redpanda_data:/var/redpanda/data
     healthcheck:
-      test: ["CMD", "rpk", "cluster", "health"]
+      test: [ "CMD", "rpk", "cluster", "health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -116,14 +121,14 @@ services:
       --maxmemory 100mb
       --maxmemory-policy volatile-ttl
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 3
     networks:
       - giftify-network
     restart: unless-stopped
-      
+
 
   prometheus: # 별도 depends_on 없이 → Prometheus가 api-server 없어도 시작 가능하게 (scrape 실패만 발생)
     image: prom/prometheus:v2.48.0
@@ -157,6 +162,42 @@ services:
       - giftify-network
     restart: unless-stopped
 
+  elasticsearch:
+    #    image: elasticsearch:9.2.4
+    build:
+      context: .
+      dockerfile: infra/elasticsearch/Dockerfile
+    container_name: giftify-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node # 클러스터 구성없이 단일 노드로 동작. 로컬/개발 환경에서 표준적인 설정
+      - xpack.security.enabled=false # ES 8.x부터 보안이 기본 활성화라서, 개발 환경에서 인증 없이 접근하려면 꺼야 함 (배포 환경은 true, prod.yml에 name & pw 환경변수 필수)
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # 힙 메모리 설정
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - giftify-network
+
+  kibana: # Elasticsearch에 저장된 데이터를 쿼리, 분석, 시각화 및 관리하기 위한 오픈 소스 인터페이스
+    image: kibana:9.2.4
+    container_name: giftify-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+    depends_on:
+      - elasticsearch
+    networks:
+      - giftify-network
+
 #### Docker Volumes ####
 volumes:
   postgres_data:
@@ -166,6 +207,8 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  elasticsearch_data:
     driver: local
   redis-data:
 
