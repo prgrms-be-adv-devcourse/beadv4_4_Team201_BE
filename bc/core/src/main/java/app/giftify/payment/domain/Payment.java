@@ -99,9 +99,50 @@ public class Payment extends BaseDomainModel {
 		registerEvent(PaymentCanceledEvent.create(
 			PaymentEventData.forCancel(
 				getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
-				getMethod(), getType(), cancelType, reason
+				getMethod(), getType(), cancelType, reason, this.lastTransactionKey
 			)
 		));
+	}
+
+	public void markAsPartiallyCanceled(String newTransactionKey, Money cancelAmount, String reason) {
+		Money newRefundedTotal = this.refundedAmount.plus(cancelAmount);
+
+		PaymentEventType eventType = getCancelingEventType(newRefundedTotal);
+
+		if (!eventType.canApply(this.status)) {
+			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
+				"[Payment] 취소 불가능한 상태입니다: " + this.status);
+		}
+
+		this.status = eventType.getResultStatus();
+		this.refundedAmount = newRefundedTotal;
+		this.lastTransactionKey = newTransactionKey;
+
+		registerEvent(PaymentCanceledEvent.create(
+			PaymentEventData.forCancel(
+				getId(), getOrderId(), getMemberId(), getOrderNumber(),
+				cancelAmount,
+				getMethod(), getType(), CancelType.REFUND, reason,
+				newTransactionKey
+			)
+		));
+	}
+
+	private PaymentEventType getCancelingEventType(Money money) {
+		PaymentEventType eventType;
+		if (money.equals(this.paidAmount)) {
+			eventType = (this.status == PaymentStatus.PARTIALLY_CANCELED)
+				? PaymentEventType.FINAL_CANCEL
+				: PaymentEventType.CANCEL_AFTER_PAID;
+		} else if (money.isLessThan(this.paidAmount)) {
+			eventType = (this.status == PaymentStatus.PARTIALLY_CANCELED)
+				? PaymentEventType.PARTIAL_CANCEL_AGAIN
+				: PaymentEventType.PARTIAL_CANCEL;
+		} else {
+			throw new PaymentException(PaymentErrorCode.CANCEL_AMOUNT_EXCEEDED,
+				"[Payment] 취소 금액이 결제 금액을 초과합니다.");
+		}
+		return eventType;
 	}
 
 	public void markAsFailed(LocalDateTime occurredAt) {
