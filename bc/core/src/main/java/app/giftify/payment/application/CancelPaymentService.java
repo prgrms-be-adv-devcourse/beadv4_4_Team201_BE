@@ -2,7 +2,6 @@ package app.giftify.payment.application;
 
 import static app.giftify.payment.domain.SystemConstants.SYSTEM_REQUESTER_ID;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
@@ -15,7 +14,7 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentCanceledExternalEvent;
+import app.giftify.shared.domain.type.CancelType;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -55,20 +54,11 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		}
 
 		// 3. 상태 변경 (도메인 메서드 — 내부적으로 registerEvent 호출)
-		LocalDateTime canceledAt = LocalDateTime.now();
-		payment.markAsCanceled(canceledAt, command.reason());
+		payment.markAsCanceled(CancelType.CANCEL, command.reason());
 
 		// 4. 도메인 이벤트 확보 → 저장 → 발행
 		var domainEvents = payment.pullEvents();
-		Payment savedPayment = paymentRepository.save(payment);
+		paymentRepository.save(payment);
 		domainEvents.forEach(eventPublisher::publish);
-
-		// 6. 외부 BC용 이벤트 발행 (Order BC)
-		eventPublisher.publish(PaymentCanceledExternalEvent.create(
-			savedPayment.getId(),
-			savedPayment.getOrderNumber(),
-			command.reason(),
-			canceledAt
-		));
 	}
 }

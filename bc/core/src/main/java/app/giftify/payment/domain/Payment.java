@@ -4,13 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import app.giftify.payment.domain.event.PaymentCancelFailedEvent;
-import app.giftify.payment.domain.event.PaymentCanceledEvent;
-import app.giftify.payment.domain.event.PaymentConfirmedEvent;
-import app.giftify.payment.domain.event.PaymentFailedEvent;
-import app.giftify.payment.domain.event.PaymentReceivedEvent;
-import app.giftify.payment.domain.event.PaymentRefundedEvent;
 import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
+import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
+import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
+import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
@@ -77,43 +77,30 @@ public class Payment extends BaseDomainModel {
 		this.lastTransactionKey = lastTransactionKey;
 		this.paidAt = paidAt;
 
-		registerEvent(new PaymentConfirmedEvent(
-			getId(), getMemberId(), getOrderNumber(), getType(), getPaidAmount(), paidAt
+		registerEvent(PaymentSucceededEvent.create(
+			PaymentEventData.forSuccess(
+				getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
+				getMethod(), getType(), paymentKey, lastTransactionKey
+			)
 		));
 	}
 
-	public void markAsRefunded(Money refundAmount, LocalDateTime occurredAt, String reason) {
-		if (!PaymentEventType.REFUNDED.canApply(this.status)) {
-			throw new PaymentException(PaymentErrorCode.NOT_REFUNDABLE,
-				"[Payment] 환불 불가능한 상태입니다: " + this.status);
-		}
+	public void markAsCanceled(CancelType cancelType, String reason) {
+		PaymentEventType eventType = (cancelType == CancelType.REFUND)
+			? PaymentEventType.CANCEL_AFTER_PAID
+			: PaymentEventType.CANCELED;
 
-		Money remainingRefundable = this.paidAmount.minus(this.refundedAmount);
-		if (refundAmount.isGreaterThan(remainingRefundable)) {
-			throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-				"[Payment] 환불 금액이 남은 환불 가능 금액을 초과합니다. 요청: " + refundAmount + ", 가능: " + remainingRefundable);
-		}
-
-		this.refundedAmount = this.refundedAmount.plus(refundAmount);
-
-		if (this.refundedAmount.equals(this.paidAmount)) {
-			this.status = PaymentEventType.REFUNDED.getResultStatus();
-		}
-
-		registerEvent(new PaymentRefundedEvent(
-			getId(), getMemberId(), getOrderNumber(), getType(), refundAmount, reason, occurredAt
-		));
-	}
-
-	public void markAsCanceled(LocalDateTime occurredAt, String reason) {
-		if (!PaymentEventType.CANCELED.canApply(this.status)) {
+		if (!eventType.canApply(this.status)) {
 			throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
 				"[Payment] 취소 불가능한 상태입니다: " + this.status);
 		}
-		this.status = PaymentEventType.CANCELED.getResultStatus();
+		this.status = eventType.getResultStatus();
 
-		registerEvent(new PaymentCanceledEvent(
-			getId(), getMemberId(), getOrderNumber(), getType(), getPaidAmount(), reason, occurredAt
+		registerEvent(PaymentCanceledEvent.create(
+			PaymentEventData.forCancel(
+				getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
+				getMethod(), getType(), cancelType, reason
+			)
 		));
 	}
 
@@ -124,18 +111,11 @@ public class Payment extends BaseDomainModel {
 		}
 		this.status = PaymentEventType.FAILED.getResultStatus();
 
-		registerEvent(new PaymentFailedEvent(getId(), getOrderNumber(), occurredAt));
-	}
-
-	public void markAsReceived(LocalDateTime occurredAt) {
-		if (!PaymentEventType.RECEIVED.canApply(this.status)) {
-			throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
-				"[Payment] 수령 확정 불가능한 상태입니다: " + this.status);
-		}
-		this.status = PaymentEventType.RECEIVED.getResultStatus();
-
-		registerEvent(new PaymentReceivedEvent(
-			getId(), getMemberId(), getOrderNumber(), occurredAt
+		registerEvent(PaymentFailedEvent.create(
+			PaymentEventData.forFailure(
+				getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
+				getMethod(), getType()
+			)
 		));
 	}
 
@@ -145,21 +125,18 @@ public class Payment extends BaseDomainModel {
 				"[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
 		}
 
-		registerEvent(new PaymentCancelFailedEvent(getId(), getOrderNumber(), errorMetadata, occurredAt));
+		registerEvent(PaymentCancelFailedEvent.create(
+			PaymentEventData.forCancelFailed(
+				getId(), getOrderId(), getMemberId(), getOrderNumber(),
+				getMethod(), getType(), errorMetadata
+			)
+		));
 	}
 
 	// ========== 상태 조회 메서드 ========== //
 
-	public boolean isRefundable() {
-		return PaymentEventType.REFUNDED.canApply(this.status) && this.refundedAmount.isLessThan(this.paidAmount);
-	}
-
 	public boolean isCancelable() {
 		return PaymentEventType.CANCELED.canApply(this.status);
-	}
-
-	public boolean isReceivable() {
-		return PaymentEventType.RECEIVED.canApply(this.status);
 	}
 
 	/**

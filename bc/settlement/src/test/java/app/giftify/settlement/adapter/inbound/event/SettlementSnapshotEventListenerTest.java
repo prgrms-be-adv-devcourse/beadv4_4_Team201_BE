@@ -1,20 +1,11 @@
 package app.giftify.settlement.adapter.inbound.event;
 
-import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
-import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
-import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
-import app.giftify.settlement.application.service.SettlementItemService;
-import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
-import app.giftify.settlement.domain.snapshot.OrderSnapshot;
-import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
-import app.giftify.shared.domain.event.order.OrderCreatedEvent;
-import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
-import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,10 +15,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
+import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
+import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
+import app.giftify.settlement.application.service.SettlementItemService;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.snapshot.OrderSnapshot;
+import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
+import app.giftify.shared.domain.event.order.OrderCreatedEvent;
+import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
+import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
+import app.giftify.shared.domain.type.OrderItemType;
+import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.Money;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SettlementSnapshotEventListener 테스트")
@@ -57,16 +60,20 @@ class SettlementSnapshotEventListenerTest {
 		void handlePaymentPaidExternalEvent_SavesPaymentSnapshot() {
 			// given
 			Long paymentId = 1L;
+			Long orderId = 10L;
 			Long memberId = 100L;
 			String orderNumber = "ORD-001";
 			String paymentKey = "encrypted-payment-key";
 			String transactionKey = "txn-key-001";
 			Money paidAmount = Money.of(10000);
 			PaymentMethod method = PaymentMethod.CARD;
-			LocalDateTime paidAt = LocalDateTime.of(2026, 2, 12, 14, 30);
 
-			PaymentPaidExternalEvent event = PaymentPaidExternalEvent.create(
-				paymentId, orderNumber, memberId, paidAmount, PaymentType.FUNDING, method, paymentKey, transactionKey, paidAt
+			PaymentSucceededEvent event = PaymentSucceededEvent.create(
+				PaymentEventData.forSuccess(paymentId, orderId, memberId, orderNumber, paidAmount, method,
+					PaymentType.FUNDING, paymentKey, transactionKey)
+			);
+			LocalDateTime expectedPaidAt = LocalDateTime.ofInstant(
+				event.time(), ZoneId.of("Asia/Seoul")
 			);
 
 			// when
@@ -81,7 +88,7 @@ class SettlementSnapshotEventListenerTest {
 			assertThat(snapshot.getOrderNumber()).isEqualTo(orderNumber);
 			assertThat(snapshot.getPaymentKey()).isEqualTo(paymentKey);
 			assertThat(snapshot.getTransactionKey()).isEqualTo(transactionKey);
-			assertThat(snapshot.getPaidAt()).isEqualTo(paidAt);
+			assertThat(snapshot.getPaidAt()).isEqualTo(expectedPaidAt);
 			assertThat(snapshot.getPaidAmount()).isEqualTo(paidAmount);
 			assertThat(snapshot.getMethod()).isEqualTo(method);
 		}
@@ -152,72 +159,72 @@ class SettlementSnapshotEventListenerTest {
 		}
 	}
 
-//	@Nested
-//	@DisplayName("handleFundingReceivedConfirmedEvent")
-//	class HandleFundingReceivedConfirmedEventTests {
-//
-//		@Test
-//		@DisplayName("정상 처리 시 initializeSettlementItem을 호출한다")
-//		void handleFundingReceivedConfirmedEvent_CallsInitializeSettlementItem() {
-//			// given
-//			Long fundingId = 50L;
-//			LocalDateTime confirmedAt = LocalDateTime.of(2026, 2, 18, 15, 0);
-//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(fundingId, confirmedAt);
-//
-//			// when
-//			listener.handleFundingReceivedConfirmedEvent(event);
-//
-//			// then
-//			ArgumentCaptor<InitializeSettlementItemCommand> captor =
-//				ArgumentCaptor.forClass(InitializeSettlementItemCommand.class);
-//			verify(settlementItemService).initializeSettlementItem(captor.capture());
-//
-//			InitializeSettlementItemCommand command = captor.getValue();
-//			assertThat(command.fundingId()).isEqualTo(fundingId);
-//			assertThat(command.confirmedAt()).isEqualTo(confirmedAt);
-//		}
-//
-//		@Test
-//		@DisplayName("재시도 대상 SettlementException 발생 시 예외를 삼킨다")
-//		void handleFundingReceivedConfirmedEvent_SwallowsRetryableException() {
-//			// given
-//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(
-//				50L, LocalDateTime.of(2026, 2, 18, 15, 0));
-//			willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT))
-//				.given(settlementItemService).initializeSettlementItem(any());
-//
-//			// when & then
-//			assertThatCode(() -> listener.handleFundingReceivedConfirmedEvent(event))
-//				.doesNotThrowAnyException();
-//		}
-//
-//		@Test
-//		@DisplayName("비재시도 SettlementException 발생 시 예외를 삼킨다")
-//		void handleFundingReceivedConfirmedEvent_SwallowsNonRetryableException() {
-//			// given
-//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(
-//				50L, LocalDateTime.of(2026, 2, 18, 15, 0));
-//			willThrow(new DomainException(SettlementErrorCode.DUPLICATE_SETTLEMENT_ITEM))
-//				.given(settlementItemService).initializeSettlementItem(any());
-//
-//			// when & then
-//			assertThatCode(() -> listener.handleFundingReceivedConfirmedEvent(event))
-//				.doesNotThrowAnyException();
-//		}
-//
-//		@Test
-//		@DisplayName("예상치 못한 예외 발생 시 상위로 전파한다")
-//		void handleFundingReceivedConfirmedEvent_PropagatesUnexpectedException() {
-//			// given
-//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(
-//				50L, LocalDateTime.of(2026, 2, 18, 15, 0));
-//			willThrow(new RuntimeException("unexpected error"))
-//				.given(settlementItemService).initializeSettlementItem(any());
-//
-//			// when & then
-//			assertThatThrownBy(() -> listener.handleFundingReceivedConfirmedEvent(event))
-//				.isInstanceOf(RuntimeException.class)
-//				.hasMessage("unexpected error");
-//		}
-//	}
+	//	@Nested
+	//	@DisplayName("handleFundingReceivedConfirmedEvent")
+	//	class HandleFundingReceivedConfirmedEventTests {
+	//
+	//		@Test
+	//		@DisplayName("정상 처리 시 initializeSettlementItem을 호출한다")
+	//		void handleFundingReceivedConfirmedEvent_CallsInitializeSettlementItem() {
+	//			// given
+	//			Long fundingId = 50L;
+	//			LocalDateTime confirmedAt = LocalDateTime.of(2026, 2, 18, 15, 0);
+	//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(fundingId, confirmedAt);
+	//
+	//			// when
+	//			listener.handleFundingReceivedConfirmedEvent(event);
+	//
+	//			// then
+	//			ArgumentCaptor<InitializeSettlementItemCommand> captor =
+	//				ArgumentCaptor.forClass(InitializeSettlementItemCommand.class);
+	//			verify(settlementItemService).initializeSettlementItem(captor.capture());
+	//
+	//			InitializeSettlementItemCommand command = captor.getValue();
+	//			assertThat(command.fundingId()).isEqualTo(fundingId);
+	//			assertThat(command.confirmedAt()).isEqualTo(confirmedAt);
+	//		}
+	//
+	//		@Test
+	//		@DisplayName("재시도 대상 SettlementException 발생 시 예외를 삼킨다")
+	//		void handleFundingReceivedConfirmedEvent_SwallowsRetryableException() {
+	//			// given
+	//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(
+	//				50L, LocalDateTime.of(2026, 2, 18, 15, 0));
+	//			willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT))
+	//				.given(settlementItemService).initializeSettlementItem(any());
+	//
+	//			// when & then
+	//			assertThatCode(() -> listener.handleFundingReceivedConfirmedEvent(event))
+	//				.doesNotThrowAnyException();
+	//		}
+	//
+	//		@Test
+	//		@DisplayName("비재시도 SettlementException 발생 시 예외를 삼킨다")
+	//		void handleFundingReceivedConfirmedEvent_SwallowsNonRetryableException() {
+	//			// given
+	//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(
+	//				50L, LocalDateTime.of(2026, 2, 18, 15, 0));
+	//			willThrow(new DomainException(SettlementErrorCode.DUPLICATE_SETTLEMENT_ITEM))
+	//				.given(settlementItemService).initializeSettlementItem(any());
+	//
+	//			// when & then
+	//			assertThatCode(() -> listener.handleFundingReceivedConfirmedEvent(event))
+	//				.doesNotThrowAnyException();
+	//		}
+	//
+	//		@Test
+	//		@DisplayName("예상치 못한 예외 발생 시 상위로 전파한다")
+	//		void handleFundingReceivedConfirmedEvent_PropagatesUnexpectedException() {
+	//			// given
+	//			FundingReceivedConfirmedEvent event = new FundingReceivedConfirmedEvent(
+	//				50L, LocalDateTime.of(2026, 2, 18, 15, 0));
+	//			willThrow(new RuntimeException("unexpected error"))
+	//				.given(settlementItemService).initializeSettlementItem(any());
+	//
+	//			// when & then
+	//			assertThatThrownBy(() -> listener.handleFundingReceivedConfirmedEvent(event))
+	//				.isInstanceOf(RuntimeException.class)
+	//				.hasMessage("unexpected error");
+	//		}
+	//	}
 }
