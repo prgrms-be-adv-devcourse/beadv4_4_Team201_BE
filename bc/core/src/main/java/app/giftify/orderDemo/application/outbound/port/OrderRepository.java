@@ -13,5 +13,5 @@ public interface OrderRepository {
 
     Order getByOrderNumber(String orderNumber);
 
-    Order getByIdWithLock(Long id);
+    Order getByIdWithItemsAndLock(Long id);
 }

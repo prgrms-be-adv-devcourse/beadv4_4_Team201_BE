@@ -2,6 +2,7 @@ package app.giftify.orderDemo.domain.fixture;
 
 import app.giftify.orderDemo.domain.Order;
 import app.giftify.orderDemo.domain.OrderItem;
+import app.giftify.orderDemo.domain.OrderItemStatus;
 import app.giftify.orderDemo.domain.OrderStatus;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
@@ -36,7 +37,14 @@ public class OrderFixture {
      */
     public static Order createOrderWithStatus(OrderStatus status) {
         Order order = createOrderWithItems(1L, 2);
-        // private 필드인 status를 강제로 설정
+
+        // CANCELING 관련 상태일 경우 아이템도 CANCELING으로 맞춰줌
+        // (getCancelingItems(), synchronizeStatus() 등 아이템 기반 로직 테스트에 필요)
+        if (status == OrderStatus.CANCELING) {
+            order.getItems().forEach(item ->
+                    ReflectionTestUtils.setField(item, "status", OrderItemStatus.CANCELING));
+        }
+
         ReflectionTestUtils.setField(order, "status", status);
         return order;
     }

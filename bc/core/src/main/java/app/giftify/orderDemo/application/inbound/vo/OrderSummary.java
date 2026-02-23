@@ -15,6 +15,7 @@ public record OrderSummary(
         OrderStatus status,
         PaymentMethod paymentMethod,
         LocalDateTime createdAt,
+        LocalDateTime paidAt,
         LocalDateTime confirmedAt,
         LocalDateTime cancelledAt
 ) {
@@ -27,6 +28,7 @@ public record OrderSummary(
                 order.getStatus(),
                 order.getPaymentMethod(),
                 order.getCreatedAt(),
+                order.getPaidAt(),
                 order.getConfirmedAt(),
                 order.getCancelledAt()
         );
