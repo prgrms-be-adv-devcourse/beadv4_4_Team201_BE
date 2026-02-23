@@ -52,4 +52,9 @@ public class OrderAdapter implements OrderRepository {
     public List<Order> getAllByIdInWithItems(List<Long> ids) {
         return jpaOrderRepository.findAllByIdInWithItems(ids);
     }
+
+    @Override
+    public List<Order> getAllByIdInWithItemsLock(List<Long> ids) {
+        return jpaOrderRepository.findAllByIdInWithItemsLock(ids);
+    }
 }

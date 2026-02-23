@@ -35,9 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -217,6 +215,15 @@ public class OrderService {
                         (existing, replacement) -> existing // 혹시 모를 ID 중복 방어
                 ));
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void confirmOrderItems(Long orderId, Set<Long> itemIds) {
+        Order targetOrder = orderRepository.getByIdWithItemsAndLock(orderId);
+
+        targetOrder.confirmed(itemIds);
+    }
+
+
 
     private static void validateOwner(Long memberId, Long buyerId) {
         if (!Objects.equals(buyerId, memberId)) {

@@ -28,4 +28,8 @@ public interface JpaOrderRepository extends JpaRepository<Order, Long> {
 
     @Query("select distinct o from Order o join fetch o.items where o.id in :ids")
     List<Order> findAllByIdInWithItems(@Param("ids") List<Long> ids);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select distinct o from Order o join fetch o.items where o.id in :ids")
+    List<Order> findAllByIdInWithItemsLock(@Param("ids") List<Long> ids);
 }

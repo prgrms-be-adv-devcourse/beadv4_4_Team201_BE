@@ -31,7 +31,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class FundingOrderCancelServiceTest {
+class FundingOrderServiceTest {
 
     @Mock
     private OrderItemRepository orderItemRepository;
@@ -40,7 +40,7 @@ class FundingOrderCancelServiceTest {
     private OrderService orderService;
 
     @InjectMocks
-    private FundingOrderCancelService fundingOrderCancelService;
+    private FundingOrderService fundingOrderService;
 
     private static final Long FUNDING_ID = 1L;
     private static final Long ORDER_ID = 10L;
@@ -67,7 +67,7 @@ class FundingOrderCancelServiceTest {
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(items);
 
             // when
-            fundingOrderCancelService.requestCancelFundingOrder(command);
+            fundingOrderService.requestCancelFundingOrder(command);
 
             // then
             ArgumentCaptor<CancelOrderItemsCommand> captor = ArgumentCaptor.forClass(CancelOrderItemsCommand.class);
@@ -101,7 +101,7 @@ class FundingOrderCancelServiceTest {
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(allItems);
 
             // when
-            fundingOrderCancelService.requestCancelFundingOrder(command);
+            fundingOrderService.requestCancelFundingOrder(command);
 
             // then
             verify(orderService, times(2)).requestCancelOrderItems(any(CancelOrderItemsCommand.class));
@@ -115,7 +115,7 @@ class FundingOrderCancelServiceTest {
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(List.of());
 
             // when & then
-            assertThatThrownBy(() -> fundingOrderCancelService.requestCancelFundingOrder(command))
+            assertThatThrownBy(() -> fundingOrderService.requestCancelFundingOrder(command))
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_ITEM_NOT_FOUND);
@@ -136,7 +136,7 @@ class FundingOrderCancelServiceTest {
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(order.getItems());
 
             // when & then
-            assertThatThrownBy(() -> fundingOrderCancelService.requestCancelFundingOrder(command))
+            assertThatThrownBy(() -> fundingOrderService.requestCancelFundingOrder(command))
                     .isInstanceOf(DomainException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.CANCEL_AMOUNT_MISMATCH);
@@ -159,7 +159,7 @@ class FundingOrderCancelServiceTest {
                     .willThrow(new PolicyException(OrderErrorCode.INVALID_STATUS_TRANSITION));
 
             // when & then - BusinessException이 외부로 전파되지 않아야 함
-            assertThatCode(() -> fundingOrderCancelService.requestCancelFundingOrder(command))
+            assertThatCode(() -> fundingOrderService.requestCancelFundingOrder(command))
                     .doesNotThrowAnyException();
         }
 
@@ -178,7 +178,7 @@ class FundingOrderCancelServiceTest {
                     .willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT));
 
             // when & then - InfraException이 외부로 전파되지 않아야 함
-            assertThatCode(() -> fundingOrderCancelService.requestCancelFundingOrder(command))
+            assertThatCode(() -> fundingOrderService.requestCancelFundingOrder(command))
                     .doesNotThrowAnyException();
         }
 
@@ -197,7 +197,7 @@ class FundingOrderCancelServiceTest {
                     .willThrow(new RuntimeException("예상치 못한 오류"));
 
             // when & then - RuntimeException이 외부로 전파되지 않아야 함
-            assertThatCode(() -> fundingOrderCancelService.requestCancelFundingOrder(command))
+            assertThatCode(() -> fundingOrderService.requestCancelFundingOrder(command))
                     .doesNotThrowAnyException();
         }
 
@@ -227,7 +227,7 @@ class FundingOrderCancelServiceTest {
                     .willReturn(null);
 
             // when & then
-            assertThatCode(() -> fundingOrderCancelService.requestCancelFundingOrder(command))
+            assertThatCode(() -> fundingOrderService.requestCancelFundingOrder(command))
                     .doesNotThrowAnyException();
 
             // 예외와 무관하게 두 주문 모두에 대해 취소 요청이 시도됨

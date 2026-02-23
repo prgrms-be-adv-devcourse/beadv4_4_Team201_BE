@@ -15,14 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FundingOrderCancelService {
+public class FundingOrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderService orderService;
 
@@ -52,6 +51,25 @@ public class FundingOrderCancelService {
                 log.error("[펀딩 만료 주문 취소 실패] 인프라 예외 발생 fundingId: {}, orderId: {}, errorCode: {}, message: {}", fundingId, order.getId(), errorCode.getCode(), errorCode.getMessage(), e);
             } catch (Exception e) {
                 log.error("[펀딩 만료 주문 취소 실패] 알 수 없는 오류 fundingId: {}, orderId: {}", fundingId, order.getId(), e);
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    public void confirmOrderItemsByFunding(Long fundingId) {
+        Map<Long, List<Long>> orderIdMap = orderItemRepository.getItemIdMapByFundingId(fundingId);
+
+        Set<Long> orderIds = orderIdMap.keySet();
+
+        orderIds.forEach(orderId -> {
+            List<Long> targetItemIds = orderIdMap.get(orderId);
+            try {
+                orderService.confirmOrderItems(orderId, new HashSet<>(targetItemIds));
+            } catch (BusinessException | InfraException e) {
+                ErrorCode errorCode = e.getErrorCode();
+                log.error("[주문 확정 실패] orderId: {}, errorCode: {}, message = {}", orderId, errorCode.getCode(), errorCode.getMessage(), e);
+            } catch (Exception e) {
+                log.error("[주문 확정 실패] orderId: {}, message = {}", orderId, e.getMessage(), e);
             }
         });
     }
