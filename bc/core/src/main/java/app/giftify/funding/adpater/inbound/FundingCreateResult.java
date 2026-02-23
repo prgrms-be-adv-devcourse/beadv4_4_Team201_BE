@@ -1,7 +1,7 @@
 package app.giftify.funding.adpater.inbound;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.orderDemo.domain.OrderItemSnapshot;
+import app.giftify.order.domain.OrderItemSnapshot;
 
 public record FundingCreateResult(
         Funding funding,

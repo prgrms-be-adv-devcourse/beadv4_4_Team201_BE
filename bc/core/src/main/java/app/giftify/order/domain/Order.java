@@ -2,248 +2,286 @@ package app.giftify.order.domain;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-import app.giftify.order.domain.OrderStatus;
-import app.giftify.order.domain.exception.OrderErrorCode;
-import app.giftify.order.domain.exception.OrderException;
-import app.giftify.order.domain.vo.Money;
-import app.giftify.shared.domain.base.BaseDomainModel;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import app.giftify.order.domain.errorCode.OrderErrorCode;
+import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
+import app.giftify.shared.domain.event.BaseAggregateRoot;
 import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.shared.domain.vo.Money;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-public class Order extends BaseDomainModel {
+@Entity
+@Table(name = "orders")
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+@ToString
+public class Order extends BaseAggregateRoot {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private final String orderNumber;
-    private final Long buyerId;
-    private final Money totalAmount;
-    private final PaymentMethod paymentMethod;
-    private final LocalDateTime createdAt;
+    @Column(nullable = false, unique = true)
+    private String orderNumber;
 
-    private String paymentKey;
+    @Column(nullable = false)
+    private Long buyerId;
+
+    @Column(nullable = false)
+    private Long quantity;
+
+    @Convert(converter = MoneyConverter.class)
+    @Column(nullable = false, precision = 19, scale = 2)
+    private Money totalAmount;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
-    private LocalDateTime confirmedAt;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @ToString.Exclude
+    private List<OrderItem> items = new ArrayList<>();
+
+    @Column(unique = true)
+    private Long paymentId;
+
+    @Column
+    private String originTransactionKey;
+
+    @Column
+    private LocalDateTime paidAt;
+
+    @Column
+    private LocalDateTime cancelRequestedAt;
+
+    @Column
     private LocalDateTime cancelledAt;
 
-    protected Order(
-            Long id,
-            String orderNumber,
+    @Column
+    private LocalDateTime confirmedAt;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    public static Order create(
             Long buyerId,
-            Money totalAmount,
-            PaymentMethod paymentMethod,
-            OrderStatus status,
-            LocalDateTime createdAt,
-            String paymentKey,
-            LocalDateTime confirmedAt,
-            LocalDateTime cancelledAt
+            List<OrderItem> items,
+            PaymentMethod paymentMethod
     ) {
-        super(id);
-        this.orderNumber = orderNumber;
-        this.buyerId = buyerId;
-        this.totalAmount = totalAmount;
-        this.paymentMethod = paymentMethod;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.paymentKey = paymentKey;
-        this.confirmedAt = confirmedAt;
-        this.cancelledAt = cancelledAt;
-        validate();
+        if (buyerId == null) throw new DomainException(OrderErrorCode.INVALID_BUYER_ID);
+        if (items == null || items.isEmpty()) throw new DomainException(OrderErrorCode.INVALID_ORDER_ITEM);
+        if (paymentMethod == null) throw new DomainException(OrderErrorCode.INVALID_PAYMENT_METHOD);
+
+        Order order = Order.builder()
+                .orderNumber(generateOrderNumber())
+                .buyerId(buyerId)
+                .paymentMethod(paymentMethod)
+                .status(OrderStatus.CREATED)
+                .build();
+
+        items.forEach(order::addItem);
+        order.setTotalAmount();
+        order.setQuantity(items.size());
+
+        if (order.getTotalAmount().isLessThan(Money.of(1000L)))
+            throw new DomainException(OrderErrorCode.INVALID_TOTAL_AMOUNT);
+
+        return order;
     }
 
-    // 주문 유효성 검사
-    private void validate() {
-        // 주문 금액 최소값(1000) 검증은 Money 생성자에 추가
+    public OrderSnapshot toSnapshot() {
+        List<OrderItemSnapshot> itemSnapshots = items.stream()
+                .map(OrderItem::toSnapshot)
+                .toList();
 
-        if (paymentMethod == null) {
-            throw new OrderException(OrderErrorCode.INVALID_INPUT_VALUE, "결제 수단은 필수입니다.");
-        }
+        return OrderSnapshot.builder()
+                .orderId(id)
+                .orderNumber(orderNumber)
+                .buyerId(buyerId)
+                .orderItemSnapshots(itemSnapshots)
+                .totalAmount(totalAmount)
+                .paymentMethod(paymentMethod)
+                .status(status)
+                .createdAt(createdAt)
+                .build();
+    }
 
-        if (orderNumber == null || !orderNumber.matches("^[a-zA-Z0-9-_]{6,64}$")) {
-            throw new OrderException(
-                    OrderErrorCode.INVALID_INPUT_VALUE,
-                    "주문 번호는 영문 대소문자, 숫자, -, _로 구성된 6자 이상 64자 이하의 문자열이어야 합니다."
+    public void paid(Long paymentId, String originTransactionKey) {
+        if (status != OrderStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 결제 완료는 생성 상태에서만 가능합니다. (현재: %s)", status)
             );
         }
+
+        this.paymentId = paymentId;
+        this.originTransactionKey = originTransactionKey;
+        this.paidAt = LocalDateTime.now();
+        this.status = OrderStatus.PAID;
+
+        items.forEach(i -> i.paid(originTransactionKey));
     }
 
-    // 주문 번호 자동 생성
-    public static String generateOrderNumber() {
+    public void synchronizeStatus() {
+        this.status = OrderStatus.deriveStatus(getItemStatuses());
+
+        if (status == OrderStatus.CANCELING){
+            cancelRequestedAt = LocalDateTime.now();
+        } else if (status == OrderStatus.CANCELED) {
+            cancelledAt = LocalDateTime.now();
+        }
+    }
+
+    public void cancelAll() {
+        validateFullCancelable();
+
+        if (this.status == OrderStatus.CREATED) {
+            this.items.forEach(OrderItem::canceled);
+            canceled();
+            return;
+        }
+
+        if (this.status == OrderStatus.PAID) {
+            this.items.forEach(OrderItem::canceling);
+            canceling();
+            return;
+        }
+
+        throw new PolicyException(OrderErrorCode.INVALID_STATUS_TRANSITION);
+    }
+
+    public List<OrderItem> getCancelingItems() {
+        return items.stream()
+                .filter(OrderItem::isCanceling)
+                .toList();
+    }
+
+    private static String generateOrderNumber() {
         return "ORD-"
                 + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase()
                 + "-"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
     }
 
-    // 결제 완료 처리
-    public void toOrdered(String paymentKey) {
-        if (this.status != OrderStatus.PAYMENT_PENDING) {
-            throw new OrderException(OrderErrorCode.ORDER_NOT_PAYABLE, "주문 대기 상태에서만 결제가 가능합니다.");
-        }
-        this.status = OrderStatus.PAID;
-        this.paymentKey = paymentKey;
+    private void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
     }
 
-    // 주문 확정 처리
-    public void toConfirmed() {
-        if (this.status != OrderStatus.PAID) {
-            throw new OrderException(OrderErrorCode.ORDER_NOT_CONFIRMABLE, "주문 결제 완료 상태에서만 확정이 가능합니다.");
-        }
-        this.status = OrderStatus.CONFIRMED;
-        this.confirmedAt = LocalDateTime.now();
+    private void setTotalAmount() {
+        this.totalAmount = items.stream()
+                .map(OrderItem::getAmount)
+                .reduce(Money.zero(), Money::plus);
     }
 
-    // 주문 취소 처리
-    public void toCancelled() {
-        if (this.status == OrderStatus.CONFIRMED) {
-            throw new OrderException(OrderErrorCode.ORDER_ALREADY_CONFIRMED, "이미 확정된 주문은 취소할 수 없습니다.");
-        }
+    private void setQuantity(long quantity) {
+        this.quantity = quantity;
+    }
+
+    private boolean isAllItemsFullCancelable() {
+        OrderItem firstItem = items.getFirst();
+        OrderItemStatus firstStatus = firstItem.getStatus();
+
+        if (!firstItem.isCancelable())
+            return false;
+
+        return items.stream()
+                .allMatch(item -> item.getStatus() == firstStatus);
+    }
+
+    private void canceling() {
+        this.status = OrderStatus.CANCELING;
+        this.cancelRequestedAt = LocalDateTime.now();
+    }
+
+    private void canceled() {
         this.status = OrderStatus.CANCELED;
         this.cancelledAt = LocalDateTime.now();
     }
 
-    // 결제 재시도용 취소 처리
-    public void toFailed() {
-        if (this.status == OrderStatus.CONFIRMED) {
-            throw new OrderException(OrderErrorCode.ORDER_ALREADY_CONFIRMED, "이미 확정된 주문은 취소할 수 없습니다.");
-        }
-        this.status = OrderStatus.FAILED;
-    }
-
-    // 자동 취소 가능 여부
-    public boolean canAutoCancel(int minutes) {
-        return this.status == OrderStatus.PAYMENT_PENDING
-                && this.createdAt.plusMinutes(minutes).isBefore(LocalDateTime.now());
-    }
-
-    // 환불 처리
-    public void toRefunded() {
-        if(this.status == OrderStatus.CONFIRMED){
-            throw new OrderException(OrderErrorCode.ORDER_ALREADY_CONFIRMED, "이미 확정된 주문은 환불할 수 없습니다.");
-        }
-
-        if(this.status != OrderStatus.PAID){
-            throw new OrderException(OrderErrorCode.ORDER_CANNOT_REFUND, "결제 이력이 없어 환불 가능한 상태가 아닙니다.");
-        }
-
-        this.status = OrderStatus.REFUNDED;
-    }
-
-    // getters
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public Long getBuyerId() {
-        return buyerId;
-    }
-
-    public Money getTotalAmount() {
-        return totalAmount;
-    }
-
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public String getPaymentKey() {
-        return paymentKey;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getConfirmedAt() {
-        return confirmedAt;
-    }
-
-    public LocalDateTime getCancelledAt() {
-        return cancelledAt;
-    }
-
-    // builder
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private Long id;
-        private String orderNumber;
-        private Long buyerId;
-        private Money totalAmount;
-        private PaymentMethod paymentMethod;
-        private OrderStatus status;
-        private LocalDateTime createdAt;
-        private String paymentKey;
-        private LocalDateTime confirmedAt;
-        private LocalDateTime cancelledAt;
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder orderNumber(String orderNumber) {
-            this.orderNumber = orderNumber;
-            return this;
-        }
-
-        public Builder buyerId(Long buyerId) {
-            this.buyerId = buyerId;
-            return this;
-        }
-
-        public Builder totalAmount(Money totalAmount) {
-            this.totalAmount = totalAmount;
-            return this;
-        }
-
-        public Builder paymentMethod(PaymentMethod paymentMethod) {
-            this.paymentMethod = paymentMethod;
-            return this;
-        }
-
-        public Builder status(OrderStatus status) {
-            this.status = status;
-            return this;
-        }
-
-        public Builder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        public Builder paymentKey(String paymentKey) {
-            this.paymentKey = paymentKey;
-            return this;
-        }
-
-        public Builder confirmedAt(LocalDateTime confirmedAt) {
-            this.confirmedAt = confirmedAt;
-            return this;
-        }
-
-        public Builder cancelledAt(LocalDateTime cancelledAt) {
-            this.cancelledAt = cancelledAt;
-            return this;
-        }
-
-        public Order build() {
-            return new Order(
-                    id,
-                    orderNumber,
-                    buyerId,
-                    totalAmount,
-                    paymentMethod,
-                    status,
-                    createdAt,
-                    paymentKey,
-                    confirmedAt,
-                    cancelledAt
+    private void validateFullCancelable() {
+        if (items.isEmpty()) {
+            throw new DomainException(
+                    OrderErrorCode.ORDER_ITEM_NOT_FOUND,
+                    String.format("주문 취소 항목이 존재하지 않습니다. orderId = %d", id)
             );
         }
+
+        if (!status.isFullCancelable()) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 전체 취소가 불가능한 주문 상태입니다. orderId = %d, status = %s", id, status)
+            );
+        }
+
+        if (!isAllItemsFullCancelable()) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 전체 취소가 불가능한 항목이 포함되어 있거나 상태가 일치하지 않습니다. orderId = %d", id)
+            );
+        }
+    }
+
+    public List<OrderItem> validatePartialCancelable(List<Long> requestedItemIds) {
+        if (items.isEmpty()) {
+            throw new DomainException(
+                    OrderErrorCode.ORDER_ITEM_NOT_FOUND,
+                    String.format("주문 취소 항목이 존재하지 않습니다. orderId = %d", id)
+            );
+        }
+
+        List<OrderItem> targets = items.stream()
+                .filter(item -> requestedItemIds.contains(item.getId()))
+                .toList();
+
+        if (targets.size() != requestedItemIds.size()) {
+            throw new DomainException(
+                    OrderErrorCode.INVALID_ORDER_ITEM,
+                    String.format("주문 부분 취소 항목 중 주문에 존재하지 않은 항목이 존재합니다. orderId = %d", id)
+            );
+        }
+
+        return targets;
+    }
+
+    private List<OrderItemStatus> getItemStatuses() {
+        return items.stream()
+                .map(OrderItem::getStatus)
+                .toList();
     }
 }
