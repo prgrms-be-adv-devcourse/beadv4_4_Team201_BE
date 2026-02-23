@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
-@RestControllerAdvice(basePackages = "app.giftify.orderDemo")
+@RestControllerAdvice(basePackages = "app.giftify.order")
 public class OrderExceptionHandler {
 
     private static final String SERVER_ERROR_MESSAGE = "서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";

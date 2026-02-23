@@ -202,9 +202,9 @@ ALTER TABLE funding_participant_member
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------
--- 12. ORDER_V2 (주문) — V1.2.4
+-- 12. ORDERS (주문) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO order_v2 (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
+INSERT INTO orders (id, buyer_id, order_number, total_amount, quantity, payment_method, status,
                       payment_id, origin_transaction_key, paid_at, confirmed_at, cancelled_at,
                       created_at, updated_at)
 VALUES
@@ -228,13 +228,13 @@ VALUES
      NULL, NULL, NULL, NULL, '2026-02-08 16:00:00',
      '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
-ALTER TABLE order_v2
+ALTER TABLE orders
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------
--- 13. ORDER_ITEM_V2 (주문 아이템) — V1.2.4
+-- 13. ORDER_ITEMS (주문 아이템) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO order_item_v2 (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
+INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
                            price, amount, status, cancelled_at, created_at, updated_at)
 VALUES
     (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
@@ -254,7 +254,7 @@ VALUES
     (6, 5, 5, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
      89000.00, 89000.00, 'CANCELED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
-ALTER TABLE order_item_v2
+ALTER TABLE order_items
     ALTER COLUMN id RESTART WITH 100;
 
 -- -----------------------------------------------------------------------------

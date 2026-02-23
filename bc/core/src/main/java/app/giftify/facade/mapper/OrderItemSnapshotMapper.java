@@ -18,13 +18,13 @@ public final class OrderItemSnapshotMapper {
 	}
 
 	/**
-	 * OrderDemo의 OrderItemSnapshot으로부터 Payment의 OrderItemSnapshot을 생성합니다.
+	 * Order의 OrderItemSnapshot으로부터 Payment의 OrderItemSnapshot을 생성합니다.
 	 *
-	 * @param orderItem OrderDemo BC의 주문 항목 스냅샷 (null 불가)
+	 * @param orderItem Order BC의 주문 항목 스냅샷 (null 불가)
 	 * @return Payment BC의 주문 항목 스냅샷
 	 * @throws NullPointerException orderItem이 null인 경우
 	 */
-	public static OrderItemSnapshot fromOrderDemo(
+	public static OrderItemSnapshot fromOrder(
 		app.giftify.order.domain.OrderItemSnapshot orderItem
 	) {
 		Objects.requireNonNull(orderItem, "orderItem must not be null");
@@ -36,19 +36,19 @@ public final class OrderItemSnapshotMapper {
 	}
 
 	/**
-	 * OrderDemo의 OrderItemSnapshot 목록으로부터 Payment의 OrderItemSnapshot 목록을 생성합니다.
+	 * Order의 OrderItemSnapshot 목록으로부터 Payment의 OrderItemSnapshot 목록을 생성합니다.
 	 *
-	 * @param orderItems OrderDemo BC의 주문 항목 스냅샷 목록 (null 또는 빈 리스트 허용)
+	 * @param orderItems Order BC의 주문 항목 스냅샷 목록 (null 또는 빈 리스트 허용)
 	 * @return Payment BC의 주문 항목 스냅샷 목록 (입력이 null/빈 리스트면 빈 리스트 반환)
 	 */
-	public static List<OrderItemSnapshot> fromOrderDemoList(
+	public static List<OrderItemSnapshot> fromOrderList(
 		List<app.giftify.order.domain.OrderItemSnapshot> orderItems
 	) {
 		if (orderItems == null || orderItems.isEmpty()) {
 			return Collections.emptyList();
 		}
 		return orderItems.stream()
-			.map(OrderItemSnapshotMapper::fromOrderDemo)
+			.map(OrderItemSnapshotMapper::fromOrder)
 			.toList();
 	}
 }

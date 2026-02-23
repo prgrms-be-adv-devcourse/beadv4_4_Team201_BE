@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Service("orderV2Service")
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {

@@ -63,7 +63,7 @@ public class CoreFacade {
                 orderSnapshot.orderNumber(),
                 orderSnapshot.paymentMethod(),
                 orderSnapshot.totalAmount(),
-                OrderItemSnapshotMapper.fromOrderDemoList(orderSnapshot.orderItemSnapshots())
+                OrderItemSnapshotMapper.fromOrderList(orderSnapshot.orderItemSnapshots())
         );
     }
 

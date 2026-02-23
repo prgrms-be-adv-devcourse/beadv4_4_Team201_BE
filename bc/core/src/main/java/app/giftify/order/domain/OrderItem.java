@@ -36,7 +36,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Entity
-@Table(name = "order_item_v2", indexes = { // FIXME :: order_items 로 테이블 명 변경 필요
+@Table(name = "order_items", indexes = {
         @Index(name = "idx_order_items_order_id_status", columnList = "order_id, status")
 })
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

@@ -20,12 +20,12 @@ import app.giftify.shared.domain.vo.Money;
 class OrderItemSnapshotMapperTest {
 
 	@Nested
-	@DisplayName("fromOrderDemo 메서드")
-	class FromOrderDemoTests {
+	@DisplayName("fromOrder 메서드")
+	class FromOrderTests {
 
 		@Test
-		@DisplayName("OrderDemo의 OrderItemSnapshot을 Payment의 OrderItemSnapshot으로 변환한다")
-		void fromOrderDemo_ConvertsSuccessfully() {
+		@DisplayName("Order의 OrderItemSnapshot을 Payment의 OrderItemSnapshot으로 변환한다")
+		void fromOrder_ConvertsSuccessfully() {
 			// given
 			app.giftify.order.domain.OrderItemSnapshot orderDemoItem =
 				app.giftify.order.domain.OrderItemSnapshot.builder()
@@ -42,7 +42,7 @@ class OrderItemSnapshotMapperTest {
 					.build();
 
 			// when
-			OrderItemSnapshot result = OrderItemSnapshotMapper.fromOrderDemo(orderDemoItem);
+			OrderItemSnapshot result = OrderItemSnapshotMapper.fromOrder(orderDemoItem);
 
 			// then
 			assertThat(result.targetId()).isEqualTo(200L);
@@ -52,21 +52,21 @@ class OrderItemSnapshotMapperTest {
 
 		@Test
 		@DisplayName("null 입력 시 NullPointerException을 발생시킨다")
-		void fromOrderDemo_ThrowsNPE_WhenInputIsNull() {
+		void fromOrder_ThrowsNPE_WhenInputIsNull() {
 			// when & then
-			assertThatThrownBy(() -> OrderItemSnapshotMapper.fromOrderDemo(null))
+			assertThatThrownBy(() -> OrderItemSnapshotMapper.fromOrder(null))
 				.isInstanceOf(NullPointerException.class)
 				.hasMessage("orderItem must not be null");
 		}
 	}
 
 	@Nested
-	@DisplayName("fromOrderDemoList 메서드")
-	class FromOrderDemoListTests {
+	@DisplayName("fromOrderList 메서드")
+	class FromOrderListTests {
 
 		@Test
-		@DisplayName("OrderDemo의 OrderItemSnapshot 목록을 Payment의 OrderItemSnapshot 목록으로 변환한다")
-		void fromOrderDemoList_ConvertsListSuccessfully() {
+		@DisplayName("Order의 OrderItemSnapshot 목록을 Payment의 OrderItemSnapshot 목록으로 변환한다")
+		void fromOrderList_ConvertsListSuccessfully() {
 			// given
 			app.giftify.order.domain.OrderItemSnapshot item1 =
 				app.giftify.order.domain.OrderItemSnapshot.builder()
@@ -99,7 +99,7 @@ class OrderItemSnapshotMapperTest {
 			List<app.giftify.order.domain.OrderItemSnapshot> orderDemoItems = List.of(item1, item2);
 
 			// when
-			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderDemoList(orderDemoItems);
+			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderList(orderDemoItems);
 
 			// then
 			assertThat(result).hasSize(2);
@@ -113,9 +113,9 @@ class OrderItemSnapshotMapperTest {
 
 		@Test
 		@DisplayName("null 입력 시 빈 리스트를 반환한다")
-		void fromOrderDemoList_ReturnsEmptyList_WhenInputIsNull() {
+		void fromOrderList_ReturnsEmptyList_WhenInputIsNull() {
 			// when
-			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderDemoList(null);
+			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderList(null);
 
 			// then
 			assertThat(result).isEmpty();
@@ -123,9 +123,9 @@ class OrderItemSnapshotMapperTest {
 
 		@Test
 		@DisplayName("빈 리스트 입력 시 빈 리스트를 반환한다")
-		void fromOrderDemoList_ReturnsEmptyList_WhenInputIsEmpty() {
+		void fromOrderList_ReturnsEmptyList_WhenInputIsEmpty() {
 			// when
-			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderDemoList(Collections.emptyList());
+			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderList(Collections.emptyList());
 
 			// then
 			assertThat(result).isEmpty();

@@ -36,7 +36,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "order_v2") // FIXME :: orders 로 테이블 명 변경 필요
+@Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)

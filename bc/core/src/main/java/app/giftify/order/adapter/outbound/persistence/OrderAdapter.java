@@ -12,7 +12,7 @@ import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Repository("orderV2Adapter")
+@Repository
 @RequiredArgsConstructor
 @Slf4j
 public class OrderAdapter implements OrderRepository {
