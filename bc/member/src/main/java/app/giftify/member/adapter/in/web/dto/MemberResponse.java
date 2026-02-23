@@ -2,6 +2,7 @@ package app.giftify.member.adapter.in.web.dto;
 
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
+import app.giftify.shared.domain.type.MemberRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -30,7 +31,10 @@ public record MemberResponse(
         String name,
 
         @Schema(description = "회원 상태", example = "ACTIVE")
-        MemberStatus status
+        MemberStatus status,
+
+        @Schema(description = "회원 권한", example = "BUYER")
+        MemberRole role
 ) {
     public static MemberResponse from(Member member) {
         return new MemberResponse(
@@ -41,7 +45,8 @@ public record MemberResponse(
                 member.getAddress(),
                 member.getPhoneNum(),
                 member.getName(),
-                member.getStatus()
+                member.getStatus(),
+                member.getRole()
         );
     }
 }
