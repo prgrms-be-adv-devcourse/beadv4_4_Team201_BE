@@ -31,7 +31,7 @@ public enum OrderErrorCode implements ErrorCode {
     SNAPSHOTS_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "ORDER-118", "주문 상품의 상세 정보(펀딩, 위시리스트 아이템)를 불러올 수 없습니다."),
 
     INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT.value(), "ORDER-119", "잘못된 상태 변경 요청입니다."),
-    INVALID_STATUS_CANCEL(HttpStatus.BAD_REQUEST.value(), "ORDER-122", "취소가 불가능한 주문 상태입니다."),
+    INVALID_STATUS_CANCEL(HttpStatus.BAD_REQUEST.value(), "ORDER-122", "이미 취소 중이거나 확정된 상품이 포함되어 있어 주문 취소가 불가합니다."),
     ;
 
     private final int statusCode;

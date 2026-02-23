@@ -1,5 +1,7 @@
 package app.giftify.shared.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -9,7 +11,7 @@ import java.math.RoundingMode;
  * 정산 도메인에서 차감을 처리하려면 Money 객체가 음수를 지원
  * 필요 시 Money을 사용하는 도메인에서 양수 검증 수행
  */
-public record Money(BigDecimal amount) implements Comparable<Money> {
+public record Money(@JsonValue BigDecimal amount) implements Comparable<Money> {
 
 	public Money {
 		validateNotNull(amount);
