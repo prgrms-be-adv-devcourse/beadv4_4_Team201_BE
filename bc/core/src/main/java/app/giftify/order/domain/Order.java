@@ -1,39 +1,22 @@
 package app.giftify.order.domain;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.BaseAggregateRoot;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -189,6 +172,13 @@ public class Order extends BaseAggregateRoot {
         return items.stream()
                 .filter(OrderItem::isCanceling)
                 .toList();
+    }
+
+    public Money getPayableAmount() {
+        return items.stream()
+                .filter(item -> OrderItemStatus.isSettleable(item.getStatus()))
+                .map(OrderItem::getAmount)
+                .reduce(Money.zero(), Money::plus);
     }
 
     private static String generateOrderNumber() {
