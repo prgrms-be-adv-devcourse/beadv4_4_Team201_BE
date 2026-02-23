@@ -32,9 +32,9 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.payment.domain.event.PaymentConfirmedEvent;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
+
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -129,8 +129,8 @@ class ConfirmPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("결제 승인 시 PaymentConfirmedEvent 내부 이벤트를 발행한다")
-		void confirm_Payment_PublishesPaymentConfirmedEvent() {
+		@DisplayName("결제 승인 시 PaymentSucceededEvent 내부 이벤트를 발행한다")
+		void confirm_Payment_PublishesPaymentSucceededEvent() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
@@ -153,13 +153,13 @@ class ConfirmPaymentServiceTest {
 			confirmPaymentService.confirm(command);
 
 			// then
-			ArgumentCaptor<PaymentConfirmedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentConfirmedEvent.class);
+			ArgumentCaptor<PaymentSucceededEvent> eventCaptor = ArgumentCaptor.forClass(PaymentSucceededEvent.class);
 			verify(eventPublisher).publish(eventCaptor.capture());
 
-			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
-			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
-			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
+			PaymentSucceededEvent paidEvent = eventCaptor.getValue();
+			assertThat(paidEvent.data().paymentId()).isEqualTo(paymentId);
+			assertThat(paidEvent.data().memberId()).isEqualTo(memberId);
+			assertThat(paidEvent.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 		}
 
 		@Test
@@ -189,51 +189,9 @@ class ConfirmPaymentServiceTest {
 			// then
 			assertThat(result.success()).isTrue();
 			assertThat(result.paymentId()).isEqualTo(paymentId);
-			verify(eventPublisher).publish(any(PaymentConfirmedEvent.class));
+			verify(eventPublisher).publish(any(PaymentSucceededEvent.class));
 		}
 
-		@Test
-		@DisplayName("결제 승인 시 PaymentPaidExternalEvent 이벤트를 발행한다")
-		void confirm_Payment_PublishesPaymentPaidExternalEvent() {
-			// given
-			Long paymentId = 1L;
-			Long memberId = 100L;
-			String paymentKey = "payment-key-123";
-			String orderNumber = "order-123";
-			Money amount = Money.of(10000);
-			String encryptedKey = "encrypted-payment-key";
-			String transactionKey = "txn-key-001";
-
-			ConfirmPaymentCommand command = new ConfirmPaymentCommand(
-				paymentId, memberId, paymentKey, orderNumber, amount
-			);
-
-			Payment payment = createPendingPayment(paymentId, memberId, orderNumber, PaymentType.DEPOSIT_CHARGE);
-
-			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-			given(paymentGateway.confirm(paymentKey, orderNumber, amount))
-				.willReturn(TossConfirmResult.success(paymentKey, transactionKey, "12345678"));
-			given(encryptor.encrypt(paymentKey)).willReturn(encryptedKey);
-			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
-
-			// when
-			confirmPaymentService.confirm(command);
-
-			// then
-			ArgumentCaptor<PaymentPaidExternalEvent> captor =
-				ArgumentCaptor.forClass(PaymentPaidExternalEvent.class);
-			verify(eventPublisher).publish(captor.capture());
-
-			PaymentPaidExternalEvent event = captor.getValue();
-			assertThat(event.paymentId()).isEqualTo(paymentId);
-			assertThat(event.orderNumber()).isEqualTo(orderNumber);
-			assertThat(event.paymentKey()).isEqualTo(encryptedKey);
-			assertThat(event.transactionKey()).isEqualTo(transactionKey);
-			assertThat(event.paidAmount()).isEqualTo(amount);
-			assertThat(event.method()).isEqualTo(PaymentMethod.CARD);
-			assertThat(event.eventId()).isNotNull();
-			assertThat(event.occurredAt()).isNotNull();
-		}
 	}
 
 	@Nested

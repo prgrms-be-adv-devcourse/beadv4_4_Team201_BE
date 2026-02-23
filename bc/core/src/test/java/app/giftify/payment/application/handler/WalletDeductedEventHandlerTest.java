@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
@@ -28,9 +28,9 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.payment.domain.event.PaymentConfirmedEvent;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.PaymentPaidExternalEvent;
+
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
@@ -53,8 +53,8 @@ class WalletDeductedEventHandlerTest {
 	class FundingPaymentTests {
 
 		@Test
-		@DisplayName("FUNDING 결제가 완료되면 PaymentConfirmedEvent와 PaymentPaidExternalEvent를 발행한다")
-		void handle_PublishesPaymentPaidExternalEvent_WhenPaymentTypeIsFunding() {
+		@DisplayName("FUNDING 결제가 완료되면 PaymentSucceededEvent를 발행한다")
+		void handle_PublishesPaymentSucceededEvent_WhenPaymentTypeIsFunding() {
 			// given
 			Long paymentId = 1L;
 			Long walletId = 100L;
@@ -91,35 +91,15 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher, times(2)).publish(eventCaptor.capture());
+			ArgumentCaptor<PaymentSucceededEvent> eventCaptor = ArgumentCaptor.forClass(PaymentSucceededEvent.class);
+			verify(eventPublisher).publish(eventCaptor.capture());
 
-			List<Object> capturedEvents = eventCaptor.getAllValues();
-			PaymentConfirmedEvent internalEvent = capturedEvents.stream()
-				.filter(PaymentConfirmedEvent.class::isInstance)
-				.map(e -> (PaymentConfirmedEvent)e)
-				.findFirst().orElseThrow();
-
-			assertThat(internalEvent.getPaymentId()).isEqualTo(paymentId);
-			assertThat(internalEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(internalEvent.getOrderNumber()).isEqualTo(orderNumber);
-			assertThat(internalEvent.getPaymentType()).isEqualTo(PaymentType.FUNDING);
-			assertThat(internalEvent.getPaidAmount()).isEqualTo(amount);
-			assertThat(internalEvent.getPaidAt()).isEqualTo(deductedAt);
-
-			PaymentPaidExternalEvent externalEvent = capturedEvents.stream()
-				.filter(PaymentPaidExternalEvent.class::isInstance)
-				.map(e -> (PaymentPaidExternalEvent)e)
-				.findFirst().orElseThrow();
-
-			assertThat(externalEvent.paymentId()).isEqualTo(paymentId);
-			assertThat(externalEvent.orderNumber()).isEqualTo(orderNumber);
-			assertThat(externalEvent.memberId()).isEqualTo(memberId);
-			assertThat(externalEvent.paidAmount()).isEqualTo(amount);
-			assertThat(externalEvent.type()).isEqualTo(PaymentType.FUNDING);
-			assertThat(externalEvent.method()).isEqualTo(PaymentMethod.DEPOSIT);
-			assertThat(externalEvent.paymentKey()).isNull();
-			assertThat(externalEvent.transactionKey()).isNull();
+			PaymentSucceededEvent succeededEvent = eventCaptor.getValue();
+			assertThat(succeededEvent.data().paymentId()).isEqualTo(paymentId);
+			assertThat(succeededEvent.data().memberId()).isEqualTo(memberId);
+			assertThat(succeededEvent.data().orderNumber()).isEqualTo(orderNumber);
+			assertThat(succeededEvent.data().paymentType()).isEqualTo(PaymentType.FUNDING);
+			assertThat(succeededEvent.data().amount()).isEqualTo(amount);
 		}
 
 		@Test
@@ -175,8 +155,8 @@ class WalletDeductedEventHandlerTest {
 	class PointChargePaymentTests {
 
 		@Test
-		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 PaymentPaidExternalEvent를 발행한다")
-		void handle_PublishesPaymentPaidExternalEvent_WhenPaymentTypeIsPointCharge() {
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 PaymentSucceededEvent를 발행한다")
+		void handle_PublishesPaymentSucceededEvent_WhenPaymentTypeIsPointCharge() {
 			// given
 			Long paymentId = 2L;
 			Long walletId = 100L;
@@ -209,13 +189,13 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<PaymentConfirmedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentConfirmedEvent.class);
+			ArgumentCaptor<PaymentSucceededEvent> eventCaptor = ArgumentCaptor.forClass(PaymentSucceededEvent.class);
 			verify(eventPublisher).publish(eventCaptor.capture());
 
-			PaymentConfirmedEvent paidEvent = eventCaptor.getValue();
-			assertThat(paidEvent.getPaymentId()).isEqualTo(paymentId);
-			assertThat(paidEvent.getMemberId()).isEqualTo(memberId);
-			assertThat(paidEvent.getPaymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
+			PaymentSucceededEvent paidEvent = eventCaptor.getValue();
+			assertThat(paidEvent.data().paymentId()).isEqualTo(paymentId);
+			assertThat(paidEvent.data().memberId()).isEqualTo(memberId);
+			assertThat(paidEvent.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 		}
 
 		@Test
@@ -387,7 +367,7 @@ class WalletDeductedEventHandlerTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher, times(2)).publish(any());
+			verify(eventPublisher).publish(any());
 		}
 	}
 }
