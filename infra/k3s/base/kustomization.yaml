@@ -8,6 +8,7 @@ resources:
   # API Server
   - apps/api-server/deployment.yaml
   - apps/api-server/service.yaml
+  - apps/api-server/ingress.yaml
   # PostgreSQL
   - apps/postgres/statefulset.yaml
   - apps/postgres/service.yaml
@@ -18,25 +19,29 @@ resources:
   - apps/prometheus/configmap.yaml
   - apps/prometheus/deployment.yaml
   - apps/prometheus/service.yaml
+  - apps/prometheus/ingress.yaml
   # Grafana
   - apps/grafana/configmap.yaml
   - apps/grafana/deployment.yaml
   - apps/grafana/service.yaml
+  - apps/grafana/ingress.yaml
   # Red-panda
   - apps/redpanda/deployment.yaml
   - apps/redpanda/service.yaml
   - apps/redpanda/console-deployment.yaml
   - apps/redpanda/console-service.yaml
+  - apps/redpanda/ingress.yaml
   # MinIO (S3 Compatible Object Storage)
   - apps/minio/statefulset.yaml
   - apps/minio/service.yaml
   - apps/minio/init-job.yaml
-  # k6 (job.yaml은 수동 실행 대상이므로 base에 포함하지 않음. kubectl apply -f apps/k6/job.yaml 으로 개별 실행)
-  - apps/k6/configmap.yaml
+  - apps/minio/ingress.yaml
+  # Elasticsearch
+  - apps/elasticsearch/statefulset.yaml
+  - apps/elasticsearch/service.yaml
+  - apps/elasticsearch/ingress.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
-  - traefik/ingress-routes/api.yaml
-  - traefik/ingress-routes/monitoring.yaml
   # Cloudflare
   - cloudflare/tunnel-deployment.yaml
 
