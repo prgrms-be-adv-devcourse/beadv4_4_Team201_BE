@@ -1,9 +1,13 @@
 package app.giftify.orderDemo.adapter.inbound.event;
 
+import app.giftify.orderDemo.application.FundingOrderCancelService;
 import app.giftify.orderDemo.application.OrderService;
+import app.giftify.orderDemo.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.shared.api.exception.InfraException;
+import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedCancelEvent;
+import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class OrderEventListener {
 
     private final OrderService orderService;
+    private final FundingOrderCancelService fundingOrderCancelService;
 
     @Retryable(
             retryFor = InfraException.class,
@@ -39,6 +44,22 @@ public class OrderEventListener {
     public void on(PaymentFailedCancelEvent event) {
         log.info("[이벤트 수신] 결제 취소 실패 -> 주문 실패 반영 시작. OrderId: {}", event.getOrderId());
         orderService.failCancel(event.getOrderId());
+    }
+
+    @Retryable(
+            retryFor = InfraException.class,
+            exceptionExpression = "@retryService.isRetryable(#root)",
+            backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
+    )
+    @ApplicationModuleListener
+    public void on (FundingExpiredEvent event) {
+        log.info("[이벤트 수신] 펀딩 만료 -> 주문 취소 반영 시작. FundingId: {}", event.getFundingId());
+        fundingOrderCancelService.requestCancelFundingOrder(
+                new CancelFundingOrderCommand(
+                        event.getFundingId(),
+                        Money.of(event.getExpiredAmount()
+                        )
+                ));
     }
 
     /**

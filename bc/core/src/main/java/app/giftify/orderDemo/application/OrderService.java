@@ -4,10 +4,7 @@ import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderItemReque
 import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.dto.OrderCancelProcessingResult;
 import app.giftify.orderDemo.application.dto.OrderCancelSummary;
-import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
-import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
-import app.giftify.orderDemo.application.inbound.command.CreateOrderItemCommand;
-import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.orderDemo.application.inbound.command.*;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderItemDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
@@ -33,6 +30,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -136,7 +134,7 @@ public class OrderService {
         );
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public OrderCancelSummary requestCancelOrderItems(CancelOrderItemsCommand command) {
         Order order = orderRepository.getByIdWithItemsAndLock(command.orderId());
 

@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "order_item_v2", indexes = {
-        @Index(name = "idx_order_items_order_id_status", columnList = "order_id, status")
+        @Index(name = "idx_order_items_order_id_status", columnList = "order_id, status"),
+        @Index(name = "idx_order_items_target_id_target_type", columnList = "target_id, target_type")
 })
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
