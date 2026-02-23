@@ -90,7 +90,7 @@ public class SecurityConfig {
                     }
 
                     // 비로그인 허용 + 로그인 시 토큰 처리 필요한 엔드포인트
-                    auth.requestMatchers("/api/v2/wishlists/{memberId:\\d+}/items").permitAll();
+                    auth.requestMatchers("/api/v2/wishlists/{memberId:\\d+}").permitAll();
 
                     // 나머지 모든 요청은 인증 필요 (공개 엔드포인트는 publicSecurityFilterChain에서 처리)
                     auth.anyRequest().authenticated();

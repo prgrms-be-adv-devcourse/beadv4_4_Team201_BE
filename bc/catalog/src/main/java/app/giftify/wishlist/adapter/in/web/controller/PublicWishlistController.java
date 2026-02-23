@@ -27,7 +27,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
     private final MemberRepository memberRepository;
     private final ProductSupport productSupport;
 
-    // TODO WishlistController 로 옮기기
+    // TODO 코드 제거 or 쓸거면 WishlistController 로 옮기기
     // 공개 피드 검색
     @Override
     @GetMapping("/search")
@@ -53,7 +53,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
         return ResponseEntity.ok(RsData.success(result));
     }
 
-    // TODO 코드 제거 (WishlistItemController에 구현되어있음)
+    // TODO 레거시 코드 제거
     // 타인의 PUBLIC 위시리스트 상세
     @Override
     @GetMapping("/public/{memberId}")
