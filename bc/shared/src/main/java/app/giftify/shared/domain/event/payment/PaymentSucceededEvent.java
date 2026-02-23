@@ -8,6 +8,7 @@ public record PaymentSucceededEvent(
 ) implements PaymentEvent {
 	public static PaymentSucceededEvent create(PaymentEventData data) {
 		return new PaymentSucceededEvent(
-			UUID.randomUUID().toString(), "payment", "payment.succeeded", Instant.now(), data);
+			UUID.randomUUID().toString(), "payment", "payment.succeeded", Instant.now(), data
+		);
 	}
 }
