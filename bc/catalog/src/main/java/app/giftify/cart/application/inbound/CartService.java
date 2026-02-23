@@ -151,22 +151,15 @@ public class CartService
 				.collect(Collectors.toMap(Product::getId, Function.identity()));
 
 		// 4. wishlistItemId를 키로, Product를 값으로 하는 최종 맵을 생성합니다.
-		// 이 과정에서 WishlistItem이나 Product가 DB에 없는 경우 건너뛰게 됩니다.
+		// WishlistItem이나 Product가 DB에 없는 경우 product가 null로 남으며,
+		// CartItemResponse.from()에서 DISCONTINUED로 처리됩니다.
 		Map<Long, Product> finalProductMap = new HashMap<>();
 		for (WishlistItem wishlistItem : wishlistItemMap.values()) {
-			Product product = productMap.get(wishlistItem.getProductId());
-			if (product != null) {
-				finalProductMap.put(wishlistItem.getId(), product);
-			}
+			finalProductMap.put(wishlistItem.getId(), productMap.get(wishlistItem.getProductId()));
 		}
 
-		// 5. 유효한 제품 정보가 있는 아이템만 필터링합니다.
-		Set<Long> validTargetIds = finalProductMap.keySet();
-		List<CartItem> validItems = cart.getItems().stream()
-				.filter(item -> validTargetIds.contains(item.getTargetId()))
-				.toList();
-
-		return CartResponse.from(cart, validItems, finalProductMap);
+		// 5. 모든 아이템을 넘기고, CartItemResponse가 상태를 판단합니다.
+		return CartResponse.from(cart, cart.getItems(), finalProductMap);
 	}
 
 
