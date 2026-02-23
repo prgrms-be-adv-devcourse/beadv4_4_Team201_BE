@@ -49,6 +49,16 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
                 });
     }
 
+    // 내 위시리스트 아이템 목록 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<WishlistItemDetail> getMyWishlistItemDetails(Long memberId) {
+        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(memberId);
+
+        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
+        return toItemDetails(items);
+    }
+
     /**
      * 타인의 위시리스트 아이템 목록 조회
      * 타겟 멤버와 친구이면 PUBLIC 또는 FRIENDS_ONLY 위시리스트 조회 가능

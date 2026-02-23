@@ -7,7 +7,6 @@ import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistItemResponse;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistResponse;
-import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.core.domain.Visibility;
@@ -29,7 +28,6 @@ public class WishlistController implements WishlistV2ApiSpec {
 
     private final UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
     private final GetWishlistUseCase getWishlistUseCase;
-    private final GetWishlistItemUseCase getWishlistItemUseCase;
     private final MemberRepository memberRepository;
 
     // 내 위시리스트 기본 정보 + 아이템 목록 조회
@@ -44,7 +42,7 @@ public class WishlistController implements WishlistV2ApiSpec {
                 .map(m -> m.getNickname())
                 .orElse(null);
 
-        List<WishlistItemResponse> items = getWishlistItemUseCase.getWishlistItems(memberId)
+        List<WishlistItemResponse> items = getWishlistUseCase.getMyWishlistItemDetails(memberId)
                 .stream()
                 .map(WishlistItemResponse::from)
                 .toList();

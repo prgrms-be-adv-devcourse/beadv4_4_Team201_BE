@@ -8,5 +8,7 @@ import java.util.List;
 public interface GetWishlistUseCase {
     Wishlist getOrCreateWishlistByMemberId(Long memberId);
 
+    List<WishlistItemDetail> getMyWishlistItemDetails(Long memberId);
+
     List<WishlistItemDetail> getWishlistItemDetails(Long targetMemberId, Long currentMemberId);
 }
