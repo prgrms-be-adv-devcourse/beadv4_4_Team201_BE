@@ -40,8 +40,6 @@ resources:
   - apps/elasticsearch/statefulset.yaml
   - apps/elasticsearch/service.yaml
   - apps/elasticsearch/ingress.yaml
-  # k6 (job.yaml은 수동 실행 대상이므로 base에 포함하지 않음. kubectl apply -f apps/k6/job.yaml 으로 개별 실행)
-  - apps/k6/configmap.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
   # Cloudflare
