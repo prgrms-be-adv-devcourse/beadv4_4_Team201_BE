@@ -1,55 +1,121 @@
 package app.giftify.order.adapter.inbound.web.controller;
 
-import app.giftify.order.adapter.inbound.web.dto.request.OrderCreateRequest;
-import app.giftify.order.adapter.inbound.web.dto.response.OrderResponse;
-import app.giftify.order.adapter.inbound.web.dto.response.OrderStatusResponse;
-import app.giftify.order.application.inbound.OrderCreateUseCase;
+import app.giftify.facade.CoreFacade;
+import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.order.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
+import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderRequest;
+import app.giftify.order.adapter.inbound.web.dto.response.GetOrderDetailResponse;
+import app.giftify.order.adapter.inbound.web.dto.response.GetOrdersResponse;
+import app.giftify.order.adapter.inbound.web.dto.response.OrderCancelResponse;
+import app.giftify.order.application.OrderService;
+import app.giftify.order.application.dto.OrderCancelSummary;
+import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
+import app.giftify.order.application.inbound.vo.OrderDetail;
+import app.giftify.order.application.inbound.vo.OrderSummary;
+import app.giftify.order.domain.ResultCode;
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.annotation.Idempotent;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/order")
+@RequestMapping("/api/v2/orders")
 @RequiredArgsConstructor
-public class OrderController {
+public class OrderController implements OrderControllerSpec {
 
-    private final OrderCreateUseCase orderCreateUseCase;
+    private final CoreFacade coreFacade;
+    private final OrderService orderService;
 
-    @PostMapping("/create")
-    public ResponseEntity<OrderResponse> createOrder(
+    private static final String PREFIX = "ORDER";
+
+    @Idempotent(prefix = PREFIX)
+    @PostMapping
+    @Override
+    public ResponseEntity<RsData<PlaceOrderResult>> placeOrder(
             @CurrentMemberId Long memberId,
-            @RequestBody OrderCreateRequest request
+            @Valid @RequestBody PlaceOrderRequest orderRequest
     ) {
-        OrderResponse response = orderCreateUseCase.createOrder(request.withBuyerId(memberId));
+        PlaceOrderCommand command = PlaceOrderCommand.of(memberId, orderRequest);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        PlaceOrderResult response = coreFacade.placeOrder(command);
+
+        return ResponseEntity.ok(RsData.success(response));
     }
 
-    @PatchMapping("/orders/{orderId}/confirm")
-    public ResponseEntity<OrderStatusResponse> confirmOrder(
+    @GetMapping
+    @Override
+    public ResponseEntity<RsData<GetOrdersResponse>> getOrders(
             @CurrentMemberId Long memberId,
-            @PathVariable(name = "orderId") Long orderId
+            Pageable pageable
     ) {
-        String previousStatus = orderCreateUseCase.confirmOrder(orderId, memberId);
-        OrderStatusResponse response = OrderStatusResponse.of(orderId, previousStatus, "CONFIRMED", "주문이 확정되었습니다.");
+        Page<OrderSummary> page = orderService.getOrders(memberId, pageable);
+        List<OrderSummary> content = page.getContent();
 
-        return ResponseEntity.ok(response);
+        GetOrdersResponse data = createGetOrdersResponse(content, page);
+
+        return ResponseEntity.ok(RsData.success(data));
     }
 
-    @PostMapping("/cancel")
-    public ResponseEntity<OrderResponse> cancelOrder(
+    @GetMapping("/{orderId}")
+    @Override
+    public ResponseEntity<RsData<GetOrderDetailResponse>> getOrderDetail(
             @CurrentMemberId Long memberId,
-            @RequestBody Map<String, Long> request
-    ) {
-        Long orderId = request.get("orderId");
-        OrderResponse response = orderCreateUseCase.cancelOrder(orderId, memberId);
+            @PathVariable Long orderId) {
+        OrderDetail orderDetail = orderService.getOrderDetail(memberId, orderId);
 
-        return ResponseEntity.ok(response);
+        GetOrderDetailResponse data = new GetOrderDetailResponse(orderDetail);
+        RsData<GetOrderDetailResponse> body = RsData.success(data);
+
+        return ResponseEntity.ok(body);
+    }
+
+    @Idempotent(prefix = PREFIX)
+    @DeleteMapping("/{orderId}")
+    @Override
+    public ResponseEntity<RsData<String>> cancelOrder(
+            @CurrentMemberId Long memberId,
+            @PathVariable Long orderId
+    ) {
+        ResultCode resultCode = orderService.requestCancelOrder(memberId, orderId);
+
+        return ResponseEntity.status(resultCode.getStatusCode())
+                .body(RsData.success(resultCode.getMessage()));
+    }
+
+    @Idempotent(prefix = PREFIX)
+    @DeleteMapping("/{orderId}/items")
+    @Override
+    public ResponseEntity<RsData<OrderCancelResponse>> cancelOrderItems(
+            @CurrentMemberId Long memberId,
+            @PathVariable Long orderId,
+            @Valid @RequestBody OrderCancelItemsRequest request) {
+        CancelOrderItemsCommand command = new CancelOrderItemsCommand(orderId, memberId, request.itemIds());
+
+        OrderCancelSummary summary = orderService.requestCancelOrderItems(command);
+
+        OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
+
+        return ResponseEntity.ok(RsData.success(response));
+    }
+
+    private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {
+        return new GetOrdersResponse(
+                content,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext(),
+                page.hasPrevious()
+        );
     }
 }

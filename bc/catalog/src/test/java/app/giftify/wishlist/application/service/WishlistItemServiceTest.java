@@ -5,6 +5,8 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductNotActiveException;
 import app.giftify.product.domain.exception.ProductOutOfStockException;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
@@ -20,6 +22,7 @@ import app.giftify.wishlist.core.domain.exception.WishlistItemNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -49,6 +52,9 @@ class WishlistItemServiceTest {
 
     @Mock
     private WishlistSupport wishlistSupport;
+
+    @Mock
+    EventPublisher eventPublisher;
 
     @InjectMocks
     private WishlistItemService wishlistItemService;
@@ -141,9 +147,13 @@ class WishlistItemServiceTest {
 
         // when
         wishlistItemService.removeWishlistItem(command);
+        ArgumentCaptor<WishlistItemRemovedEvent> captor =
+                ArgumentCaptor.forClass(WishlistItemRemovedEvent.class);
+        verify(eventPublisher).publish(captor.capture());
 
         // then
         verify(wishlistItemRepositoryPort).delete(wishlistItem);
+        WishlistItemRemovedEvent completedEvent = captor.getValue();
     }
 
     @Test
