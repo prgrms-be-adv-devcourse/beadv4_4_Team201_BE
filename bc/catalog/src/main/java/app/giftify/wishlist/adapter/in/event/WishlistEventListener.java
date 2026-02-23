@@ -78,6 +78,8 @@ public class WishlistEventListener {
                 "[Wishlist] 위시리스트상품의 펀딩이 만료되었습니다.");
     }
 
+    // TODO 주문 취소로 인한 펀딩 시작 -> 시작 취소 이벤트? (취소한 사람만 참여했음)
+
     // 위시리스트아이템 상태 변경 메서드
     private void updateStatus(Long wishlistItemId, WishlistItemStatus next, String message) {
         WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
