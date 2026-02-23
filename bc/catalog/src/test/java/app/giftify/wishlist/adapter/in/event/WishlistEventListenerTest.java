@@ -2,6 +2,7 @@ package app.giftify.wishlist.adapter.in.event;
 
 import app.giftify.shared.domain.event.funding.*;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.shared.domain.vo.FundingDetail;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Visibility;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,27 +80,44 @@ class WishlistEventListenerTest {
     class FundingEventTests {
 
         @Test
-        @DisplayName("펀딩 생성 이벤트 - 위시리스트 아이템 상태가 IN_PROGRESS로 변경된다")
-        void handleFundingCreated_ChangesStatusToInProgress() {
+        @DisplayName("복수 펀딩 생성 이벤트 - 모든 위시리스트 아이템 상태가 IN_PROGRESS로 변경된다")
+        void handleFundingListCreated_ChangesAllStatusesToInProgress() {
             // given
-            Long wishlistItemId = 1L;
-            FundingCreatedEvent event = new FundingCreatedEvent(
-                    100L, wishlistItemId, LocalDateTime.now().plusDays(7)
-            );
+            Long wishlistItemId1 = 1L;
+            Long wishlistItemId2 = 2L;
+            Long wishlistItemId3 = 3L;
 
-            WishlistItem wishlistItem = WishlistItem.builder()
-                    .id(wishlistItemId)
-                    .wishlistId(10L)
-                    .productId(1L)
-                    .wishlistItemStatus(WishlistItemStatus.PENDING)
-                    .build();
-            given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.of(wishlistItem));
+            List<FundingDetail> fundingDetails = List.of(
+                    new FundingDetail(100L, 10L, wishlistItemId1),
+                    new FundingDetail(101L, 11L, wishlistItemId2),
+                    new FundingDetail(102L, 12L, wishlistItemId3)
+            );
+            FundingCreatedEventV2 event = new FundingCreatedEventV2(fundingDetails);
+
+            WishlistItem item1 = WishlistItem.builder()
+                    .id(wishlistItemId1).wishlistId(10L).productId(1L)
+                    .wishlistItemStatus(WishlistItemStatus.PENDING).build();
+            WishlistItem item2 = WishlistItem.builder()
+                    .id(wishlistItemId2).wishlistId(10L).productId(2L)
+                    .wishlistItemStatus(WishlistItemStatus.PENDING).build();
+            WishlistItem item3 = WishlistItem.builder()
+                    .id(wishlistItemId3).wishlistId(10L).productId(3L)
+                    .wishlistItemStatus(WishlistItemStatus.PENDING).build();
+
+            given(wishlistItemRepositoryPort.findById(wishlistItemId1)).willReturn(Optional.of(item1));
+            given(wishlistItemRepositoryPort.findById(wishlistItemId2)).willReturn(Optional.of(item2));
+            given(wishlistItemRepositoryPort.findById(wishlistItemId3)).willReturn(Optional.of(item3));
 
             // when
-            listener.handleFundingCreated(event);
+            listener.handleFundingListCreated(event);
 
             // then
-            assertThat(wishlistItem.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.IN_PROGRESS);
+            assertThat(item1.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.IN_PROGRESS);
+            assertThat(item2.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.IN_PROGRESS);
+            assertThat(item3.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.IN_PROGRESS);
+            verify(wishlistItemRepositoryPort).save(item1);
+            verify(wishlistItemRepositoryPort).save(item2);
+            verify(wishlistItemRepositoryPort).save(item3);
         }
 
         @Test

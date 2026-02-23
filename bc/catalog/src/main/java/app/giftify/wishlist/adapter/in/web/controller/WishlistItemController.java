@@ -3,50 +3,22 @@ package app.giftify.wishlist.adapter.in.web.controller;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistItemResponse;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
-import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
-@RequestMapping("/api/wishlist/items")
+@RequestMapping("/api/v2/wishlists")
 @RequiredArgsConstructor
 @Validated
-public class WishlistItemController {
+public class WishlistItemController implements WishlistItemV2ApiSpec {
     private final AddWishlistItemUseCase addWishlistItemUseCase;
-    private final GetWishlistItemUseCase getWishlistItemUseCase;
     private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
-    // 위시리스트에 담긴 모든 상품 조회
-    @GetMapping("/me")
-    public ResponseEntity<List<WishlistItemResponse>> getAllProducts(
-            @CurrentMemberId Long memberId
-    ) {
-        List<WishlistItemResponse> items = getWishlistItemUseCase.getWishlistItems(memberId)
-                .stream()
-                .map(WishlistItemResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(items);
-    }
-
-    // 위시리스트아이템에 특정 상품이 담겨있는지 확인
-    @GetMapping("/me/check")
-    public ResponseEntity<?> isExistProduct(
-            @CurrentMemberId Long memberId,
-            @RequestParam(name = "productId") Long productId
-    ) {
-        boolean exists = getWishlistItemUseCase.isItemExists(memberId, productId);
-
-        return ResponseEntity.ok(exists);
-    }
-
-    // 위시리스트아이템 추가
-    @PostMapping("/add")
+    @Override
+    @PostMapping("/me/items/add")
     public ResponseEntity<WishlistItemResponse> addProduct(
             @CurrentMemberId Long memberId,
             @RequestParam(name = "productId") Long productId
@@ -63,8 +35,8 @@ public class WishlistItemController {
         return ResponseEntity.ok(wishlistItemResponse);
     }
 
-    // 위시리스트에서 특정 상품 삭제
-    @DeleteMapping("/remove")
+    @Override
+    @DeleteMapping("/me/items/remove")
     public ResponseEntity<Void> removeProduct(
             @CurrentMemberId Long memberId,
             @RequestParam(name = "productId") Long productId

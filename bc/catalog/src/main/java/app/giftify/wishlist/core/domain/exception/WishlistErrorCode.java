@@ -15,6 +15,7 @@ public enum WishlistErrorCode implements ErrorCode {
     WISHLIST_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "W101", "위시리스트를 찾을 수 없습니다."),
     WISHLIST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "W102", "위시리스트 아이템을 찾을 수 없습니다."),
     INVALID_WISHLIST_ITEM_STAUTS(HttpStatus.BAD_REQUEST.value(), "W103", "담을 수 없는 상품입니다."),
+    WISHLIST_NOT_ACCESSIBLE(HttpStatus.BAD_REQUEST.value(), "W104", "위시리스트 조회 권한이 없습니다."),
 
     // [200 ~ 299] 상태 변경 및 비즈니스 흐름 제어
     DUPLICATE_WISHLIST_ITEM(HttpStatus.BAD_REQUEST.value(), "W201", "이미 위시리스트에 존재하는 아이템입니다."),

@@ -1,10 +1,10 @@
 package app.giftify.wishlist.application.port.out;
 
-import java.util.List;
-import java.util.Optional;
-
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface WishlistRepositoryPort {
 
@@ -24,4 +24,6 @@ public interface WishlistRepositoryPort {
     Optional<Wishlist> findByMemberIdAndVisibility(Long memberId, Visibility visibility);
 
     List<Wishlist> findByMemberIdInAndVisibility(List<Long> memberIds, Visibility visibility);
+
+    Optional<Wishlist> findByMemberIdAndVisibilityIn(Long memberId, List<Visibility> visibilities);
 }
