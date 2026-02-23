@@ -191,41 +191,30 @@ public class OrderService {
     public Map<Long, Money> calculateTotalAmounts(List<Long> orderIds) {
         if (orderIds.isEmpty()) return Map.of();
 
-        try {
-            return orderRepository.getAllByIdInWithItems(orderIds).stream()
-                    .collect(Collectors.toMap(
-                            Order::getId,
-                            this::getValidatedAmount
-                    ));
-        } catch (BusinessException e) {
-            ErrorCode errorCode = e.getErrorCode();
-            log.error("[주문 금액 집계 실패] 비즈니스 예외 발생 - errorCode: {}, message = {}", errorCode.getCode(), errorCode.getMessage(), e);
-        } catch (InfraException e) {
-            InfraErrorCode errorCode = e.getErrorCode();
-            if (errorCode.isRetryable()) throw e;
-            log.error("[주문 금액 집계 실패] 인프라 예외 발생 - errorCode: {}, message = {}", errorCode.getCode(), errorCode.getMessage(), e);
-        } catch (Exception e) {
-            log.error("[주문 금액 집계 실패] 알 수 없는 예외 발생", e);
-        }
-
-        return Map.of();
-    }
-
-    private Money calculateItemsSum(Order order) {
-        return order.getItems().stream()
-                .map(OrderItem::getAmount)
-                .reduce(Money.zero(), Money::plus);
-    }
-
-    private Money getValidatedAmount(Order order) {
-        Money itemTotalAmount = calculateItemsSum(order);
-
-        if (!order.getTotalAmount().equals(itemTotalAmount)) {
-            log.error("주문 금액 불일치 - orderId: {}, DB기록: {}, 아이템합계: {}",
-                    order.getId(), order.getTotalAmount(), itemTotalAmount);
-        }
-
-        return order.getTotalAmount();
+        return orderRepository.getAllByIdInWithItems(orderIds).stream()
+                .map(order -> {
+                    try {
+                        return Map.entry(order.getId(), order.getPayableAmount());
+                    } catch (BusinessException e) {
+                        ErrorCode errorCode = e.getErrorCode();
+                        log.error("[금액 집계 건별 실패] orderId: {}, errorCode: {}, message = {}", order.getId(), errorCode.getCode(), errorCode.getMessage(), e);
+                        return null;
+                    } catch (InfraException e) {
+                        InfraErrorCode errorCode = e.getErrorCode();
+                        if (errorCode.isRetryable()) throw e;
+                        log.error("[금액 집계 건별 실패] orderId: {}, errorCode: {}, message = {}", order.getId(), errorCode.getCode(), errorCode.getMessage(), e);
+                        return null;
+                    } catch (Exception e) {
+                        log.error("[금액 집계 건별 실패] orderId: {}, message = {}", order.getId(), e.getMessage(), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull) // 에러 난 건(null)은 제외
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (existing, replacement) -> existing // 혹시 모를 ID 중복 방어
+                ));
     }
 
     private static void validateOwner(Long memberId, Long buyerId) {
