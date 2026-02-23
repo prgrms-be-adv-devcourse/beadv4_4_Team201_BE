@@ -1,7 +1,11 @@
 package app.giftify.cart.application.inbound;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
@@ -113,7 +117,6 @@ public class CartService
 			throw new CartException(CartErrorCode.FORBIDDEN);
 		}
 
-		// 장바구니 아이템들의 상품ID 목록 추출
 		return getCartResponse(cart);
 	}
 
@@ -127,16 +130,45 @@ public class CartService
 
 	@NonNull
 	private CartResponse getCartResponse(Cart cart) {
-		List<Long> productIds = cart.getItems().stream()
-			.map(CartItem::getTargetId)
-			.toList();
+		if (cart.getItems().isEmpty()) {
+			return CartResponse.from(cart, List.of(), Collections.emptyMap());
+		}
 
-		Map<Long, Product> productMap = productRepositoryPort.findAllById(productIds)
-			.stream()
-			.collect(Collectors.toMap(Product::getId, product -> product));
+		// 1. 장바구니의 모든 wishlistItemId를 가져옵니다.
+		List<Long> wishlistItemIds = cart.getItems().stream()
+				.map(CartItem::getTargetId)
+				.toList();
 
-		return CartResponse.from(cart, productMap);
+		// 2. wishlistItemId로 WishlistItem 목록을 조회하고 Map으로 만듭니다.
+		Map<Long, WishlistItem> wishlistItemMap = wishlistItemRepositoryPort.findAllById(wishlistItemIds).stream()
+				.collect(Collectors.toMap(WishlistItem::getId, Function.identity()));
+
+		// 3. 조회된 WishlistItem에서 productId 목록을 추출하여 Product 정보를 조회하고 Map으로 만듭니다.
+		List<Long> productIds = wishlistItemMap.values().stream()
+				.map(WishlistItem::getProductId)
+				.toList();
+		Map<Long, Product> productMap = productRepositoryPort.findAllById(productIds).stream()
+				.collect(Collectors.toMap(Product::getId, Function.identity()));
+
+		// 4. wishlistItemId를 키로, Product를 값으로 하는 최종 맵을 생성합니다.
+		// 이 과정에서 WishlistItem이나 Product가 DB에 없는 경우 건너뛰게 됩니다.
+		Map<Long, Product> finalProductMap = new HashMap<>();
+		for (WishlistItem wishlistItem : wishlistItemMap.values()) {
+			Product product = productMap.get(wishlistItem.getProductId());
+			if (product != null) {
+				finalProductMap.put(wishlistItem.getId(), product);
+			}
+		}
+
+		// 5. 유효한 제품 정보가 있는 아이템만 필터링합니다.
+		Set<Long> validTargetIds = finalProductMap.keySet();
+		List<CartItem> validItems = cart.getItems().stream()
+				.filter(item -> validTargetIds.contains(item.getTargetId()))
+				.toList();
+
+		return CartResponse.from(cart, validItems, finalProductMap);
 	}
+
 
 	// 내 카트에서 상품 제거
 	@Override
