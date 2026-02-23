@@ -3,6 +3,8 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
@@ -37,6 +39,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
     private final WishlistRepositoryPort wishlistRepositoryPort;
+    private final EventPublisher eventPublisher;
 
     private final ProductSupport productSupport;
     private final WishlistSupport wishlistSupport;
@@ -106,8 +109,6 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
         // 새롭게 생성된 WishlistItem 반환
         return wishlistItemRepositoryPort.save(wishlistItem);
-
-        // todo 알림 이벤트
     }
 
     /**
@@ -123,7 +124,11 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
         validateManualRemovable(wishlistItem); // 상태 확인
         wishlistItemRepositoryPort.delete(wishlistItem);
 
-        // todo 장바구니아이템 상태 변경
+        eventPublisher.publish(new WishlistItemRemovedEvent(
+                wishlistItem.getId(),
+                wishlistItem.getProductId(),
+                command.memberId()
+        ));
     }
 
     /**
