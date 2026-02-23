@@ -13,7 +13,7 @@ public class ProductEsSearchDto {
     private String keyword;
     private Integer minPrice;
     private Integer maxPrice;
-    private ProductCategory category;
+    private String category;
     private ProductSearchSortType sort = ProductSearchSortType.RELEVANCE;
 
     @Min(value = 0, message = "page must be >= 0")
@@ -23,11 +23,15 @@ public class ProductEsSearchDto {
     private int size = 20;
 
     public static ProductEsSearchCommand toCommand(ProductEsSearchDto dto) {
+        ProductCategory category = null;
+        if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
+            category = ProductCategory.valueOf(dto.getCategory().toUpperCase());
+        }
         return new ProductEsSearchCommand(
                 dto.getKeyword(),
                 dto.getMinPrice(),
                 dto.getMaxPrice(),
-                dto.getCategory(),
+                category,
                 dto.getSort(),
                 dto.getPage(),
                 dto.getSize()
