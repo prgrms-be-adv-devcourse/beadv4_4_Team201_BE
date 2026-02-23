@@ -34,12 +34,15 @@ dependencies {
     annotationProcessor("jakarta.annotation:jakarta.annotation-api")
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
 
+    // ElasticSearch
+    implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
     // Apache Commons
-    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 
     // Test
     testImplementation(libs.spring.boot.starter.test)
@@ -48,10 +51,12 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
-
+    testImplementation(libs.testcontainers.elasticsearch)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.spring.boot.testcontainers)
     // Retry
     implementation("org.springframework.retry:spring-retry")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation(libs.spring.boot.starter.aop)
 }
 
 tasks.test {

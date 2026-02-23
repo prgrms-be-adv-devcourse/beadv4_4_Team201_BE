@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation(libs.spring.modulith.kafka)
+    implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
     runtimeOnly(libs.h2)
     runtimeOnly(libs.postgresql)

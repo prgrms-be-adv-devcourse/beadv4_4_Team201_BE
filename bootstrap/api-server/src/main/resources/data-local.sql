@@ -523,7 +523,7 @@ ALTER TABLE friendships
 --   - ID 6: qa-buyer3-giftify@team201.dev (BUYER, 배고픈강아지0007)
 -- Wallets: 6개 (각 회원당 1개)
 -- Carts: 6개 (각 회원당 1개)
--- Products: 10개 (ACTIVE 5, DRAFT 5) - seller_id=3
+-- Products: 90개 (ACTIVE 79, DRAFT 11) - seller_id=3
 -- Wishlists: 6개 (PUBLIC 4, PRIVATE 1, FRIENDS_ONLY 1)
 -- WishlistItems: 10개 (PENDING 6, IN_PROGRESS 2, COMPLETED 2)
 -- CartItems: 5개 (buyer2: 2, buyer3: 2, buyer1: 1)
