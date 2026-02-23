@@ -18,8 +18,12 @@ export GH_PAT="your-pat-token"
 ```bash
 kubectl create namespace argocd
 kubectl apply -n argocd \
-  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml \
+  --server-side --force-conflicts
 ```
+
+> `--server-side --force-conflicts`: install.yaml의 CRD annotation이 262KB를 초과하여
+> client-side apply가 실패함. server-side apply 필수.
 
 Pod이 모두 Running 상태인지 확인:
 
