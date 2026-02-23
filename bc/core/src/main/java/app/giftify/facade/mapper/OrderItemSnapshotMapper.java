@@ -25,7 +25,7 @@ public final class OrderItemSnapshotMapper {
 	 * @throws NullPointerException orderItem이 null인 경우
 	 */
 	public static OrderItemSnapshot fromOrderDemo(
-		app.giftify.orderDemo.domain.OrderItemSnapshot orderItem
+		app.giftify.order.domain.OrderItemSnapshot orderItem
 	) {
 		Objects.requireNonNull(orderItem, "orderItem must not be null");
 		return new OrderItemSnapshot(
@@ -42,7 +42,7 @@ public final class OrderItemSnapshotMapper {
 	 * @return Payment BC의 주문 항목 스냅샷 목록 (입력이 null/빈 리스트면 빈 리스트 반환)
 	 */
 	public static List<OrderItemSnapshot> fromOrderDemoList(
-		List<app.giftify.orderDemo.domain.OrderItemSnapshot> orderItems
+		List<app.giftify.order.domain.OrderItemSnapshot> orderItems
 	) {
 		if (orderItems == null || orderItems.isEmpty()) {
 			return Collections.emptyList();

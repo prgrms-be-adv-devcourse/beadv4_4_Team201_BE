@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.orderDemo.domain.OrderItemStatus;
+import app.giftify.order.domain.OrderItemStatus;
 import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
@@ -27,8 +27,8 @@ class OrderItemSnapshotMapperTest {
 		@DisplayName("OrderDemo의 OrderItemSnapshot을 Payment의 OrderItemSnapshot으로 변환한다")
 		void fromOrderDemo_ConvertsSuccessfully() {
 			// given
-			app.giftify.orderDemo.domain.OrderItemSnapshot orderDemoItem =
-				app.giftify.orderDemo.domain.OrderItemSnapshot.builder()
+			app.giftify.order.domain.OrderItemSnapshot orderDemoItem =
+				app.giftify.order.domain.OrderItemSnapshot.builder()
 					.orderItemId(1L)
 					.orderId(100L)
 					.targetId(200L)
@@ -68,8 +68,8 @@ class OrderItemSnapshotMapperTest {
 		@DisplayName("OrderDemo의 OrderItemSnapshot 목록을 Payment의 OrderItemSnapshot 목록으로 변환한다")
 		void fromOrderDemoList_ConvertsListSuccessfully() {
 			// given
-			app.giftify.orderDemo.domain.OrderItemSnapshot item1 =
-				app.giftify.orderDemo.domain.OrderItemSnapshot.builder()
+			app.giftify.order.domain.OrderItemSnapshot item1 =
+				app.giftify.order.domain.OrderItemSnapshot.builder()
 					.orderItemId(1L)
 					.orderId(100L)
 					.targetId(201L)
@@ -82,8 +82,8 @@ class OrderItemSnapshotMapperTest {
 					.status(OrderItemStatus.CREATED)
 					.build();
 
-			app.giftify.orderDemo.domain.OrderItemSnapshot item2 =
-				app.giftify.orderDemo.domain.OrderItemSnapshot.builder()
+			app.giftify.order.domain.OrderItemSnapshot item2 =
+				app.giftify.order.domain.OrderItemSnapshot.builder()
 					.orderItemId(2L)
 					.orderId(100L)
 					.targetId(202L)
@@ -96,7 +96,7 @@ class OrderItemSnapshotMapperTest {
 					.status(OrderItemStatus.CREATED)
 					.build();
 
-			List<app.giftify.orderDemo.domain.OrderItemSnapshot> orderDemoItems = List.of(item1, item2);
+			List<app.giftify.order.domain.OrderItemSnapshot> orderDemoItems = List.of(item1, item2);
 
 			// when
 			List<OrderItemSnapshot> result = OrderItemSnapshotMapper.fromOrderDemoList(orderDemoItems);
