@@ -3,13 +3,17 @@ package app.giftify.orderDemo.adapter.inbound.web.controller;
 import app.giftify.facade.CoreFacade;
 import app.giftify.facade.command.PlaceOrderCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.orderDemo.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
+import app.giftify.orderDemo.adapter.inbound.web.dto.response.OrderCancelResponse;
 import app.giftify.orderDemo.application.OrderService;
-import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.application.dto.OrderCancelSummary;
+import app.giftify.orderDemo.application.inbound.command.CancelOrderItemsCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderDetail;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
+import app.giftify.orderDemo.domain.ResultCode;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import app.giftify.support.common.annotation.Idempotent;
@@ -81,10 +85,26 @@ public class OrderController implements OrderControllerSpec {
             @CurrentMemberId Long memberId,
             @PathVariable Long orderId
     ) {
-        OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+        ResultCode resultCode = orderService.requestCancelOrder(memberId, orderId);
 
-        return ResponseEntity.status(result.getStatusCode())
-                .body(RsData.success(result.getMessage()));
+        return ResponseEntity.status(resultCode.getStatusCode())
+                .body(RsData.success(resultCode.getMessage()));
+    }
+
+    @Idempotent(prefix = PREFIX)
+    @DeleteMapping("/{orderId}/items")
+    @Override
+    public ResponseEntity<RsData<OrderCancelResponse>> cancelOrderItems(
+            @CurrentMemberId Long memberId,
+            @PathVariable Long orderId,
+            @Valid @RequestBody OrderCancelItemsRequest request) {
+        CancelOrderItemsCommand command = new CancelOrderItemsCommand(orderId, memberId, request.itemIds());
+
+        OrderCancelSummary summary = orderService.requestCancelOrderItems(command);
+
+        OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
+
+        return ResponseEntity.ok(RsData.success(response));
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {

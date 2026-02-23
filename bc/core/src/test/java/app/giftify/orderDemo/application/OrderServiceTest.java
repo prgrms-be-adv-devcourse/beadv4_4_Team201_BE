@@ -5,13 +5,11 @@ import app.giftify.orderDemo.adapter.outbound.client.WishlistClient;
 import app.giftify.orderDemo.application.inbound.command.CreateOrderCommand;
 import app.giftify.orderDemo.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.orderDemo.application.inbound.vo.OrderSummary;
-import app.giftify.orderDemo.application.outbound.port.OrderItemRepository;
 import app.giftify.orderDemo.application.outbound.port.OrderRepository;
 import app.giftify.orderDemo.domain.Order;
-import app.giftify.orderDemo.domain.OrderItem;
 import app.giftify.orderDemo.domain.OrderSnapshot;
 import app.giftify.orderDemo.domain.OrderStatus;
-import app.giftify.orderDemo.application.dto.OrderCancelResult;
+import app.giftify.orderDemo.domain.ResultCode;
 import app.giftify.orderDemo.domain.errorCode.OrderErrorCode;
 import app.giftify.orderDemo.domain.fixture.OrderFixture;
 import app.giftify.shared.api.exception.DomainException;
@@ -40,7 +38,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +53,6 @@ class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
-
-    @Mock
-    private OrderItemRepository orderItemRepository;
 
     @Mock
     private WishlistClient wishlistClient;
@@ -155,8 +149,8 @@ class OrderServiceTest {
 
         // then
         // OrderItem의 targetId가 fundingId와 일치하는지 확인
-        assertThat(result.orderItemSnapshots().get(0).targetId()).isEqualTo(fundingId);
-        assertThat(result.orderItemSnapshots().get(0).targetType()).isEqualTo(TargetType.FUNDING);
+        assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(fundingId);
+        assertThat(result.orderItemSnapshots().getFirst().targetType()).isEqualTo(TargetType.FUNDING);
     }
 
     @Test
@@ -181,6 +175,7 @@ class OrderServiceTest {
                 PaymentMethod.DEPOSIT,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
+                LocalDateTime.now(),
                 LocalDateTime.now()
         );
         OrderSummary view2 = new OrderSummary(
@@ -190,6 +185,7 @@ class OrderServiceTest {
                 Money.of("20000"),
                 OrderStatus.CREATED,
                 PaymentMethod.DEPOSIT,
+                LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 LocalDateTime.now()
@@ -247,24 +243,22 @@ class OrderServiceTest {
         private final Long orderId = 10L;
 
         @Test
-        @DisplayName("성공: 결제 완료된 주문 취소 요청 시 CANCEL_PENDING 상태로 변경하고 취소 요청 이벤트를 발행한다")
+        @DisplayName("성공: 결제 완료된 주문 취소 요청 시 CANCELING 상태로 변경하고 취소 요청 이벤트를 발행한다")
         void given_paidOrder_when_requestCancelOrder_then_returnCancelPending() {
             // given
             Order order = OrderFixture.createOrderWithStatus(OrderStatus.PAID);
             ReflectionTestUtils.setField(order, "id", orderId);
 
-            List<OrderItem> cancelableItems = new ArrayList<>(order.getItems());
             Money expectedCancelAmount = Money.of("2000"); // 아이템 2개 × 1000원
 
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
-            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(cancelableItems);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            ResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.CANCEL_PENDING);
-            assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCEL_PENDING);
+            assertThat(result).isEqualTo(ResultCode.ACCEPTED);
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELING);
 
             ArgumentCaptor<OrderCancelRequestedEvent> captor = ArgumentCaptor.forClass(OrderCancelRequestedEvent.class);
             verify(eventPublisher).publish(captor.capture());
@@ -278,51 +272,46 @@ class OrderServiceTest {
             Order order = OrderFixture.createOrderWithItems(memberId, 2);
             ReflectionTestUtils.setField(order, "id", orderId);
 
-            List<OrderItem> cancelableItems = new ArrayList<>(order.getItems());
-
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
-            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(cancelableItems);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            ResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.CANCEL_SUCCESS);
+            assertThat(result).isEqualTo(ResultCode.SUCCESS);
             assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
             verify(eventPublisher, never()).publish(any());
         }
 
         @Test
         @DisplayName("멱등: 이미 취소된 주문에 재요청 시 ALREADY_CANCELED를 반환하고 추가 처리를 하지 않는다")
-        void given_canceledOrder_when_requestCancelOrder_then_returnAlreadyCanceled() {
+        void given_canceledOrder_when_requestCanceledOrder_then_returnAlreadyCanceled() {
             // given
             Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELED);
 
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            ResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.ALREADY_CANCELED);
-            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
+            assertThat(result).isEqualTo(ResultCode.ALREADY_PROCESSED);
             verify(eventPublisher, never()).publish(any());
         }
 
         @Test
         @DisplayName("멱등: 취소 처리 중인 주문에 재요청 시 IN_PROGRESS를 반환하고 추가 처리를 하지 않는다")
-        void given_cancelPendingOrder_when_requestCancelOrder_then_returnInProgress() {
+        void given_cancelPendingOrder_when_requestCanceledOrder_then_returnInProgress() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELING);
 
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when
-            OrderCancelResult result = orderService.requestCancelOrder(memberId, orderId);
+            ResultCode result = orderService.requestCancelOrder(memberId, orderId);
 
             // then
-            assertThat(result).isEqualTo(OrderCancelResult.IN_PROGRESS);
-            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
+            assertThat(result).isEqualTo(ResultCode.IN_PROGRESS);
             verify(eventPublisher, never()).publish(any());
         }
 
@@ -333,8 +322,7 @@ class OrderServiceTest {
             Order order = OrderFixture.createOrderWithStatus(OrderStatus.CONFIRMED);
             ReflectionTestUtils.setField(order, "id", orderId);
 
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
-            given(orderItemRepository.getCancelableItemsByOrderId(orderId)).willReturn(List.of());
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when & then
             assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
@@ -349,7 +337,7 @@ class OrderServiceTest {
         @DisplayName("실패: 존재하지 않는 주문 ID로 요청 시 ORDER_NOT_FOUND 예외가 발생한다")
         void given_nonExistentOrderId_when_cancelOrder_then_throwOrderNotFound() {
             // given
-            given(orderRepository.getByIdWithLock(orderId))
+            given(orderRepository.getByIdWithItemsAndLock(orderId))
                     .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
 
             // when & then
@@ -358,7 +346,6 @@ class OrderServiceTest {
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
 
-            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
             verify(eventPublisher, never()).publish(any());
         }
 
@@ -369,7 +356,7 @@ class OrderServiceTest {
             Long anotherMemberId = 999L;
             Order order = OrderFixture.createOrderWithItems(memberId, 2); // buyerId = 1L
 
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when & then
             assertThatThrownBy(() -> orderService.requestCancelOrder(anotherMemberId, orderId))
@@ -377,7 +364,6 @@ class OrderServiceTest {
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_OWNER_MISMATCH);
 
-            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
             verify(eventPublisher, never()).publish(any());
         }
 
@@ -385,7 +371,7 @@ class OrderServiceTest {
         @DisplayName("실패: DB 락 획득 타임아웃 시 InfraException이 전파된다 (@Retryable 재시도 대상)")
         void given_dbLockTimeout_when_cancelOrder_then_infraExceptionPropagates() {
             // given
-            given(orderRepository.getByIdWithLock(orderId))
+            given(orderRepository.getByIdWithItemsAndLock(orderId))
                     .willThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT, "비관적 락 획득 실패"));
 
             // when & then
@@ -395,7 +381,6 @@ class OrderServiceTest {
                     .isEqualTo(InfraErrorCode.DB_LOCK_TIMEOUT);
 
             // InfraException이 삼켜지지 않고 전파되어야 @Retryable이 재시도할 수 있음
-            verify(orderItemRepository, never()).getCancelableItemsByOrderId(any());
             verify(eventPublisher, never()).publish(any());
         }
 
@@ -406,9 +391,9 @@ class OrderServiceTest {
             Order order = OrderFixture.createOrderWithItems(memberId, 2);
             ReflectionTestUtils.setField(order, "id", orderId);
 
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
-            given(orderItemRepository.getCancelableItemsByOrderId(orderId))
+            given(orderRepository.getByIdWithItemsAndLock(orderId))
                     .willThrow(new InfraException(InfraErrorCode.DB_TEMPORARY_ERROR, "일시적 DB 오류"));
+
 
             // when & then
             assertThatThrownBy(() -> orderService.requestCancelOrder(memberId, orderId))
@@ -427,24 +412,19 @@ class OrderServiceTest {
         private final Long orderId = 10L;
 
         @Test
-        @DisplayName("성공: CANCEL_PENDING 상태 주문의 취소를 확정하여 CANCELED로 변경하고 OrderCanceledEvent를 발행한다")
+        @DisplayName("성공: CANCELING 상태 주문의 취소를 확정하여 CANCELED로 변경하고 OrderCanceledEvent를 발행한다")
         void given_cancelPendingOrder_when_completeCancel_then_statusCanceled() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELING);
             ReflectionTestUtils.setField(order, "id", orderId);
 
-            List<OrderItem> pendingItems = new ArrayList<>(order.getItems());
-            pendingItems.forEach(item -> item.pendingToCancel(LocalDateTime.now()));
-
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
-            given(orderItemRepository.getPendingCancelItemsByOrderId(orderId)).willReturn(pendingItems);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when
             orderService.completeCancel(orderId);
 
             // then
-            verify(orderRepository).getByIdWithLock(orderId);
-            verify(orderItemRepository).getPendingCancelItemsByOrderId(orderId);
+            verify(orderRepository).getByIdWithItemsAndLock(orderId);
             assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
 
             ArgumentCaptor<OrderCanceledEvent> captor = ArgumentCaptor.forClass(OrderCanceledEvent.class);
@@ -456,7 +436,7 @@ class OrderServiceTest {
         @DisplayName("실패: 존재하지 않는 주문 ID로 요청 시 ORDER_NOT_FOUND 예외가 발생한다")
         void given_nonExistentOrderId_when_completeCancel_then_throwOrderNotFound() {
             // given
-            given(orderRepository.getByIdWithLock(orderId))
+            given(orderRepository.getByIdWithItemsAndLock(orderId))
                     .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
 
             // when & then
@@ -464,8 +444,6 @@ class OrderServiceTest {
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
-
-            verify(orderItemRepository, never()).getPendingCancelItemsByOrderId(any());
         }
     }
 
@@ -476,24 +454,19 @@ class OrderServiceTest {
         private final Long orderId = 10L;
 
         @Test
-        @DisplayName("성공: CANCEL_PENDING 상태 주문 취소 실패 처리 시 PAID 상태로 복구한다")
+        @DisplayName("성공: 주문 취소 실패 처리 시 주문 아이템 복구 후 상태를 복구한다")
         void given_cancelPendingOrder_when_failCancel_then_statusRestored() {
             // given
-            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCEL_PENDING);
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.CANCELING);
             ReflectionTestUtils.setField(order, "id", orderId);
 
-            List<OrderItem> pendingItems = new ArrayList<>(order.getItems());
-            pendingItems.forEach(item -> item.pendingToCancel(LocalDateTime.now()));
-
-            given(orderRepository.getByIdWithLock(orderId)).willReturn(order);
-            given(orderItemRepository.getPendingCancelItemsByOrderId(orderId)).willReturn(pendingItems);
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
 
             // when
             orderService.failCancel(orderId);
 
             // then
-            verify(orderRepository).getByIdWithLock(orderId);
-            verify(orderItemRepository).getPendingCancelItemsByOrderId(orderId);
+            verify(orderRepository).getByIdWithItemsAndLock(orderId);
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
         }
 
@@ -501,7 +474,7 @@ class OrderServiceTest {
         @DisplayName("실패: 존재하지 않는 주문 ID로 요청 시 ORDER_NOT_FOUND 예외가 발생한다")
         void given_nonExistentOrderId_when_failCancel_then_throwOrderNotFound() {
             // given
-            given(orderRepository.getByIdWithLock(orderId))
+            given(orderRepository.getByIdWithItemsAndLock(orderId))
                     .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
 
             // when & then
@@ -509,8 +482,6 @@ class OrderServiceTest {
                     .isInstanceOf(PolicyException.class)
                     .extracting("errorCode")
                     .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
-
-            verify(orderItemRepository, never()).getPendingCancelItemsByOrderId(any());
         }
     }
 
@@ -543,7 +514,7 @@ class OrderServiceTest {
             verify(orderRepository).getByOrderNumber(orderNumber);
 
             // 2. 엔티티의 toPaid 메서드가 스냅샷의 데이터로 호출되었는지 확인
-            verify(order).toPaid(command.paymentId(), command.lastTransactionKey());
+            verify(order).paid(command.paymentId(), command.lastTransactionKey());
 
             // 3. 실제 상태가 변했는지 확인 (더티 체킹에 의해 반영될 상태)
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);

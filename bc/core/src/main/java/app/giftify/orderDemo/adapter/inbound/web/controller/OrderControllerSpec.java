@@ -1,9 +1,11 @@
 package app.giftify.orderDemo.adapter.inbound.web.controller;
 
 import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.orderDemo.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.orderDemo.adapter.inbound.web.dto.response.GetOrdersResponse;
+import app.giftify.orderDemo.adapter.inbound.web.dto.response.OrderCancelResponse;
 import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,13 +59,38 @@ public interface OrderControllerSpec {
 
     @Operation(summary = "주문 전체 취소", description = "로그인된 회원 ID와 주문 ID로 주문을 전체 취소합니다.")
     @ApiResponse(responseCode = "200", description = "주문 취소 성공")
+    @ApiResponse(responseCode = "202", description = "주문 취소 접수 완료 또는 이미 처리 중인 취소 건")
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
     @ApiResponse(responseCode = "500", description = "서버 오류")
+    @Parameter(
+            name = "X-Idempotency-Key",
+            description = "멱등성 검증을 위한 고유 키 (UUID 권장)",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     ResponseEntity<RsData<String>> cancelOrder(
             @Parameter(hidden = true) Long memberId,
             @PathVariable Long orderId
     );
 
-
+    @Operation(summary = "주문 부분 취소", description = "로그인된 회원 ID와 주문 아이템 ID로 주문을 부분 취소합니다.")
+    @ApiResponse(responseCode = "200", description = "주문 취소 성공")
+    @ApiResponse(responseCode = "202", description = "주문 취소 접수 완료 또는 이미 처리 중인 취소 건")
+    @ApiResponse(responseCode = "400", description = "잘못된 요청")
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @Parameter(
+            name = "X-Idempotency-Key",
+            description = "멱등성 검증을 위한 고유 키 (UUID 권장)",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
+    ResponseEntity<RsData<OrderCancelResponse>> cancelOrderItems(
+            @Parameter(hidden = true) Long memberId,
+            @PathVariable Long orderId,
+            @RequestBody OrderCancelItemsRequest request
+    );
 }
