@@ -12,6 +12,8 @@ import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
 import app.giftify.wallet.application.inbound.CreateWalletUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
+import app.giftify.wallet.application.inbound.RestoreWalletCommand;
+import app.giftify.wallet.application.inbound.RestoreWalletUseCase;
 import app.giftify.wallet.application.inbound.WalletHistoryQuery;
 import app.giftify.wallet.application.inbound.WalletHistoryResult;
 import app.giftify.wallet.application.inbound.WalletBalanceResult;
@@ -39,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, QueryWalletHistoryUseCase, CreateWalletUseCase {
+public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, QueryWalletHistoryUseCase, CreateWalletUseCase, RestoreWalletUseCase {
 
 	private final WalletRepository walletRepository;
 	private final WalletHistoryRepository historyRepository;
@@ -218,5 +220,36 @@ public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase
 				log.info("[WalletService] 신규 지갑 생성 완료. memberId={}, walletId={}", memberId, savedWallet.getId());
 				return CreateWalletResult.created(savedWallet.getId(), memberId);
 			});
+	}
+
+	@Override
+	@Transactional
+	public void restore(RestoreWalletCommand command) {
+		if (historyRepository.existsByReferenceIdAndReferenceType(
+			command.referenceId(), ReferenceType.CANCEL)) {
+			log.warn("[WalletService] 중복 취소 환불 요청. referenceId={}", command.referenceId());
+			return;
+		}
+
+		Wallet wallet = walletRepository.findByMemberId(command.memberId())
+			.orElseThrow(() -> new WalletException(
+				WalletErrorCode.WALLET_NOT_FOUND,
+				"[WalletService] 지갑을 찾을 수 없습니다. memberId=" + command.memberId()
+			));
+
+		wallet.restoreForCancel(command.amount());
+		Wallet savedWallet = walletRepository.save(wallet);
+
+		historyRepository.recordTransaction(
+			savedWallet.getId(),
+			TransactionType.CANCEL_REFUND,
+			command.amount(),
+			savedWallet.getBalance(),
+			ReferenceType.CANCEL,
+			command.referenceId()
+		);
+
+		log.info("[Wallet] 취소 환불 완료. walletId={}, memberId={}, amount={}, balanceAfter={}",
+			savedWallet.getId(), command.memberId(), command.amount(), savedWallet.getBalance());
 	}
 }
