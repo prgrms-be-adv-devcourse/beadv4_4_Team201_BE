@@ -1,9 +1,6 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
-import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductCreateRequestDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
+import app.giftify.product.adapter.inbound.web.requestDto.*;
 import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
@@ -104,5 +101,31 @@ public interface ProductV2ApiSpec {
     ResponseEntity<RsData<PageResponse<StockHistoryDto>>> searchStockHistories(
             @Parameter(hidden = true) Long sellerId,
             @Valid @ModelAttribute StockHistorySearchCommand searchCommand
+    );
+
+    @Operation(summary = "ES 상품 데이터 재동기화 (관리자)", description = """
+            RDB의 승인된 상품(ACTIVE/INACTIVE)을 ES에 수동으로 전체 재동기화합니다. ADMIN 권한 필요.
+            - ES 볼륨이 삭제됐었거나 ES 데이터가 꼬였을 때 수동 재동기화용으로 사용
+            - ES 볼륨이 유지되는 한 서버(Spring Boot) 재시작 시 ES 데이터는 그대로 유지되므로 매번 호출할 필요 없음
+            - 동기화 완료 시 처리된 상품 건수를 반환
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "동기화 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "ADMIN 권한 없음")
+    })
+    ResponseEntity<RsData<String>> syncProductsToEs();
+
+    @Operation(summary = "상품 검색 (ES)", description = """
+            Elasticsearch 기반 상품 검색 API.
+            키워드(name, description), 가격 범위, 카테고리 조건으로 ACTIVE 상품을 검색합니다.
+            정렬 옵션: latest(최신순, 기본값), priceAsc(가격 낮은순), priceDesc(가격 높은순), relevance(ES 스코어순)
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "검색 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 검색 파라미터 (size >= 1 필수)")
+    })
+    ResponseEntity<RsData<PageResponse<ProductDto>>> searchProductsByEs(
+            @Valid @ModelAttribute ProductEsSearchDto searchDto
     );
 }

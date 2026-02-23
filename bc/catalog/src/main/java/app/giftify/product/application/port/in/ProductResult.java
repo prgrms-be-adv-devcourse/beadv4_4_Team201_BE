@@ -1,23 +1,26 @@
 package app.giftify.product.application.port.in;
 
-import java.time.LocalDateTime;
-
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductCategory;
+import app.giftify.product.domain.ProductStatus;
+
+import java.time.LocalDateTime;
 
 /**
  * 애플리케이션 계층의 조회 결과 전용 객체 (Query Model)
  * 외부 어댑터 계층(Web)의 DTO와 분리하여 애플리케이션의 독립성을 보장한다.
  */
 public record ProductResult(
-    Long id,
-    String sellerNickName,
-    String name,
-    String description,
-    int price,
-    ProductCategory category,
-    String imageKey,
-    LocalDateTime createdAt
+        Long id,
+        String sellerNickName,
+        String name,
+        String description,
+        int price,
+        ProductCategory category,
+        String imageKey,
+        boolean isSoldout,
+        boolean isActive,
+        LocalDateTime createdAt
 ) {
     public static ProductResult of(Product product, String sellerNickname) {
         return new ProductResult(
@@ -28,6 +31,8 @@ public record ProductResult(
                 product.getPrice(),
                 product.getCategory(),
                 product.getImageKey(),
+                product.getStock() == 0,
+                product.getStatus() == ProductStatus.ACTIVE,
                 product.getCreatedAt()
         );
     }

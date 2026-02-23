@@ -1,0 +1,52 @@
+{
+  "analysis": {
+    "char_filter": {
+      "whitespace_remove": {
+        "type": "pattern_replace",
+        "pattern": "\\s+",
+        "replacement": ""
+      }
+    },
+    "filter": {
+      "nfd_filter": {
+        "type": "icu_transform",
+        "id": "NFD"
+      }
+    },
+    "tokenizer": {
+      "ngram_tokenizer": {
+        "type": "ngram",
+        "min_gram": 2,
+        "max_gram": 3,
+        "token_chars": [
+          "letter",
+          "digit"
+        ]
+      }
+    },
+    "analyzer": {
+      "nori_analyzer": {
+        "type": "custom",
+        "tokenizer": "nori_tokenizer"
+      },
+      "ngram_analyzer": {
+        "type": "custom",
+        "char_filter": [
+          "whitespace_remove"
+        ],
+        "tokenizer": "ngram_tokenizer",
+        "filter": [
+          "lowercase"
+        ]
+      },
+      "jamo_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "nfd_filter",
+          "lowercase"
+        ]
+      }
+    }
+  }
+}

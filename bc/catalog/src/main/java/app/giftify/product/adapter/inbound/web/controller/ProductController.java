@@ -1,9 +1,6 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
-import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductCreateRequestDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
-import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
+import app.giftify.product.adapter.inbound.web.requestDto.*;
 import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductUpdateResponseDto;
@@ -40,6 +37,9 @@ public class ProductController implements ProductV2ApiSpec {
     private final ProductRejectUseCase productRejectUseCase;
     private final ProductUpdateUseCase productUpdateUseCase;
     private final StockHistorySearchUseCase stockHistorySearchUseCase;
+    private final ProductEsSearchUseCase productEsSearchUseCase;
+    private final ProductEsSyncUseCase productEsSyncUseCase;
+//    private final ProductEsPort productEsPort;
 
     // 상품 등록
     @PostMapping
@@ -52,7 +52,8 @@ public class ProductController implements ProductV2ApiSpec {
                 requestDto.name(),
                 requestDto.description(),
                 requestDto.price(),
-                requestDto.stock()
+                requestDto.stock(),
+                requestDto.category()
         );
         ProductResult result = productCreateUseCase.createProduct(sellerId, command);
         ProductDto responseDto = ProductDto.from(result);
@@ -155,6 +156,36 @@ public class ProductController implements ProductV2ApiSpec {
                 stockHistoryDtoPage.getTotalElements()
         );
         return ResponseEntity.ok(RsData.success(result));
+    }
+
+    /**
+     * (관리자) ES 상품 데이터 재동기화
+     * - ES 볼륨이 삭제됐었거나 ES 데이터가 꼬였을 때 등등 수동 재동기화용으로 사용
+     * - 도커 ES 볼륨이 있으므로 서버(Spring Boot)를 재시작해도 ES 데이터는 그대로 유지
+     */
+    @PostMapping("/admin/es-sync")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public ResponseEntity<RsData<String>> syncProductsToEs() {
+        int count = productEsSyncUseCase.syncAll();
+        return ResponseEntity.ok(RsData.success(null, "ES 상품 데이터 재동기화 완료: " + count + "건"));
+    }
+
+    // ES 기반 상품 검색
+    @GetMapping("/search/es")
+    @Override
+    public ResponseEntity<RsData<PageResponse<ProductDto>>> searchProductsByEs(
+            @Valid @ModelAttribute ProductEsSearchDto searchDto
+    ) {
+        PageResponse<ProductResult> resultPage = productEsSearchUseCase.searchByEs(ProductEsSearchDto.toCommand(searchDto));
+
+        List<ProductDto> dtoList = resultPage.content().stream()
+                .map(ProductDto::from)
+                .collect(Collectors.toList());
+        var response = PageResponse.of(dtoList, resultPage.pageNumber(), resultPage.pageSize(),
+                resultPage.totalElements());
+
+        return ResponseEntity.ok(RsData.success(response));
     }
 
     /**
