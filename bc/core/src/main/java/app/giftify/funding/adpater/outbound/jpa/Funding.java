@@ -35,7 +35,7 @@ public class Funding extends BaseJpaEntity {
     @Column(nullable = false)
     private String productName;
 
-    @Column(nullable = false)
+    @Column
     private String imageKey;
 
     @Column(nullable = false)
