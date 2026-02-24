@@ -48,6 +48,16 @@ patches:
                 livenessProbe:
                   initialDelaySeconds: 10
 
+  # --- Elasticsearch: GHCR 이미지 pull 인증 ---
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: ghcr-secret
+
   # --- IngressRoute: *.localhost → *.chan99k.dev ---
   - target:
       group: traefik.io
