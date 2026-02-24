@@ -1,6 +1,7 @@
 package app.giftify.settlement.application.service;
 
-import app.giftify.settlement.application.inbound.CreateSettlementItemCommand;
+import app.giftify.settlement.application.inbound.CancelSettlementCommand;
+import app.giftify.settlement.application.inbound.CreateSettlementCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.model.SettlementCore;
 import app.giftify.settlement.domain.model.SettlementItem;
@@ -14,6 +15,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -30,7 +32,7 @@ public class SettlementItemService {
     private final FeePolicyService feePolicyService;
 
     @Transactional
-    public void create(CreateSettlementItemCommand command) {
+    public void create(CreateSettlementCommand command) {
         OrderItemSnapshot snapshot = command.snapshot();
         final SettlementItemType type = SettlementItemType.ITEM_PAYMENT;
 
@@ -53,6 +55,16 @@ public class SettlementItemService {
                         p -> Money.of(p.totalAmount())
                 ));
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void cancel(CancelSettlementCommand command) {
+        SettlementItem settlementItem = settlementItemRepository.getByOrderIdAndOrderItemIdAndTypeWithLock(
+                command.orderId(), command.orderItemId(), SettlementItemType.ITEM_PAYMENT
+        );
+
+        settlementItem.cancel();
+    }
+
 
     private @NonNull SettlementCore getSettlementCore(Money amount) {
         BigDecimal platformFeeRate = feePolicyService.getPlatformFeeRate();

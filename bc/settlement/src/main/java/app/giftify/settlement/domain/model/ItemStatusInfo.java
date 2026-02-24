@@ -121,6 +121,15 @@ public class ItemStatusInfo {
                 );
         }
 
+        public ItemStatusInfo cancel() {
+                return new ItemStatusInfo(
+                        SettlementItemStatus.CANCELLED,
+                        expectedDate,
+                        settledAt,
+                        LocalDateTime.now()
+                );
+        }
+
         // 익월 정산
         private static LocalDate calculateExpectedDate(LocalDateTime confirmedAt) {
                 return confirmedAt.toLocalDate()
