@@ -3,6 +3,8 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
@@ -36,6 +38,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     private final FriendshipVerificationPort friendshipVerificationPort;
     private final ProductSupport productSupport;
     private final WishlistSupport wishlistSupport;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
@@ -114,15 +117,24 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
         Map<Long, Product> productMap = productSupport.findAllById(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
+        List<Long> sellerIds = productMap.values().stream()
+                .map(Product::getSellerId)
+                .distinct()
+                .toList();
+        Map<Long, String> sellerNicknameMap = memberRepository.findAllById(sellerIds).stream()
+                .collect(Collectors.toMap(Member::getId, Member::getNickname));
+
         return items.stream().map(item -> {
             Product product = productMap.get(item.getProductId());
+            String sellerNickname = product != null ? sellerNicknameMap.get(product.getSellerId()) : null;
             return new WishlistItemDetail(
                     item,
                     product != null ? product.getName() : null,
                     product != null ? product.getPrice() : 0,
                     product != null ? product.getImageKey() : null,
                     product != null && product.getStock() == 0, // 품절 여부
-                    product != null && product.getStatus() == ProductStatus.ACTIVE // 활성화 여부
+                    product != null && product.getStatus() == ProductStatus.ACTIVE, // 활성화 여부
+                    sellerNickname
             );
         }).toList();
     }

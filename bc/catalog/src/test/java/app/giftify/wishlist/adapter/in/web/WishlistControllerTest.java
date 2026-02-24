@@ -90,7 +90,7 @@ class WishlistControllerTest {
                 .productId(100L)
                 .wishlistItemStatus(WishlistItemStatus.PENDING)
                 .build();
-        WishlistItemDetail detail = new WishlistItemDetail(item, "테스트 상품", 10000, "img.jpg", false, true);
+        WishlistItemDetail detail = new WishlistItemDetail(item, "테스트 상품", 10000, "img.jpg", false, true, "판매자닉네임");
 
         app.giftify.replica.member.Member member = new app.giftify.replica.member.Member(MEMBER_ID, "테스트유저");
 

@@ -6,6 +6,7 @@ public record WishlistItemDetail(
         int price,
         String imageKey,
         boolean isSoldout,
-        boolean isActive
+        boolean isActive,
+        String sellerNickname
 ) {
 }

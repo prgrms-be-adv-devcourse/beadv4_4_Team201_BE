@@ -17,6 +17,7 @@ public record WishlistItemResponse(
         String imageKey,
         boolean isSoldout,
         boolean isActive,
+        String sellerNickname,
         WishlistItemStatus status,
         LocalDateTime addedAt
 ) {
@@ -41,6 +42,7 @@ public record WishlistItemResponse(
                 .imageKey(detail.imageKey())
                 .isSoldout(detail.isSoldout())
                 .isActive(detail.isActive())
+                .sellerNickname(detail.sellerNickname())
                 .status(item.getWishlistItemStatus())
                 .addedAt(item.getAddedAt())
                 .build();

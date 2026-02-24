@@ -3,6 +3,8 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -46,6 +48,9 @@ class WishlistServiceTest {
 
     @Mock
     private WishlistSupport wishlistSupport;
+
+    @Mock
+    private MemberRepository memberRepository;
 
     @InjectMocks
     private WishlistService wishlistService;
@@ -160,6 +165,7 @@ class WishlistServiceTest {
             given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(item));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
 
             // when
             List<WishlistItemDetail> result = wishlistService.getMyWishlistItemDetails(MEMBER_ID);
@@ -172,6 +178,7 @@ class WishlistServiceTest {
             assertThat(detail.imageKey()).isEqualTo("img.jpg");
             assertThat(detail.isActive()).isTrue();
             assertThat(detail.isSoldout()).isFalse();
+            assertThat(detail.sellerNickname()).isEqualTo("테스트판매자");
         }
 
         @Test
@@ -226,6 +233,7 @@ class WishlistServiceTest {
                     .build();
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(item));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
         }
 
         @Test
