@@ -11,21 +11,12 @@ import java.util.stream.Collectors;
 
 public record CartResponse(Long cartId, Long memberId, List<CartItemResponse> items, long totalAmount) {
 
-    public static CartResponse from(Cart cart, List<CartItem> validItems, Map<Long, Product> productMap) {
-        List<CartItemResponse> itemResponses = validItems.stream()
-                .map(item -> CartItemResponse.from(item, productMap.get(item.getTargetId())))
-                .collect(Collectors.toList());
-
-       long total = itemResponses.stream()
+    public static CartResponse from(Cart cart, List<CartItemResponse> itemResponses) {
+        long total = itemResponses.stream()
                 .filter(item -> item.status() == ItemStatus.AVAILABLE)
                 .mapToLong(CartItemResponse::contributionAmount)
                 .sum();
 
-        return new CartResponse(
-                cart.getId(),
-                cart.getMemberId(),
-                itemResponses,
-                total
-        );
+        return new CartResponse(cart.getId(), cart.getMemberId(), itemResponses, total);
     }
 }

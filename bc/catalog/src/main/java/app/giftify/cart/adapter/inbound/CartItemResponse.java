@@ -15,7 +15,10 @@ public record CartItemResponse(
         ItemStatus status,
         String statusMessage
 ) {
-    public static CartItemResponse from(CartItem item, Product product) {
+    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product) {
+        if (isFundingEnded) {
+            return unavailable(item, ItemStatus.FUNDING_ENDED, "진행 중인 펀딩이 아닙니다.");
+        }
         if (product == null) {
             return unavailable(item, ItemStatus.DISCONTINUED, "더 이상 판매되지 않는 상품입니다.");
         }
@@ -25,7 +28,6 @@ public record CartItemResponse(
         if (product.getStatus() != ProductStatus.ACTIVE) {
             return unavailable(item, ItemStatus.DISCONTINUED, "판매 중지된 상품입니다.");
         }
-        // Todo: 펀딩 상태 필터링 추가
 
         return new CartItemResponse(
                 item.getTargetType(),
