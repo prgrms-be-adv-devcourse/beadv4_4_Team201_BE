@@ -2,14 +2,17 @@ package app.giftify.auth.adapter.inbound.web;
 
 import app.giftify.auth.adapter.inbound.web.dto.LoginRequest;
 import app.giftify.auth.adapter.inbound.web.dto.LoginResponse;
+import app.giftify.auth.application.TokenBlacklistService;
 import app.giftify.auth.application.inbound.LoginUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/v2/auth")
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthV2ApiSpec {
 
     private final LoginUseCase loginUseCase;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final JwtDecoder jwtDecoder;
 
     @Override
     @PostMapping("/login")
@@ -37,5 +42,19 @@ public class AuthController implements AuthV2ApiSpec {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization) {
+        String token = authorization.replace("Bearer ", "");
+        Jwt jwt = jwtDecoder.decode(token);
+
+        Duration ttl = Duration.between(Instant.now(), jwt.getExpiresAt());
+        if (ttl.isNegative()) {
+            ttl = Duration.ZERO;
+        }
+
+        tokenBlacklistService.revokeToken(jwt.getId(), ttl, "logout");
+        return ResponseEntity.noContent().build();
     }
 }

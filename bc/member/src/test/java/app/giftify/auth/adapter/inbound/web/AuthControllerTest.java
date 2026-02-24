@@ -1,5 +1,6 @@
 package app.giftify.auth.adapter.inbound.web;
 
+import app.giftify.auth.application.TokenBlacklistService;
 import app.giftify.auth.application.inbound.LoginUseCase;
 import app.giftify.shared.domain.type.MemberRole;
 import app.giftify.shared.domain.vo.MemberInfo;
@@ -8,11 +9,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.Duration;
+import java.time.Instant;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,13 +30,17 @@ class AuthControllerTest {
 
     private MockMvc mockMvc;
     private LoginUseCase loginUseCase;
+    private TokenBlacklistService tokenBlacklistService;
+    private JwtDecoder jwtDecoder;
 
     @BeforeEach
     void setUp() {
         loginUseCase = org.mockito.Mockito.mock(LoginUseCase.class);
+        tokenBlacklistService = org.mockito.Mockito.mock(TokenBlacklistService.class);
+        jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new AuthController(loginUseCase))
+                .standaloneSetup(new AuthController(loginUseCase, tokenBlacklistService, jwtDecoder))
                 .build();
     }
 
@@ -88,6 +100,37 @@ class AuthControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v2/auth/logout")
+    class LogoutTests {
+
+        @Test
+        @DisplayName("로그아웃 성공 - 토큰 블랙리스트 등록")
+        void logout_Success() throws Exception {
+            // given
+            String token = "valid.jwt.token";
+            String jti = "token-id-123";
+            Instant expiresAt = Instant.now().plusSeconds(3600);
+
+            Jwt jwt = Jwt.withTokenValue(token)
+                    .header("alg", "RS256")
+                    .claim("sub", "auth0|user1")
+                    .jti(jti)
+                    .expiresAt(expiresAt)
+                    .issuedAt(Instant.now())
+                    .build();
+
+            given(jwtDecoder.decode(token)).willReturn(jwt);
+
+            // when & then
+            mockMvc.perform(post("/api/v2/auth/logout")
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isNoContent());
+
+            verify(tokenBlacklistService).revokeToken(eq(jti), any(Duration.class), eq("logout"));
         }
     }
 }
