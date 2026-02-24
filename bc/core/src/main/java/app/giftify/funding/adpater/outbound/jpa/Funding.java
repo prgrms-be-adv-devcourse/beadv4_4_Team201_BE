@@ -36,6 +36,9 @@ public class Funding extends BaseJpaEntity {
     private String productName;
 
     @Column(nullable = false)
+    private String imageKey;
+
+    @Column(nullable = false)
     private Long receiverId;
 
     @Column(nullable = false)
@@ -58,10 +61,11 @@ public class Funding extends BaseJpaEntity {
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
 
-    private Funding(Long wishlistItemId, Long productId, String productName, Long receiverId, Integer productPrice) {
+    private Funding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer productPrice) {
         this.wishlistItemId = wishlistItemId;
         this.productId = productId;
         this.productName = productName;
+        this.imageKey = imageKey;
         this.receiverId = receiverId;
         this.targetAmount = productPrice;
         this.currentAmount = 0;
@@ -69,8 +73,8 @@ public class Funding extends BaseJpaEntity {
         this.deadline = LocalDateTime.now().plusDays(15);
     }
 
-    public static Funding startFunding(Long wishlistItemId, Long productId, String productName, Long receiverId, Integer targetAmount) {
-        return new Funding(wishlistItemId, productId, productName, receiverId, targetAmount);
+    public static Funding startFunding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer targetAmount) {
+        return new Funding(wishlistItemId, productId, productName, imageKey, receiverId, targetAmount);
     }
 
     public static void validateLeastAmount(Integer amount) {
@@ -167,11 +171,14 @@ public class Funding extends BaseJpaEntity {
         if (!memberId.equals(this.getReceiverId())) { throw new FundingException(FundingErrorCode.FORBIDDEN); }
     }
 
-    public void updateProductInfo(Integer productPrice) {
+    /**
+     * 상품 정보 수정
+     */
+    public void updateProductInfo(Integer productPrice, String productName, String imageKey) {
         if (this.status != FundingStatus.IN_PROGRESS) throw new FundingException(FundingErrorCode.NOT_IN_PROGRESS);
-        if (productPrice != null) {
-            this.targetAmount = productPrice;
-        }
+        this.targetAmount = productPrice;
+        this.productName = productName;
+        this.imageKey = imageKey;
     }
 
     /**

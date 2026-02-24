@@ -66,6 +66,7 @@ public class FundingCreateUseCase {
                     item.targetId(),                        // wishlistItemId
                     wishlistItemSnapshot.productId(),       // productId
                     wishlistItemSnapshot.productName(),     // productName
+                    wishlistItemSnapshot.imageKey(),        // imageKey
                     item.receiverId(),                      // receiverId
                     item.price().amount().intValueExact()   // targetAmount
             );
