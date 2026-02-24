@@ -17,16 +17,17 @@ public class SyncFundingProductUseCase {
     private final FundingRepository fundingRepository;
 
     @Transactional
-    public void syncFundingProduct(Long productId, Integer productPrice) {
+    public void syncFundingProduct(Long productId, Integer productPrice, String productName, String imageKey) {
         List<Funding> fundings = fundingRepository.findByProductIdAndStatus(productId, FundingStatus.IN_PROGRESS);
 
         if (fundings.isEmpty()) { return; }
 
         for (Funding funding : fundings) {
-            funding.updateProductInfo(productPrice);
+            funding.updateProductInfo(productPrice, productName, imageKey);
         }
 
-        log.info("[Funding] 펀딩 목표액 일괄 변경 완료. 상품 ID: {}, 변경 금액: {}원, 변경된 펀딩 수: {}건", 
-                productId, productPrice, fundings.size());
+        log.info("[Funding] 진행 중 펀딩 상품 정보 일괄 동기화 완료. 상품 ID: {}, 변경 가격: {}원, 변경 이름: {}, 변경 이미지: {}, 적용 펀딩 수: {}건",
+                productId, productPrice, productName, imageKey, fundings.size()
+        );
     }
 }
