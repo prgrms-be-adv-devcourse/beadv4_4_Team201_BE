@@ -1,13 +1,9 @@
 package app.giftify.cart.adapter.inbound;
 
 import app.giftify.cart.core.domain.Cart;
-import app.giftify.cart.core.domain.CartItem;
 import app.giftify.cart.core.domain.ItemStatus;
-import app.giftify.product.domain.Product;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public record CartResponse(Long cartId, Long memberId, List<CartItemResponse> items, long totalAmount) {
 
