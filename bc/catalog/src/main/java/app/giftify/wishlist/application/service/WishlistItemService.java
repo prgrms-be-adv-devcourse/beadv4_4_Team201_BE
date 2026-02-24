@@ -59,7 +59,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     @Override
     @Transactional(readOnly = true)
     public boolean isItemExists(Long memberId, Long productId) {
-        Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
+        Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
 
         Optional<WishlistItem> wishlistItem = wishlistItemRepositoryPort.findByWishlistIdAndProductId(
                 wishlist.getId(),
@@ -74,7 +74,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     @Override
     @Transactional(readOnly = true)
     public List<WishlistItem> getWishlistItems(Long memberId) {
-        Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
+        Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
         return wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
     }
 
@@ -87,7 +87,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     @Transactional
     public WishlistItem addWishlistItem(Long memberId, WishlistItemAddCommand command) {
         // 위시리스트 확인, 없으면 생성
-        Wishlist wishlist = getOrCreateWishlistByMemberId(memberId);
+        Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
 
         // 상품 확인 (Active인 상품만 위시리스트아이템 추가 가능)
         Product product = productSupport.findById(command.productId());
@@ -177,17 +177,6 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
                             );
                         }
                 ));
-    }
-
-    // memberId로 Wishlist 조회 없으면 생성
-    private Wishlist getOrCreateWishlistByMemberId(Long memberId) {
-        return wishlistRepositoryPort.findByMemberId(memberId)
-                .orElseGet(() -> {
-                    Wishlist wishlist = Wishlist.builder()
-                            .memberId(memberId)
-                            .build();
-                    return wishlistRepositoryPort.save(wishlist);
-                });
     }
 
     // 위시리스트아이템의 상태를 체크하여 삭제 가능 여부 검증

@@ -5,19 +5,24 @@ import app.giftify.wishlist.core.domain.Wishlist;
 
 public class WishlistMapper {
 
-	public static WishlistJpaEntity toEntity(Wishlist domain) {
-		return WishlistJpaEntity.builder()
-			.visibility(domain.getVisibility())
-			.memberId(domain.getMemberId())
-			.build();
-	}
+    public static WishlistJpaEntity toEntity(Wishlist domain) {
+        if (domain == null) {
+            return null;
+        }
 
-	public static Wishlist toDomain(WishlistJpaEntity entity) {
-		return Wishlist.builder()
-			.id(entity.getId())
-			.memberId(entity.getMemberId())
-			.visibility(entity.getVisibility())
-			.createdAt(entity.getCreatedAt())
-			.build();
-	}
+        return new WishlistJpaEntity(
+                domain.getId(),
+                domain.getMemberId(),
+                domain.getVisibility()
+        );
+    }
+
+    public static Wishlist toDomain(WishlistJpaEntity entity) {
+        return Wishlist.builder()
+                .id(entity.getId())
+                .memberId(entity.getMemberId())
+                .visibility(entity.getVisibility())
+                .createdAt(entity.getCreatedAt())
+                .build();
+    }
 }

@@ -75,7 +75,7 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         // 상품이 ACTIVE 상태임
         Product product = Mockito.mock(Product.class);
@@ -111,7 +111,7 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         // 상품이 INACTIVE 상태임
         Product product = Mockito.mock(Product.class);
@@ -187,7 +187,7 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         List<WishlistItem> items = List.of(
                 WishlistItem.builder()

@@ -43,13 +43,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     @Override
     @Transactional
     public Wishlist getOrCreateWishlistByMemberId(Long memberId) {
-        return wishlistRepositoryPort.findByMemberId(memberId)
-                .orElseGet(() -> {
-                    Wishlist wishlist = Wishlist.builder()
-                            .memberId(memberId)
-                            .build();
-                    return wishlistRepositoryPort.save(wishlist);
-                });
+        return wishlistSupport.getOrCreateWishlistByMemberId(memberId);
     }
 
     // 내 위시리스트 아이템 목록 조회

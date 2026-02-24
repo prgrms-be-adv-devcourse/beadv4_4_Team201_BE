@@ -68,7 +68,7 @@ class WishlistServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         // when
         Wishlist result = wishlistService.getOrCreateWishlistByMemberId(MEMBER_ID);
@@ -76,22 +76,6 @@ class WishlistServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getMemberId()).isEqualTo(MEMBER_ID);
-    }
-
-    @Test
-    @DisplayName("위시리스트가 없으면 새로 생성한다")
-    void getOrCreateWishlistByMemberId_Create() {
-        // given
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.empty());
-        given(wishlistRepositoryPort.save(any(Wishlist.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-        // when
-        Wishlist result = wishlistService.getOrCreateWishlistByMemberId(MEMBER_ID);
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.getMemberId()).isEqualTo(MEMBER_ID);
-        verify(wishlistRepositoryPort).save(any(Wishlist.class));
     }
 
     @Test
