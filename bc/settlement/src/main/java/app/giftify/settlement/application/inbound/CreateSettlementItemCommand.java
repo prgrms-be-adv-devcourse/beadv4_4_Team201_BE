@@ -1,9 +1,8 @@
 package app.giftify.settlement.application.inbound;
 
-import java.time.LocalDateTime;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
 
 public record CreateSettlementItemCommand(
-        Long fundingId,
-        LocalDateTime confirmedAt
+        OrderItemSnapshot snapshot
 ) {
 }

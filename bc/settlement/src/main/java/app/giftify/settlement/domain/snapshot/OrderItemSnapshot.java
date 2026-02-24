@@ -2,6 +2,7 @@ package app.giftify.settlement.domain.snapshot;
 
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.domain.event.order.OrderItemConfirmedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -26,5 +27,18 @@ public record OrderItemSnapshot(
         if (paymentId == null) throw new DomainException(SettlementErrorCode.MISSING_FIELD, "PaymentID");
         if (amount == null) throw new DomainException(SettlementErrorCode.MISSING_FIELD, "Amount");
         if (confirmedAt == null) throw new DomainException(SettlementErrorCode.MISSING_FIELD, "ConfirmedAt");
+    }
+
+    public static OrderItemSnapshot of(OrderItemConfirmedEvent event) {
+        return new OrderItemSnapshot(
+                event.getOrderId(),
+                event.getOrderItemId(),
+                event.getSellerId(),
+                event.getTargetId(),
+                event.getTargetType(),
+                event.getPaymentId(),
+                event.getAmount(),
+                event.getConfirmedAt()
+        );
     }
 }
