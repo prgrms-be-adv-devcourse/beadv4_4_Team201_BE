@@ -1,6 +1,7 @@
 package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
@@ -11,12 +12,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FundingRefuseUseCase {
     private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
+    private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
 
     public FundingCompleteResponseDto refuseFunding(Long fundingId, Long memberId) {
         Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
@@ -27,13 +31,17 @@ public class FundingRefuseUseCase {
 
         // 거절로 상태 변경
         funding.refuse();
+        List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
+
         log.info("[Funding] 펀딩 거절 완료" + fundingId);
 
         // 이벤트 발행
         eventPublisher.publish(new FundingCanceledEvent(
                 funding.getId(),
                 funding.getWishlistItemId(),
-                funding.getCurrentAmount()
+                funding.getCurrentAmount(),
+                funding.getReceiverId(),
+                participantIds
         ));
 
         return FundingCompleteResponseDto.fromEntity(funding);

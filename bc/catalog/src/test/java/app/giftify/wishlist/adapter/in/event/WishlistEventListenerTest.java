@@ -174,7 +174,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingCanceledEvent event = new FundingCanceledEvent(
-                    100L, wishlistItemId, 50000
+                    100L, wishlistItemId, 50000, 1L, List.of(1L, 2L)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
