@@ -30,4 +30,9 @@ public enum IdempotencyErrorCode implements ErrorCode {
     public String getMessage() {
         return message;
     }
+
+    @Override
+    public String formatMessage(Object... args) {
+        return String.format(this.message, args);
+    }
 }

@@ -8,6 +8,10 @@ public class DomainException extends BusinessException {
         super(errorCode);
     }
 
+    public DomainException(ErrorCode errorCode, Object... args) {
+        super(errorCode, args);
+    }
+
     public DomainException(ErrorCode errorCode, String message) {
         super(errorCode, message);
     }
@@ -15,4 +19,6 @@ public class DomainException extends BusinessException {
     public DomainException(ErrorCode errorCode, String message, Throwable cause) {
         super(errorCode, message, cause);
     }
+
+
 }
