@@ -1,13 +1,13 @@
 package app.giftify.settlement.domain.model;
 
-import app.giftify.settlement.application.dto.SettlementSource;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
+import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -16,35 +16,27 @@ import java.time.LocalDateTime;
 @Table(
         name = "settlement_item",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_target_id_type",
-                columnNames = {"target_id", "type"}
+                name = "uk_order_item_id_type",
+                columnNames = {"order_item_id", "type"}
         ),
         indexes = {
                 @Index(name = "idx_settlement_status_created_retry",
                         columnList = "status, created_at, retry_count"),
                 @Index(name = "idx_settlement_order_id",
-                        columnList = "order_id")
+                        columnList = "order_id"),
+                @Index(name = "idx_settlement_item_payment_id", columnList = "payment_id"),
+                @Index(name = "idx_settlement_item_history_id", columnList = "history_id"),
+                @Index(name = "idx_settlement_item_seller_id", columnList = "seller_id")
         }
 )
 @NoArgsConstructor
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-public class SettlementItem {
-    // 식별
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class SettlementItem extends BaseJpaEntity {
+    // 핵심 식별자 및 연관 관계
     @Column(nullable = false)
     private Long sellerId;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SettlementItemType type;
-
-    @Column
-    private Long originId;
-
-    // 스냅샷에서 복사된 근거 값
     @Column(nullable = false)
     private Long orderId;
 
@@ -52,125 +44,82 @@ public class SettlementItem {
     private Long orderItemId;
 
     @Column(nullable = false)
+    private Long paymentId;
+
+    // 정산 대상 상세
+    @Column(nullable = false)
     private Long targetId;
 
-    // 회계적 증빙 / 정산 근거 관점에서 필요한 값
     @Column(nullable = false)
-    private String orderNumber;
+    @Enumerated(EnumType.STRING)
+    private TargetType targetType;
 
-    private Long historyId;
-
+    // 정산 정보 및 유형
     @Column(nullable = false)
-    private LocalDateTime orderedAt;
-
-    @Column(nullable = false)
-    private LocalDateTime paidAt;
-
-    @Column(nullable = false)
-    private LocalDateTime confirmedAt;
+    @Enumerated(EnumType.STRING)
+    private SettlementItemType type;
 
     @Embedded
     private SettlementCore core;
 
+    // 상태 및 이력 관리
     @Embedded
     private ItemStatusInfo statusInfo;
+
+    private Long historyId;
+
+    private Long originId;
+
+    // 시점 및 정책 데이터
+    @Column(nullable = false)
+    private LocalDateTime confirmedAt;
 
     @Column(nullable = false)
     private int retryCount = 0;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
-
-    private SettlementItem(Long sellerId,
-                           SettlementItemType type,
-                           Long originId,
-                           Long orderId,
-                           Long orderItemId,
-                           Long targetId,
-                           String orderNumber,
-                           LocalDateTime orderedAt,
-                           LocalDateTime paidAt,
-                           LocalDateTime confirmedAt,
-                           SettlementCore core,
-                           ItemStatusInfo statusInfo) {
-
-        if (sellerId == null) {
-            throw new DomainException(SettlementErrorCode.INVALID_SELLER_ID);
-        }
-        if (type == null) {
-            throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_TYPE);
-        }
-        if (core == null) {
-            throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_CORE);
-        }
-        if (statusInfo == null) {
-            throw new DomainException(SettlementErrorCode.INVALID_LIFECYCLE_META);
-        }
-        if (orderedAt == null || paidAt == null || confirmedAt == null) {
-            throw new DomainException(SettlementErrorCode.INVALID_TIME_SEQUENCE);
-        }
-        if (type.requiresOriginId() && originId == null) {
-            throw new DomainException(SettlementErrorCode.INVALID_ORIGIN_ID);
-        }
-        if (orderNumber == null || orderNumber.isBlank()) {
-            throw new DomainException(SettlementErrorCode.INVALID_ORDER_NUMBER);
-        }
-
-        validateTimeSequence(orderedAt, paidAt, confirmedAt);
-
+    public SettlementItem(Long originId, Long sellerId, SettlementItemType type, SettlementCore core,
+                          ItemStatusInfo statusInfo, Long orderId, Long orderItemId, Long targetId,
+                          TargetType targetType, Long paymentId, LocalDateTime confirmedAt) {
+        super();
+        this.originId = originId;
         this.sellerId = sellerId;
         this.type = type;
-        this.originId = originId;
+        this.core = core;
+        this.statusInfo = statusInfo;
         this.orderId = orderId;
         this.orderItemId = orderItemId;
         this.targetId = targetId;
-        this.orderNumber = orderNumber;
-        this.orderedAt = orderedAt;
-        this.paidAt = paidAt;
+        this.targetType = targetType;
+        this.paymentId = paymentId;
         this.confirmedAt = confirmedAt;
-        this.core = core;
-        this.statusInfo = statusInfo;
     }
 
-    private SettlementItem(Long sellerId,
-                           SettlementItemType type,
-                           Long orderId,
-                           Long orderItemId,
-                           Long targetId,
-                           String orderNumber,
-                           LocalDateTime orderedAt,
-                           LocalDateTime paidAt,
-                           LocalDateTime confirmedAt,
-                           SettlementCore core,
-                           ItemStatusInfo statusInfo) {
-
-        this(sellerId, type, null, orderId, orderItemId, targetId, orderNumber, orderedAt, paidAt, confirmedAt, core, statusInfo);
+    private static void validateCreatable(OrderItemSnapshot snapshot, SettlementCore core, SettlementItemType type, Long originId) {
+        if (snapshot == null)
+            throw new DomainException(SettlementErrorCode.MISSING_FIELD, "OrderItemSnapshot");
+        if (core == null)
+            throw new DomainException(SettlementErrorCode.MISSING_FIELD, "SettlementCore");
+        if (type.requiresOriginId() && originId == null)
+            throw new DomainException(SettlementErrorCode.MISSING_FIELD, "OriginID");
     }
 
-    public static SettlementItem createPaymentItem(SettlementSource source, SettlementCore core, LocalDateTime confirmedAt) {
-        if (source.getPaidAt() == null) {
-            throw new DomainException(SettlementErrorCode.PAYMENT_NOT_COMPLETED);
-        }
+    public static SettlementItem create(OrderItemSnapshot snapshot, SettlementCore core) {
+        SettlementItemType type= SettlementItemType.ITEM_PAYMENT;
 
-        if (confirmedAt == null) {
-            throw new DomainException(SettlementErrorCode.CONFIRMED_AT_REQUIRED);
-        }
+        validateCreatable(snapshot, core, type, null);
 
         return new SettlementItem(
-                source.getSellerId(),
-                SettlementItemType.ITEM_PAYMENT,
-                source.getOrderId(),
-                source.getOrderItemId(),
-                source.getFunding(),
-                source.getOrderNumber(),
-                source.getOrderedAt(),
-                source.getPaidAt(),
-                confirmedAt,
+                null,
+                snapshot.sellerId(),
+                type,
                 core,
-                ItemStatusInfo.create(confirmedAt)
+                ItemStatusInfo.create(snapshot.confirmedAt()),
+                snapshot.orderId(),
+                snapshot.orderItemId(),
+                snapshot.targetId(),
+                snapshot.targetType(),
+                snapshot.paymentId(),
+                snapshot.confirmedAt()
         );
     }
 
@@ -202,14 +151,5 @@ public class SettlementItem {
 
     public void manual() {
         statusInfo = statusInfo.manual();
-    }
-
-    private void validateTimeSequence(LocalDateTime orderedAt, LocalDateTime paidAt, LocalDateTime confirmedAt) {
-        if (paidAt.isBefore(orderedAt)) {
-            throw new DomainException(SettlementErrorCode.INVALID_TIME_SEQUENCE);
-        }
-        if (confirmedAt != null && confirmedAt.isBefore(paidAt)) {
-            throw new DomainException(SettlementErrorCode.INVALID_TIME_SEQUENCE);
-        }
     }
 }
