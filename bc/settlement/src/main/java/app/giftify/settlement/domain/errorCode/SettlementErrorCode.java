@@ -28,6 +28,9 @@ public enum SettlementErrorCode implements ErrorCode {
     DUPLICATE_SETTLEMENT_ITEM(409, "SETTLEMENT-109", "이미 존재하는 정산 아이템입니다", false),
     PAYMENT_NOT_COMPLETED(409, "SETTLEMENT-201", "결제가 완료되지 않아 정산을 생성할 수 없습니다.", false),
     CONFIRMED_AT_REQUIRED(409, "SETTLEMENT-202", "구매 확정 시점은 필수입니다.", false),
+
+    MISSING_FIELD(500, "SETTLEMENT-203", "필수 필드 [%s]이/가 누락되었습니다.", false),
+    SETTLEMENT_AMOUNT_MISMATCH(500, "SETTLEMENT-203", "정산 금액이 일치하지 않습니다.", false)
     ;
 
     private final int statusCode;
@@ -49,5 +52,10 @@ public enum SettlementErrorCode implements ErrorCode {
     @Override
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public String formatMessage(Object... args) {
+        return String.format(this.message, args);
     }
 }

@@ -1,29 +1,22 @@
 package app.giftify.settlement.application.service;
 
-import app.giftify.settlement.application.dto.SettlementSource;
-import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
-import app.giftify.settlement.application.outbound.port.OrderItemSnapshotRepository;
-import app.giftify.settlement.application.outbound.port.OrderSnapshotRepository;
-import app.giftify.settlement.application.outbound.port.PaymentSnapshotRepository;
+import app.giftify.settlement.application.inbound.CreateSettlementItemCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.model.SettlementCore;
 import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.model.SettlementItemType;
 import app.giftify.settlement.domain.service.FeePolicyService;
 import app.giftify.settlement.domain.service.SettlementCalculator;
 import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
-import app.giftify.settlement.domain.snapshot.OrderSnapshot;
-import app.giftify.settlement.domain.snapshot.PaymentSnapshot;
 import app.giftify.shared.api.AmountSummaryProjection;
-import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.vo.Money;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,38 +27,21 @@ import java.util.stream.Collectors;
 public class SettlementItemService {
 
     private final SettlementItemRepository settlementItemRepository;
-    private final OrderSnapshotRepository orderSnapshotRepository;
-    private final OrderItemSnapshotRepository orderItemSnapshotRepository;
-    private final PaymentSnapshotRepository paymentSnapshotRepository;
     private final FeePolicyService feePolicyService;
 
-    @Retryable(
-            retryFor = InfraException.class,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     @Transactional
-    public void initializeSettlementItem(InitializeSettlementItemCommand command) {
-        SettlementSource source = fetchSettlementSource(command);
+    public void create(CreateSettlementItemCommand command) {
+        OrderItemSnapshot snapshot = command.snapshot();
+        final SettlementItemType type = SettlementItemType.ITEM_PAYMENT;
 
-        SettlementCore core = SettlementCalculator.calculate(
-                source.getPaidAmount(),
-                feePolicyService.getPlatformFeeRate(),
-                feePolicyService.getPgFeeRate()
-        );
+        if (settlementItemRepository.existsByOrderItemIdAndType(snapshot.orderItemId(), type)) {
+            log.warn("[중복 정산 아이템] 이미 존재하는 주문 아이템 ID, 정산 아이템 타입으로 저장을 스킵합니다. - OrderItemID: {}, Type: {}",
+                    snapshot.orderItemId(), type);
+            return;
+        }
 
-        SettlementItem paymentItem = SettlementItem.createPaymentItem(
-                source,
-                core,
-                command.confirmedAt()
-        );
-
-        settlementItemRepository.save(paymentItem);
-    }
-
-    @Recover
-    public void recover(InfraException e, InitializeSettlementItemCommand command) {
-        log.error("[SettlementItemService] 재시도 실패, fundingId={}, message={}",
-                command.fundingId(), e.getMessage(), e);
+        SettlementItem item = SettlementItem.create(snapshot, getSettlementCore(snapshot.amount()));
+        settlementItemRepository.save(item);
     }
 
     public Map<Long, Money> getTotalAmounts(List<Long> orderIds) {
@@ -78,11 +54,9 @@ public class SettlementItemService {
                 ));
     }
 
-    private SettlementSource fetchSettlementSource(InitializeSettlementItemCommand command) {
-        OrderItemSnapshot item = orderItemSnapshotRepository.getByTargetId(command.fundingId());
-        OrderSnapshot order = orderSnapshotRepository.getById(item.getOrderId());
-        PaymentSnapshot payment = paymentSnapshotRepository.getByOrderNumber(order.getOrderNumber());
-
-        return new SettlementSource(item, order, payment);
+    private @NonNull SettlementCore getSettlementCore(Money amount) {
+        BigDecimal platformFeeRate = feePolicyService.getPlatformFeeRate();
+        BigDecimal pgFeeRate = feePolicyService.getPgFeeRate();
+        return SettlementCalculator.calculate(amount, platformFeeRate, pgFeeRate);
     }
 }
