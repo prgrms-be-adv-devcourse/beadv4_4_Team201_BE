@@ -49,8 +49,8 @@ public class InternalWishlistControllerTest {
         // given
         List<Long> wishlistItemIds = List.of(1L, 2L);
         Map<Long, WishlistItemSnapshot> snapshots = Map.of(
-                1L, new WishlistItemSnapshot(1L, 100L, "테스트 상품1", 10000, 5L, 77L),
-                2L, new WishlistItemSnapshot(2L, 101L, "테스트 상품2", 20000, 5L, 77L)
+                1L, new WishlistItemSnapshot(1L, 100L, "테스트 상품1", 10000, 5L, 77L, "products/100/crowcanyon-mug1.jpg"),
+                2L, new WishlistItemSnapshot(2L, 101L, "테스트 상품2", 20000, 5L, 77L, "products/101/crowcanyon-mug2.jpg")
         );
         given(getWishlistItemSnapshotUseCase.getSnapshotList(wishlistItemIds)).willReturn(snapshots);
 
@@ -66,7 +66,8 @@ public class InternalWishlistControllerTest {
                 .andExpect(jsonPath("$.1.sellerId").value(5))
                 .andExpect(jsonPath("$.1.wishlistOwnerId").value(77))
                 .andExpect(jsonPath("$.2.originalWishlistItemId").value(2))
-                .andExpect(jsonPath("$.2.productName").value("테스트 상품2"));
+                .andExpect(jsonPath("$.2.productName").value("테스트 상품2"))
+                .andExpect(jsonPath("$.2.imageKey").value("products/101/crowcanyon-mug2.jpg"));
     }
 
     @Test
