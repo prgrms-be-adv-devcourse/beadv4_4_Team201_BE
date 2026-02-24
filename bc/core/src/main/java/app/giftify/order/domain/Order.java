@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -147,6 +148,8 @@ public class Order extends BaseAggregateRoot {
             cancelRequestedAt = LocalDateTime.now();
         } else if (status == OrderStatus.CANCELED) {
             cancelledAt = LocalDateTime.now();
+        } else if (status == OrderStatus.CONFIRMED) {
+            confirmedAt = LocalDateTime.now();
         }
     }
 
@@ -273,5 +276,13 @@ public class Order extends BaseAggregateRoot {
         return items.stream()
                 .map(OrderItem::getStatus)
                 .toList();
+    }
+
+    public void confirmed(Set<Long> itemIds) {
+        items.stream()
+                .filter(item -> itemIds.contains(item.getId()))
+                .forEach(OrderItem::confirmed);
+
+        synchronizeStatus();
     }
 }

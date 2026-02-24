@@ -31,24 +31,24 @@ SELECT setval('orders_id_seq', (SELECT MAX(id) FROM orders));
 
 -- Order Items
 INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
-                           price, amount, status, cancelled_at, created_at, updated_at)
+                           price, amount, status, cancelled_at, created_at, updated_at, confirmed_at)
 VALUES
     (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
-     359000.00, 359000.00, 'PAID', NULL, '2026-02-05 17:00:00', '2026-02-05 17:05:00'),
+     359000.00, 359000.00, 'PAID', NULL, '2026-02-05 17:00:00', '2026-02-05 17:05:00', NULL),
 
     (2, 2, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
-     23000.00, 23000.00, 'PAID', NULL, '2026-02-05 17:10:00', '2026-02-06 10:00:00'),
+     23000.00, 23000.00, 'PAID', NULL, '2026-02-05 17:10:00', '2026-02-06 10:00:00', NULL),
 
     (3, 3, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
-     415000.00, 415000.00, 'CREATED', NULL, '2026-02-07 12:00:00', '2026-02-07 12:00:00'),
+     415000.00, 415000.00, 'CREATED', NULL, '2026-02-07 12:00:00', '2026-02-07 12:00:00', NULL),
 
     (4, 4, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 6,
-     23000.00, 23000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00'),
+     23000.00, 23000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00', NULL),
     (5, 4, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 6,
-     415000.00, 415000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00'),
+     415000.00, 415000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00', NULL),
 
     (6, 5, 5, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
-     89000.00, 89000.00, 'CANCELLED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00');
+     89000.00, 89000.00, 'CANCELLED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00', NULL);
 
 SELECT setval('order_items_id_seq', (SELECT MAX(id) FROM order_items));
 

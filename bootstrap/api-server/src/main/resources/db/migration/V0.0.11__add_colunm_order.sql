@@ -1,0 +1,2 @@
+ALTER TABLE order_items
+    ADD COLUMN confirmed_at TIMESTAMP WITHOUT TIME ZONE;
