@@ -1,6 +1,6 @@
 package app.giftify.settlement.application.service;
 
-import app.giftify.settlement.application.inbound.InitializeSettlementItemCommand;
+import app.giftify.settlement.application.inbound.CreateSettlementItemCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.service.FeePolicyService;
 import app.giftify.shared.api.AmountSummaryProjection;
@@ -23,7 +23,7 @@ public class SettlementItemService {
     private final FeePolicyService feePolicyService;
 
     @Transactional
-    public void initializeSettlementItem(InitializeSettlementItemCommand command) {
+    public void create(CreateSettlementItemCommand command) {
     }
 
     public Map<Long, Money> getTotalAmounts(List<Long> orderIds) {
