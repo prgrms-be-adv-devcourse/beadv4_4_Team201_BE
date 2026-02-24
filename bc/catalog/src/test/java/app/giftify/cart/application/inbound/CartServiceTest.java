@@ -28,6 +28,8 @@ import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
+import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
+import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 
@@ -45,6 +47,9 @@ class CartServiceTest {
 
     @Mock
     private WishlistItemRepositoryPort wishlistItemRepositoryPort;
+
+    @Mock
+    private WishlistRepositoryPort wishlistRepositoryPort;
 
     private final Long memberId = 1L;
     private final Long cartId = 1L;
@@ -223,6 +228,50 @@ class CartServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.memberId()).isEqualTo(memberId);
         assertThat(response.items()).isEmpty(); // 아이템이 없으므로 비어있어야 함
+    }
+
+    @Test
+    @DisplayName("장바구니 조회 시 아이템에 receiverId 포함")
+    void getMyCart_ContainsReceiverId() {
+        // given
+        Long wishlistItemId = 100L;
+        Long wishlistId = 10L;
+        Long receiverId = 99L;
+        Long productId = 200L;
+
+        Cart cart = Cart.create(memberId);
+        cart.addItem(TargetType.FUNDING_PENDING, wishlistItemId, Money.of(10000));
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
+
+        WishlistItem wishlistItem = mock(WishlistItem.class);
+        given(wishlistItem.getId()).willReturn(wishlistItemId);
+        given(wishlistItem.getWishlistId()).willReturn(wishlistId);
+        given(wishlistItem.getProductId()).willReturn(productId);
+        given(wishlistItem.getWishlistItemStatus()).willReturn(WishlistItemStatus.PENDING);
+        given(wishlistItemRepositoryPort.findAllById(List.of(wishlistItemId)))
+                .willReturn(List.of(wishlistItem));
+
+        Wishlist wishlist = mock(Wishlist.class);
+        given(wishlist.getId()).willReturn(wishlistId);
+        given(wishlist.getMemberId()).willReturn(receiverId);
+        given(wishlistRepositoryPort.findAllById(List.of(wishlistId)))
+                .willReturn(List.of(wishlist));
+
+        Product product = mock(Product.class);
+        given(product.getId()).willReturn(productId);
+        given(product.getName()).willReturn("테스트상품");
+        given(product.getPrice()).willReturn(50000);
+        given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
+        given(product.getStock()).willReturn(10);
+        given(productRepositoryPort.findAllById(List.of(productId)))
+                .willReturn(List.of(product));
+
+        // when
+        CartResponse response = cartService.getMyCart(memberId);
+
+        // then
+        assertThat(response.items()).hasSize(1);
+        assertThat(response.items().get(0).receiverId()).isEqualTo(receiverId);
     }
 
     @Test

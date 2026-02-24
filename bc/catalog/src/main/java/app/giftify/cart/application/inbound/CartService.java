@@ -25,6 +25,8 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
+import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
+import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class CartService
 	private final CartRepositoryPort cartRepositoryPort;
 	private final ProductRepositoryPort productRepositoryPort;
 	private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
+	private final WishlistRepositoryPort wishlistRepositoryPort;
 
 	@Override
 	public Cart createCart(Long memberId) {
@@ -171,12 +174,28 @@ public class CartService
 			}
 		}
 
-		// 6. 서비스에서 CartItemResponse를 직접 조립합니다.
+		// 6. Wishlist 조회 → receiverId(선물 받는 사람) 매핑
+		List<Long> wishlistIds = wishlistItemMap.values().stream()
+				.map(WishlistItem::getWishlistId)
+				.distinct()
+				.toList();
+		Map<Long, Wishlist> wishlistMap = wishlistRepositoryPort.findAllById(wishlistIds).stream()
+				.collect(Collectors.toMap(Wishlist::getId, Function.identity()));
+		Map<Long, Long> receiverIdMap = new HashMap<>();
+		for (Map.Entry<Long, WishlistItem> entry : wishlistItemMap.entrySet()) {
+			Wishlist wishlist = wishlistMap.get(entry.getValue().getWishlistId());
+			if (wishlist != null) {
+				receiverIdMap.put(entry.getKey(), wishlist.getMemberId());
+			}
+		}
+
+		// 7. 서비스에서 CartItemResponse를 직접 조립합니다.
 		List<CartItemResponse> itemResponses = cart.getItems().stream()
 				.map(item -> CartItemResponse.from(
 						item,
 						fundingEndedIds.contains(item.getTargetId()),
-						finalProductMap.get(item.getTargetId())
+						finalProductMap.get(item.getTargetId()),
+						receiverIdMap.get(item.getTargetId())
 				))
 				.toList();
 
