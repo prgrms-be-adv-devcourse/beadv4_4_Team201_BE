@@ -20,21 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface JpaSettlementItemRepository extends JpaRepository<SettlementItem, Long> {
-    List<SettlementItem> findAllByOrderId(Long orderId);
-
-    @Query("""
-        SELECT DISTINCT s.orderId
-        FROM SettlementItem s
-        WHERE s.statusInfo.status = :status
-          AND s.createdAt < :cutOffDateTime
-          AND s.retryCount < :retryLimit
-    """)
-    List<Long> findPendingOrderIds(
-            @Param("status") SettlementItemStatus status,
-            @Param("cutOffDateTime") LocalDateTime cutOffDateTime,
-            @Param("retryLimit") int retryLimit
-    );
-
     @Query(
             value = """
             SELECT s.order_id as orderId,
@@ -99,7 +84,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     Optional<SettlementItem> findByOrderIdAndOrderItemIdAndTypeWithLock(Long orderId, Long orderItemId, SettlementItemType type);
 
     @Query(value = """
-        SELECT 
+        SELECT
             TO_CHAR(COALESCE(settled_at, expected_date), 'YYYY-MM') as settlementMonth,
             order_id as orderId,
             SUM(paid_amount) as totalSalesAmount,
