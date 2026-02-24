@@ -1,7 +1,7 @@
 dependencies {
     // Support 모듈
     implementation(project(":support:common"))
-//    implementation(project(":support:security"))
+    implementation(project(":support:security"))
     implementation(project(":support:jpa"))
     implementation(project(":bc:shared"))
 
