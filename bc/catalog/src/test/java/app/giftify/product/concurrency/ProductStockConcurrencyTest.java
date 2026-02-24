@@ -225,7 +225,7 @@ class ProductStockConcurrencyTest {
 
         // then - 판매자가 재고를 50으로 수정 시도 (expectedStock=100이지만 실제 DB=99)
         ProductUpdateRequestDto updateRequest = new ProductUpdateRequestDto(
-                null, null, null, 50, sellerExpectedStock, null
+                null, null, null, 50, sellerExpectedStock, null, null
         );
 
         Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(
@@ -276,7 +276,7 @@ class ProductStockConcurrencyTest {
 
         // when - 판매자가 현재 재고(100)를 정확히 알고 50으로 수정
         ProductUpdateRequestDto updateRequest = new ProductUpdateRequestDto(
-                null, null, null, 50, initialStock, null
+                null, null, null, 50, initialStock, null, null
         );
 
         productService.updateProduct(productId, seller.getId(), updateRequest);

@@ -19,7 +19,8 @@ public record ProductCreateRequestDto(
         @PositiveOrZero(message = "재고는 0이상이어야 합니다.")
         Integer stock,
         @NotNull(message = "카테고리 설정은 필수입니다.")
-        ProductCategory category
+        ProductCategory category,
+        String imageKey
 ) {
     public ProductCreateRequestDto {
         name = StringUtils.trimToNull(name);

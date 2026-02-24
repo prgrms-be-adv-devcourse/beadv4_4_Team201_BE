@@ -14,6 +14,7 @@ public record MyProductDto(
         int price,
         int stock,
         ProductStatus status,
+        String imageKey,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -28,6 +29,7 @@ public record MyProductDto(
                 productJpa.getPrice(),
                 productJpa.getStock(),
                 productJpa.getStatus(),
+                productJpa.getImageKey(),
                 productJpa.getCreatedAt(),
                 productJpa.getUpdatedAt()
         );
@@ -44,6 +46,7 @@ public record MyProductDto(
                 product.getPrice(),
                 product.getStock(),
                 product.getStatus(),
+                product.getImageKey(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );
@@ -60,6 +63,7 @@ public record MyProductDto(
                 result.price(),
                 result.stock(),
                 result.status(),
+                result.imageKey(),
                 result.createdAt(),
                 result.updatedAt()
         );
