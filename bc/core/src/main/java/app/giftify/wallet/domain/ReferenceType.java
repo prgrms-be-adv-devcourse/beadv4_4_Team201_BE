@@ -8,7 +8,8 @@ public enum ReferenceType {
 	CHARGE("충전"),
 	WITHDRAWAL("출금"),
 	PAYMENT("결제"),
-	SETTLEMENT("정산");
+	SETTLEMENT("정산"),
+	CANCEL("취소");
 
 	private final String description;
 

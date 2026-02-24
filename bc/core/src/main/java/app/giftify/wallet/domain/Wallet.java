@@ -91,6 +91,18 @@ public class Wallet extends BaseDomainModel {
 		balance = balance.minus(amount);
 	}
 
+	/**
+	 * 결제 취소에 의해 금액을 지갑에 복원합니다.
+	 * @param amount 복원할 금액
+	 */
+	public void restoreForCancel(Money amount) {
+		validateNull(amount, "amount");
+		if (amount.isLessThanOrEqual(Money.zero())) {
+			throw new WalletException(WalletErrorCode.INVALID_AMOUNT);
+		}
+		balance = balance.plus(amount);
+	}
+
 	public Long getMemberId() {
 		return memberId;
 	}
