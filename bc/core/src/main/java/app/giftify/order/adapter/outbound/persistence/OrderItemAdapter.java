@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository("orderItemV2Adapter")
 @RequiredArgsConstructor
@@ -32,4 +33,11 @@ public class OrderItemAdapter implements OrderItemRepository {
     public List<OrderItem> getOrderItemsWithOrderAndFindingId(Long findingId) {
         return jpaOrderItemRepository.findOrderItemsWithOrderAndFindingId(findingId, TargetType.FUNDING);
     }
+
+    @Override
+    public Map<Long, List<Long>> getItemIdMapByFundingId(Long fundingId) {
+        return jpaOrderItemRepository.findItemIdMapByFundingId(fundingId, TargetType.FUNDING);
+    }
+
+
 }

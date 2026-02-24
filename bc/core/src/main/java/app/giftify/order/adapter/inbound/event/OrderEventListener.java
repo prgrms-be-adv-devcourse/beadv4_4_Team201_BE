@@ -1,16 +1,10 @@
 package app.giftify.order.adapter.inbound.event;
 
-import org.springframework.modulith.events.ApplicationModuleListener;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Component;
-
-import app.giftify.order.application.OrderService;
-import app.giftify.order.application.FundingOrderCancelService;
+import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.shared.api.exception.InfraException;
+import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
@@ -30,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class OrderEventListener {
 
     private final OrderService orderService;
-    private final FundingOrderCancelService fundingOrderCancelService;
+    private final FundingOrderService fundingOrderService;
 
 	@Retryable(
 		retryFor = InfraException.class,
@@ -63,13 +57,20 @@ public class OrderEventListener {
     @ApplicationModuleListener
     public void on (FundingExpiredEvent event) {
         log.info("[이벤트 수신] 펀딩 만료 -> 주문 취소 반영 시작. FundingId: {}", event.getFundingId());
-        fundingOrderCancelService.requestCancelFundingOrder(
+        fundingOrderService.requestCancelFundingOrder(
                 new CancelFundingOrderCommand(
                         event.getFundingId(),
                         Money.of(event.getExpiredAmount()
                         )
                 ));
     }
+
+	@ApplicationModuleListener
+	public void on (FundingAcceptedEvent event) {
+		log.info("[이벤트 수신] 펀딩 수령 확정 -> 주문 확정 시작. FundingId: {}", event.getFundingId());
+
+		fundingOrderService.confirmOrderItemsByFunding(event.getFundingId());
+	}
 
 	/**
 	 * 모든 재시도 실패 시 실행되는 공통 복구 로직
