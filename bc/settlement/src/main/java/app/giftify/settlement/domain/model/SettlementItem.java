@@ -169,6 +169,6 @@ public class SettlementItem extends BaseJpaEntity {
             );
         }
 
-        statusInfo.cancel();
+        statusInfo = statusInfo.cancel();
     }
 }

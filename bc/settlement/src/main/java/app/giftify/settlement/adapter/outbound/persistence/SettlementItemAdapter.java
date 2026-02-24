@@ -21,22 +21,8 @@ public class SettlementItemAdapter implements SettlementItemRepository {
     private final JpaSettlementItemRepository jpaSettlementItemRepository;
 
     @Override
-    public SettlementItem save(SettlementItem settlementItem) {
-        return jpaSettlementItemRepository.save(settlementItem);
-    }
-
-    @Override
-    public List<SettlementItem> getAllByOrderId(Long orderId) {
-        return jpaSettlementItemRepository.findAllByOrderId(orderId);
-    }
-
-    @Override
-    public List<Long> findPendingOrderIds(
-            SettlementItemStatus status,
-            LocalDateTime cutOffDateTime,
-            int retryLimit
-    ) {
-        return jpaSettlementItemRepository.findPendingOrderIds(status, cutOffDateTime, retryLimit);
+    public void save(SettlementItem settlementItem) {
+        jpaSettlementItemRepository.save(settlementItem);
     }
 
     @Override
