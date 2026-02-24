@@ -95,7 +95,7 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
         List<ProductJpa> content = queryFactory
                 .selectFrom(product)
                 .where(where)
-                .orderBy(toOrderSpecifier(dto.getSort(), product))
+                .orderBy(toOrderSpecifiers(dto.getSort(), product))
                 .offset((long) page * size)
                 .limit(size)
                 .fetch();
@@ -110,16 +110,16 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 
-    private OrderSpecifier<?> toOrderSpecifier(String sort, QProductJpa product) {
+    private OrderSpecifier<?>[] toOrderSpecifiers(String sort, QProductJpa product) {
         // 기본 정렬: 생성일 최신순
         if (sort == null || sort.isBlank() || sort.equals("latest"))
-            return product.createdAt.desc();
+            return new OrderSpecifier[]{product.createdAt.desc(), product.id.asc()};
 
         // 가격 정렬
         return switch (sort) {
-            case "priceAsc" -> product.price.asc();
-            case "priceDesc" -> product.price.desc();
-            default -> product.createdAt.desc();
+            case "priceAsc" -> new OrderSpecifier[]{product.price.asc(), product.id.asc()};
+            case "priceDesc" -> new OrderSpecifier[]{product.price.desc(), product.id.asc()};
+            default -> new OrderSpecifier[]{product.createdAt.desc(), product.id.asc()};
         };
     }
 }

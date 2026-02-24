@@ -39,7 +39,6 @@ public class ProductController implements ProductV2ApiSpec {
     private final StockHistorySearchUseCase stockHistorySearchUseCase;
     private final ProductEsSearchUseCase productEsSearchUseCase;
     private final ProductEsSyncUseCase productEsSyncUseCase;
-//    private final ProductEsPort productEsPort;
 
     // 상품 등록
     @PostMapping
@@ -53,7 +52,8 @@ public class ProductController implements ProductV2ApiSpec {
                 requestDto.description(),
                 requestDto.price(),
                 requestDto.stock(),
-                requestDto.category()
+                requestDto.category(),
+                requestDto.imageKey()
         );
         ProductResult result = productCreateUseCase.createProduct(sellerId, command);
         ProductDto responseDto = ProductDto.from(result);

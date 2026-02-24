@@ -17,14 +17,15 @@ public record ProductUpdateRequestDto(
         @PositiveOrZero(message = "재고는 0이상이어야 합니다.")
         Integer stock,
         Integer expectedStock, // 판매자가 조회 시점에 본 재고 (프론트가 작성하여 전송)
-        ProductStatus status
+        ProductStatus status,
+        String imageKey
 ) {
     public ProductUpdateRequestDto {
         // DTO 입력 검증
         name = normalize(name);
         description = normalize(description);
 
-        if (name == null && description == null && price == null && stock == null && status == null) {
+        if (name == null && description == null && price == null && stock == null && status == null && imageKey == null) {
             throw new ProductException(PRODUCT_UPDATE_EMPTY_REQUEST);
         }
         if (status != null && status != ACTIVE && status != INACTIVE) {

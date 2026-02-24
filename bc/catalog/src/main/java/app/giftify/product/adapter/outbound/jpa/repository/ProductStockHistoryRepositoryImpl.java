@@ -4,6 +4,7 @@ import app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistoryJpa;
 import app.giftify.product.adapter.outbound.jpa.entity.QProductStockHistoryJpa;
 import app.giftify.product.application.port.in.StockHistorySearchCommand;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -52,7 +53,7 @@ public class ProductStockHistoryRepositoryImpl implements ProductStockHistoryQue
         List<ProductStockHistoryJpa> content = queryFactory
                 .selectFrom(history)
                 .where(where)
-                .orderBy(history.createdAt.desc())
+                .orderBy(getOrderSpecifiers(searchCommand.sort(), history))
                 .offset((long) page * size)
                 .limit(size)
                 .fetch();
@@ -66,4 +67,13 @@ public class ProductStockHistoryRepositoryImpl implements ProductStockHistoryQue
         Pageable pageable = PageRequest.of(page, size);
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
+
+    private OrderSpecifier<?>[] getOrderSpecifiers(String sort, QProductStockHistoryJpa history) {
+        if ("asc".equalsIgnoreCase(sort)) {
+            return new OrderSpecifier[]{history.createdAt.asc(), history.id.asc()};
+        }
+        // 기본값: 최신순
+        return new OrderSpecifier[]{history.createdAt.desc(), history.id.asc()};
+    }
+
 }
