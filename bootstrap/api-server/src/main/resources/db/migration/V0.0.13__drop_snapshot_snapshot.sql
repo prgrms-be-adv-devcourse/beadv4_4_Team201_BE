@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS order_snapshot CASCADE;
+DROP TABLE IF EXISTS order_item_snapshot CASCADE;
+DROP TABLE IF EXISTS payment_snapshot CASCADE;

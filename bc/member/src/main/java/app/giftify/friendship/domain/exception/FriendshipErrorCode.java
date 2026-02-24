@@ -25,4 +25,9 @@ public enum FriendshipErrorCode implements ErrorCode {
     @Override public int getStatusCode() { return statusCode; }
     @Override public String getCode() { return code; }
     @Override public String getMessage() { return message; }
+
+    @Override
+    public String formatMessage(Object... args) {
+        return String.format(this.message, args);
+    }
 }

@@ -1,6 +1,7 @@
 package app.giftify.settlement.application.outbound.port;
 
 import app.giftify.settlement.domain.model.SettlementItem;
+import app.giftify.settlement.domain.model.SettlementItemType;
 import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
 
@@ -22,4 +23,6 @@ public interface SettlementItemRepository {
     Long getMinOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 
     Long getMaxOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
+
+    boolean existsByOrderItemIdAndType(Long orderItemId, SettlementItemType type);
 }

@@ -19,18 +19,17 @@ public record SettlementCore(
         Money settlementAmount
 ) {
         public SettlementCore {
-                if (paidAmount == null || platformFee == null || pgFee == null || settlementAmount == null) {
-                        throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_CORE);
-                }
-
-                if (paidAmount.isNegative() || platformFee.isNegative() || pgFee.isNegative() || settlementAmount.isNegative()) {
-                        throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_CORE);
-                }
+                if (paidAmount == null) throw new DomainException(SettlementErrorCode.MISSING_FIELD, "PaidAmount");
+                if (platformFee == null) throw new DomainException(SettlementErrorCode.MISSING_FIELD, "PlatformFee");
+                if (pgFee == null) throw new DomainException(SettlementErrorCode.MISSING_FIELD, "PgFee");
 
                 Money expected = paidAmount.minus(platformFee).minus(pgFee);
 
-                if (!expected.equals(settlementAmount)) {
-                        throw new DomainException(SettlementErrorCode.INVALID_SETTLEMENT_CORE);
-                }
+                if (!expected.equals(settlementAmount)) throw new DomainException(
+                        SettlementErrorCode.SETTLEMENT_AMOUNT_MISMATCH,
+                        String.format("정산 금액과 계산된 금액이 일치하지 않습니다. (정산 금액: %s, 계산된 금액: %s)",
+                                settlementAmount.amount().toPlainString(), expected.amount().toPlainString()
+                        )
+                );
         }
 }

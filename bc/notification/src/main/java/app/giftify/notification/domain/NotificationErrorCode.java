@@ -23,4 +23,9 @@ public enum NotificationErrorCode implements ErrorCode {
 	public String getCode() { return code; }
 	@Override
 	public String getMessage() { return message; }
+
+	@Override
+	public String formatMessage(Object... args) {
+		return String.format(this.message, args);
+	}
 }
