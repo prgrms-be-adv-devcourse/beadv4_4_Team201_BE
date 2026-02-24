@@ -6,7 +6,7 @@ resources:
 
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
-    newTag: SET_BY_CICD
+    newTag: latest
 
 patches:
   - target:
@@ -52,7 +52,16 @@ patches:
                 livenessProbe:
                   initialDelaySeconds: 10
 
-  # --- Monitoring IngressRoute: *.localhost → *.chan99k.dev ---
+  # --- IngressRoute: *.localhost → *.chan99k.dev ---
+  - target:
+      group: traefik.io
+      version: v1alpha1
+      kind: IngressRoute
+      name: api-ingress
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: "Host(`giftify-api.chan99k.dev`)"
   - target:
       group: traefik.io
       version: v1alpha1
@@ -93,8 +102,17 @@ patches:
       group: traefik.io
       version: v1alpha1
       kind: IngressRoute
-      name: minio-console-ingress
+      name: elasticsearch-ingress
     patch: |-
       - op: replace
         path: /spec/routes/0/match
-        value: "Host(`giftify-minio.chan99k.dev`)"
+        value: "Host(`giftify-elasticsearch.chan99k.dev`)"
+
+  # --- Elasticsearch: EC2 로컬 빌드 이미지 사용 ---
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never

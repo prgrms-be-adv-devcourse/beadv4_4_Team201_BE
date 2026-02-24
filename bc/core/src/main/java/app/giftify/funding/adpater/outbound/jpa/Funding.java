@@ -169,4 +169,14 @@ public class Funding extends BaseJpaEntity {
             this.targetAmount = productPrice;
         }
     }
+
+    /**
+     * 펀딩 기여 취소
+     */
+    public void withdraw(Integer amount) {
+        if (this.status != FundingStatus.IN_PROGRESS && this.status != FundingStatus.ACHIEVED) {
+            throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_WITHDRAWAL);
+        }
+        this.currentAmount -= amount;
+    }
 }

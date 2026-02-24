@@ -15,11 +15,12 @@ public enum PaymentErrorCode implements ErrorCode {
 	INVALID_PAYMENT_STATUS (HttpStatus.BAD_REQUEST.value(), "PAY_201", "유효하지 않은 결제 상태 변경입니다."),
 	NOT_REFUNDABLE (HttpStatus.BAD_REQUEST.value(), "PAY_202", "환불 불가능한 상태입니다."),
 	NOT_CANCELABLE (HttpStatus.BAD_REQUEST.value(), "PAY_203", "취소 불가능한 상태입니다."),
-	NOT_SETTLEABLE (HttpStatus.BAD_REQUEST.value(), "PAY_204", "정산 불가능한 상태입니다."),
-	ALREADY_PAID (HttpStatus.BAD_REQUEST.value(), "PAY_205", "이미 결제 완료된 건입니다."),
-	ALREADY_CANCELED (HttpStatus.BAD_REQUEST.value(), "PAY_206", "이미 취소된 결제입니다."),
-	NOT_PAYABLE (HttpStatus.BAD_REQUEST.value(), "PAY_207", "결제 완료가 불가능한 상태입니다."),
-	NOT_FAILABLE (HttpStatus.BAD_REQUEST.value(), "PAY_208", "결제 대기 상태의 결제만 실패 상태로 변경할 수 있습니다."),
+	CANCEL_AMOUNT_EXCEEDED (HttpStatus.BAD_REQUEST.value(), "PAY_204", "취소 금액이 결제 금액을 초과합니다."),
+	NOT_SETTLEABLE (HttpStatus.BAD_REQUEST.value(), "PAY_205", "정산 불가능한 상태입니다."),
+	ALREADY_PAID (HttpStatus.BAD_REQUEST.value(), "PAY_206", "이미 결제 완료된 건입니다."),
+	ALREADY_CANCELED (HttpStatus.BAD_REQUEST.value(), "PAY_207", "이미 취소된 결제입니다."),
+	NOT_PAYABLE (HttpStatus.BAD_REQUEST.value(), "PAY_208", "결제 완료가 불가능한 상태입니다."),
+	NOT_FAILABLE (HttpStatus.BAD_REQUEST.value(), "PAY_209", "결제 대기 상태의 결제만 실패 상태로 변경할 수 있습니다."),
 
 	// [300 ~ 399] 정책 및 타입 검증
 	UNSUPPORTED_PAYMENT_TYPE (HttpStatus.BAD_REQUEST.value(), "PAY_301", "지원하지 않는 결제 타입입니다."),

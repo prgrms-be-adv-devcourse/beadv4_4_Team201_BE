@@ -6,9 +6,8 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: PathPrefix(`/`)
+    - match: Host(`api-server.localhost`)
       kind: Rule
-      priority: 1
       services:
         - name: api-server
           port: 8080

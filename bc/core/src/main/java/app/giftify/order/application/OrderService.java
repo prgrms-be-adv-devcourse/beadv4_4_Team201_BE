@@ -15,8 +15,7 @@ import app.giftify.order.application.outbound.port.OrderItemRepository;
 import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.*;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.api.exception.PolicyException;
+import app.giftify.shared.api.exception.*;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import app.giftify.shared.domain.event.order.OrderCanceledEvent;
@@ -33,11 +32,10 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -136,7 +134,7 @@ public class OrderService {
         );
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public OrderCancelSummary requestCancelOrderItems(CancelOrderItemsCommand command) {
         Order order = orderRepository.getByIdWithItemsAndLock(command.orderId());
 
@@ -187,6 +185,45 @@ public class OrderService {
         targetItems.failCancel();
         order.synchronizeStatus();
     }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Money> calculateTotalAmounts(List<Long> orderIds) {
+        if (orderIds.isEmpty()) return Map.of();
+
+        return orderRepository.getAllByIdInWithItems(orderIds).stream()
+                .map(order -> {
+                    try {
+                        return Map.entry(order.getId(), order.getPayableAmount());
+                    } catch (BusinessException e) {
+                        ErrorCode errorCode = e.getErrorCode();
+                        log.error("[금액 집계 건별 실패] orderId: {}, errorCode: {}, message = {}", order.getId(), errorCode.getCode(), errorCode.getMessage(), e);
+                        return null;
+                    } catch (InfraException e) {
+                        InfraErrorCode errorCode = e.getErrorCode();
+                        if (errorCode.isRetryable()) throw e;
+                        log.error("[금액 집계 건별 실패] orderId: {}, errorCode: {}, message = {}", order.getId(), errorCode.getCode(), errorCode.getMessage(), e);
+                        return null;
+                    } catch (Exception e) {
+                        log.error("[금액 집계 건별 실패] orderId: {}, message = {}", order.getId(), e.getMessage(), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull) // 에러 난 건(null)은 제외
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (existing, replacement) -> existing // 혹시 모를 ID 중복 방어
+                ));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void confirmOrderItems(Long orderId, Set<Long> itemIds) {
+        Order targetOrder = orderRepository.getByIdWithItemsAndLock(orderId);
+
+        targetOrder.confirmed(itemIds);
+    }
+
+
 
     private static void validateOwner(Long memberId, Long buyerId) {
         if (!Objects.equals(buyerId, memberId)) {

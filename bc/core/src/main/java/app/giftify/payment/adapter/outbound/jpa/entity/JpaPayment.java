@@ -23,6 +23,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -78,6 +79,9 @@ public class JpaPayment extends BaseJpaEntity {
 
 	@Column(name = "paid_at")
 	private LocalDateTime paidAt;
+
+	@Version
+	private Long version;
 
 	private JpaPayment(
 		PaymentType type,
