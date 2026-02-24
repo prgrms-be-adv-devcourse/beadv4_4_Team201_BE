@@ -50,6 +50,7 @@ public record CartItemResponse(
                 item.getTargetId(),
                 null,
                 null,
+                null,
                 0,
                 item.getAmount().amount().longValue(),
                 status,
