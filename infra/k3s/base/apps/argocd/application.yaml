@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: giftify
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: >-
+      api-server=ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+    argocd-image-updater.argoproj.io/api-server.update-strategy: semver
+    argocd-image-updater.argoproj.io/api-server.allow-tags: regexp:^[0-9]+\.[0-9]+\.[0-9]+$
+    argocd-image-updater.argoproj.io/write-back-method: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/prgrms-be-adv-devcourse/beadv4_4_team201_be.git
+    targetRevision: main
+    path: infra/k3s/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: giftify
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,7 +1,7 @@
 package app.giftify.funding.adpater.inbound;
 
 import app.giftify.funding.application.SyncFundingProductUseCase;
-import app.giftify.shared.domain.event.product.ProductPriceUpdatedEvent;
+import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
