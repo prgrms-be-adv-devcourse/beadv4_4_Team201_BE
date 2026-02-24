@@ -10,4 +10,9 @@ public enum SettlementItemStatus {
     MANUAL,
     COMPLETED,
     CANCELLED
+    ;
+
+    public static boolean isCancelable(SettlementItemStatus status) {
+        return status == CREATED;
+    }
 }

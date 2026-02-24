@@ -1,6 +1,7 @@
 package app.giftify.settlement.application.service;
 
-import app.giftify.settlement.application.inbound.CreateSettlementItemCommand;
+import app.giftify.settlement.application.inbound.CancelSettlementCommand;
+import app.giftify.settlement.application.inbound.CreateSettlementCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementItemType;
@@ -65,7 +66,7 @@ class SettlementItemServiceTest {
             when(feePolicyService.getPgFeeRate()).thenReturn(new BigDecimal("0.02"));
 
             // when
-            settlementItemService.create(new CreateSettlementItemCommand(snapshot));
+            settlementItemService.create(new CreateSettlementCommand(snapshot));
 
             // then
             ArgumentCaptor<SettlementItem> captor = ArgumentCaptor.forClass(SettlementItem.class);
@@ -104,7 +105,7 @@ class SettlementItemServiceTest {
                     .thenReturn(true);
 
             // when
-            settlementItemService.create(new CreateSettlementItemCommand(snapshot));
+            settlementItemService.create(new CreateSettlementCommand(snapshot));
 
             // then
             verify(settlementItemRepository, never()).save(any());
@@ -149,6 +150,30 @@ class SettlementItemServiceTest {
 
             // then
             assertThat(result).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("cancel()")
+    class CancelTests {
+
+        @Test
+        @DisplayName("정산 아이템을 조회해 cancel()을 호출한다")
+        void given_validCommand_when_cancel_then_callCancel() {
+            // given
+            Long orderId = 10L;
+            Long orderItemId = 20L;
+            SettlementItem mockItem = mock(SettlementItem.class);
+
+            when(settlementItemRepository.getByOrderIdAndOrderItemIdAndTypeWithLock(
+                    orderId, orderItemId, SettlementItemType.ITEM_PAYMENT))
+                    .thenReturn(mockItem);
+
+            // when
+            settlementItemService.cancel(new CancelSettlementCommand(orderId, orderItemId));
+
+            // then
+            verify(mockItem).cancel();
         }
     }
 }

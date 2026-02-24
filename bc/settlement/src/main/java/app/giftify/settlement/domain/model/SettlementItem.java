@@ -2,7 +2,9 @@ package app.giftify.settlement.domain.model;
 
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
+import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.exception.DomainException;
+import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
@@ -157,5 +159,16 @@ public class SettlementItem extends BaseJpaEntity {
 
     public void manual() {
         statusInfo = statusInfo.manual();
+    }
+
+    public void cancel() {
+        if (!SettlementItemStatus.isCancelable(statusInfo.getStatus())) {
+            throw new PolicyException(
+                    SettlementErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("정산 취소 반영이 불가능한 상태입니다. Status: %s", statusInfo.getStatus())
+            );
+        }
+
+        statusInfo.cancel();
     }
 }

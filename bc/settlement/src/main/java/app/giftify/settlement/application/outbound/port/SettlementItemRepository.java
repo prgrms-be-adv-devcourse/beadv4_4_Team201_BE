@@ -25,4 +25,6 @@ public interface SettlementItemRepository {
     Long getMaxOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 
     boolean existsByOrderItemIdAndType(Long orderItemId, SettlementItemType type);
+
+    SettlementItem getByOrderIdAndOrderItemIdAndTypeWithLock(Long orderId, Long orderItemId, SettlementItemType type);
 }
