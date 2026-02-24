@@ -29,7 +29,6 @@ public class OrderCancelEventHandler {
 	private final EventPublisher eventPublisher;
 
 	@ApplicationModuleListener
-	@Transactional
 	public void handle(OrderCancelRequestedEvent event) {
 		log.info("[OrderCancelEventHandler] 주문 취소 요청 이벤트 수신. orderId={}, paymentId={}, cancelAmount={}",
 			event.getOrderId(), event.getPaymentId(), event.getCancelAmount());
