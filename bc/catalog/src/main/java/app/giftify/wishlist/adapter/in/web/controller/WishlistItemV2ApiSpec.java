@@ -36,4 +36,15 @@ public interface WishlistItemV2ApiSpec {
             @Parameter(description = "위시리스트 아이템 ID", required = true, example = "1")
             @PathVariable(name = "wishlistItemId") Long wishlistItemId
     );
+
+    @Operation(summary = "위시리스트 아이템 존재 여부 확인", description = "로그인한 회원의 위시리스트에 해당 상품이 이미 존재하는지 확인합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패")
+    })
+    ResponseEntity<RsData<Boolean>> checkItemExistence(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId,
+            @Parameter(description = "상품 ID", required = true, example = "1")
+            @RequestParam(name = "productId") Long productId
+    );
 }

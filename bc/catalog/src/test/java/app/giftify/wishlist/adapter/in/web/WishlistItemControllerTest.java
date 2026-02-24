@@ -4,6 +4,7 @@ import app.giftify.security.common.CurrentMemberId;
 import app.giftify.wishlist.adapter.in.web.controller.WishlistItemController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,10 +21,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.verify;
-import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,12 +37,15 @@ class WishlistItemControllerTest {
     @MockitoBean
     private RemoveWishlistItemUseCase removeWishlistItemUseCase;
 
+    @MockitoBean
+    private GetWishlistItemUseCase getWishlistItemUseCase;
+
     private static final Long MEMBER_ID = 10L;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new WishlistItemController(addWishlistItemUseCase, removeWishlistItemUseCase))
+                .standaloneSetup(new WishlistItemController(addWishlistItemUseCase, removeWishlistItemUseCase, getWishlistItemUseCase))
                 .setControllerAdvice(new WishlistExceptionHandler())
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
                     @Override
@@ -102,5 +104,37 @@ class WishlistItemControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(removeWishlistItemUseCase).removeWishlistItem(any());
+    }
+
+    @Test
+    @DisplayName("위시리스트 아이템 존재 여부 확인 - 존재함")
+    void checkItemExistence_Exists() throws Exception {
+        // given
+        Long productId = 100L;
+        given(getWishlistItemUseCase.isItemExists(MEMBER_ID, productId)).willReturn(true);
+
+        // when & then
+        mockMvc.perform(get("/api/v2/wishlists/me/items/check")
+                        .queryParam("productId", String.valueOf(productId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value(true));
+
+        verify(getWishlistItemUseCase).isItemExists(MEMBER_ID, productId);
+    }
+
+    @Test
+    @DisplayName("위시리스트 아이템 존재 여부 확인 - 존재하지 않음")
+    void checkItemExistence_NotExists() throws Exception {
+        // given
+        Long productId = 101L;
+        given(getWishlistItemUseCase.isItemExists(MEMBER_ID, productId)).willReturn(false);
+
+        // when & then
+        mockMvc.perform(get("/api/v2/wishlists/me/items/check")
+                        .queryParam("productId", String.valueOf(productId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value(false));
+
+        verify(getWishlistItemUseCase).isItemExists(MEMBER_ID, productId);
     }
 }

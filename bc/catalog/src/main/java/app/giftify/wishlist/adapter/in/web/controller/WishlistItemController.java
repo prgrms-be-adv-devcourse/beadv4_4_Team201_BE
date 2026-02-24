@@ -3,6 +3,7 @@ package app.giftify.wishlist.adapter.in.web.controller;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class WishlistItemController implements WishlistItemV2ApiSpec {
     private final AddWishlistItemUseCase addWishlistItemUseCase;
     private final RemoveWishlistItemUseCase removeWishlistItemUseCase;
+    private final GetWishlistItemUseCase getWishlistItemUseCase;
 
     @Override
     @PostMapping("/me/items/add")
@@ -30,7 +32,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
 
         addWishlistItemUseCase.addWishlistItem(memberId, command);
 
-        return ResponseEntity.status(204).body(RsData.success(null, "위시리스트아이템 추가 완료"));
+        return ResponseEntity.status(201).body(RsData.success(null, "위시리스트아이템 추가 완료"));
     }
 
     @Override
@@ -47,5 +49,15 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
         removeWishlistItemUseCase.removeWishlistItem(command);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @GetMapping("/me/items/check")
+    public ResponseEntity<RsData<Boolean>> checkItemExistence(
+            @CurrentMemberId Long memberId,
+            @RequestParam(name = "productId") Long productId
+    ) {
+        boolean exists = getWishlistItemUseCase.isItemExists(memberId, productId);
+        return ResponseEntity.ok(RsData.success(exists));
     }
 }
