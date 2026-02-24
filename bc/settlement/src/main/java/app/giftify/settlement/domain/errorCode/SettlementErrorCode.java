@@ -24,13 +24,14 @@ public enum SettlementErrorCode implements ErrorCode {
     INVALID_TIME_SEQUENCE(400, "SETTLEMENT-301", "주문, 결제, 확정 시점의 시간 순서가 올바르지 않습니다.", false),
 
     // 3. Conflict (409) - 비즈니스 상태가 충돌하거나 중복된 경우
-    INVALID_STATUS_TRANSITION(409, "SETTLEMENT-106", "허용되지 않는 정산 상태 변경입니다.", false),
+    INVALID_STATUS_TRANSITION(409, "SETTLEMENT-106", "잘못된 상태 변경 요청입니다.", false),
     DUPLICATE_SETTLEMENT_ITEM(409, "SETTLEMENT-109", "이미 존재하는 정산 아이템입니다", false),
     PAYMENT_NOT_COMPLETED(409, "SETTLEMENT-201", "결제가 완료되지 않아 정산을 생성할 수 없습니다.", false),
     CONFIRMED_AT_REQUIRED(409, "SETTLEMENT-202", "구매 확정 시점은 필수입니다.", false),
 
     MISSING_FIELD(500, "SETTLEMENT-203", "필수 필드 [%s]이/가 누락되었습니다.", false),
-    SETTLEMENT_AMOUNT_MISMATCH(500, "SETTLEMENT-203", "정산 금액이 일치하지 않습니다.", false)
+    SETTLEMENT_AMOUNT_MISMATCH(500, "SETTLEMENT-203", "정산 금액이 일치하지 않습니다.", false),
+    SETTLEMENT_ITEM_NOT_FOUND(404, "SETTLEMENT-204", "정산 아이템이 존재하지 않습니다.", false),
     ;
 
     private final int statusCode;

@@ -2,10 +2,12 @@ package app.giftify.settlement.adapter.outbound.persistence;
 
 import app.giftify.settlement.adapter.outbound.persistence.jpa.JpaSettlementItemRepository;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
+import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementItemType;
 import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
+import app.giftify.shared.api.exception.DomainException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,22 +21,8 @@ public class SettlementItemAdapter implements SettlementItemRepository {
     private final JpaSettlementItemRepository jpaSettlementItemRepository;
 
     @Override
-    public SettlementItem save(SettlementItem settlementItem) {
-        return jpaSettlementItemRepository.save(settlementItem);
-    }
-
-    @Override
-    public List<SettlementItem> getAllByOrderId(Long orderId) {
-        return jpaSettlementItemRepository.findAllByOrderId(orderId);
-    }
-
-    @Override
-    public List<Long> findPendingOrderIds(
-            SettlementItemStatus status,
-            LocalDateTime cutOffDateTime,
-            int retryLimit
-    ) {
-        return jpaSettlementItemRepository.findPendingOrderIds(status, cutOffDateTime, retryLimit);
+    public void save(SettlementItem settlementItem) {
+        jpaSettlementItemRepository.save(settlementItem);
     }
 
     @Override
@@ -60,5 +48,14 @@ public class SettlementItemAdapter implements SettlementItemRepository {
     @Override
     public boolean existsByOrderItemIdAndType(Long orderItemId, SettlementItemType type) {
         return jpaSettlementItemRepository.existsByOrderItemIdAndType(orderItemId, type);
+    }
+
+    @Override
+    public SettlementItem getByOrderIdAndOrderItemIdAndTypeWithLock(Long orderId, Long orderItemId, SettlementItemType type) {
+        return jpaSettlementItemRepository.findByOrderIdAndOrderItemIdAndTypeWithLock(orderId, orderItemId, type)
+                .orElseThrow(() -> new DomainException(
+                        SettlementErrorCode.SETTLEMENT_ITEM_NOT_FOUND,
+                        String.format("정산 아이템이 존재하지 않습니다. OrderID: %d, OrderItemID: %d, Type: %s", orderId, orderItemId, type)
+                ));
     }
 }

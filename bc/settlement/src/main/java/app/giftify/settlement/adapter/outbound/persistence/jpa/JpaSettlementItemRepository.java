@@ -4,12 +4,17 @@ import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementItemType;
 import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface JpaSettlementItemRepository extends JpaRepository<SettlementItem, Long> {
     List<SettlementItem> findAllByOrderId(Long orderId);
@@ -78,4 +83,15 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
     );
 
     boolean existsByOrderItemIdAndType(Long orderItemId, SettlementItemType type);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT s
+        FROM SettlementItem s
+        WHERE s.orderId = :orderId
+            AND s.orderItemId = :orderItemId
+            AND s.type = :type
+    """)
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "3000")})
+    Optional<SettlementItem> findByOrderIdAndOrderItemIdAndTypeWithLock(Long orderId, Long orderItemId, SettlementItemType type);
 }
