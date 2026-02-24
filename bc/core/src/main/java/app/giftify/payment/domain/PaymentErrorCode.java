@@ -58,4 +58,9 @@ public enum PaymentErrorCode implements ErrorCode {
 	public String getMessage() {
 		return this.message;
 	}
+
+	@Override
+	public String formatMessage(Object... args) {
+		return String.format(this.message, args);
+	}
 }

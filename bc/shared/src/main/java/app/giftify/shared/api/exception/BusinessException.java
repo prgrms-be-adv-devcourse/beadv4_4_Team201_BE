@@ -8,6 +8,10 @@ public abstract class BusinessException extends BaseException {
         super(errorCode);
     }
 
+    public BusinessException(ErrorCode errorCode, Object... args) {
+        super(errorCode, args);
+    }
+
     protected BusinessException(ErrorCode errorCode, String message) {
         super(errorCode, message);
     }
