@@ -10,13 +10,13 @@ import app.giftify.product.application.port.out.ProductSearchCommand;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
-import app.giftify.product.domain.event.ProductUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.data.domain.Page;
@@ -198,7 +198,12 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         }
         productRepositoryPort.save(product);
         product.pullEvents().forEach(eventPublisher::publish);
-        eventPublisher.publish(new ProductUpdatedEvent(productId));
+        eventPublisher.publish(new ProductUpdatedEvent(
+                productId,
+                product.getPrice(),
+                product.getName(),
+                product.getImageKey()
+        ));
 
         return ProductUpdateResult.from(product);
     }

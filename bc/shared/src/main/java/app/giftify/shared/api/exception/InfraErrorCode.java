@@ -38,6 +38,11 @@ public enum InfraErrorCode implements ErrorCode {
         return message;
     }
 
+    @Override
+    public String formatMessage(Object... args) {
+        return String.format(this.message, args);
+    }
+
     public boolean isRetryable() {
         return retryable;
     }

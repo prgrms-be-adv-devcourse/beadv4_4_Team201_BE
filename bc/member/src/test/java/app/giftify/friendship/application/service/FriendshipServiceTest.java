@@ -127,6 +127,7 @@ class FriendshipServiceTest {
         List<FriendInfo> result = service.getFriends(1L);
 
         assertThat(result).hasSize(1);
+        assertThat(result.get(0).friendshipId()).isEqualTo(10L);
         assertThat(result.get(0).memberId()).isEqualTo(2L);
         assertThat(result.get(0).nickname()).isEqualTo("test");
     }

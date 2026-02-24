@@ -172,7 +172,8 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
                                     product.getName(),
                                     product.getPrice(),
                                     product.getSellerId(),
-                                    wishlist.getMemberId()
+                                    wishlist.getMemberId(),
+                                    product.getImageKey()
                             );
                         }
                 ));
