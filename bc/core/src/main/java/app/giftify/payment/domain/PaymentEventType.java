@@ -10,7 +10,10 @@ public enum PaymentEventType {
 	FAILED(PaymentStatus.PENDING, PaymentStatus.FAILED),
 	CANCELED(PaymentStatus.PENDING, PaymentStatus.CANCELED),
 	CANCEL_AFTER_PAID(PaymentStatus.PAID, PaymentStatus.CANCELED),
-	CANCEL_FAILED(PaymentStatus.PAID, PaymentStatus.PAID);
+	CANCEL_FAILED(PaymentStatus.PAID, PaymentStatus.PAID),
+	PARTIAL_CANCEL(PaymentStatus.PAID, PaymentStatus.PARTIALLY_CANCELED),
+	PARTIAL_CANCEL_AGAIN(PaymentStatus.PARTIALLY_CANCELED, PaymentStatus.PARTIALLY_CANCELED),
+	FINAL_CANCEL(PaymentStatus.PARTIALLY_CANCELED, PaymentStatus.CANCELED);
 
 	private final PaymentStatus fromStatus;
 	private final PaymentStatus toStatus;

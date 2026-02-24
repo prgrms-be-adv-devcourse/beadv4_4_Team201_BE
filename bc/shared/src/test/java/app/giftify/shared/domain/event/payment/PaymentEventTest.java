@@ -52,7 +52,7 @@ class PaymentEventTest {
 		PaymentEventData data = PaymentEventData.forCancel(
 			1L, 100L, 10L, "ORD-001", Money.of(10000),
 			PaymentMethod.CARD, PaymentType.FUNDING,
-			CancelType.REFUND, "고객 요청"
+			CancelType.REFUND, "고객 요청", "txn-key-001"
 		);
 
 		PaymentCanceledEvent event = PaymentCanceledEvent.create(data);

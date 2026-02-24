@@ -93,7 +93,13 @@ public class TossPaymentsClient {
 
 			if (response.isSuccess()) {
 				log.info("[TossPayments] 결제 취소 성공. paymentKey={}", paymentKey);
-				return TossCancelResult.success(paymentKey, response.lastTransactionKey());
+				var cancels = response.cancels() != null
+					? response.cancels().stream()
+						.map(c -> new TossCancelResult.CancelDetail(
+							c.transactionKey(), c.cancelAmount(), c.canceledAt()))
+						.toList()
+					: java.util.List.<TossCancelResult.CancelDetail>of();
+				return TossCancelResult.success(paymentKey, response.lastTransactionKey(), cancels);
 			} else {
 				log.warn("[TossPayments] 결제 취소 실패. paymentKey={}, errorCode={}, message={}",
 					paymentKey, response.code(), response.message());

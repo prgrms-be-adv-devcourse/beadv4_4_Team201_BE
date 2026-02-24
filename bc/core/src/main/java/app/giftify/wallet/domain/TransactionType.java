@@ -9,7 +9,8 @@ public enum TransactionType {
 	WITHDRAW("출금"),
 	ORDER_DEDUCT("주문 차감"),
 	SETTLEMENT_PAYOUT("정산 입금"),
-	SETTLEMENT_CLAWBACK("정산 환수");
+	SETTLEMENT_CLAWBACK("정산 환수"),
+	CANCEL_REFUND("취소 환불");
 
 	private final String description;
 
