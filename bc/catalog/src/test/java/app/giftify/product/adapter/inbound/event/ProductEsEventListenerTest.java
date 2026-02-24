@@ -4,7 +4,7 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
-import app.giftify.product.domain.event.ProductUpdatedEvent;
+import app.giftify.product.domain.event.ProductCdcEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import org.junit.jupiter.api.DisplayName;
@@ -80,7 +80,7 @@ class ProductEsEventListenerTest {
         // given
         Long productId = 4L;
         Product product = createProduct(productId);
-        ProductUpdatedEvent event = new ProductUpdatedEvent(productId);
+        ProductCdcEvent event = new ProductCdcEvent(productId);
 
         when(productSupport.findById(productId)).thenReturn(product);
 

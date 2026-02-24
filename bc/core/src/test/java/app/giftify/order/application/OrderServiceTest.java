@@ -86,7 +86,8 @@ class OrderServiceTest {
                     "productName",
                     200000,
                     200L,
-                    2002L
+                    2002L,
+                    "products/101/crowcanyon-mug2.jpg"
             )
     );
 

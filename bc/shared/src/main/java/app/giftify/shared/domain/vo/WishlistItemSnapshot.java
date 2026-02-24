@@ -6,6 +6,7 @@ public record WishlistItemSnapshot(
         String productName,
         int productPrice,
         Long sellerId,
-        Long wishlistOwnerId
+        Long wishlistOwnerId,
+        String imageKey
 ) {
 }
