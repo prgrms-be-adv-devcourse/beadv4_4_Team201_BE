@@ -18,6 +18,8 @@ public record ContributeFundingResponseDto(
         // 위시리스트 아이템 정보
         Long wishlistItemId,
         Long productId,
+        String productName,
+        String imageKey,
 
         // 추가 정보
         double achievementRate,  // 달성률 (%)
@@ -48,6 +50,8 @@ public record ContributeFundingResponseDto(
                 receiverNickname,
                 funding.getWishlistItemId(),
                 funding.getProductId(),
+                funding.getProductName(),
+                funding.getImageKey(),
                 Math.round(rate * 10.0) / 10.0,
                 days,
                 myContribution

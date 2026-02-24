@@ -54,6 +54,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 .price(command.price())
                 .stock(command.stock())
                 .category(command.category())
+                .imageKey(command.imageKey())
                 .build();
 
         Product savedProduct = productRepositoryPort.save(product);
@@ -182,6 +183,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
         Optional.ofNullable(requestDto.description()).ifPresent(product::updateDescription);
         Optional.ofNullable(requestDto.price()).ifPresent(product::updatePrice);
+        Optional.ofNullable(requestDto.imageKey()).ifPresent(product::updateImageKey);
 
         var status = requestDto.status();
         if (status != null) {

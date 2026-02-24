@@ -10,6 +10,7 @@ public record StockHistorySearchCommand(
         StockChangeType changeType,
         LocalDate fromDate,
         LocalDate toDate,
+        String sort,
         @Min(value = 0, message = "page must be >= 0")
         Integer page,
         @Min(value = 1, message = "size must be >= 1")
@@ -20,5 +21,7 @@ public record StockHistorySearchCommand(
             page = 0;
         if (size == null)
             size = 20;
+        if (sort == null || sort.isBlank())
+            sort = "desc";
     }
 }

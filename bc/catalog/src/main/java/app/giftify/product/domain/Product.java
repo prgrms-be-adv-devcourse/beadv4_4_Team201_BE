@@ -121,6 +121,10 @@ public class Product extends BaseDomainModel {
         this.description = newDescription;
     }
 
+    public void updateImageKey(String newImageKey) {
+        this.imageKey = newImageKey;
+    }
+
     public void updatePrice(int newPrice) {
         this.price = newPrice;
     }

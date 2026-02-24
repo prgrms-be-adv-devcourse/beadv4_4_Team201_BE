@@ -136,7 +136,7 @@ class ProductStockHistoryServiceTest {
         // given
         Long sellerId = 10L;
         StockHistorySearchCommand searchCommand = new StockHistorySearchCommand(
-                1L, StockChangeType.ORDER_COMPLETED, null, null, null, null
+                1L, StockChangeType.ORDER_COMPLETED, null, null, null, null, null
         );
         Page<ProductStockHistory> expectedPage = new PageImpl<>(List.of());
         given(stockHistoryRepositoryPort.searchStockHistories(eq(sellerId), eq(searchCommand)))
@@ -156,7 +156,7 @@ class ProductStockHistoryServiceTest {
         // given
         Long sellerId = 10L;
         StockHistorySearchCommand searchCommand = new StockHistorySearchCommand(
-                null, null, null, null, null, null
+                null, null, null, null, null, null, null
         );
         Page<ProductStockHistory> expectedPage = new PageImpl<>(List.of());
         given(stockHistoryRepositoryPort.searchStockHistories(eq(sellerId), eq(searchCommand)))

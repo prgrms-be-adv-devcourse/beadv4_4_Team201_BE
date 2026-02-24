@@ -9,6 +9,7 @@ public record ProductCreateCommand(
         String description,
         int price,
         int stock,
-        ProductCategory category
+        ProductCategory category,
+        String imageKey
 ) {
 }
