@@ -11,7 +11,7 @@ public record FriendRequestResponse(
     public static FriendRequestResponse from(FriendRequestInfo info) {
         return new FriendRequestResponse(
                 info.friendshipId(),
-                new FriendResponse(info.requesterId(), info.requesterNickname(), null),
+                new FriendResponse(null, info.requesterId(), info.requesterNickname(), null),
                 info.createdAt()
         );
     }

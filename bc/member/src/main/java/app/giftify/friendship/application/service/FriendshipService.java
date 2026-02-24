@@ -97,6 +97,10 @@ public class FriendshipService implements
     public List<FriendInfo> getFriends(Long memberId) {
         List<Friendship> friendships = friendshipRepository.findAllByMemberIdAndStatus(
                 memberId, FriendshipStatus.ACCEPTED);
+        Map<Long, Long> friendIdToFriendshipId = friendships.stream()
+                .collect(Collectors.toMap(
+                        f -> f.getFriendId(memberId),
+                        Friendship::getId));
         List<Long> friendIds = friendships.stream()
                 .map(f -> f.getFriendId(memberId))
                 .toList();
@@ -107,7 +111,7 @@ public class FriendshipService implements
                 .filter(memberMap::containsKey)
                 .map(id -> {
                     Member m = memberMap.get(id);
-                    return new FriendInfo(m.getId(), m.getNickname());
+                    return new FriendInfo(friendIdToFriendshipId.get(id), m.getId(), m.getNickname());
                 })
                 .toList();
     }
