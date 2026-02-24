@@ -18,6 +18,7 @@ public record FundingResponseDto (
     // 위시리스트 아이템 정보
     Long wishlistItemId,
     Long productId,
+    String productName,
 
     // 추가 정보 -> 화면 출력용
     double achievementRate,  // 달성률 (%)
@@ -45,6 +46,7 @@ public record FundingResponseDto (
                 receiverNickname,
                 funding.getWishlistItemId(),
                 funding.getProductId(),
+                funding.getProductName(),
                 Math.round(rate * 10.0) / 10.0, // 소수점 첫째자리까지 반올림
                 days
         );

@@ -65,6 +65,7 @@ public class FundingCreateUseCase {
             Funding funding = Funding.startFunding(
                     item.targetId(),                        // wishlistItemId
                     wishlistItemSnapshot.productId(),       // productId
+                    wishlistItemSnapshot.productName(),     // productName
                     item.receiverId(),                      // receiverId
                     item.price().amount().intValueExact()   // targetAmount
             );
