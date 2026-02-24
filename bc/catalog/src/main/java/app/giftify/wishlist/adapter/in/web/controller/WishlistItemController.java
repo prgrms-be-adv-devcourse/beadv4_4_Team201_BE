@@ -36,14 +36,14 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
     }
 
     @Override
-    @DeleteMapping("/me/items/remove")
+    @DeleteMapping("/items/{wishlistItemId}")
     public ResponseEntity<Void> removeProduct(
             @CurrentMemberId Long memberId,
-            @RequestParam(name = "productId") Long productId
+            @PathVariable(name = "wishlistItemId") Long wishlistItemId
     ) {
         RemoveWishlistItemUseCase.WishlistItemRemoveCommand command = new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(
                 memberId,
-                productId
+                wishlistItemId
         );
 
         removeWishlistItemUseCase.removeWishlistItem(command);

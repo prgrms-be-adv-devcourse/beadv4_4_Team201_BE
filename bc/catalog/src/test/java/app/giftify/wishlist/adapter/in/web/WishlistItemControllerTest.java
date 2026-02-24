@@ -106,9 +106,11 @@ class WishlistItemControllerTest {
     @Test
     @DisplayName("위시리스트 아이템 삭제 성공")
     void removeProduct_Success() throws Exception {
+        // given
+        Long wishlistItemId = 1L;
+
         // when & then
-        mockMvc.perform(delete("/api/v2/wishlists/me/items/remove")
-                        .queryParam("productId", "100"))
+        mockMvc.perform(delete("/api/v2/wishlists/items/{wishlistItemId}", wishlistItemId))
                 .andExpect(status().isNoContent());
 
         verify(removeWishlistItemUseCase).removeWishlistItem(any());

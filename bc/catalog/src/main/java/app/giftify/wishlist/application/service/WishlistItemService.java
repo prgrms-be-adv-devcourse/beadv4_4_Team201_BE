@@ -17,6 +17,7 @@ import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import app.giftify.wishlist.core.domain.exception.DuplicateWishlistItemException;
+import app.giftify.wishlist.core.domain.exception.NotWishlistOwnerException;
 import app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException;
 import app.giftify.wishlist.core.domain.exception.WishlistItemNotRemovableException;
 import lombok.RequiredArgsConstructor;
@@ -118,8 +119,13 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     @Override
     @Transactional
     public void removeWishlistItem(WishlistItemRemoveCommand command) {
-        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(command.memberId());
-        WishlistItem wishlistItem = wishlistSupport.getWishlistItemByWishlistIdAndProductId(wishlist.getId(), command.productId());
+        WishlistItem wishlistItem = wishlistSupport.getWishlistItemById(command.wishlistItemId());
+        Wishlist wishlist = wishlistSupport.getWishlistById(wishlistItem.getWishlistId());
+
+        // 본인 위시리스트 항목인지 확인
+        if (!wishlist.getMemberId().equals(command.memberId())) {
+            throw new NotWishlistOwnerException();
+        }
 
         validateManualRemovable(wishlistItem); // 상태 확인
         wishlistItemRepositoryPort.delete(wishlistItem);

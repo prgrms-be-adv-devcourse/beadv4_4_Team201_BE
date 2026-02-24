@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Wishlist Item V2", description = "위시리스트 아이템 관련 API")
@@ -25,14 +26,14 @@ public interface WishlistItemV2ApiSpec {
             @RequestParam(name = "productId") Long productId
     );
 
-    @Operation(summary = "위시리스트 아이템 삭제", description = "위시리스트에서 특정 상품을 삭제합니다.")
+    @Operation(summary = "위시리스트 아이템 삭제", description = "위시리스트에서 특정 아이템을 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공"),
             @ApiResponse(responseCode = "401", description = "인증 실패")
     })
     ResponseEntity<Void> removeProduct(
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
-            @Parameter(description = "상품 ID", required = true, example = "1")
-            @RequestParam(name = "productId") Long productId
+            @Parameter(description = "위시리스트 아이템 ID", required = true, example = "1")
+            @PathVariable(name = "wishlistItemId") Long wishlistItemId
     );
 }
