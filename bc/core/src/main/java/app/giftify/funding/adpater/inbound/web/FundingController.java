@@ -9,6 +9,7 @@ import app.giftify.shared.api.response.RsData;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,20 +38,18 @@ public class FundingController implements FundingV2ApiSpec {
         return ResponseEntity.ok(RsData.success(fundings));
     }
 
-    // 펀딩 종료 처리
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/close")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> closeFunding(@PathVariable("id") Long id) {
-        // TODO: 관리자 권한 체크 필요
         FundingCompleteResponseDto funding = fundingFacade.closeFunding(id);
         return ResponseEntity.ok(RsData.success(funding));
     }
 
-    // 펀딩 만료 처리
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/expire")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> expireFunding(@PathVariable("id") Long id) {
-        // TODO: 관리자 권한 체크 필요
         FundingCompleteResponseDto funding = fundingFacade.expireFunding(id);
         return ResponseEntity.ok(RsData.success(funding));
     }
