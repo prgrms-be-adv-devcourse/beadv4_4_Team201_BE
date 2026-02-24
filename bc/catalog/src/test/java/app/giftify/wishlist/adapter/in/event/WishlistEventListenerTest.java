@@ -198,7 +198,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingExpiredEvent event = new FundingExpiredEvent(
-                    100L, wishlistItemId, 30000
+                    100L, wishlistItemId, 30000, 1L, List.of(1L, 2L)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
