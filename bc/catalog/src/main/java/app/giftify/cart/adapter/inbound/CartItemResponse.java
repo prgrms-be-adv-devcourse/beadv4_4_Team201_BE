@@ -11,6 +11,7 @@ public record CartItemResponse(
         Long targetId,
         Long receiverId,
         String productName,
+        String imageKey,
         long productPrice,
         long contributionAmount,
         ItemStatus status,
@@ -35,6 +36,7 @@ public record CartItemResponse(
                 item.getTargetId(),
                 receiverId,
                 product.getName(),
+                product.getImageKey(),
                 (long) product.getPrice(),
                 item.getAmount().amount().longValue(),
                 ItemStatus.AVAILABLE,
@@ -46,6 +48,7 @@ public record CartItemResponse(
         return new CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
+                null,
                 null,
                 null,
                 0,
