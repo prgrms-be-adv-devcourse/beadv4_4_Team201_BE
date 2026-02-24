@@ -3,6 +3,7 @@ package app.giftify.settlement.application.service;
 import app.giftify.settlement.application.inbound.CancelSettlementCommand;
 import app.giftify.settlement.application.inbound.CreateSettlementCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
+import app.giftify.settlement.application.service.dto.SettlementSummary;
 import app.giftify.settlement.domain.model.SettlementCore;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementItemType;
@@ -14,6 +15,8 @@ import app.giftify.shared.domain.vo.Money;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +68,10 @@ public class SettlementItemService {
         settlementItem.cancel();
     }
 
+    @Transactional(readOnly = true)
+    public Page<SettlementSummary> summarizeSettlements(Long sellerId, Pageable pageable) {
+        return settlementItemRepository.getSettlementSummary(sellerId, pageable);
+    }
 
     private @NonNull SettlementCore getSettlementCore(Money amount) {
         BigDecimal platformFeeRate = feePolicyService.getPlatformFeeRate();
