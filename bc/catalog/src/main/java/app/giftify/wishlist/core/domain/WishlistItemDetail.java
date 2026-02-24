@@ -1,5 +1,7 @@
 package app.giftify.wishlist.core.domain;
 
+import app.giftify.product.domain.ProductCategory;
+
 public record WishlistItemDetail(
         WishlistItem wishlistItem,
         String productName,
@@ -7,6 +9,7 @@ public record WishlistItemDetail(
         String imageKey,
         boolean isSoldout,
         boolean isActive,
-        String sellerNickname
+        String sellerNickname,
+        ProductCategory category
 ) {
 }

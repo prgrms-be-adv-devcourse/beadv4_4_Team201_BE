@@ -1,5 +1,6 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
+import app.giftify.product.domain.ProductCategory;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
@@ -18,6 +19,7 @@ public record WishlistItemResponse(
         boolean isSoldout,
         boolean isActive,
         String sellerNickname,
+        ProductCategory category,
         WishlistItemStatus status,
         LocalDateTime addedAt
 ) {
@@ -43,6 +45,7 @@ public record WishlistItemResponse(
                 .isSoldout(detail.isSoldout())
                 .isActive(detail.isActive())
                 .sellerNickname(detail.sellerNickname())
+                .category(detail.category())
                 .status(item.getWishlistItemStatus())
                 .addedAt(item.getAddedAt())
                 .build();

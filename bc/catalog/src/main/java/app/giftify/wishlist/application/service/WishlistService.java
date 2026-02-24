@@ -19,6 +19,9 @@ import app.giftify.wishlist.core.domain.exception.WishlistNotAccessibleException
 import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +47,28 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     @Transactional
     public Wishlist getOrCreateWishlistByMemberId(Long memberId) {
         return wishlistSupport.getOrCreateWishlistByMemberId(memberId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<WishlistItemDetail> getMyWishlistItemDetails(Long memberId, Pageable pageable) {
+        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(memberId);
+        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
+
+        // 위시리스트아이템 정보
+        List<WishlistItemDetail> allDetails = toItemDetails(items);
+
+        // 페이징 처
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allDetails.size());
+
+        if (start > allDetails.size()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, allDetails.size());
+        }
+
+        List<WishlistItemDetail> pagedDetails = allDetails.subList(start, end);
+
+        return new PageImpl<>(pagedDetails, pageable, allDetails.size());
     }
 
     // 내 위시리스트 아이템 목록 조회
@@ -94,10 +119,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
                 .orElseThrow(() -> new WishlistNotFoundException(command.memberId()));
 
         wishlist.changeVisibility(command.visibility());
-
         Wishlist updatedWishlist = wishlistRepositoryPort.save(wishlist);
-
-        // 위시리스트 상태 변경 이벤트 발행 todo
 
         return updatedWishlist;
     }
@@ -128,7 +150,8 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
                     product != null ? product.getImageKey() : null,
                     product != null && product.getStock() == 0, // 품절 여부
                     product != null && product.getStatus() == ProductStatus.ACTIVE, // 활성화 여부
-                    sellerNickname
+                    sellerNickname,
+                    product != null ? product.getCategory() : null
             );
         }).toList();
     }

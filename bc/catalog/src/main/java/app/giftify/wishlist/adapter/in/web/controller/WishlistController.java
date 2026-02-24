@@ -1,5 +1,6 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
+import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.security.common.util.SecurityUtil;
@@ -14,6 +15,8 @@ import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,20 +37,19 @@ public class WishlistController implements WishlistV2ApiSpec {
     @Override
     @GetMapping("/me")
     public ResponseEntity<WishlistResponse> getMyWishlist(
-            @CurrentMemberId Long memberId
+            @CurrentMemberId Long memberId,
+            Pageable pageable
     ) {
         Wishlist wishlist = getWishlistUseCase.getOrCreateWishlistByMemberId(memberId);
 
         String nickname = memberRepository.findById(memberId)
-                .map(m -> m.getNickname())
+                .map(Member::getNickname)
                 .orElse(null);
 
-        List<WishlistItemResponse> items = getWishlistUseCase.getMyWishlistItemDetails(memberId)
-                .stream()
-                .map(WishlistItemResponse::from)
-                .toList();
+        Page<WishlistItemResponse> itemPage = getWishlistUseCase.getMyWishlistItemDetails(memberId, pageable)
+                .map(WishlistItemResponse::from);
 
-        return ResponseEntity.ok(WishlistResponse.from(wishlist, nickname, items));
+        return ResponseEntity.ok(WishlistResponse.from(wishlist, nickname, itemPage));
     }
 
     // 위시리스트 공개 범위 설정

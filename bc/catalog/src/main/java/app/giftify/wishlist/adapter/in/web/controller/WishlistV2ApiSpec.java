@@ -12,7 +12,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -21,13 +23,15 @@ import java.util.List;
 @Tag(name = "Wishlist V2", description = "위시리스트 관련 API")
 public interface WishlistV2ApiSpec {
 
-    @Operation(summary = "내 위시리스트 + 아이템 조회", description = "현재 로그인한 사용자의 위시리스트 정보와 아이템 목록을 함께 조회합니다.")
+    @Operation(summary = "내 위시리스트 + 아이템 조회", description = "현재 로그인한 사용자의 위시리스트 정보와 페이징된 아이템 목록을 함께 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증 실패")
     })
+    @GetMapping("/me")
     ResponseEntity<WishlistResponse> getMyWishlist(
-            @Parameter(hidden = true) @CurrentMemberId Long memberId
+            @Parameter(hidden = true) @CurrentMemberId Long memberId,
+            Pageable pageable
     );
 
     @Operation(summary = "위시리스트 설정 변경", description = "위시리스트 공개 설정을 변경합니다. (PUBLIC / PRIVATE / FRIENDS_ONLY)")

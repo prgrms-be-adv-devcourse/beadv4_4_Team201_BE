@@ -71,7 +71,7 @@ class WishlistItemControllerTest {
         // when & then
         mockMvc.perform(post("/api/v2/wishlists/me/items/add")
                         .queryParam("productId", String.valueOf(productId)))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("위시리스트아이템 추가 완료"));
 
         verify(addWishlistItemUseCase).addWishlistItem(anyLong(), any());

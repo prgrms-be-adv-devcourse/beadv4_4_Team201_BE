@@ -3,9 +3,9 @@ package app.giftify.wishlist.adapter.in.web.responseDto;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import lombok.Builder;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Builder
 public record WishlistResponse(
@@ -14,7 +14,7 @@ public record WishlistResponse(
         String nickname,
         Visibility visibility,
         LocalDateTime createdAt,
-        List<WishlistItemResponse> items
+        Page<WishlistItemResponse> items
 ) {
     public static WishlistResponse from(Wishlist wishlist) {
         return WishlistResponse.builder()
@@ -25,7 +25,7 @@ public record WishlistResponse(
                 .build();
     }
 
-    public static WishlistResponse from(Wishlist wishlist, String nickname, List<WishlistItemResponse> items) {
+    public static WishlistResponse from(Wishlist wishlist, String nickname, Page<WishlistItemResponse> items) {
         return WishlistResponse.builder()
                 .id(wishlist.getId())
                 .memberId(wishlist.getMemberId())
