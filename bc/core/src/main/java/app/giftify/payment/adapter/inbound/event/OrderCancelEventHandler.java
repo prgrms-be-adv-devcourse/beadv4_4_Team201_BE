@@ -15,6 +15,7 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
+import app.giftify.shared.domain.type.CancelType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +42,7 @@ public class OrderCancelEventHandler {
 
 		String transactionKey = resolveTransactionKey(payment);
 
-		payment.markAsPartiallyCanceled(transactionKey, event.getCancelAmount(), "주문 취소");
+		payment.markAsPartiallyCanceled(transactionKey, event.getCancelAmount(), CancelType.REFUND, "주문 취소");
 
 		Cancel cancel = Cancel.create(
 			payment.getId(),
@@ -52,8 +53,8 @@ public class OrderCancelEventHandler {
 		);
 		cancelRepository.save(cancel);
 
-		var domainEvents = payment.pullEvents();
 		paymentRepository.save(payment);
+		var domainEvents = payment.pullEvents();
 		domainEvents.forEach(eventPublisher::publish);
 
 		log.info("[OrderCancelEventHandler] 주문 취소 처리 완료. paymentId={}, status={}, refundedAmount={}",

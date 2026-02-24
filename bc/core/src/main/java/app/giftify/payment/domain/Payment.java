@@ -104,7 +104,7 @@ public class Payment extends BaseDomainModel {
 		));
 	}
 
-	public void markAsPartiallyCanceled(String newTransactionKey, Money cancelAmount, String reason) {
+	public void markAsPartiallyCanceled(String newTransactionKey, Money cancelAmount, CancelType cancelType, String reason) {
 		Money newRefundedTotal = this.refundedAmount.plus(cancelAmount);
 
 		PaymentEventType eventType = getCancelingEventType(newRefundedTotal);
@@ -122,7 +122,7 @@ public class Payment extends BaseDomainModel {
 			PaymentEventData.forCancel(
 				getId(), getOrderId(), getMemberId(), getOrderNumber(),
 				cancelAmount,
-				getMethod(), getType(), CancelType.REFUND, reason,
+				getMethod(), getType(), cancelType, reason,
 				newTransactionKey
 			)
 		));

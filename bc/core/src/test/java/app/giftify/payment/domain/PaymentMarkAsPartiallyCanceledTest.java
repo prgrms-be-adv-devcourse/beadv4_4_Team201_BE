@@ -90,7 +90,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "부분 환불 요청";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, reason);
+			payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, CancelType.REFUND, reason);
 
 			// then
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
@@ -118,7 +118,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "전액 환불";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, reason);
+			payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, CancelType.REFUND, reason);
 
 			// then
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
@@ -136,7 +136,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "추가 부분 환불";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, additionalCancelAmount, reason);
+			payment.markAsPartiallyCanceled(newTransactionKey, additionalCancelAmount, CancelType.REFUND, reason);
 
 			// then
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
@@ -159,7 +159,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "최종 취소";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, finalCancelAmount, reason);
+			payment.markAsPartiallyCanceled(newTransactionKey, finalCancelAmount, CancelType.REFUND, reason);
 
 			// then
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
@@ -181,7 +181,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 
 			// when & then
 			assertThatThrownBy(() ->
-				payment.markAsPartiallyCanceled("txn-excessive", excessiveCancelAmount, "초과 환불")
+				payment.markAsPartiallyCanceled("txn-excessive", excessiveCancelAmount, CancelType.REFUND, "초과 환불")
 			)
 				.isInstanceOf(PaymentException.class)
 				.extracting("errorCode")
@@ -197,7 +197,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 
 			// when & then
 			assertThatThrownBy(() ->
-				payment.markAsPartiallyCanceled("txn-excessive", excessiveCancelAmount, "초과 환불")
+				payment.markAsPartiallyCanceled("txn-excessive", excessiveCancelAmount, CancelType.REFUND, "초과 환불")
 			)
 				.isInstanceOf(PaymentException.class)
 				.extracting("errorCode")
@@ -213,7 +213,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 
 			// when & then
 			assertThatThrownBy(() ->
-				payment.markAsPartiallyCanceled("txn-invalid", cancelAmount, "대기 중 취소")
+				payment.markAsPartiallyCanceled("txn-invalid", cancelAmount, CancelType.REFUND, "대기 중 취소")
 			)
 				.isInstanceOf(PaymentException.class)
 				.extracting("errorCode")
@@ -235,7 +235,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "환불 테스트";
 
 			// when
-			payment.markAsPartiallyCanceled(transactionKey, cancelAmount, reason);
+			payment.markAsPartiallyCanceled(transactionKey, cancelAmount, CancelType.REFUND, reason);
 
 			// then
 			List<Object> events = payment.pullEvents();
