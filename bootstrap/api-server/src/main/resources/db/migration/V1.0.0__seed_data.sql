@@ -30,14 +30,14 @@ ON CONFLICT (id) DO NOTHING;
 ---------------------------------------------------
 -- 3. Wallets
 ---------------------------------------------------
-INSERT INTO wallet (id, member_id, balance, created_at, updated_at, created_by, updated_by)
+INSERT INTO wallet (id, member_id, balance, version, created_at, updated_at, created_by, updated_by)
 VALUES
-(1, 1, 0, now(), now(), 'system', 'system'),
-(2, 2, 100000, now(), now(), 'system', 'system'),
-(3, 3, 0, now(), now(), 'system', 'system'),
-(4, 4, 0, now(), now(), 'system', 'system'),
-(5, 5, 50000, now(), now(), 'system', 'system'),
-(6, 6, 75000, now(), now(), 'system', 'system')
+(1, 1, 0, 0, now(), now(), 'system', 'system'),
+(2, 2, 100000, 0, now(), now(), 'system', 'system'),
+(3, 3, 0, 0, now(), now(), 'system', 'system'),
+(4, 4, 0, 0, now(), now(), 'system', 'system'),
+(5, 5, 50000, 0, now(), now(), 'system', 'system'),
+(6, 6, 75000, 0, now(), now(), 'system', 'system')
 ON CONFLICT (member_id) DO NOTHING;
 
 ---------------------------------------------------
