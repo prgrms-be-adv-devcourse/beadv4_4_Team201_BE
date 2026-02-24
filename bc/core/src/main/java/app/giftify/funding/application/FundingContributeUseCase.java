@@ -62,9 +62,15 @@ public class FundingContributeUseCase {
 
             // 달성된 경우 이벤트 발행
             if (funding.isAchieved()) {
+                // 이벤트 발행 시점 스냅샷
+                List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
+
                 eventPublisher.publish(new FundingAchievedEvent(
                         funding.getId(),
-                        funding.getWishlistItemId()
+                        funding.getWishlistItemId(),
+                        funding.getReceiverId(),
+                        participantIds
+
                 ));
             }
             result.add(funding);
