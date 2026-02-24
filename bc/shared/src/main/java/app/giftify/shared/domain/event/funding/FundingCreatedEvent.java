@@ -1,43 +1,32 @@
 package app.giftify.shared.domain.event.funding;
 
 import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.shared.domain.vo.FundingDetail;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * 펀딩 생성 이벤트
- * - Member BC에서 수신하여 WishlistItem 상태 변경 (PENDING → IN_PROGRESS)
+ * 펀딩 생성 이벤트 V2
+ * - 여러 펀딩 생성을 한 번에 알리기 위한 이벤트
  */
 public class FundingCreatedEvent extends BaseDomainEvent {
-    private final Long fundingId;
-    private final Long wishlistItemId;
-    private final LocalDateTime deadline;
 
-    public FundingCreatedEvent(Long fundingId, Long wishlistItemId, LocalDateTime deadline) {
+    private final List<FundingDetail> fundings;
+
+    public FundingCreatedEvent(List<FundingDetail> fundings) {
         super();
-        this.fundingId = fundingId;
-        this.wishlistItemId = wishlistItemId;
-        this.deadline = deadline;
+        this.fundings = fundings;
     }
 
-    public Long getFundingId() {
-        return fundingId;
-    }
 
-    public Long getWishlistItemId() {
-        return wishlistItemId;
-    }
-
-    public LocalDateTime getDeadline() {
-        return deadline;
+    public List<FundingDetail> getFundings() {
+        return fundings;
     }
 
     @Override
     public String toString() {
-        return "FundingCreatedEvent{" +
-                "fundingId=" + fundingId +
-                ", wishlistItemId=" + wishlistItemId +
-                ", deadline=" + deadline +
+        return "FundingCreatedEventV2{" +
+                " fundings=" + fundings +
                 ", eventId='" + getEventId() + "'" +
                 ", occurredAt=" + getOccurredAt() +
                 '}';

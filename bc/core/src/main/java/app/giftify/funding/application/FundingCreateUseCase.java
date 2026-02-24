@@ -9,7 +9,7 @@ import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.order.domain.OrderItemSnapshot;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingCreatedEventV2;
+import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingDetail;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
@@ -80,7 +80,7 @@ public class FundingCreateUseCase {
             log.info("[Funding] 펀딩 생성 완료. fundingId={}", savedFunding.getId());
         }
 
-        eventPublisher.publish(new FundingCreatedEventV2(fundingDetails));
+        eventPublisher.publish(new FundingCreatedEvent(fundingDetails));
 
         return results;
     }

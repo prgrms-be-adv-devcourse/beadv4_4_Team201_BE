@@ -92,7 +92,7 @@ class WishlistEventListenerTest {
                     new FundingDetail(101L, 11L, wishlistItemId2, 3L),
                     new FundingDetail(102L, 12L, wishlistItemId3, 3L)
             );
-            FundingCreatedEventV2 event = new FundingCreatedEventV2(fundingDetails);
+            FundingCreatedEvent event = new FundingCreatedEvent(fundingDetails);
 
             WishlistItem item1 = WishlistItem.builder()
                     .id(wishlistItemId1).wishlistId(10L).productId(1L)

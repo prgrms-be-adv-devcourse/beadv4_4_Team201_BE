@@ -34,7 +34,7 @@ public class NotificationEventHandler {
 	// -- Funding 이벤트 (receiverId 미포함, 이벤트 필드 추가 후 활성화) --
 
 	@ApplicationModuleListener
-	public void handleFundingCreated(FundingCreatedEventV2 event) {
+	public void handleFundingCreated(FundingCreatedEvent event) {
 		for (FundingDetail detail : event.getFundings()) {
 			log.info("[Notification] FundingCreatedEvent: fundingId={}, receiverId={}", detail.fundingId(), detail.receiverId());
 		}
