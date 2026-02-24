@@ -1,9 +1,14 @@
 package app.giftify.cart.application.inbound;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import app.giftify.cart.adapter.inbound.CartItemResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,7 +96,7 @@ public class CartService
 		// WishlistItem 상태 검증
 		WishlistItemStatus status = wishlistItem.getWishlistItemStatus();
 		if (status != WishlistItemStatus.PENDING && status != WishlistItemStatus.IN_PROGRESS) {
-			throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
+			throw new CartException(CartErrorCode.INVALID_ITEM_STATUS, wishlistItemId);
 		}
 
 		// 원본 Product 상태 검증
@@ -99,7 +104,7 @@ public class CartService
 			.orElseThrow(() -> new CartException(CartErrorCode.PRODUCT_NOT_FOUND));
 
 		if (product.getStatus() != ProductStatus.ACTIVE || product.getStock() <= 0) {
-			throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
+			throw new CartException(CartErrorCode.INVALID_ITEM_STATUS, wishlistItemId);
 		}
 	}
 
@@ -113,7 +118,6 @@ public class CartService
 			throw new CartException(CartErrorCode.FORBIDDEN);
 		}
 
-		// 장바구니 아이템들의 상품ID 목록 추출
 		return getCartResponse(cart);
 	}
 
@@ -127,16 +131,58 @@ public class CartService
 
 	@NonNull
 	private CartResponse getCartResponse(Cart cart) {
-		List<Long> productIds = cart.getItems().stream()
-			.map(CartItem::getTargetId)
-			.toList();
+		if (cart.getItems().isEmpty()) {
+			return CartResponse.from(cart, List.of());
+		}
 
-		Map<Long, Product> productMap = productRepositoryPort.findAllById(productIds)
-			.stream()
-			.collect(Collectors.toMap(Product::getId, product -> product));
+		// 1. 장바구니의 모든 wishlistItemId를 가져옵니다.
+		List<Long> wishlistItemIds = cart.getItems().stream()
+				.map(CartItem::getTargetId)
+				.toList();
 
-		return CartResponse.from(cart, productMap);
+		// 2. wishlistItemId로 WishlistItem 목록을 조회하고 Map으로 만듭니다.
+		Map<Long, WishlistItem> wishlistItemMap = wishlistItemRepositoryPort.findAllById(wishlistItemIds).stream()
+				.collect(Collectors.toMap(WishlistItem::getId, Function.identity()));
+
+		// 3. 유효하지 않은 WishlistItem(펀딩 종료 등)의 id를 분류합니다.
+		Set<Long> fundingEndedIds = cart.getItems().stream()
+				.map(CartItem::getTargetId)
+				.filter(id -> {
+					WishlistItem wishlistItem = wishlistItemMap.get(id);
+					if (wishlistItem == null) return true;
+					WishlistItemStatus status = wishlistItem.getWishlistItemStatus();
+					return status != WishlistItemStatus.PENDING && status != WishlistItemStatus.IN_PROGRESS;
+				})
+				.collect(Collectors.toSet());
+
+		// 4. 유효한 WishlistItem에서 productId를 추출하여 Product 정보를 조회하고 Map으로 만듭니다.
+		List<Long> productIds = wishlistItemMap.values().stream()
+				.filter(item -> !fundingEndedIds.contains(item.getId()))
+				.map(WishlistItem::getProductId)
+				.toList();
+		Map<Long, Product> productMap = productRepositoryPort.findAllById(productIds).stream()
+				.collect(Collectors.toMap(Product::getId, Function.identity()));
+
+		// 5. wishlistItemId를 키로, Product를 값으로 하는 최종 맵을 생성합니다.
+		Map<Long, Product> finalProductMap = new HashMap<>();
+		for (WishlistItem wishlistItem : wishlistItemMap.values()) {
+			if (!fundingEndedIds.contains(wishlistItem.getId())) {
+				finalProductMap.put(wishlistItem.getId(), productMap.get(wishlistItem.getProductId()));
+			}
+		}
+
+		// 6. 서비스에서 CartItemResponse를 직접 조립합니다.
+		List<CartItemResponse> itemResponses = cart.getItems().stream()
+				.map(item -> CartItemResponse.from(
+						item,
+						fundingEndedIds.contains(item.getTargetId()),
+						finalProductMap.get(item.getTargetId())
+				))
+				.toList();
+
+		return CartResponse.from(cart, itemResponses);
 	}
+
 
 	// 내 카트에서 상품 제거
 	@Override
