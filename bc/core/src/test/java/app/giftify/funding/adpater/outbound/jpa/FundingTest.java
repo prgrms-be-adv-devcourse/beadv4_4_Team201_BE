@@ -18,7 +18,7 @@ class FundingTest {
     @DisplayName("expire 성공: 진행 중이고 만료 시간이 지난 경우")
     void expire_Success() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
         // 만료 시간을 과거로 설정
         ReflectionTestUtils.setField(funding, "deadline", LocalDateTime.now().minusDays(1));
 
@@ -35,7 +35,7 @@ class FundingTest {
     @DisplayName("expire 멱등성: 이미 종료된 펀딩은 false 반환")
     void expire_Idempotency_AlreadyClosed() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg", 1L, 50000);
         ReflectionTestUtils.setField(funding, "status", FundingStatus.CLOSED);
 
         // when
@@ -51,7 +51,7 @@ class FundingTest {
     @DisplayName("expire 멱등성: 이미 만료된 펀딩은 false 반환")
     void expire_Idempotency_AlreadyExpired() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
         ReflectionTestUtils.setField(funding, "status", FundingStatus.EXPIRED);
 
         // when
@@ -66,7 +66,7 @@ class FundingTest {
     @DisplayName("expire 실패: 만료 시간이 지나지 않음")
     void expire_Fail_NotExpiredYet() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
         // 만료 시간이 미래인 상태 (기본값)
 
         // when & then
@@ -79,7 +79,7 @@ class FundingTest {
     @DisplayName("close 성공: 진행 중인 펀딩 종료")
     void close_Success_InProgress() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
 
         // when
         funding.close();
@@ -93,7 +93,7 @@ class FundingTest {
     @DisplayName("close 성공: 달성된 펀딩 종료")
     void close_Success_Achieved() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
         ReflectionTestUtils.setField(funding, "status", FundingStatus.ACHIEVED);
 
         // when
@@ -108,7 +108,7 @@ class FundingTest {
     @DisplayName("close 멱등성: 이미 종료된 펀딩은 상태 변경 없음")
     void close_Idempotency_AlreadyClosed() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
         ReflectionTestUtils.setField(funding, "status", FundingStatus.CLOSED);
         LocalDateTime originalClosedAt = LocalDateTime.now().minusDays(1);
         ReflectionTestUtils.setField(funding, "closedAt", originalClosedAt);
@@ -126,7 +126,7 @@ class FundingTest {
     @DisplayName("close 멱등성: 이미 만료된 펀딩은 상태 변경 없음")
     void close_Idempotency_AlreadyExpired() {
         // given
-        Funding funding = Funding.startFunding(1L, 1L, 1L, 50000);
+        Funding funding = Funding.startFunding(1L, 1L, "상품이름", "products/51/chanel-perfume.jpg",1L, 50000);
         ReflectionTestUtils.setField(funding, "status", FundingStatus.EXPIRED);
 
         // when

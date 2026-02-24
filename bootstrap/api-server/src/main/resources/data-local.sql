@@ -333,24 +333,25 @@ ALTER TABLE cart_item
 -- -----------------------------------------------------------------------------
 -- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding (id, version, wishlist_item_id, product_id, receiver_id, target_amount, current_amount,
+INSERT INTO funding (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id, target_amount, current_amount,
                      status, deadline, achieved_at, closed_at,
                      created_at, updated_at, created_by, updated_by)
-VALUES (1, 0, 8, 4, 5, 699000, 15000, 'IN_PROGRESS',
-        '2026-03-01 23:59:59', NULL, NULL,
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+VALUES
+    (1, 0,8, 4,  '없어진 상품', 'products/51/chanel-perfume.jpg', 5, 699000, 15000, 'IN_PROGRESS',
+     '2026-03-01 23:59:59', NULL, NULL,
+     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-       (2, 0, 9, 1, 5, 359000, 359000, 'ACHIEVED',
-        '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (2, 0,9, 51, '샤넬 가브리엘 향수', 'products/51/chanel-perfume.jpg',5, 359000, 359000, 'ACHIEVED',
+     '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
+     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-       (3, 0, 4, 3, 2, 415000, 120000, 'EXPIRED',
-        '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (3, 0,4, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',2, 415000, 120000, 'EXPIRED',
+     '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
+     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-       (4, 0, 2, 3, 2, 415000, 415000, 'ACHIEVED',
-        '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+    (4, 0,2, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',2, 415000, 415000, 'ACHIEVED',
+     '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
+     NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding
     ALTER COLUMN id RESTART WITH 100;

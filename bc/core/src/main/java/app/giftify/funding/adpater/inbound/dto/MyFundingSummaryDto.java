@@ -9,6 +9,8 @@ import java.time.temporal.ChronoUnit;
 public record MyFundingSummaryDto(
         Long fundingId,
         Long wishlistItemId,
+        String productName,
+        String imageKey,
 
         FundingStatus status,
 
@@ -33,6 +35,8 @@ public record MyFundingSummaryDto(
         return new MyFundingSummaryDto(
                 funding.getId(),
                 funding.getWishlistItemId(),
+                funding.getProductName(),
+                funding.getImageKey(),
                 funding.getStatus(),
                 funding.getTargetAmount(),
                 funding.getCurrentAmount(),
