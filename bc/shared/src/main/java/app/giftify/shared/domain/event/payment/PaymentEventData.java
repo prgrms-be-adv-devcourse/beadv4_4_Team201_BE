@@ -42,11 +42,12 @@ public record PaymentEventData(
 	public static PaymentEventData forCancel(
 		Long paymentId, Long orderId, Long memberId, String orderNumber, Money amount,
 		PaymentMethod method, PaymentType type,
-		CancelType cancelType, String reason
+		CancelType cancelType, String reason,
+		String transactionKey
 	) {
 		return new PaymentEventData(
 			paymentId, orderId, memberId, orderNumber, amount,
-			method, type, cancelType, reason, null, null
+			method, type, cancelType, reason, null, transactionKey
 		);
 	}
 
