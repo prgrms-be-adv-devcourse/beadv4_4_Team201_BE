@@ -7,6 +7,9 @@ resources:
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
     newTag: latest
+  - name: giftify-elasticsearch
+    newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
+    newTag: 9.2.4-custom
 
 patches:
   - target:
@@ -101,11 +104,3 @@ patches:
         path: /spec/routes/0/match
         value: "Host(`giftify-elasticsearch.chan99k.dev`)"
 
-  # --- Elasticsearch: EC2 로컬 빌드 이미지 사용 ---
-  - target:
-      kind: StatefulSet
-      name: elasticsearch
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/imagePullPolicy
-        value: Never
