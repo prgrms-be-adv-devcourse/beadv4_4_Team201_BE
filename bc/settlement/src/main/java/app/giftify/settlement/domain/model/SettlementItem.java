@@ -15,10 +15,16 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "settlement_item",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_order_item_id_type",
-                columnNames = {"order_item_id", "type"}
-        ),
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_order_item_id_type",
+                        columnNames = {"order_item_id", "type"}
+                ),
+                @UniqueConstraint(
+                        name = "uk_order_id_order_item_id_type",
+                        columnNames = {"order_id", "order_item_id", "type"}
+                )
+        },
         indexes = {
                 @Index(name = "idx_settlement_status_created_retry",
                         columnList = "status, created_at, retry_count"),
