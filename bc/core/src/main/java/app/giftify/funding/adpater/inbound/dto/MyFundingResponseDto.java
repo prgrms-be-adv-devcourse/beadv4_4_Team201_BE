@@ -17,6 +17,8 @@ public record MyFundingResponseDto(
         Integer currentAmount,
         FundingStatus status,
         LocalDateTime deadline,
+        String productName,
+        String imageKey,
 
         // ACHIEVED 이후에만 보여짐
         List<ParticipantDto> participants,
@@ -54,6 +56,8 @@ public record MyFundingResponseDto(
                 funding.getCurrentAmount(),
                 funding.getStatus(),
                 funding.getDeadline(),
+                funding.getProductName(),
+                funding.getImageKey(),
                 null,
                 Math.round(rate * 10.0) / 10.0,
                 days
@@ -79,6 +83,8 @@ public record MyFundingResponseDto(
                 funding.getCurrentAmount(),
                 funding.getStatus(),
                 funding.getDeadline(),
+                funding.getProductName(),
+                funding.getImageKey(),
                 participantDtos,
                 100.0,
                 days

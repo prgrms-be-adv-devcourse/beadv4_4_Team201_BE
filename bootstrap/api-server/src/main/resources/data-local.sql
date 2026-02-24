@@ -333,11 +333,11 @@ ALTER TABLE cart_item
 -- -----------------------------------------------------------------------------
 -- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding (id, version, wishlist_item_id, product_id, productName, imageKey, receiver_id, target_amount, current_amount,
+INSERT INTO funding (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id, target_amount, current_amount,
                      status, deadline, achieved_at, closed_at,
                      created_at, updated_at, created_by, updated_by)
 VALUES
-    (1, 0,8, 4, 5, 'products/51/chanel-perfume.jpg',699000, 15000, 'IN_PROGRESS',
+    (1, 0,8, 4,  '없어진 상품', 'products/51/chanel-perfume.jpg', 5, 699000, 15000, 'IN_PROGRESS',
      '2026-03-01 23:59:59', NULL, NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 

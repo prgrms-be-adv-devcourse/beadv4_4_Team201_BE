@@ -13,7 +13,7 @@ public class ProductInfoChangeEventListener {
     private final SyncFundingProductUseCase syncFundingProductUseCase;
 
     @ApplicationModuleListener
-    public void handle(ProductPriceUpdatedEvent event) {
+    public void handle(ProductUpdatedEvent event) {
         syncFundingProductUseCase.syncFundingProduct(event.getProductId(), event.getProductPrice(), event.getProductName(), event.getImageKey());
     }
 }
