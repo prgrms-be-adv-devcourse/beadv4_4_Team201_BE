@@ -2,7 +2,7 @@ package app.giftify.settlement.application.inbound;
 
 import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
 
-public record CreateSettlementItemCommand(
+public record CreateSettlementCommand(
         OrderItemSnapshot snapshot
 ) {
 }

@@ -10,11 +10,7 @@ import java.util.List;
 
 public interface SettlementItemRepository {
 
-    SettlementItem save(SettlementItem settlementItem);
-
-    List<SettlementItem> getAllByOrderId(Long orderId);
-
-    List<Long> findPendingOrderIds(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
+    void save(SettlementItem settlementItem);
 
     List<AmountSummaryProjection> getSettlementSumByOrderIds(List<Long> orderIds);
 
@@ -25,4 +21,6 @@ public interface SettlementItemRepository {
     Long getMaxOrderId(SettlementItemStatus status, LocalDateTime cutOffDateTime, int retryLimit);
 
     boolean existsByOrderItemIdAndType(Long orderItemId, SettlementItemType type);
+
+    SettlementItem getByOrderIdAndOrderItemIdAndTypeWithLock(Long orderId, Long orderItemId, SettlementItemType type);
 }
