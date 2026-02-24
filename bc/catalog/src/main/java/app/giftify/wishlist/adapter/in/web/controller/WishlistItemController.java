@@ -1,7 +1,7 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.wishlist.adapter.in.web.responseDto.WishlistItemResponse;
+import app.giftify.shared.api.response.RsData;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
 
     @Override
     @PostMapping("/me/items/add")
-    public ResponseEntity<WishlistItemResponse> addProduct(
+    public ResponseEntity<RsData<Object>> addProduct(
             @CurrentMemberId Long memberId,
             @RequestParam(name = "productId") Long productId
     ) {
@@ -28,11 +28,9 @@ public class WishlistItemController implements WishlistItemV2ApiSpec {
                 productId
         );
 
-        WishlistItemResponse wishlistItemResponse = WishlistItemResponse.from(
-                addWishlistItemUseCase.addWishlistItem(memberId, command));
+        addWishlistItemUseCase.addWishlistItem(memberId, command);
 
-        // 비즈니스 로직(중복 체크, 판매 상태 검증 등)은 서비스 계층에서 수행
-        return ResponseEntity.ok(wishlistItemResponse);
+        return ResponseEntity.status(204).body(RsData.success(null, "위시리스트아이템 추가 완료"));
     }
 
     @Override

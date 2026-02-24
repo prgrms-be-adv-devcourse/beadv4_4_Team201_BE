@@ -3,6 +3,7 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
@@ -44,6 +45,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
     private final ProductSupport productSupport;
     private final WishlistSupport wishlistSupport;
+    private final MemberRepository memberRepository;
 
     /**
      * 위시리스트아이템 개수 카운팅
@@ -86,7 +88,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
      */
     @Override
     @Transactional
-    public WishlistItem addWishlistItem(Long memberId, WishlistItemAddCommand command) {
+    public void addWishlistItem(Long memberId, WishlistItemAddCommand command) {
         // 위시리스트 확인, 없으면 생성
         Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
 
@@ -108,8 +110,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
                 .wishlistItemStatus(PENDING)
                 .build();
 
-        // 새롭게 생성된 WishlistItem 반환
-        return wishlistItemRepositoryPort.save(wishlistItem);
+        wishlistItemRepositoryPort.save(wishlistItem);
     }
 
     /**

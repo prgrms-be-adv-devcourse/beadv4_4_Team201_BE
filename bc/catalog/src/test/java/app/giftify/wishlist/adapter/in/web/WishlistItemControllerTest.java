@@ -5,8 +5,6 @@ import app.giftify.wishlist.adapter.in.web.controller.WishlistItemController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
-import app.giftify.wishlist.core.domain.WishlistItem;
-import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,8 +20,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -68,21 +66,11 @@ class WishlistItemControllerTest {
         // given
         Long productId = 100L;
 
-        WishlistItem item = WishlistItem.builder()
-                .id(1L)
-                .wishlistId(10L)
-                .productId(productId)
-                .wishlistItemStatus(WishlistItemStatus.PENDING)
-                .build();
-        given(addWishlistItemUseCase.addWishlistItem(anyLong(), any())).willReturn(item);
-
         // when & then
         mockMvc.perform(post("/api/v2/wishlists/me/items/add")
                         .queryParam("productId", String.valueOf(productId)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.productId").value(100))
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(status().isNoContent())
+                .andExpect(jsonPath("$.message").value("위시리스트아이템 추가 완료"));
 
         verify(addWishlistItemUseCase).addWishlistItem(anyLong(), any());
     }
@@ -92,8 +80,8 @@ class WishlistItemControllerTest {
     void addProduct_Fail_ProductNotOnSale() throws Exception {
         // given
         Long productId = 100L;
-        given(addWishlistItemUseCase.addWishlistItem(anyLong(), any()))
-                .willThrow(new app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException(productId));
+        willThrow(new app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException(productId))
+                .given(addWishlistItemUseCase).addWishlistItem(anyLong(), any());
 
         // when & then
         mockMvc.perform(post("/api/v2/wishlists/me/items/add")

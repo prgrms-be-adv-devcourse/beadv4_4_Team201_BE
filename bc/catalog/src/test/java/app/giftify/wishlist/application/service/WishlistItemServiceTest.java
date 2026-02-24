@@ -5,6 +5,7 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductNotActiveException;
 import app.giftify.product.domain.exception.ProductOutOfStockException;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
@@ -55,6 +56,9 @@ class WishlistItemServiceTest {
     private WishlistSupport wishlistSupport;
 
     @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
     EventPublisher eventPublisher;
 
     @InjectMocks
@@ -86,16 +90,11 @@ class WishlistItemServiceTest {
 
         given(wishlistItemRepositoryPort.findByWishlistIdAndProductId(WISHLIST_ID, productId)).willReturn(
                 Optional.empty());
-        given(wishlistItemRepositoryPort.save(any(WishlistItem.class))).willAnswer(
-                invocation -> invocation.getArgument(0));
 
         // when
-        WishlistItem result = wishlistItemService.addWishlistItem(MEMBER_ID, command);
+        wishlistItemService.addWishlistItem(MEMBER_ID, command);
 
         // then
-        assertThat(result.getWishlistId()).isEqualTo(WISHLIST_ID);
-        assertThat(result.getProductId()).isEqualTo(productId);
-        assertThat(result.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.PENDING);
         verify(wishlistItemRepositoryPort).save(any(WishlistItem.class));
     }
 
