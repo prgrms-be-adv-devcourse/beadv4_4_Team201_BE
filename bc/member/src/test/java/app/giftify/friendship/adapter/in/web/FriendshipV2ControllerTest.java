@@ -231,16 +231,17 @@ class FriendshipV2ControllerTest {
 	class GetFriends {
 
 		@Test
-		@DisplayName("내 친구 목록 조회 성공 시 200 OK 반환")
-		void success_Returns200() throws Exception {
+		@DisplayName("내 친구 목록 조회 성공 시 200 OK + friendshipId 포함")
+		void success_Returns200WithFriendshipId() throws Exception {
 			// given
 			given(getFriendListUseCase.getFriends(MEMBER_ID))
-				.willReturn(List.of(new FriendInfo(RECEIVER_ID, "친구")));
+				.willReturn(List.of(new FriendInfo(FRIENDSHIP_ID, RECEIVER_ID, "친구")));
 
 			// when & then
 			mockMvc.perform(get("/api/v2/friends"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.result").value("SUCCESS"))
+				.andExpect(jsonPath("$.data[0].friendshipId").value(FRIENDSHIP_ID))
 				.andExpect(jsonPath("$.data[0].id").value(RECEIVER_ID))
 				.andExpect(jsonPath("$.data[0].nickname").value("친구"));
 		}
