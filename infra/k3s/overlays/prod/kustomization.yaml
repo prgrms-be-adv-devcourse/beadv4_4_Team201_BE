@@ -6,7 +6,7 @@ resources:
 
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
-    newTag: SET_BY_CICD
+    newTag: latest
 
 patches:
   - target:
