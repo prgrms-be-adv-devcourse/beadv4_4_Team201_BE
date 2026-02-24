@@ -134,7 +134,7 @@ VALUES
      'products/31/jomalone-candle.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (32, 3, '이딸라 가스테헬미 볼', '이슬방울을 머금은 듯한 아름다운 유리 볼', 35000, 50, 'ACTIVE',
      'products/32/iittala-bowl.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-    (33, 3, '허먼밀러 뉴 에어론 체어', '사무용 의자의 끝판왕, 완벽한 인체공학', 2350000, 50, 'ACTIVE',
+    (33, 3, '허먼밀러 뉴 에어론 체어', '사무용 의자의 끝판왕, 완벽한 인체공학', 2350000, 0, 'ACTIVE',
      'products/33/hermanmiller-aeron.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (34, 3, '루이스폴센 PH5', '빛을 부드럽게 분산시키는 북유럽 디자인 조명', 1450000, 50, 'ACTIVE',
      'products/34/louispoulsen-ph5.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
@@ -156,7 +156,7 @@ VALUES
      'products/42/casamia-campo.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (43, 3, '아쿠아 디 파르마 디퓨저', '이탈리아 태양 아래 오렌지 나무의 활기', 135000, 50, 'ACTIVE',
      'products/43/acquadiparma-diffuser.jpg', 'LIVING', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-    (44, 3, '일리 Y3.3 에스프레소 머신', '미니멀한 디자인과 진한 이탈리아 커피향', 139000, 50, 'ACTIVE',
+    (44, 3, '일리 Y3.3 에스프레소 머신', '미니멀한 디자인과 진한 이탈리아 커피향', 139000, 50, 'INACTIVE',
      'products/44/illy-y33.jpg', 'KITCHEN', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (45, 3, '르크루제 무쇠 주물 냄비', '요리의 맛을 살리는 클래식한 프랑스 냄비', 299000, 50, 'ACTIVE',
      'products/45/lecreuset-pot.jpg', 'KITCHEN', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
@@ -180,7 +180,7 @@ VALUES
      'products/53/esteelauder-anr.jpg', 'BEAUTY', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (54, 3, '르 라보 상탈 33', '강렬한 중독성의 우디한 스모키 향', 420000, 50, 'ACTIVE',
      'products/54/lelabo-santal33.jpg', 'BEAUTY', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-    (55, 3, '바이레도 블랑쉬', '방금 세탁한 셔츠처럼 깨끗하고 맑은 향', 350000, 50, 'ACTIVE',
+    (55, 3, '바이레도 블랑쉬', '방금 세탁한 셔츠처럼 깨끗하고 맑은 향', 350000, 0, 'INACTIVE',
      'products/55/byredo-blanche.jpg', 'BEAUTY', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (56, 3, '설화수 자음 2종 세트', '부모님께 드리는 최고의 선물, 촉촉한 영양', 125000, 50, 'ACTIVE',
      'products/56/sulwhasoo-set.jpg', 'BEAUTY', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
@@ -310,6 +310,9 @@ VALUES (1, 1, 11, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (5, 2, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (6, 3, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (7, 3, 13, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (11, 3, 33, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (12, 3, 44, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (13, 3, 55, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (8, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (9, 5, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (10, 6, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');
@@ -333,25 +336,25 @@ ALTER TABLE cart_item
 -- -----------------------------------------------------------------------------
 -- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id, target_amount, current_amount,
+INSERT INTO funding (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id, target_amount,
+                     current_amount,
                      status, deadline, achieved_at, closed_at,
                      created_at, updated_at, created_by, updated_by)
-VALUES
-    (1, 0,8, 4,  '없어진 상품', 'products/51/chanel-perfume.jpg', 5, 699000, 15000, 'IN_PROGRESS',
-     '2026-03-01 23:59:59', NULL, NULL,
-     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+VALUES (1, 0, 8, 4, '없어진 상품', 'products/51/chanel-perfume.jpg', 5, 699000, 15000, 'IN_PROGRESS',
+        '2026-03-01 23:59:59', NULL, NULL,
+        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (2, 0,9, 51, '샤넬 가브리엘 향수', 'products/51/chanel-perfume.jpg',5, 359000, 359000, 'ACHIEVED',
-     '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
-     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (2, 0, 9, 51, '샤넬 가브리엘 향수', 'products/51/chanel-perfume.jpg', 5, 359000, 359000, 'ACHIEVED',
+        '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
+        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (3, 0,4, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',2, 415000, 120000, 'EXPIRED',
-     '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
-     NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (3, 0, 4, 53, '에스티로더 갈색병', 'products/53/esteelauder-anr.jpg', 2, 415000, 120000, 'EXPIRED',
+        '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
+        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (4, 0,2, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',2, 415000, 415000, 'ACHIEVED',
-     '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
-     NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+       (4, 0, 2, 53, '에스티로더 갈색병', 'products/53/esteelauder-anr.jpg', 2, 415000, 415000, 'ACHIEVED',
+        '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
+        NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE funding
     ALTER COLUMN id RESTART WITH 100;
