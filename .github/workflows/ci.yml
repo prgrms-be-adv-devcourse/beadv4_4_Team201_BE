@@ -6,6 +6,10 @@ on:
   push:
     branches: [ develop, main ]
     tags: [ 'v*' ]
+    paths-ignore:
+      - 'infra/**'
+      - 'docs/**'
+      - '*.md'
   merge_group:
     types: [ checks_requested ]
   workflow_dispatch:
