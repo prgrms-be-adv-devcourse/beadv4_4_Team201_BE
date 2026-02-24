@@ -5,11 +5,8 @@ import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.type.TargetType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -17,8 +14,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OrderCanceledEventListener {
     private final WithdrawFundingUseCase withdrawFundingUseCase;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @ApplicationModuleListener
     public void handle(OrderCanceledEvent event) {
         event.getItems().stream()
                 .filter(item -> item.targetType() == TargetType.FUNDING)
