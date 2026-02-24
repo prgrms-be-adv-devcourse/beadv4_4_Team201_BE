@@ -88,9 +88,9 @@ class WishlistEventListenerTest {
             Long wishlistItemId3 = 3L;
 
             List<FundingDetail> fundingDetails = List.of(
-                    new FundingDetail(100L, 10L, wishlistItemId1),
-                    new FundingDetail(101L, 11L, wishlistItemId2),
-                    new FundingDetail(102L, 12L, wishlistItemId3)
+                    new FundingDetail(100L, 10L, wishlistItemId1, 3L),
+                    new FundingDetail(101L, 11L, wishlistItemId2, 3L),
+                    new FundingDetail(102L, 12L, wishlistItemId3, 3L)
             );
             FundingCreatedEventV2 event = new FundingCreatedEventV2(fundingDetails);
 

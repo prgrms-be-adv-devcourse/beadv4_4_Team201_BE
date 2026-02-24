@@ -75,7 +75,7 @@ public class FundingCreateUseCase {
 
             results.add(new FundingCreateResult(savedFunding, item));
 
-            fundingDetails.add(new FundingDetail(savedFunding.getId(), item.orderItemId(), savedFunding.getWishlistItemId()));
+            fundingDetails.add(new FundingDetail(savedFunding.getId(), item.orderItemId(), savedFunding.getWishlistItemId(), item.receiverId()));
 
             log.info("[Funding] 펀딩 생성 완료. fundingId={}", savedFunding.getId());
         }

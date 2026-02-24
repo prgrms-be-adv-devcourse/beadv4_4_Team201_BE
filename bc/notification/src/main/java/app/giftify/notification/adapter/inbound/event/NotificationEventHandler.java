@@ -1,6 +1,7 @@
 package app.giftify.notification.adapter.inbound.event;
 
 import app.giftify.shared.domain.event.funding.*;
+import app.giftify.shared.domain.vo.FundingDetail;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +34,10 @@ public class NotificationEventHandler {
 	// -- Funding 이벤트 (receiverId 미포함, 이벤트 필드 추가 후 활성화) --
 
 	@ApplicationModuleListener
-	public void handleFundingCreated(FundingCreatedEvent event) {
-		log.info("[Notification] FundingCreatedEvent: fundingId={}", event.getFundingId());
+	public void handleFundingCreated(FundingCreatedEventV2 event) {
+		for (FundingDetail detail : event.getFundings()) {
+			log.info("[Notification] FundingCreatedEvent: fundingId={}, receiverId={}", detail.fundingId(), detail.receiverId());
+		}
 		// TODO: event에 receiverId 추가 후 활성화
 	}
 

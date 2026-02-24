@@ -2,6 +2,7 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +38,9 @@ class FundingExpireUseCaseTest {
     @Mock
     private EventPublisher eventPublisher;
 
+    @Mock
+    private FundingParticipantMemberRepository fundingParticipantMemberRepository;
+
     @Test
     @DisplayName("expireFunding 성공: 펀딩 만료 처리")
     void expireFunding_Success() {
@@ -50,6 +55,7 @@ class FundingExpireUseCaseTest {
         given(funding.getCurrentAmount()).willReturn(5000);
         given(funding.getStatus()).willReturn(FundingStatus.EXPIRED);
         given(funding.getClosedAt()).willReturn(LocalDateTime.now());
+        given(fundingParticipantMemberRepository.findIdsByFundingId(fundingId)).willReturn(Collections.emptyList());
 
         // when
         FundingCompleteResponseDto result = fundingExpireUseCase.expireFunding(fundingId);
