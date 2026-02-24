@@ -68,9 +68,9 @@ public class SettlementItemService {
         settlementItem.cancel();
     }
 
+    @Transactional(readOnly = true)
     public Page<SettlementSummary> summarizeSettlements(Long sellerId, Pageable pageable) {
-        // todo
-        return null;
+        return settlementItemRepository.getSettlementSummary(sellerId, pageable);
     }
 
     private @NonNull SettlementCore getSettlementCore(Money amount) {
