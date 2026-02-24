@@ -88,11 +88,11 @@ class WishlistEventListenerTest {
             Long wishlistItemId3 = 3L;
 
             List<FundingDetail> fundingDetails = List.of(
-                    new FundingDetail(100L, 10L, wishlistItemId1),
-                    new FundingDetail(101L, 11L, wishlistItemId2),
-                    new FundingDetail(102L, 12L, wishlistItemId3)
+                    new FundingDetail(100L, 10L, wishlistItemId1, 3L),
+                    new FundingDetail(101L, 11L, wishlistItemId2, 3L),
+                    new FundingDetail(102L, 12L, wishlistItemId3, 3L)
             );
-            FundingCreatedEventV2 event = new FundingCreatedEventV2(fundingDetails);
+            FundingCreatedEvent event = new FundingCreatedEvent(fundingDetails);
 
             WishlistItem item1 = WishlistItem.builder()
                     .id(wishlistItemId1).wishlistId(10L).productId(1L)
@@ -126,7 +126,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingAchievedEvent event = new FundingAchievedEvent(
-                    100L, wishlistItemId
+                    100L, wishlistItemId, 50L, List.of(1L, 2L)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
@@ -174,7 +174,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingCanceledEvent event = new FundingCanceledEvent(
-                    100L, wishlistItemId, 50000
+                    100L, wishlistItemId, 50000, 1L, List.of(1L, 2L)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
@@ -198,7 +198,7 @@ class WishlistEventListenerTest {
             // given
             Long wishlistItemId = 1L;
             FundingExpiredEvent event = new FundingExpiredEvent(
-                    100L, wishlistItemId, 30000
+                    100L, wishlistItemId, 30000, 1L, List.of(1L, 2L)
             );
 
             WishlistItem wishlistItem = WishlistItem.builder()
