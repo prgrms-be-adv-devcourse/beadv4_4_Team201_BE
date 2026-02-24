@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface JpaOrderItemRepository extends JpaRepository<OrderItem, Long> {
 
@@ -18,4 +20,22 @@ public interface JpaOrderItemRepository extends JpaRepository<OrderItem, Long> {
             @Param("targetId") Long targetId,
             @Param("targetType") TargetType targetType
     );
+
+    @Query("SELECT oi.order.id as orderId, oi.id as itemId FROM OrderItem oi " +
+            "WHERE oi.targetId = :targetId AND oi.targetType = :targetType")
+    List<OrderIdMapping> findRawMappings(@Param("fundingId") Long fundingId,
+                                         @Param("targetType") TargetType targetType);
+
+    default Map<Long, List<Long>> findItemIdMapByFundingId(Long fundingId, TargetType targetType) {
+        return findRawMappings(fundingId, targetType).stream()
+                .collect(Collectors.groupingBy(
+                        OrderIdMapping::getOrderId,
+                        Collectors.mapping(OrderIdMapping::getItemId, Collectors.toList())
+                ));
+    }
+
+    interface OrderIdMapping {
+        Long getOrderId();
+        Long getItemId();
+    }
 }

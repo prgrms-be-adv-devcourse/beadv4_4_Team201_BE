@@ -38,6 +38,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -747,6 +748,94 @@ class OrderServiceTest {
             assertThat(result).hasSize(1);
             assertThat(result).containsKey(orderId2);
             assertThat(result).doesNotContainKey(orderId1);
+        }
+    }
+
+    @Nested
+    @DisplayName("주문 아이템 확정 (confirmOrderItems)")
+    class ConfirmOrderItems {
+
+        @Test
+        @DisplayName("성공: PAID 아이템을 확정하면 CONFIRMED 상태로 변경된다")
+        void given_paidItems_when_confirmOrderItems_then_statusChangedToConfirmed() {
+            // given
+            Long orderId = 1L;
+            Long itemId1 = 10L;
+            Long itemId2 = 20L;
+
+            Order order = OrderFixture.createOrderWithItems(1L, 2);
+            ReflectionTestUtils.setField(order, "id", orderId);
+            ReflectionTestUtils.setField(order.getItems().get(0), "id", itemId1);
+            ReflectionTestUtils.setField(order.getItems().get(1), "id", itemId2);
+            order.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
+
+            // when
+            orderService.confirmOrderItems(orderId, Set.of(itemId1, itemId2));
+
+            // then
+            assertThat(order.getItems())
+                    .allMatch(item -> item.getStatus() == OrderItemStatus.CONFIRMED);
+        }
+
+        @Test
+        @DisplayName("성공: itemIds에 포함된 아이템만 CONFIRMED로 변경되고 나머지는 그대로다")
+        void given_partialItemIds_when_confirmOrderItems_then_onlyTargetItemsConfirmed() {
+            // given
+            Long orderId = 1L;
+            Long itemId1 = 10L;
+            Long itemId2 = 20L;
+
+            Order order = OrderFixture.createOrderWithItems(1L, 2);
+            ReflectionTestUtils.setField(order, "id", orderId);
+            ReflectionTestUtils.setField(order.getItems().get(0), "id", itemId1);
+            ReflectionTestUtils.setField(order.getItems().get(1), "id", itemId2);
+            order.getItems().forEach(item -> ReflectionTestUtils.setField(item, "status", OrderItemStatus.PAID));
+
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
+
+            // when - itemId1 만 확정
+            orderService.confirmOrderItems(orderId, Set.of(itemId1));
+
+            // then
+            assertThat(order.getItems().get(0).getStatus()).isEqualTo(OrderItemStatus.CONFIRMED);
+            assertThat(order.getItems().get(1).getStatus()).isEqualTo(OrderItemStatus.PAID);
+        }
+
+        @Test
+        @DisplayName("실패: 존재하지 않는 주문이면 예외가 전파된다")
+        void given_nonExistentOrder_when_confirmOrderItems_then_throwException() {
+            // given
+            Long orderId = 999L;
+            given(orderRepository.getByIdWithItemsAndLock(orderId))
+                    .willThrow(new PolicyException(OrderErrorCode.ORDER_NOT_FOUND));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.confirmOrderItems(orderId, Set.of(1L)))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("실패: PAID 상태가 아닌 아이템 확정 시도 시 PolicyException이 발생한다")
+        void given_nonPaidItem_when_confirmOrderItems_then_throwPolicyException() {
+            // given
+            Long orderId = 1L;
+            Long itemId = 10L;
+
+            Order order = OrderFixture.createOrderWithItems(1L, 1); // CREATED 상태 (기본값)
+            ReflectionTestUtils.setField(order, "id", orderId);
+            ReflectionTestUtils.setField(order.getItems().get(0), "id", itemId);
+
+            given(orderRepository.getByIdWithItemsAndLock(orderId)).willReturn(order);
+
+            // when & then
+            assertThatThrownBy(() -> orderService.confirmOrderItems(orderId, Set.of(itemId)))
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
         }
     }
 }
