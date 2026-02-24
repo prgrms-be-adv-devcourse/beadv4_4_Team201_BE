@@ -3,12 +3,12 @@ package app.giftify.notification.application.support;
 import java.net.URI;
 import java.util.Map;
 
+import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import org.springframework.stereotype.Component;
 
 import app.giftify.notification.domain.NotificationType;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
-import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;

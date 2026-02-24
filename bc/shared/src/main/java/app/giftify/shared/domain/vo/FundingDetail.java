@@ -9,6 +9,7 @@ package app.giftify.shared.domain.vo;
 public record FundingDetail(
         Long fundingId,
         Long orderItemId,
-        Long wishlistItemId
+        Long wishlistItemId,
+        Long receiverId
 ) {
 }

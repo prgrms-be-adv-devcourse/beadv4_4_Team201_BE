@@ -40,7 +40,7 @@ public class WishlistEventListener {
      * 펀딩 - 위시리스트아이템 상태 전이
      */
     @ApplicationModuleListener
-    public void handleFundingListCreated(FundingCreatedEventV2 event) {
+    public void handleFundingListCreated(FundingCreatedEvent event) {
         List<FundingDetail> fundingDetails = event.getFundings();
 
         for (FundingDetail detail : fundingDetails) {
