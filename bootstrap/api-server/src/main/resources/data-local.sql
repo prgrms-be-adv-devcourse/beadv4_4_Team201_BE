@@ -314,7 +314,7 @@ VALUES (1, 1, 11, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (12, 3, 44, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (13, 3, 55, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (8, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (9, 5, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (9, 5, 11, 'REQUESTED_CONFIRM', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (10, 6, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE wishlist_item

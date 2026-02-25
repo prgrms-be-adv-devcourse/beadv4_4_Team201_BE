@@ -1,8 +1,8 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
 import app.giftify.product.domain.ProductCategory;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.WishlistItem;
-import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import lombok.Builder;
 

@@ -1,6 +1,7 @@
-package app.giftify.wishlist.core.domain;
+package app.giftify.wishlist.application.port.in;
 
 import app.giftify.product.domain.ProductCategory;
+import app.giftify.wishlist.core.domain.WishlistItem;
 
 public record WishlistItemDetail(
         WishlistItem wishlistItem,

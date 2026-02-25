@@ -5,23 +5,23 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.api.paging.Page;
+import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
+import app.giftify.wishlist.application.port.in.WishlistOverview;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.application.support.WishlistSupport;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
-import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.exception.WishlistNotAccessibleException;
 import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,24 +51,11 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
 
     @Override
     @Transactional(readOnly = true)
-    public Page<WishlistItemDetail> getMyWishlistItemDetails(Long memberId, Pageable pageable) {
+    public Page<WishlistItemDetail> getMyWishlistItemDetails(Long memberId, PageRequest pageRequest) {
         Wishlist wishlist = wishlistSupport.getWishlistByMemberId(memberId);
         List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
-
-        // 위시리스트아이템 정보
         List<WishlistItemDetail> allDetails = toItemDetails(items);
-
-        // 페이징 처
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), allDetails.size());
-
-        if (start > allDetails.size()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, allDetails.size());
-        }
-
-        List<WishlistItemDetail> pagedDetails = allDetails.subList(start, end);
-
-        return new PageImpl<>(pagedDetails, pageable, allDetails.size());
+        return toPage(allDetails, pageRequest);
     }
 
     // 내 위시리스트 아이템 목록 조회
@@ -113,6 +100,31 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<WishlistItemDetail> getWishlistItemDetails(Long targetMemberId, Long currentMemberId, PageRequest pageRequest) {
+        List<WishlistItemDetail> allDetails = getWishlistItemDetails(targetMemberId, currentMemberId);
+        return toPage(allDetails, pageRequest);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WishlistOverview getMyWishlistOverview(Long memberId, PageRequest pageRequest) {
+        Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
+        String ownerNickname = findNickname(memberId);
+        Page<WishlistItemDetail> itemPage = getMyWishlistItemDetails(memberId, pageRequest);
+        return new WishlistOverview(wishlist, ownerNickname, itemPage);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WishlistOverview getWishlistOverview(Long targetMemberId, Long currentMemberId, PageRequest pageRequest) {
+        Page<WishlistItemDetail> itemPage = getWishlistItemDetails(targetMemberId, currentMemberId, pageRequest);
+        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(targetMemberId);
+        String ownerNickname = findNickname(targetMemberId);
+        return new WishlistOverview(wishlist, ownerNickname, itemPage);
+    }
+
+    @Override
     @Transactional
     public Wishlist updateSettings(UpdateSettingsCommand command) {
         Wishlist wishlist = wishlistRepositoryPort.findByMemberId(command.memberId())
@@ -122,6 +134,17 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
         Wishlist updatedWishlist = wishlistRepositoryPort.save(wishlist);
 
         return updatedWishlist;
+    }
+
+    private <T> Page<T> toPage(List<T> allItems, PageRequest pageRequest) {
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min(start + pageRequest.size(), allItems.size());
+
+        if (start > allItems.size()) {
+            return Page.of(Collections.emptyList(), allItems.size());
+        }
+
+        return Page.of(allItems.subList(start, end), allItems.size());
     }
 
     private List<WishlistItemDetail> toItemDetails(List<WishlistItem> items) {
@@ -154,5 +177,11 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
                     product != null ? product.getCategory() : null
             );
         }).toList();
+    }
+
+    private String findNickname(Long memberId) {
+        return memberRepository.findById(memberId)
+                .map(Member::getNickname)
+                .orElse(null);
     }
 }

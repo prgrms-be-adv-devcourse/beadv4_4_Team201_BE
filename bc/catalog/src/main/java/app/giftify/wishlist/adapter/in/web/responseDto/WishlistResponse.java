@@ -1,9 +1,10 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
+import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.wishlist.application.port.in.WishlistOverview;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import lombok.Builder;
-import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 
@@ -14,7 +15,7 @@ public record WishlistResponse(
         String nickname,
         Visibility visibility,
         LocalDateTime createdAt,
-        Page<WishlistItemResponse> items
+        PageResponse<WishlistItemResponse> items
 ) {
     public static WishlistResponse from(Wishlist wishlist) {
         return WishlistResponse.builder()
@@ -25,14 +26,20 @@ public record WishlistResponse(
                 .build();
     }
 
-    public static WishlistResponse from(Wishlist wishlist, String nickname, Page<WishlistItemResponse> items) {
+    public static WishlistResponse from(WishlistOverview overview, int page, int size) {
+        var itemDetails = overview.itemDetails();
+        var items = itemDetails.content().stream()
+                .map(WishlistItemResponse::from)
+                .toList();
+        PageResponse<WishlistItemResponse> itemPage = PageResponse.of(items, page, size, itemDetails.totalElements());
+
         return WishlistResponse.builder()
-                .id(wishlist.getId())
-                .memberId(wishlist.getMemberId())
-                .nickname(nickname)
-                .visibility(wishlist.getVisibility())
-                .createdAt(wishlist.getCreatedAt())
-                .items(items)
+                .id(overview.wishlist().getId())
+                .memberId(overview.wishlist().getMemberId())
+                .nickname(overview.ownerNickname())
+                .visibility(overview.wishlist().getVisibility())
+                .createdAt(overview.wishlist().getCreatedAt())
+                .items(itemPage)
                 .build();
     }
 }

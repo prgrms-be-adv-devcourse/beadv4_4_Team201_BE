@@ -1,15 +1,19 @@
 package app.giftify.wishlist.adapter.in.web;
 
 import app.giftify.product.domain.ProductCategory;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.paging.Page;
 import app.giftify.wishlist.adapter.in.web.controller.WishlistController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
-import app.giftify.wishlist.core.domain.*;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
+import app.giftify.wishlist.application.port.in.WishlistOverview;
+import app.giftify.wishlist.core.domain.Visibility;
+import app.giftify.wishlist.core.domain.Wishlist;
+import app.giftify.wishlist.core.domain.WishlistItem;
+import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,10 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.core.MethodParameter;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +32,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -56,18 +55,14 @@ class WishlistControllerTest {
     @MockitoBean
     private UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
 
-    @MockitoBean
-    private MemberRepository memberRepository;
-
     private static final Long MEMBER_ID = 10L;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase, memberRepository))
+                .standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase))
                 .setControllerAdvice(new WishlistExceptionHandler())
                 .setCustomArgumentResolvers(
-                        new PageableHandlerMethodArgumentResolver(),
                         new HandlerMethodArgumentResolver() {
                             @Override
                             public boolean supportsParameter(MethodParameter parameter) {
@@ -102,12 +97,10 @@ class WishlistControllerTest {
                 .build();
         WishlistItemDetail detail = new WishlistItemDetail(item, "테스트 상품", 10000, "img.jpg", false, true, "판매자닉네임", ProductCategory.BEAUTY);
 
-        Member member = new Member(MEMBER_ID, "테스트유저");
-        PageRequest pageable = PageRequest.of(0, 20);
+        WishlistOverview overview = new WishlistOverview(
+                wishlist, "테스트유저", Page.of(List.of(detail), 1));
 
-        given(getWishlistUseCase.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-        given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
-        given(getWishlistUseCase.getMyWishlistItemDetails(eq(MEMBER_ID), any())).willReturn(new PageImpl<>(List.of(detail), pageable, 1));
+        given(getWishlistUseCase.getMyWishlistOverview(eq(MEMBER_ID), any())).willReturn(overview);
 
         // when & then
         mockMvc.perform(get("/api/v2/wishlists/me")
@@ -132,13 +125,10 @@ class WishlistControllerTest {
                 .visibility(Visibility.PUBLIC)
                 .build();
 
-        Member member = new Member(MEMBER_ID, "테스트유저");
-        PageRequest pageable = PageRequest.of(0, 20);
+        WishlistOverview overview = new WishlistOverview(
+                wishlist, "테스트유저", Page.of(Collections.emptyList(), 0));
 
-        given(getWishlistUseCase.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-        given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
-        given(getWishlistUseCase.getMyWishlistItemDetails(eq(MEMBER_ID), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.emptyList(), pageable, 0));
+        given(getWishlistUseCase.getMyWishlistOverview(eq(MEMBER_ID), any())).willReturn(overview);
 
         // when & then
         mockMvc.perform(get("/api/v2/wishlists/me"))
