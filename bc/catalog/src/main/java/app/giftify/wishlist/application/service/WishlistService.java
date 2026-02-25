@@ -3,16 +3,21 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.api.paging.Page;
+import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
+import app.giftify.wishlist.application.port.in.WishlistOverview;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.application.support.WishlistSupport;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
-import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.exception.WishlistNotAccessibleException;
 import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,17 +41,21 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     private final FriendshipVerificationPort friendshipVerificationPort;
     private final ProductSupport productSupport;
     private final WishlistSupport wishlistSupport;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
     public Wishlist getOrCreateWishlistByMemberId(Long memberId) {
-        return wishlistRepositoryPort.findByMemberId(memberId)
-                .orElseGet(() -> {
-                    Wishlist wishlist = Wishlist.builder()
-                            .memberId(memberId)
-                            .build();
-                    return wishlistRepositoryPort.save(wishlist);
-                });
+        return wishlistSupport.getOrCreateWishlistByMemberId(memberId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<WishlistItemDetail> getMyWishlistItemDetails(Long memberId, PageRequest pageRequest) {
+        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(memberId);
+        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
+        List<WishlistItemDetail> allDetails = toItemDetails(items);
+        return toPage(allDetails, pageRequest);
     }
 
     // 내 위시리스트 아이템 목록 조회
@@ -91,18 +100,51 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<WishlistItemDetail> getWishlistItemDetails(Long targetMemberId, Long currentMemberId, PageRequest pageRequest) {
+        List<WishlistItemDetail> allDetails = getWishlistItemDetails(targetMemberId, currentMemberId);
+        return toPage(allDetails, pageRequest);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WishlistOverview getMyWishlistOverview(Long memberId, PageRequest pageRequest) {
+        Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
+        String ownerNickname = findNickname(memberId);
+        Page<WishlistItemDetail> itemPage = getMyWishlistItemDetails(memberId, pageRequest);
+        return new WishlistOverview(wishlist, ownerNickname, itemPage);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WishlistOverview getWishlistOverview(Long targetMemberId, Long currentMemberId, PageRequest pageRequest) {
+        Page<WishlistItemDetail> itemPage = getWishlistItemDetails(targetMemberId, currentMemberId, pageRequest);
+        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(targetMemberId);
+        String ownerNickname = findNickname(targetMemberId);
+        return new WishlistOverview(wishlist, ownerNickname, itemPage);
+    }
+
+    @Override
     @Transactional
     public Wishlist updateSettings(UpdateSettingsCommand command) {
         Wishlist wishlist = wishlistRepositoryPort.findByMemberId(command.memberId())
                 .orElseThrow(() -> new WishlistNotFoundException(command.memberId()));
 
         wishlist.changeVisibility(command.visibility());
-
         Wishlist updatedWishlist = wishlistRepositoryPort.save(wishlist);
 
-        // 위시리스트 상태 변경 이벤트 발행 todo
-
         return updatedWishlist;
+    }
+
+    private <T> Page<T> toPage(List<T> allItems, PageRequest pageRequest) {
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min(start + pageRequest.size(), allItems.size());
+
+        if (start > allItems.size()) {
+            return Page.of(Collections.emptyList(), allItems.size());
+        }
+
+        return Page.of(allItems.subList(start, end), allItems.size());
     }
 
     private List<WishlistItemDetail> toItemDetails(List<WishlistItem> items) {
@@ -114,16 +156,32 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
         Map<Long, Product> productMap = productSupport.findAllById(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
+        List<Long> sellerIds = productMap.values().stream()
+                .map(Product::getSellerId)
+                .distinct()
+                .toList();
+        Map<Long, String> sellerNicknameMap = memberRepository.findAllById(sellerIds).stream()
+                .collect(Collectors.toMap(Member::getId, Member::getNickname));
+
         return items.stream().map(item -> {
             Product product = productMap.get(item.getProductId());
+            String sellerNickname = product != null ? sellerNicknameMap.get(product.getSellerId()) : null;
             return new WishlistItemDetail(
                     item,
                     product != null ? product.getName() : null,
                     product != null ? product.getPrice() : 0,
                     product != null ? product.getImageKey() : null,
                     product != null && product.getStock() == 0, // 품절 여부
-                    product != null && product.getStatus() == ProductStatus.ACTIVE // 활성화 여부
+                    product != null && product.getStatus() == ProductStatus.ACTIVE, // 활성화 여부
+                    sellerNickname,
+                    product != null ? product.getCategory() : null
             );
         }).toList();
+    }
+
+    private String findNickname(Long memberId) {
+        return memberRepository.findById(memberId)
+                .map(Member::getNickname)
+                .orElse(null);
     }
 }

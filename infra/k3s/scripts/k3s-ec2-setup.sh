@@ -56,6 +56,37 @@ else
     echo ">>> registries.yaml 이미 존재: $REGISTRIES_FILE"
 fi
 
+# ArgoCD pod cleanup 서비스 등록 (k3s 재시작 시 stuck pod 자동 정리)
+CLEANUP_SCRIPT="/usr/local/bin/argocd-pod-cleanup.sh"
+CLEANUP_SERVICE="/etc/systemd/system/argocd-pod-cleanup.service"
+
+if [ ! -f "$CLEANUP_SERVICE" ]; then
+    echo ">>> ArgoCD pod cleanup 서비스 등록중..."
+    sudo cp "${SCRIPT_DIR}/argocd-pod-cleanup.sh" "$CLEANUP_SCRIPT"
+    sudo chmod +x "$CLEANUP_SCRIPT"
+
+    sudo tee "$CLEANUP_SERVICE" > /dev/null << 'UNIT'
+[Unit]
+Description=Cleanup stuck ArgoCD pods after k3s restart
+After=k3s.service
+Requires=k3s.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/argocd-pod-cleanup.sh
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable argocd-pod-cleanup.service
+    echo ">>> ArgoCD pod cleanup 서비스 등록 완료"
+else
+    echo ">>> ArgoCD pod cleanup 서비스 이미 존재"
+fi
+
 # 상태 확인
 echo ""
 echo ">>> k3s 서비스 상태:"

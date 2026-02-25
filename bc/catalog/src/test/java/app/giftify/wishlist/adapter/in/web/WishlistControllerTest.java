@@ -1,13 +1,19 @@
 package app.giftify.wishlist.adapter.in.web;
 
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.product.domain.ProductCategory;
 import app.giftify.security.common.CurrentMemberId;
+import app.giftify.shared.api.paging.Page;
 import app.giftify.wishlist.adapter.in.web.controller.WishlistController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
-import app.giftify.wishlist.core.domain.*;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
+import app.giftify.wishlist.application.port.in.WishlistOverview;
+import app.giftify.wishlist.core.domain.Visibility;
+import app.giftify.wishlist.core.domain.Wishlist;
+import app.giftify.wishlist.core.domain.WishlistItem;
+import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,9 +32,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -49,28 +55,27 @@ class WishlistControllerTest {
     @MockitoBean
     private UpdateWishlistSettingsUseCase updateWishlistSettingsUseCase;
 
-    @MockitoBean
-    private MemberRepository memberRepository;
-
     private static final Long MEMBER_ID = 10L;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase, memberRepository))
+                .standaloneSetup(new WishlistController(updateWishlistSettingsUseCase, getWishlistUseCase))
                 .setControllerAdvice(new WishlistExceptionHandler())
-                .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
-                    @Override
-                    public boolean supportsParameter(MethodParameter parameter) {
-                        return parameter.hasParameterAnnotation(CurrentMemberId.class);
-                    }
+                .setCustomArgumentResolvers(
+                        new HandlerMethodArgumentResolver() {
+                            @Override
+                            public boolean supportsParameter(MethodParameter parameter) {
+                                return parameter.hasParameterAnnotation(CurrentMemberId.class);
+                            }
 
-                    @Override
-                    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-                        return MEMBER_ID;
-                    }
-                })
+                            @Override
+                            public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                                          NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+                                return MEMBER_ID;
+                            }
+                        }
+                )
                 .build();
     }
 
@@ -90,22 +95,24 @@ class WishlistControllerTest {
                 .productId(100L)
                 .wishlistItemStatus(WishlistItemStatus.PENDING)
                 .build();
-        WishlistItemDetail detail = new WishlistItemDetail(item, "테스트 상품", 10000, "img.jpg", false, true);
+        WishlistItemDetail detail = new WishlistItemDetail(item, "테스트 상품", 10000, "img.jpg", false, true, "판매자닉네임", ProductCategory.BEAUTY);
 
-        app.giftify.replica.member.Member member = new app.giftify.replica.member.Member(MEMBER_ID, "테스트유저");
+        WishlistOverview overview = new WishlistOverview(
+                wishlist, "테스트유저", Page.of(List.of(detail), 1));
 
-        given(getWishlistUseCase.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-        given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
-        given(getWishlistUseCase.getMyWishlistItemDetails(MEMBER_ID)).willReturn(List.of(detail));
+        given(getWishlistUseCase.getMyWishlistOverview(eq(MEMBER_ID), any())).willReturn(overview);
 
         // when & then
-        mockMvc.perform(get("/api/v2/wishlists/me"))
+        mockMvc.perform(get("/api/v2/wishlists/me")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.visibility").value("PUBLIC"))
                 .andExpect(jsonPath("$.nickname").value("테스트유저"))
-                .andExpect(jsonPath("$.items").isArray())
-                .andExpect(jsonPath("$.items[0].productId").value(100))
-                .andExpect(jsonPath("$.items[0].productName").value("테스트 상품"));
+                .andExpect(jsonPath("$.items.content").isArray())
+                .andExpect(jsonPath("$.items.content[0].productId").value(100))
+                .andExpect(jsonPath("$.items.content[0].productName").value("테스트 상품"))
+                .andExpect(jsonPath("$.items.content[0].category").value("BEAUTY"));
     }
 
     @Test
@@ -118,18 +125,19 @@ class WishlistControllerTest {
                 .visibility(Visibility.PUBLIC)
                 .build();
 
-        app.giftify.replica.member.Member member = new app.giftify.replica.member.Member(MEMBER_ID, "테스트유저");
+        WishlistOverview overview = new WishlistOverview(
+                wishlist, "테스트유저", Page.of(Collections.emptyList(), 0));
 
-        given(getWishlistUseCase.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-        given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
-        given(getWishlistUseCase.getMyWishlistItemDetails(MEMBER_ID)).willReturn(Collections.emptyList());
+        given(getWishlistUseCase.getMyWishlistOverview(eq(MEMBER_ID), any())).willReturn(overview);
 
         // when & then
-        mockMvc.perform(get("/api/v2/wishlists/me"))
+        mockMvc.perform(get("/api/v2/wishlists/me")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.visibility").value("PUBLIC"))
-                .andExpect(jsonPath("$.items").isArray())
-                .andExpect(jsonPath("$.items").isEmpty());
+                .andExpect(jsonPath("$.items.content").isArray())
+                .andExpect(jsonPath("$.items.content").isEmpty());
     }
 
     @Test

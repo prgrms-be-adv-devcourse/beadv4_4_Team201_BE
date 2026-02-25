@@ -31,12 +31,25 @@ public class ApiClientConfig {
     public WalletApiClient walletInternalApi(
             RestClient.Builder builder,
             @Value("${app.service.wallet.url:http://localhost:8080}") String baseUrl) {
-        
+
         RestClient restClient = builder.baseUrl(baseUrl).build();
 
         return HttpServiceProxyFactory
                 .builderFor(RestClientAdapter.create(restClient))
                 .build()
                 .createClient(WalletApiClient.class);
+    }
+
+    @Bean
+    public Auth0ApiClient auth0Api(
+            RestClient.Builder builder,
+            @Value("${spring.security.oauth2.client.provider.auth0.issuer-uri}") String issuerUri) {
+
+        RestClient restClient = builder.baseUrl(issuerUri).build();
+
+        return HttpServiceProxyFactory
+                .builderFor(RestClientAdapter.create(restClient))
+                .build()
+                .createClient(Auth0ApiClient.class);
     }
 }

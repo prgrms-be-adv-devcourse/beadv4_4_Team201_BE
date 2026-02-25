@@ -26,7 +26,7 @@ public class WishlistAdapter implements WishlistRepositoryPort {
 
     @Override
     public Optional<Wishlist> findByMemberId(Long memberId) {
-        return wishlistRepository.findByMemberId(memberId)
+        return wishlistRepository.findFirstByMemberId(memberId)
                 .map(WishlistMapper::toDomain);
     }
 

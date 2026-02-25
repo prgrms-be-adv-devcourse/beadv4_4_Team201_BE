@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WishlistJpaRepository extends JpaRepository<WishlistJpaEntity, Long> {
-    Optional<WishlistJpaEntity> findByMemberId(Long memberId);
+    Optional<WishlistJpaEntity> findFirstByMemberId(Long memberId);
 
     Optional<WishlistJpaEntity> findByMemberIdAndVisibility(Long memberId, Visibility visibility);
 

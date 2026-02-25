@@ -114,7 +114,7 @@ public class FundingGetUseCase {
      * 내가 참여한 펀딩 목록 조회
      */
     public PageResponse<ContributeFundingResponseDto> getParticipatedFundings(int page, int size, Long memberId, FundingStatus status) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "funding.createdAt"));
 
         Page<MyFundingInfo> myFundingInfoPage = participantMemberRepository.findAllMyFundingInfos(memberId, status, pageable);
         List<MyFundingInfo> myFundingInfos = myFundingInfoPage.getContent();
