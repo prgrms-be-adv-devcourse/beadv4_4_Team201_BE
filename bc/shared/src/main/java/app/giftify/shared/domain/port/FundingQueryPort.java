@@ -7,4 +7,6 @@ import java.util.Map;
 
 public interface FundingQueryPort {
     Map<Long, FundingInfo> findFundingInfoByWishlistItemIds(List<Long> wishlistItemIds);
+
+    FundingInfo findFundingInfoByWishlistItemId(Long wishlistItemId);
 }

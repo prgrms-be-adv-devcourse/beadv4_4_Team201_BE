@@ -61,7 +61,7 @@ public class CartService
 
 		// 펀딩 구매 검증
 		Long wishlistItemId = command.cartItemKey().targetId();
-		validateFundingPurchase(wishlistItemId);
+		validateFundingPurchase(wishlistItemId, command);
 
 		CartItemAddResult result = cart.addItem(targetType, wishlistItemId, command.amount());
 		cartRepositoryPort.save(cart);
@@ -81,7 +81,7 @@ public class CartService
 
 			// 펀딩 구매 검증
 			Long wishlistItemId = command.cartItemKey().targetId();
-			validateFundingPurchase(wishlistItemId);
+			validateFundingPurchase(wishlistItemId, command);
 
 			cart.addItem(targetType, wishlistItemId, command.amount());
 		}
@@ -96,7 +96,7 @@ public class CartService
 	}
 
 	// 펀딩 구매 검증 (Product + WishlistItem 둘 다 검증)
-	private void validateFundingPurchase(Long wishlistItemId) {
+	private void validateFundingPurchase(Long wishlistItemId, AddCartItemCommand command) {
 		WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
 			.orElseThrow(() -> new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND, wishlistItemId));
 
@@ -113,6 +113,12 @@ public class CartService
 		if (product.getStatus() != ProductStatus.ACTIVE || product.getStock() <= 0) {
 			throw new CartException(CartErrorCode.INVALID_ITEM_STATUS, wishlistItem.getProductId());
 		}
+
+        // 잔여액 검증
+        FundingInfo fundingInfo = fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId);
+        if (command.amount().amount().intValue() > fundingInfo.remainingAmount()) {
+            throw new CartException(CartErrorCode.EXCEED_REMAINING_AMOUNT, fundingInfo.remainingAmount());
+        }
 	}
 
 	// 카트 조회(아이템 목록)
@@ -159,12 +165,11 @@ public class CartService
 				.collect(Collectors.toMap(Wishlist::getId, Function.identity()));
 
 		// 3. receiverId 목록으로 Member 조회
-		List<Long> receiverIds = wishlistMap.values().stream()
+		Set<Long> receiverIds = wishlistMap.values().stream()
 				.map(Wishlist::getMemberId)
-				.distinct()
-				.toList();
-		Map<Long, Member> memberMap = memberRepository.findAllById(receiverIds).stream()
-				.collect(Collectors.toMap(Member::getId, Function.identity()));
+				.collect(Collectors.toSet());
+        Map<Long, Member> memberMap = memberRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
 
 		// 4. 유효한 WishlistItem의 Product 조회
 		Set<Long> fundingEndedIds = wishlistItemIds.stream()
