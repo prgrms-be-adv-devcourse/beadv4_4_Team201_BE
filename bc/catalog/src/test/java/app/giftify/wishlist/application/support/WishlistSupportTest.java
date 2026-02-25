@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -103,6 +104,47 @@ class WishlistSupportTest {
             // when & then
             assertThatThrownBy(() -> wishlistSupport.getWishlistByMemberId(memberId))
                     .isInstanceOf(WishlistNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("getOrCreateByMemberId")
+    class GetOrCreateByMemberId {
+
+        @Test
+        @DisplayName("이미 존재하는 경우 조회된 결과 반환")
+        void alreadyExists() {
+            // given
+            Long memberId = 10L;
+            Wishlist wishlist = Wishlist.builder()
+                    .id(1L)
+                    .memberId(memberId)
+                    .build();
+            given(wishlistRepositoryPort.findByMemberId(memberId)).willReturn(Optional.of(wishlist));
+
+            // when
+            Wishlist result = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
+
+            // then
+            assertThat(result).isEqualTo(wishlist);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 경우 새로 생성")
+        void createNew() {
+            // given
+            Long memberId = 10L;
+            given(wishlistRepositoryPort.findByMemberId(memberId)).willReturn(Optional.empty());
+            Wishlist wishlist = Wishlist.builder()
+                    .memberId(memberId)
+                    .build();
+            given(wishlistRepositoryPort.save(any())).willReturn(wishlist);
+
+            // when
+            Wishlist result = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
+
+            // then
+            assertThat(result.getMemberId()).isEqualTo(memberId);
         }
     }
 

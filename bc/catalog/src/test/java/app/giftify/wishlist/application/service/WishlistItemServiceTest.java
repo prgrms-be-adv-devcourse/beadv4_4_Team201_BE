@@ -5,6 +5,7 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductNotActiveException;
 import app.giftify.product.domain.exception.ProductOutOfStockException;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
@@ -17,6 +18,7 @@ import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
+import app.giftify.wishlist.core.domain.exception.NotWishlistOwnerException;
 import app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException;
 import app.giftify.wishlist.core.domain.exception.WishlistItemNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +56,9 @@ class WishlistItemServiceTest {
     private WishlistSupport wishlistSupport;
 
     @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
     EventPublisher eventPublisher;
 
     @InjectMocks
@@ -75,7 +80,7 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         // 상품이 ACTIVE 상태임
         Product product = Mockito.mock(Product.class);
@@ -85,16 +90,11 @@ class WishlistItemServiceTest {
 
         given(wishlistItemRepositoryPort.findByWishlistIdAndProductId(WISHLIST_ID, productId)).willReturn(
                 Optional.empty());
-        given(wishlistItemRepositoryPort.save(any(WishlistItem.class))).willAnswer(
-                invocation -> invocation.getArgument(0));
 
         // when
-        WishlistItem result = wishlistItemService.addWishlistItem(MEMBER_ID, command);
+        wishlistItemService.addWishlistItem(MEMBER_ID, command);
 
         // then
-        assertThat(result.getWishlistId()).isEqualTo(WISHLIST_ID);
-        assertThat(result.getProductId()).isEqualTo(productId);
-        assertThat(result.getWishlistItemStatus()).isEqualTo(WishlistItemStatus.PENDING);
         verify(wishlistItemRepositoryPort).save(any(WishlistItem.class));
     }
 
@@ -111,7 +111,7 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         // 상품이 INACTIVE 상태임
         Product product = Mockito.mock(Product.class);
@@ -127,23 +127,24 @@ class WishlistItemServiceTest {
     @DisplayName("위시리스트 아이템을 제거한다")
     void removeWishlistItem() {
         // given
-        Long productId = 1L;
+        Long wishlistItemId = 1L;
         RemoveWishlistItemUseCase.WishlistItemRemoveCommand command =
-                new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(MEMBER_ID, productId);
+                new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(MEMBER_ID, wishlistItemId);
+
+        WishlistItem wishlistItem = WishlistItem.builder()
+                .id(wishlistItemId)
+                .wishlistId(WISHLIST_ID)
+                .productId(100L)
+                .wishlistItemStatus(WishlistItemStatus.PENDING)
+                .build();
+        given(wishlistSupport.getWishlistItemById(wishlistItemId)).willReturn(wishlistItem);
 
         Wishlist wishlist = Wishlist.builder()
                 .id(WISHLIST_ID)
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-
-        WishlistItem wishlistItem = WishlistItem.builder()
-                .wishlistId(WISHLIST_ID)
-                .productId(productId)
-                .wishlistItemStatus(WishlistItemStatus.PENDING)
-                .build();
-        given(wishlistSupport.getWishlistItemByWishlistIdAndProductId(WISHLIST_ID, productId)).willReturn(wishlistItem);
+        given(wishlistSupport.getWishlistById(WISHLIST_ID)).willReturn(wishlist);
 
         // when
         wishlistItemService.removeWishlistItem(command);
@@ -153,29 +154,50 @@ class WishlistItemServiceTest {
 
         // then
         verify(wishlistItemRepositoryPort).delete(wishlistItem);
-        WishlistItemRemovedEvent completedEvent = captor.getValue();
     }
 
     @Test
     @DisplayName("존재하지 않는 아이템을 제거하려 하면 예외가 발생한다")
     void removeWishlistItemFail() {
         // given
-        Long productId = 1L;
+        Long wishlistItemId = 1L;
         RemoveWishlistItemUseCase.WishlistItemRemoveCommand command =
-                new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(MEMBER_ID, productId);
+                new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(MEMBER_ID, wishlistItemId);
 
-        Wishlist wishlist = Wishlist.builder()
-                .id(WISHLIST_ID)
-                .memberId(MEMBER_ID)
-                .visibility(Visibility.PUBLIC)
-                .build();
-        given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-        given(wishlistSupport.getWishlistItemByWishlistIdAndProductId(WISHLIST_ID, productId))
+        given(wishlistSupport.getWishlistItemById(wishlistItemId))
                 .willThrow(new WishlistItemNotFoundException());
 
         // when & then
         assertThatThrownBy(() -> wishlistItemService.removeWishlistItem(command))
                 .isInstanceOf(WishlistItemNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("본인의 위시리스트 항목이 아니면 제거 시 예외가 발생한다")
+    void removeWishlistItemFailNotOwner() {
+        // given
+        Long wishlistItemId = 1L;
+        Long otherMemberId = 999L;
+        RemoveWishlistItemUseCase.WishlistItemRemoveCommand command =
+                new RemoveWishlistItemUseCase.WishlistItemRemoveCommand(otherMemberId, wishlistItemId);
+
+        WishlistItem wishlistItem = WishlistItem.builder()
+                .id(wishlistItemId)
+                .wishlistId(WISHLIST_ID)
+                .productId(100L)
+                .wishlistItemStatus(WishlistItemStatus.PENDING)
+                .build();
+        given(wishlistSupport.getWishlistItemById(wishlistItemId)).willReturn(wishlistItem);
+
+        Wishlist wishlist = Wishlist.builder()
+                .id(WISHLIST_ID)
+                .memberId(MEMBER_ID) // 실제 소유자 (1L)
+                .build();
+        given(wishlistSupport.getWishlistById(WISHLIST_ID)).willReturn(wishlist);
+
+        // when & then
+        assertThatThrownBy(() -> wishlistItemService.removeWishlistItem(command))
+                .isInstanceOf(NotWishlistOwnerException.class);
     }
 
     @Test
@@ -187,7 +209,7 @@ class WishlistItemServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         List<WishlistItem> items = List.of(
                 WishlistItem.builder()

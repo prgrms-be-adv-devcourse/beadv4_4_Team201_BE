@@ -3,12 +3,18 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.application.support.WishlistSupport;
-import app.giftify.wishlist.core.domain.*;
+import app.giftify.wishlist.core.domain.Visibility;
+import app.giftify.wishlist.core.domain.Wishlist;
+import app.giftify.wishlist.core.domain.WishlistItem;
+import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import app.giftify.wishlist.core.domain.exception.WishlistNotAccessibleException;
 import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +53,9 @@ class WishlistServiceTest {
     @Mock
     private WishlistSupport wishlistSupport;
 
+    @Mock
+    private MemberRepository memberRepository;
+
     @InjectMocks
     private WishlistService wishlistService;
 
@@ -63,7 +72,7 @@ class WishlistServiceTest {
                 .memberId(MEMBER_ID)
                 .visibility(Visibility.PUBLIC)
                 .build();
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.of(wishlist));
+        given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
 
         // when
         Wishlist result = wishlistService.getOrCreateWishlistByMemberId(MEMBER_ID);
@@ -71,22 +80,6 @@ class WishlistServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getMemberId()).isEqualTo(MEMBER_ID);
-    }
-
-    @Test
-    @DisplayName("위시리스트가 없으면 새로 생성한다")
-    void getOrCreateWishlistByMemberId_Create() {
-        // given
-        given(wishlistRepositoryPort.findByMemberId(MEMBER_ID)).willReturn(Optional.empty());
-        given(wishlistRepositoryPort.save(any(Wishlist.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-        // when
-        Wishlist result = wishlistService.getOrCreateWishlistByMemberId(MEMBER_ID);
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.getMemberId()).isEqualTo(MEMBER_ID);
-        verify(wishlistRepositoryPort).save(any(Wishlist.class));
     }
 
     @Test
@@ -160,6 +153,7 @@ class WishlistServiceTest {
             given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(item));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
 
             // when
             List<WishlistItemDetail> result = wishlistService.getMyWishlistItemDetails(MEMBER_ID);
@@ -172,6 +166,7 @@ class WishlistServiceTest {
             assertThat(detail.imageKey()).isEqualTo("img.jpg");
             assertThat(detail.isActive()).isTrue();
             assertThat(detail.isSoldout()).isFalse();
+            assertThat(detail.sellerNickname()).isEqualTo("테스트판매자");
         }
 
         @Test
@@ -226,6 +221,7 @@ class WishlistServiceTest {
                     .build();
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(item));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
         }
 
         @Test
