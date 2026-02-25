@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static app.giftify.wishlist.core.domain.WishlistItemStatus.COMPLETED;
 import static app.giftify.wishlist.core.domain.WishlistItemStatus.PENDING;
 
 @Slf4j
@@ -190,7 +191,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
     private void validateManualRemovable(WishlistItem item) {
         WishlistItemStatus status = item.getWishlistItemStatus();
 
-        if (status != PENDING) {
+        if (status != PENDING && status != COMPLETED) {
             throw new WishlistItemNotRemovableException(status);
         }
     }
