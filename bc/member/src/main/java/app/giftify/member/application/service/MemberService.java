@@ -46,11 +46,17 @@ public class MemberService
 
 	@Override
 	public Member registerMember(RegisterCommand command) {
-		// [중복 가입 방지] 이미 가입된 회원인지 한 번 더 검증
-		memberRepositoryPort.findByAuthSub(command.authSub())
-			.ifPresent(m -> {
-				throw new DuplicateMemberException(command.authSub());
-			});
+		Optional<Member> existingMember = memberRepositoryPort.findByAuthSub(command.authSub());
+		if (existingMember.isPresent()) {
+			Member member = existingMember.get();
+			if (member.isWithdrawn()) {
+				member.reactivate();
+				Member reactivated = memberRepositoryPort.save(member);
+				log.info("[MemberService] 탈퇴 회원 재활성화: memberId={}", reactivated.getId());
+				return reactivated;
+			}
+			throw new DuplicateMemberException(command.authSub());
+		}
 
 		// 닉네임이 없으면 자동 생성
 		String nickname = command.nickname();
