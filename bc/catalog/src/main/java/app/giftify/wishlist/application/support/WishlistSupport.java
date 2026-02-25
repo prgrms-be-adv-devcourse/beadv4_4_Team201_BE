@@ -34,6 +34,28 @@ public class WishlistSupport { // 조회 + 예외처리용 헬퍼
         return wishlistRepositoryPort.findByMemberId(memberId).orElseThrow(() -> new WishlistNotFoundException(memberId));
     }
 
+    // 멤버 id로 위시리스트 조회, 없으면 생성
+    public Wishlist getOrCreateWishlistByMemberId(Long memberId) {
+        return wishlistRepositoryPort.findByMemberId(memberId)
+                .orElseGet(() -> {
+                    Wishlist wishlist = Wishlist.builder()
+                            .memberId(memberId)
+                            .build();
+//                    try {
+//                        return wishlistRepositoryPort.save(wishlist);
+//                    } catch (Exception e) {
+//                        // 중복 생성 등 예외 발생 시 다시 조회 시도
+//                        try {
+//                            return wishlistRepositoryPort.findByMemberId(memberId)
+//                                    .orElseThrow(() -> e);
+//                        } catch (Exception ex) {
+//                            throw new RuntimeException(ex);
+//                        }
+//                    }
+                    return wishlistRepositoryPort.save(wishlist);
+                });
+    }
+
 
     /// WISHLIST_ITEM ///
 

@@ -1,7 +1,8 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
+import app.giftify.product.domain.ProductCategory;
+import app.giftify.wishlist.application.port.in.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.WishlistItem;
-import app.giftify.wishlist.core.domain.WishlistItemDetail;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import lombok.Builder;
 
@@ -17,6 +18,8 @@ public record WishlistItemResponse(
         String imageKey,
         boolean isSoldout,
         boolean isActive,
+        String sellerNickname,
+        ProductCategory category,
         WishlistItemStatus status,
         LocalDateTime addedAt
 ) {
@@ -41,6 +44,8 @@ public record WishlistItemResponse(
                 .imageKey(detail.imageKey())
                 .isSoldout(detail.isSoldout())
                 .isActive(detail.isActive())
+                .sellerNickname(detail.sellerNickname())
+                .category(detail.category())
                 .status(item.getWishlistItemStatus())
                 .addedAt(item.getAddedAt())
                 .build();

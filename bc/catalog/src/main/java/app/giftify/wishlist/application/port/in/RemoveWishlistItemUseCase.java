@@ -5,7 +5,7 @@ public interface RemoveWishlistItemUseCase {
 
 	record WishlistItemRemoveCommand(
 		Long memberId,
-		Long productId
+		Long wishlistItemId
 	) {
 	}
 }
