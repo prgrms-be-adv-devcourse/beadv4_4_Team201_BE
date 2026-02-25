@@ -131,7 +131,9 @@ class WishlistControllerTest {
         given(getWishlistUseCase.getMyWishlistOverview(eq(MEMBER_ID), any())).willReturn(overview);
 
         // when & then
-        mockMvc.perform(get("/api/v2/wishlists/me"))
+        mockMvc.perform(get("/api/v2/wishlists/me")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.visibility").value("PUBLIC"))
                 .andExpect(jsonPath("$.items.content").isArray())
