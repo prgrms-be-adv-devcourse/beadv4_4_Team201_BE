@@ -1,20 +1,6 @@
 package app.giftify.cart.application.inbound;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import app.giftify.cart.adapter.inbound.CartItemResponse;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
-import org.jspecify.annotations.NonNull;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import app.giftify.cart.adapter.inbound.CartResponse;
 import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
@@ -25,13 +11,27 @@ import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.domain.port.FundingQueryPort;
 import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.FundingInfo;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,8 +43,9 @@ public class CartService
 	private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
 	private final WishlistRepositoryPort wishlistRepositoryPort;
 	private final MemberRepository memberRepository;
+    private final FundingQueryPort fundingQueryPort;
 
-	@Override
+    @Override
 	public Cart createCart(Long memberId) {
 		return cartRepositoryPort.save(Cart.create(memberId));
 	}
@@ -196,16 +197,20 @@ public class CartService
 			contextMap.put(wi.getId(), new CartItemContext(product, receiverId, receiverNickname));
 		}
 
+        Map<Long, FundingInfo> fundingInfoMap = fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds);
+
 		// 6. CartItemResponse 조립
 		List<CartItemResponse> itemResponses = cart.getItems().stream()
 				.map(item -> {
 					CartItemContext ctx = contextMap.get(item.getTargetId());
+                    FundingInfo fundingInfo = fundingInfoMap.get(item.getTargetId());
 					return CartItemResponse.from(
 							item,
 							fundingEndedIds.contains(item.getTargetId()),
 							ctx != null ? ctx.product() : null,
 							ctx != null ? ctx.receiverId() : null,
-							ctx != null ? ctx.receiverNickname() : null
+							ctx != null ? ctx.receiverNickname() : null,
+                            fundingInfo
 					);
 				})
 				.toList();

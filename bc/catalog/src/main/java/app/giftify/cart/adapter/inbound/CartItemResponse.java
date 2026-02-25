@@ -5,6 +5,7 @@ import app.giftify.cart.core.domain.ItemStatus;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.FundingInfo;
 
 public record CartItemResponse(
         TargetType targetType,
@@ -15,10 +16,11 @@ public record CartItemResponse(
         String imageKey,
         long productPrice,
         long contributionAmount,
+        Integer currentAmount,
         ItemStatus status,
         String statusMessage
 ) {
-    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId, String receiverNickname) {
+    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId, String receiverNickname, FundingInfo fundingInfo) { // currentAmount 파라미터 추가
         if (isFundingEnded) {
             return unavailable(item, receiverId, receiverNickname, ItemStatus.FUNDING_ENDED, "종료된 펀딩입니다.");
         }
@@ -28,6 +30,9 @@ public record CartItemResponse(
         if (product.getStatus() != ProductStatus.ACTIVE) {
             return unavailable(item, receiverId, receiverNickname, ItemStatus.DISCONTINUED, "판매 중지된 상품입니다.");
         }
+
+        Integer currentAmount = fundingInfo != null ? fundingInfo.currentAmount() : null;
+
         if (product.getStock() <= 0) {
             return new CartItemResponse(
                     item.getTargetType(),
@@ -38,6 +43,7 @@ public record CartItemResponse(
                     product.getImageKey(),
                     (long) product.getPrice(),
                     item.getAmount().amount().longValue(),
+                    null,
                     ItemStatus.SOLD_OUT,
                     "품절된 상품입니다."
             );
@@ -52,6 +58,7 @@ public record CartItemResponse(
                 product.getImageKey(),
                 (long) product.getPrice(),
                 item.getAmount().amount().longValue(),
+                currentAmount,
                 ItemStatus.AVAILABLE,
                 null
         );
@@ -67,6 +74,7 @@ public record CartItemResponse(
                 null,
                 0,
                 item.getAmount().amount().longValue(),
+                null,
                 status,
                 message
         );
