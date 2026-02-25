@@ -20,7 +20,12 @@ public class WithdrawFundingUseCase {
     public void withdrawByWishlistItem (Long wishlistItemId, Long participantId, Money amount) {
         // 진행중이거나 달성 상태일 때만 가능 -> 도메인 내 메서드에서 처리
         Funding funding = fundingRepository.findActiveByWishlistItemId(wishlistItemId).
-                orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, wishlistItemId));
+            orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, wishlistItemId));
+
+        if (!fundingParticipantMemberRepository.existsByFundingIdAndParticipantId(funding.getId(), participantId)
+        ) {
+            return; // 이미 삭제됐으면 early return
+        }
 
         funding.withdraw(amount.toBigDecimalValue().intValue());
         fundingParticipantMemberRepository.deleteByFundingIdAndParticipantId(funding.getId(), participantId);
