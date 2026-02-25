@@ -3,12 +3,15 @@ package app.giftify.settlement.application.service;
 import app.giftify.settlement.application.inbound.CancelSettlementCommand;
 import app.giftify.settlement.application.inbound.CreateSettlementCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
+import app.giftify.settlement.application.service.dto.SettlementSummary;
+import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementItemType;
 import app.giftify.settlement.domain.service.FeePolicyService;
 import app.giftify.settlement.domain.snapshot.OrderItemSnapshot;
 import app.giftify.settlement.domain.status.SettlementItemStatus;
 import app.giftify.shared.api.AmountSummaryProjection;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +22,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -158,7 +166,7 @@ class SettlementItemServiceTest {
     class CancelTests {
 
         @Test
-        @DisplayName("정산 아이템을 조회해 cancel()을 호출한다")
+        @DisplayName("비관적 락으로 정산 아이템을 조회해 cancel()을 호출한다")
         void given_validCommand_when_cancel_then_callCancel() {
             // given
             Long orderId = 10L;
@@ -173,7 +181,78 @@ class SettlementItemServiceTest {
             settlementItemService.cancel(new CancelSettlementCommand(orderId, orderItemId));
 
             // then
+            verify(settlementItemRepository).getByOrderIdAndOrderItemIdAndTypeWithLock(
+                    orderId, orderItemId, SettlementItemType.ITEM_PAYMENT);
             verify(mockItem).cancel();
+        }
+
+        @Test
+        @DisplayName("정산 아이템이 존재하지 않으면 DomainException이 전파된다")
+        void given_notExistingItem_when_cancel_then_throwDomainException() {
+            // given
+            Long orderId = 10L;
+            Long orderItemId = 20L;
+
+            when(settlementItemRepository.getByOrderIdAndOrderItemIdAndTypeWithLock(
+                    orderId, orderItemId, SettlementItemType.ITEM_PAYMENT))
+                    .thenThrow(new DomainException(SettlementErrorCode.SETTLEMENT_ITEM_NOT_FOUND));
+
+            // when & then
+            assertThatThrownBy(() ->
+                    settlementItemService.cancel(new CancelSettlementCommand(orderId, orderItemId)))
+                    .isInstanceOf(DomainException.class)
+                    .extracting(e -> ((DomainException) e).getErrorCode())
+                    .isEqualTo(SettlementErrorCode.SETTLEMENT_ITEM_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("summarizeSettlements()")
+    class SummarizeSettlementsTests {
+
+        @Test
+        @DisplayName("sellerId와 pageable로 조회한 정산 요약을 그대로 반환한다")
+        void given_sellerId_when_summarizeSettlements_then_returnPage() {
+            // given
+            Long sellerId = 1L;
+            Pageable pageable = PageRequest.of(0, 10);
+            SettlementSummary summary = new SettlementSummary(
+                    "2024-03", 10L, 10000L, 9700L, 2L, "CREATED"
+            );
+            Page<SettlementSummary> expectedPage = new PageImpl<>(List.of(summary), pageable, 1L);
+
+            when(settlementItemRepository.getSettlementSummary(sellerId, pageable))
+                    .thenReturn(expectedPage);
+
+            // when
+            Page<SettlementSummary> result = settlementItemService.summarizeSettlements(sellerId, pageable);
+
+            // then
+            assertThat(result.getTotalElements()).isEqualTo(1L);
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).settlementMonth()).isEqualTo("2024-03");
+            assertThat(result.getContent().get(0).totalSalesAmount()).isEqualTo(10000L);
+            assertThat(result.getContent().get(0).totalSettlementAmount()).isEqualTo(9700L);
+            verify(settlementItemRepository).getSettlementSummary(sellerId, pageable);
+        }
+
+        @Test
+        @DisplayName("조회 결과가 없으면 빈 Page를 반환한다")
+        void given_noResults_when_summarizeSettlements_then_returnEmptyPage() {
+            // given
+            Long sellerId = 1L;
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<SettlementSummary> emptyPage = new PageImpl<>(List.of(), pageable, 0L);
+
+            when(settlementItemRepository.getSettlementSummary(sellerId, pageable))
+                    .thenReturn(emptyPage);
+
+            // when
+            Page<SettlementSummary> result = settlementItemService.summarizeSettlements(sellerId, pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isEqualTo(0L);
         }
     }
 }
