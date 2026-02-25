@@ -9,13 +9,15 @@ import app.giftify.shared.domain.type.TargetType;
 public record CartItemResponse(
         TargetType targetType,
         Long targetId,
+        Long receiverId,
         String productName,
+        String imageKey,
         long productPrice,
         long contributionAmount,
         ItemStatus status,
         String statusMessage
 ) {
-    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product) {
+    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId) {
         if (isFundingEnded) {
             return unavailable(item, ItemStatus.FUNDING_ENDED, "진행 중인 펀딩이 아닙니다.");
         }
@@ -32,7 +34,9 @@ public record CartItemResponse(
         return new CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
+                receiverId,
                 product.getName(),
+                product.getImageKey(),
                 (long) product.getPrice(),
                 item.getAmount().amount().longValue(),
                 ItemStatus.AVAILABLE,
@@ -44,6 +48,8 @@ public record CartItemResponse(
         return new CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
+                null,
+                null,
                 null,
                 0,
                 item.getAmount().amount().longValue(),

@@ -2,6 +2,8 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
+import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
@@ -19,6 +21,7 @@ import java.util.List;
 public class FundingExpireUseCase {
     private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
+    private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
 
     // 단일 펀딩 만료 처리 (테스트/관리자용)
     public FundingCompleteResponseDto expireFunding(Long id) {
@@ -30,10 +33,15 @@ public class FundingExpireUseCase {
         boolean expired = funding.expire(LocalDateTime.now());
 
         if (expired) {
+            List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
+
             eventPublisher.publish(new FundingExpiredEvent(
                     funding.getId(),
                     funding.getWishlistItemId(),
-                    currentAmount
+                    currentAmount,
+                    funding.getReceiverId(),
+                    participantIds
+
             ));
         }
 
@@ -60,10 +68,14 @@ public class FundingExpireUseCase {
             boolean expired = funding.expire(now);
 
             if (expired) {
+                List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
+
                 eventPublisher.publish(new FundingExpiredEvent(
                         funding.getId(),
                         funding.getWishlistItemId(),
-                        currentAmount
+                        currentAmount,
+                        funding.getReceiverId(),
+                        participantIds
                 ));
             }
         }

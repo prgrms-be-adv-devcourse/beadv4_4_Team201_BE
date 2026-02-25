@@ -2,6 +2,7 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
@@ -21,6 +22,7 @@ import static app.giftify.funding.domain.exception.FundingErrorCode.ALREADY_TERM
 public class FundingCloseUseCase {
     private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
+    private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
 
     /**
      * 펀딩 강제 종료 (관리자 전용)
@@ -34,12 +36,15 @@ public class FundingCloseUseCase {
         }
 
         funding.close();
+        List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
 
         // 환불 처리를 위한 이벤트 발행
         eventPublisher.publish(new FundingCanceledEvent(
             funding.getId(),
             funding.getWishlistItemId(),
-            funding.getCurrentAmount()
+            funding.getCurrentAmount(),
+            funding.getReceiverId(),
+            participantIds
         ));
 
         return FundingCompleteResponseDto.fromEntity(funding);
@@ -54,10 +59,14 @@ public class FundingCloseUseCase {
 
         for (Funding funding : fundings) {
             funding.close();
+            List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
+
             eventPublisher.publish(new FundingCanceledEvent(
                     funding.getId(),
                     funding.getWishlistItemId(),
-                    funding.getCurrentAmount()
+                    funding.getCurrentAmount(),
+                    funding.getReceiverId(),
+                    participantIds
             ));
         }
 
