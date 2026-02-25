@@ -10,6 +10,7 @@ public record CartItemResponse(
         TargetType targetType,
         Long targetId,
         Long receiverId,
+        String receiverNickname,
         String productName,
         String imageKey,
         long productPrice,
@@ -17,24 +18,36 @@ public record CartItemResponse(
         ItemStatus status,
         String statusMessage
 ) {
-    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId) {
+    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId, String receiverNickname) {
         if (isFundingEnded) {
-            return unavailable(item, ItemStatus.FUNDING_ENDED, "진행 중인 펀딩이 아닙니다.");
+            return unavailable(item, receiverId, receiverNickname, ItemStatus.FUNDING_ENDED, "종료된 펀딩입니다.");
         }
         if (product == null) {
-            return unavailable(item, ItemStatus.DISCONTINUED, "더 이상 판매되지 않는 상품입니다.");
-        }
-        if (product.getStock() <= 0) {
-            return unavailable(item, ItemStatus.SOLD_OUT, "품절된 상품입니다.");
+            return unavailable(item, receiverId, receiverNickname,ItemStatus.DISCONTINUED, "더 이상 판매되지 않는 상품입니다.");
         }
         if (product.getStatus() != ProductStatus.ACTIVE) {
-            return unavailable(item, ItemStatus.DISCONTINUED, "판매 중지된 상품입니다.");
+            return unavailable(item, receiverId, receiverNickname, ItemStatus.DISCONTINUED, "판매 중지된 상품입니다.");
+        }
+        if (product.getStock() <= 0) {
+            return new CartItemResponse(
+                    item.getTargetType(),
+                    item.getTargetId(),
+                    receiverId,
+                    receiverNickname,
+                    product.getName(),
+                    product.getImageKey(),
+                    (long) product.getPrice(),
+                    item.getAmount().amount().longValue(),
+                    ItemStatus.SOLD_OUT,
+                    "품절된 상품입니다."
+            );
         }
 
         return new CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
                 receiverId,
+                receiverNickname,
                 product.getName(),
                 product.getImageKey(),
                 (long) product.getPrice(),
@@ -44,11 +57,12 @@ public record CartItemResponse(
         );
     }
 
-    private static CartItemResponse unavailable(CartItem item, ItemStatus status, String message) {
+    private static CartItemResponse unavailable(CartItem item,  Long receiverId, String receiverNickname, ItemStatus status, String message) {
         return new CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
-                null,
+                receiverId,
+                receiverNickname,
                 null,
                 null,
                 0,
