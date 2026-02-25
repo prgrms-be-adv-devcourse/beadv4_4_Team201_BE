@@ -279,6 +279,8 @@ VALUES
     (99, 3, '프라이탁 제이미', '버려진 방수포로 만든 세상에 단 하나뿐인 가방', 218000, 50, 'ACTIVE',
      'products/99/freitag-jamie.jpg', 'FASHION', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
     (100, 3, '바버 리데스데일 퀼팅 자켓', '영국 왕실이 선택한 클래식한 퀼팅 자켓', 230000, 50, 'ACTIVE',
+     'products/100/barbour-jacket.jpg', 'FASHION', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (101, 3, '자라 키즈 패딩 조끼', '어린이용 패딩 조끼', 500000, 0, 'ACTIVE',
      'products/100/barbour-jacket.jpg', 'FASHION', NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE product
@@ -303,16 +305,16 @@ ALTER TABLE wishlist
 -- -----------------------------------------------------------------------------
 INSERT INTO wishlist_item (id, wishlist_id, product_id, wishlist_item_status, added_at, created_at, updated_at,
                            created_by, updated_by)
-VALUES (1, 1, 11, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+VALUES (1, 1, 11, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품 active, 재고 50
        (2, 1, 12, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (3, 2, 13, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (4, 2, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (5, 2, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (6, 3, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (7, 3, 13, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (8, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (8, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품 active, 재고 50
        (9, 5, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (10, 6, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+       (10, 6, 101, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');  -- 상품 active, 재고 0
 
 ALTER TABLE wishlist_item
     ALTER COLUMN id RESTART WITH 100;
@@ -321,14 +323,15 @@ ALTER TABLE wishlist_item
 -- 9. CART_ITEM (장바구니 아이템) — V1.2.2
 -- -----------------------------------------------------------------------------
 INSERT INTO cart_item (id, cart_id, target_type, target_id, amount, wishlist_item_status)
-VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, NULL),
+VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, 'PENDING'), -- 상품 active, 재고 50
        (2, 5, 'FUNDING_PENDING', 4, 699000.00, NULL),
        (3, 5, 'FUNDING_PENDING', 2, 23000.00, NULL),
        (4, 6, 'FUNDING_PENDING', 3, 415000.00, NULL),
        (5, 2, 'FUNDING_PENDING', 5, 89000.00, NULL),
-       (6, 2, 'FUNDING', 2, 89000.00, 'IN_PROGRESS'),
+       (6, 2, 'FUNDING', 2, 89000.00, 'REQUESTED_CONFIRM'),
        (7, 2, 'FUNDING_PENDING', 6, 20000.00, 'PENDING'),
-       (8, 2, 'FUNDING_PENDING', 7, 1000.00, 'COMPLETED')
+       (8, 2, 'FUNDING_PENDING', 7, 1000.00, 'COMPLETED'),
+       (9, 2, 'FUNDING', 10, 5000.00, 'PENDING') -- 품절인 상품
        ;
 
 ALTER TABLE cart_item
@@ -353,7 +356,7 @@ VALUES
      '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
      NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
-    (4, 0,2, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',2, 415000, 415000, 'ACHIEVED',
+    (4, 0,2, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',3, 415000, 415000, 'ACHIEVED',
      '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
      NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
