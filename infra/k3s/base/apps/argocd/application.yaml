@@ -13,7 +13,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/prgrms-be-adv-devcourse/beadv4_4_team201_be.git
-    targetRevision: main
+    targetRevision: develop
     path: infra/k3s/overlays/prod
   destination:
     server: https://kubernetes.default.svc

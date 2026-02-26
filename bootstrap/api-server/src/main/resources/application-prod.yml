@@ -65,3 +65,8 @@ management:
     tags:
       application: ${spring.application.name:giftify}
       env: prod
+
+springdoc:
+  swagger-ui:
+    servers:
+      - url: ${SWAGGER_URL}
