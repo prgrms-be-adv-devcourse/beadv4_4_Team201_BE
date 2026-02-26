@@ -5,10 +5,14 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import app.giftify.cart.core.domain.CartItem;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.domain.port.FundingQueryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +55,12 @@ class CartServiceTest {
     @Mock
     private WishlistRepositoryPort wishlistRepositoryPort;
 
+    @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
+    private FundingQueryPort fundingQueryPort;
+
     private final Long memberId = 1L;
     private final Long cartId = 1L;
 
@@ -76,6 +86,9 @@ class CartServiceTest {
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product.getStock()).willReturn(10); // 재고 있음
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
+
+        given(fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)).willReturn(Optional.empty());
+
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
@@ -111,6 +124,9 @@ class CartServiceTest {
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product.getStock()).willReturn(10); // 재고 있음
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
+
+        given(fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)).willReturn(Optional.empty());
+
 
         AddCartItemCommand command = new AddCartItemCommand(
                 new CartItemKey(TargetType.FUNDING, wishlistItemId), // FUNDING 타입
@@ -217,7 +233,6 @@ class CartServiceTest {
         Money amount = Money.of(50000);
 
         Cart cart = Cart.create(memberId);
-        // cart.addItem(TargetType.GENERAL_PRODUCT, productId, amount); // GENERAL_PRODUCT는 현재 addItem에서 막힘
 
         given(cartRepository.findById(cartId)).willReturn(Optional.of(cart));
 
@@ -257,6 +272,11 @@ class CartServiceTest {
         given(wishlistRepositoryPort.findAllById(List.of(wishlistId)))
                 .willReturn(List.of(wishlist));
 
+        Member receiver = mock(Member.class);
+        given(receiver.getId()).willReturn(receiverId);
+        given(receiver.getNickname()).willReturn("test-receiver");
+        given(memberRepository.findAllById(anySet())).willReturn(List.of(receiver));
+
         Product product = mock(Product.class);
         given(product.getId()).willReturn(productId);
         given(product.getName()).willReturn("테스트상품");
@@ -265,6 +285,9 @@ class CartServiceTest {
         given(product.getStock()).willReturn(10);
         given(productRepositoryPort.findAllById(List.of(productId)))
                 .willReturn(List.of(product));
+
+        given(fundingQueryPort.findFundingInfoByWishlistItemIds(anyList())).willReturn(Collections.emptyMap());
+
 
         // when
         CartResponse response = cartService.getMyCart(memberId);
@@ -389,6 +412,27 @@ class CartServiceTest {
     }
 
     @Test
+    @DisplayName("카트 생성 성공: 기존 카트가 없을 경우")
+    void createCart_Success_NoExistingCart() {
+        // given
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.empty());
+        given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> {
+            Cart newCart = invocation.getArgument(0);
+            // Simulate saving by returning the same object
+            return newCart;
+        });
+
+        // when
+        Cart result = cartService.createCart(memberId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getMemberId()).isEqualTo(memberId);
+        then(cartRepository).should().save(any(Cart.class));
+    }
+
+
+    @Test
     @DisplayName("카트 생성 멱등성: 이미 존재하면 기존 카트를 반환한다")
     void createCart_Idempotent_ReturnsExisting() {
         // given
@@ -441,6 +485,9 @@ class CartServiceTest {
         given(product2.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product2.getStock()).willReturn(5);
         given(productRepositoryPort.findById(productId2)).willReturn(Optional.of(product2));
+
+        given(fundingQueryPort.findFundingInfoByWishlistItemId(anyLong())).willReturn(Optional.empty());
+
 
         List<AddCartItemCommand> commands = List.of(
                 new AddCartItemCommand(new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId1), amount1),
