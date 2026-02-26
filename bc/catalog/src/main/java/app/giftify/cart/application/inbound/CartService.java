@@ -43,7 +43,8 @@ public class CartService
 
 	@Override
 	public Cart createCart(Long memberId) {
-		return cartRepositoryPort.save(Cart.create(memberId));
+		return cartRepositoryPort.findByMemberId(memberId)
+			.orElseGet(() -> cartRepositoryPort.save(Cart.create(memberId)));
 	}
 
 	@Override
