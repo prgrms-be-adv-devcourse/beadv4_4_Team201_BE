@@ -118,7 +118,7 @@ public class Funding extends BaseJpaEntity {
             return false; // 이미 종료됨 → 멱등
         }
 
-        if (!isExpired()) {
+        if (!isExpired(now)) {
             throw new FundingException(FundingErrorCode.IS_NOT_EXPIRED);
         }
 

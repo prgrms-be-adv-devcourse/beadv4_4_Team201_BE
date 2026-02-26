@@ -1,3 +1,7 @@
+-- Spring Modulith 이벤트 테이블 컬럼 크기 확장
+ALTER TABLE IF EXISTS event_publication ALTER COLUMN serialized_event TEXT;
+ALTER TABLE IF EXISTS event_publication_archive ALTER COLUMN serialized_event TEXT;
+
 -- =============================================================================
 -- Giftify Local Development Seed Data (H2)
 -- =============================================================================
