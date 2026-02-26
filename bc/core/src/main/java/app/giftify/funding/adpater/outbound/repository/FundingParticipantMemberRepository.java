@@ -37,5 +37,6 @@ public interface FundingParticipantMemberRepository extends JpaRepository<Fundin
 
     void deleteByFundingIdAndParticipantId(Long fundingId, Long participantId);
 
-    List<Long> findIdsByFundingId(Long fundingId);
+    @Query("SELECT fpm.participantId FROM FundingParticipantMember fpm WHERE fpm.funding.id = :fundingId")
+    List<Long> findIdsByFundingId(@Param("fundingId") Long fundingId);
 }
