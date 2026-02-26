@@ -7,8 +7,7 @@ import java.time.ZoneId;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
-import app.giftify.payment.adapter.outbound.jpa.JpaPaymentHistoryRepository;
-import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;
+import app.giftify.payment.application.outbound.PaymentHistoryRepository;
 import app.giftify.payment.domain.PaymentEventType;
 import app.giftify.payment.domain.PaymentHistory;
 import app.giftify.payment.domain.PaymentHistoryKeyGenerator;
@@ -24,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PaymentHistoryEventListener {
 
-	private final JpaPaymentHistoryRepository historyRepository;
+	private final PaymentHistoryRepository historyRepository;
 
 	@ApplicationModuleListener
 	public void onPaymentSucceeded(PaymentSucceededEvent event) {
@@ -57,7 +56,7 @@ public class PaymentHistoryEventListener {
 		PaymentHistory history = metadata != null
 			? PaymentHistory.withMetadata(paymentId, historyKey, eventType, occurredAt, metadata)
 			: PaymentHistory.create(paymentId, historyKey, eventType, occurredAt);
-		historyRepository.save(JpaPaymentHistory.from(history, paymentId));
+		historyRepository.save(history);
 
 		log.debug("[PaymentHistoryEventListener] paymentId={}, eventType={}", paymentId, eventType);
 	}

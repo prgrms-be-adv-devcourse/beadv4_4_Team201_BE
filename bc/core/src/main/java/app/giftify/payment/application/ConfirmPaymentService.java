@@ -5,13 +5,13 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
 import app.giftify.payment.application.inbound.ConfirmPaymentResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentFieldEncryptor;
 import app.giftify.payment.application.outbound.PaymentGateway;
 import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.application.outbound.PgConfirmResult;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -68,7 +68,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		}
 
 		// 4. PG 승인 요청 (DB에서 조회한 금액 사용)
-		TossConfirmResult pgResult = paymentGateway.confirm(
+		PgConfirmResult pgResult = paymentGateway.confirm(
 			command.paymentKey(),
 			command.orderNumber(),
 			payment.getPaidAmount()
