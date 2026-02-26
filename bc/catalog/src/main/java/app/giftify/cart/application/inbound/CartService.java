@@ -26,10 +26,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -115,10 +112,12 @@ public class CartService
 		}
 
         // 잔여액 검증
-        FundingInfo fundingInfo = fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId);
-        if (command.amount().amount().intValue() > fundingInfo.remainingAmount()) {
-            throw new CartException(CartErrorCode.EXCEED_REMAINING_AMOUNT, fundingInfo.remainingAmount());
-        }
+		FundingInfo fundingInfo = fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)
+				.orElse(null);
+
+		if (fundingInfo != null && command.amount().amount().longValue() > fundingInfo.remainingAmount()) {
+			throw new CartException(CartErrorCode.EXCEED_REMAINING_AMOUNT, fundingInfo.remainingAmount());
+		}
 	}
 
 	// 카트 조회(아이템 목록)

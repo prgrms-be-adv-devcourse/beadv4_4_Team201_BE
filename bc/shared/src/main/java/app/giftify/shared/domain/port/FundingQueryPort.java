@@ -4,9 +4,10 @@ import app.giftify.shared.domain.vo.FundingInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface FundingQueryPort {
     Map<Long, FundingInfo> findFundingInfoByWishlistItemIds(List<Long> wishlistItemIds);
 
-    FundingInfo findFundingInfoByWishlistItemId(Long wishlistItemId);
+    Optional<FundingInfo> findFundingInfoByWishlistItemId(Long wishlistItemId);
 }

@@ -2,8 +2,6 @@ package app.giftify.funding.adpater.inbound;
 
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
-import app.giftify.funding.domain.exception.FundingErrorCode;
-import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.shared.domain.port.FundingQueryPort;
 import app.giftify.shared.domain.vo.FundingInfo;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -36,13 +35,12 @@ public class FundingQueryAdapter implements FundingQueryPort {
     }
 
     @Override
-    public FundingInfo findFundingInfoByWishlistItemId(Long wishlistItemId) {
-        Funding funding = fundingRepository.findActiveByWishlistItemId(wishlistItemId)
-                .orElseThrow(() -> new FundingException(FundingErrorCode.NOT_IN_PROGRESS));
-
-        return new FundingInfo(
+    public Optional<FundingInfo> findFundingInfoByWishlistItemId(Long wishlistItemId) {
+       return fundingRepository.findByWishlistItemId(wishlistItemId)
+               .map(funding -> new FundingInfo(
                 funding.getWishlistItemId(),
                 funding.getCurrentAmount(),
-                funding.getTargetAmount() - funding.getCurrentAmount());
+                funding.getTargetAmount() - funding.getCurrentAmount()
+               ));
     }
 }

@@ -43,4 +43,5 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
     Page<Funding> findAllByReceiverIdInAndStatus(List<Long> receiverIds, FundingStatus status, Pageable pageable);
     Optional<Funding> findActiveByWishlistItemId(Long wishlistItemId);
 
+    Optional<Funding> findByWishlistItemId(Long wishlistItemId);
 }
