@@ -389,6 +389,21 @@ class CartServiceTest {
     }
 
     @Test
+    @DisplayName("카트 생성 멱등성: 이미 존재하면 기존 카트를 반환한다")
+    void createCart_Idempotent_ReturnsExisting() {
+        // given
+        Cart existingCart = Cart.create(memberId);
+        given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(existingCart));
+
+        // when
+        Cart result = cartService.createCart(memberId);
+
+        // then
+        assertThat(result).isSameAs(existingCart);
+        then(cartRepository).should(never()).save(any(Cart.class));
+    }
+
+    @Test
     @DisplayName("여러 상품 장바구니 추가 성공")
     void addItemsToMyCart_Success() {
         // given

@@ -12,7 +12,7 @@ VALUES
 (4, 'admin-giftify@team201.dev', '관리자', '1999-01-01', 'ADMIN', '서울특별시 종로구 종로 1', '010-0000-0000', '시스템관리자', 'ACTIVE', 'google-oauth2|admin001', now(), now(), 'system', 'system'),
 (5, 'qa-buyer2-giftify@team201.dev', '졸린토끼0042', '1998-07-22', 'BUYER', '경기도 성남시 분당구 판교로 101', '010-4567-8901', '테스트구매자2', 'ACTIVE', 'google-oauth2|buyer002', now(), now(), 'system', 'system'),
 (6, 'qa-buyer3-giftify@team201.dev', '배고픈강아지0007', '2001-12-25', 'BUYER', '부산광역시 해운대구 해운대로 202', '010-5678-9012', '테스트구매자3', 'ACTIVE', 'google-oauth2|buyer003', now(), now(), 'system', 'system')
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 ---------------------------------------------------
 -- 2. Member Replicas
@@ -38,7 +38,7 @@ VALUES
 (4, 4, 0, 0, now(), now(), 'system', 'system'),
 (5, 5, 50000, 0, now(), now(), 'system', 'system'),
 (6, 6, 75000, 0, now(), now(), 'system', 'system')
-ON CONFLICT (member_id) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 ---------------------------------------------------
 -- 4. Carts
@@ -48,7 +48,7 @@ VALUES
 (1, 2, now(), now(), 'system', 'system'),
 (2, 5, now(), now(), 'system', 'system'),
 (3, 6, now(), now(), 'system', 'system')
-ON CONFLICT (member_id) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 ---------------------------------------------------
 -- 5. Products
