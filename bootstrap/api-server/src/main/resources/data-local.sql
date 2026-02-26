@@ -318,9 +318,9 @@ VALUES (1, 1, 11, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품
        (8, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (9, 5, 11, 'REQUESTED_CONFIRM', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (10, 6, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (11, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품 active, 재고 50
-       (12, 5, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (13, 6, 101, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');  -- 상품 active, 재고 0
+       (14, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품 active, 재고 50
+       (15, 5, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+       (16, 6, 101, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');  -- 상품 active, 재고 0
 
 ALTER TABLE wishlist_item
     ALTER COLUMN id RESTART WITH 100;
@@ -337,7 +337,8 @@ VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, 'PENDING'), -- 상품 active, 재
        (6, 2, 'FUNDING', 2, 89000.00, 'REQUESTED_CONFIRM'),
        (7, 2, 'FUNDING_PENDING', 6, 20000.00, 'PENDING'),
        (8, 2, 'FUNDING_PENDING', 7, 1000.00, 'COMPLETED'),
-       (9, 2, 'FUNDING', 10, 5000.00, 'PENDING') -- 품절인 상품
+       (9, 2, 'FUNDING', 8, 5000.00, 'IN_PROGRESS'),
+       (10, 2, 'FUNDING_PENDING', 16, 4000.00, 'PENDING')
        ;
 
 ALTER TABLE cart_item
@@ -349,7 +350,7 @@ ALTER TABLE cart_item
 INSERT INTO funding (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id, target_amount, current_amount,
                      status, deadline, achieved_at, closed_at,
                      created_at, updated_at, created_by, updated_by)
-VALUES (1, 0, 8, 4, '없어진 상품', 'products/51/chanel-perfume.jpg', 5, 699000, 15000, 'IN_PROGRESS',
+VALUES (1, 0, 8, 14, '로지텍 MX Master 3S', 'products/51/chanel-perfume.jpg', 5, 139000, 15000, 'IN_PROGRESS',
         '2026-03-01 23:59:59', NULL, NULL,
         NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
 
@@ -373,7 +374,7 @@ ALTER TABLE funding
 -- -----------------------------------------------------------------------------
 INSERT INTO funding_participant_member (id, funding_id, participant_id, nick_name, amount,
                                         created_at, updated_at, created_by, updated_by)
-VALUES (1, 1, 2, '나른한고양이0013', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+VALUES (1, 1, 1, '멍청한돼지0009', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (2, 1, 6, '배고픈강아지0007', 555000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (3, 2, 2, '나른한고양이0013', 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
        (4, 2, 6, '배고픈강아지0007', 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
@@ -515,7 +516,8 @@ ALTER TABLE wallet_history
 -- -----------------------------------------------------------------------------
 INSERT INTO friendships (id, requester_id, receiver_id, status, accepted_at,
                          created_at, updated_at, created_by, updated_by)
-VALUES (1, 2, 3, 'ACCEPTED', '2026-02-07 12:00:00', '2026-02-07 12:00:00', '2026-02-07 12:00:00', 'SYSTEM', 'SYSTEM');
+VALUES (1, 2, 3, 'ACCEPTED', '2026-02-07 12:00:00', '2026-02-07 12:00:00', '2026-02-07 12:00:00', 'SYSTEM', 'SYSTEM'),
+        (2, 2, 5, 'ACCEPTED', '2026-02-07 12:00:00', '2026-02-07 12:00:00', '2026-02-07 12:00:00', 'SYSTEM', 'SYSTEM');
 
 ALTER TABLE friendships
     ALTER COLUMN id RESTART WITH 100;
