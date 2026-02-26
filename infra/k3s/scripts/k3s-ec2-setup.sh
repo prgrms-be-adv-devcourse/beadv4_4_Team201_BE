@@ -56,6 +56,36 @@ else
     echo ">>> registries.yaml 이미 존재: $REGISTRIES_FILE"
 fi
 
+# k3s kubeconfig 권한 자동 수정 서비스 등록
+KUBECONFIG_SCRIPT="/usr/local/bin/k3s-kubeconfig-fix.sh"
+KUBECONFIG_SERVICE="/etc/systemd/system/k3s-kubeconfig-fix.service"
+
+if [ ! -f "$KUBECONFIG_SERVICE" ]; then
+    echo ">>> k3s kubeconfig 권한 수정 서비스 등록중..."
+    sudo cp "${SCRIPT_DIR}/k3s-kubeconfig-fix.sh" "$KUBECONFIG_SCRIPT"
+    sudo chmod +x "$KUBECONFIG_SCRIPT"
+
+    sudo tee "$KUBECONFIG_SERVICE" > /dev/null << 'UNIT'
+[Unit]
+Description=Fix k3s kubeconfig file permissions after restart
+After=k3s.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/k3s-kubeconfig-fix.sh
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable k3s-kubeconfig-fix.service
+    echo ">>> k3s kubeconfig 권한 수정 서비스 등록 완료"
+else
+    echo ">>> k3s kubeconfig 권한 수정 서비스 이미 존재"
+fi
+
 # ArgoCD pod cleanup 서비스 등록 (k3s 재시작 시 stuck pod 자동 정리)
 CLEANUP_SCRIPT="/usr/local/bin/argocd-pod-cleanup.sh"
 CLEANUP_SERVICE="/etc/systemd/system/argocd-pod-cleanup.service"
