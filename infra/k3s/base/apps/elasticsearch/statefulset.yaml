@@ -25,7 +25,7 @@ spec:
             - name: discovery.type
               value: "single-node"
             - name: xpack.security.enabled
-              value: "false"
+              value: "true"
             - name: ES_JAVA_OPTS
               value: "-Xms512m -Xmx512m"
           resources:
