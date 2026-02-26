@@ -30,23 +30,27 @@ spec:
               value: "-Xms512m -Xmx512m"
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "200m"
             limits:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "2Gi"
+              cpu: "1000m"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
-          readinessProbe:
+          startupProbe:
             exec:
               command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
             initialDelaySeconds: 30
             periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+            periodSeconds: 10
           livenessProbe:
             exec:
               command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
-            initialDelaySeconds: 60
             periodSeconds: 30
   volumeClaimTemplates:
     - metadata:
