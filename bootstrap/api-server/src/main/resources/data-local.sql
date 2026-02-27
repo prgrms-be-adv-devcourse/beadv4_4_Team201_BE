@@ -1,3 +1,7 @@
+-- Spring Modulith 이벤트 테이블 컬럼 크기 확장
+ALTER TABLE IF EXISTS event_publication ALTER COLUMN serialized_event TEXT;
+ALTER TABLE IF EXISTS event_publication_archive ALTER COLUMN serialized_event TEXT;
+
 -- =============================================================================
 -- Giftify Local Development Seed Data (H2)
 -- =============================================================================
@@ -303,24 +307,33 @@ ALTER TABLE wishlist
 -- -----------------------------------------------------------------------------
 -- 8. WISHLIST_ITEM (위시리스트 아이템) — V1.2.2
 -- -----------------------------------------------------------------------------
-INSERT INTO wishlist_item (id, wishlist_id, product_id, wishlist_item_status, added_at, created_at, updated_at,
-                           created_by, updated_by)
-VALUES (1, 1, 11, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품 active, 재고 50
-       (2, 1, 12, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 2, 13, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (4, 2, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (5, 2, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (6, 3, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (7, 3, 13, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (11, 3, 33, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (12, 3, 44, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (13, 3, 55, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (8, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (9, 5, 11, 'REQUESTED_CONFIRM', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (10, 6, 15, 'PENDING', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (14, 5, 14, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'), -- 상품 active, 재고 50
-       (15, 5, 11, 'COMPLETED', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (16, 6, 101, 'IN_PROGRESS', NOW(), NOW(), NOW(), 'SYSTEM', 'SYSTEM');  -- 상품 active, 재고 0
+INSERT INTO wishlist_item (id, wishlist_id, product_id, wishlist_item_status, added_at, created_at, updated_at, created_by, updated_by)
+
+VALUES
+    (1, 2, 17, 'COMPLETED', NULL, '2026-02-27 04:38:07.137213', '2026-02-27 05:02:52.542501', NULL, NULL),
+    (2, 2, 91, 'PENDING', NULL, '2026-02-27 04:38:18.888371', '2026-02-27 05:03:04.54353', NULL, NULL),
+    (3, 2, 101, 'PENDING', '2026-02-27 04:38:34.915845', '2026-02-27 04:38:34.921555', '2026-02-27 04:38:34.921555', NULL, NULL),
+    (4, 2, 52, 'PENDING', '2026-02-27 04:38:45.005384', '2026-02-27 04:38:45.013825', '2026-02-27 04:38:45.013825', NULL, NULL),
+    (5, 3, 28, 'PENDING', '2026-02-27 04:39:41.138494', '2026-02-27 04:39:41.152269', '2026-02-27 04:39:41.152269', NULL, NULL),
+    (6, 3, 94, 'PENDING', '2026-02-27 04:39:51.842625', '2026-02-27 04:39:51.845744', '2026-02-27 04:39:51.845744', NULL, NULL),
+    (7, 3, 69, 'PENDING', '2026-02-27 04:40:01.608242', '2026-02-27 04:40:01.617223', '2026-02-27 04:40:01.617223', NULL, NULL),
+    (8, 3, 76, 'PENDING', '2026-02-27 04:40:09.549441', '2026-02-27 04:40:09.557367', '2026-02-27 04:40:09.557367', NULL, NULL),
+    (9, 2, 13, 'IN_PROGRESS', NULL, '2026-02-27 04:42:38.567651', '2026-02-27 04:46:27.969806', NULL, NULL),
+    (10, 2, 32, 'PENDING', '2026-02-27 04:42:41.91097', '2026-02-27 04:42:41.918441', '2026-02-27 04:42:41.918441', NULL, NULL),
+    (11, 2, 38, 'REQUESTED_CONFIRM', NULL, '2026-02-27 04:42:43.665596', '2026-02-27 04:46:27.984245', NULL, NULL),
+    (12, 2, 75, 'PENDING', '2026-02-27 04:42:52.891707', '2026-02-27 04:42:52.89553', '2026-02-27 04:42:52.89553', NULL, NULL),
+    (13, 2, 58, 'PENDING', '2026-02-27 04:42:58.126237', '2026-02-27 04:42:58.127218', '2026-02-27 04:42:58.127218', NULL, NULL),
+    (14, 2, 51, 'PENDING', '2026-02-27 04:43:03.599998', '2026-02-27 04:43:03.603226', '2026-02-27 04:43:03.603226', NULL, NULL),
+    (15, 2, 78, 'PENDING', '2026-02-27 04:43:10.611364', '2026-02-27 04:43:10.613853', '2026-02-27 04:43:10.613853', NULL, NULL),
+    (16, 2, 76, 'PENDING', '2026-02-27 04:43:12.207661', '2026-02-27 04:43:12.20892', '2026-02-27 04:43:12.20892', NULL, NULL),
+    (17, 3, 11, 'PENDING', '2026-02-27 04:44:44.169043', '2026-02-27 04:44:44.188167', '2026-02-27 04:44:44.188167', NULL, NULL),
+    (18, 3, 96, 'PENDING', '2026-02-27 04:44:57.019013', '2026-02-27 04:44:57.026863', '2026-02-27 04:44:57.026863', NULL, NULL),
+    (19, 3, 97, 'PENDING', '2026-02-27 04:45:00.677498', '2026-02-27 04:45:00.688314', '2026-02-27 04:45:00.688314', NULL, NULL),
+    (20, 3, 101, 'PENDING', '2026-02-27 04:45:01.140464', '2026-02-27 04:45:01.146291', '2026-02-27 04:45:01.146291', NULL, NULL),
+    (21, 3, 98, 'PENDING', '2026-02-27 04:45:01.145349', '2026-02-27 04:45:01.150481', '2026-02-27 04:45:01.150481', NULL, NULL),
+    (22, 3, 68, 'PENDING', '2026-02-27 04:45:09.424229', '2026-02-27 04:45:09.427839', '2026-02-27 04:45:09.427839', NULL, NULL),
+    (23, 3, 73, 'PENDING', '2026-02-27 04:45:10.486583', '2026-02-27 04:45:10.487981', '2026-02-27 04:45:10.487981', NULL, NULL),
+    (24, 3, 74, 'REQUESTED_CONFIRM', NULL, '2026-02-27 04:45:11.92899', '2026-02-27 05:02:18.616474', NULL, NULL);
 
 ALTER TABLE wishlist_item
     ALTER COLUMN id RESTART WITH 100;
@@ -329,16 +342,7 @@ ALTER TABLE wishlist_item
 -- 9. CART_ITEM (장바구니 아이템) — V1.2.2
 -- -----------------------------------------------------------------------------
 INSERT INTO cart_item (id, cart_id, target_type, target_id, amount, wishlist_item_status)
-VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, 'PENDING'), -- 상품 active, 재고 50
-       (2, 5, 'FUNDING_PENDING', 4, 699000.00, NULL),
-       (3, 5, 'FUNDING_PENDING', 2, 23000.00, NULL),
-       (4, 6, 'FUNDING_PENDING', 3, 415000.00, NULL),
-       (5, 2, 'FUNDING_PENDING', 5, 89000.00, NULL),
-       (6, 2, 'FUNDING', 2, 89000.00, 'REQUESTED_CONFIRM'),
-       (7, 2, 'FUNDING_PENDING', 6, 20000.00, 'PENDING'),
-       (8, 2, 'FUNDING_PENDING', 7, 1000.00, 'COMPLETED'),
-       (9, 2, 'FUNDING', 8, 5000.00, 'IN_PROGRESS'),
-       (10, 2, 'FUNDING_PENDING', 16, 4000.00, 'PENDING')
+VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, 'PENDING')
        ;
 
 ALTER TABLE cart_item
@@ -347,24 +351,43 @@ ALTER TABLE cart_item
 -- -----------------------------------------------------------------------------
 -- 10. FUNDING (펀딩) — V1.2.4
 -- -----------------------------------------------------------------------------
-INSERT INTO funding (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id, target_amount, current_amount,
-                     status, deadline, achieved_at, closed_at,
-                     created_at, updated_at, created_by, updated_by)
-VALUES (1, 0, 8, 14, '로지텍 MX Master 3S', 'products/51/chanel-perfume.jpg', 5, 139000, 15000, 'IN_PROGRESS',
-        '2026-03-01 23:59:59', NULL, NULL,
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+INSERT INTO funding (
+    id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id,
+    target_amount, current_amount, status,
+    deadline, achieved_at, closed_at,
+    created_at, updated_at, created_by, updated_by
+)
+VALUES
+    (2, 1, 11, 38, '킨토 데이오프 텀블러', 'products/38/kinto-tumbler.jpg', 2,
+     45000, 45000, 'ACHIEVED','2026-03-14 04:46:27.808092','2026-02-27 04:46:27.853178',
+     '2026-02-27 04:46:27.809499','2026-02-27 04:46:27.809499','2026-02-27 04:46:27.809499',NULL, NULL),
 
-       (2, 0, 9, 51, '샤넬 가브리엘 향수', 'products/51/chanel-perfume.jpg', 5, 359000, 359000, 'ACHIEVED',
-        '2026-02-28 23:59:59', '2026-02-07 14:30:00', NULL,
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (3, 2, 1, 17, '벨킨 3-in-1 맥세이프 충전기', 'products/17/belkin-3in1.jpg', 2,
+     179000, 179000, 'ACCEPTED',
+     '2026-03-14 04:46:27.816602',
+     '2026-02-27 04:46:27.881507',
+     '2026-02-27 04:46:27.816600',
+     '2026-02-27 04:46:27.816600',
+     '2026-02-27 04:46:27.816600',
+     NULL, NULL),
 
-       (3, 0, 4, 53, '에스티로더 갈색병', 'products/53/esteelauder-anr.jpg', 2, 415000, 120000, 'EXPIRED',
-        '2026-02-01 23:59:59', NULL, '2026-02-01 23:59:59',
-        NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+    (4, 1, 9, 13, '애플워치 시리즈 9', 'products/13/apple-watch.jpg', 2,
+     599000, 59900, 'IN_PROGRESS',
+     '2026-03-14 04:46:27.817922',
+     NULL,
+     NULL,
+     '2026-02-27 04:46:27.817900',
+     '2026-02-27 04:46:27.817900',
+     NULL, NULL),
 
-    (4, 0,2, 53, '에스티로더 갈색병','products/53/esteelauder-anr.jpg',3, 415000, 415000, 'ACHIEVED',
-     '2026-02-15 23:59:59', '2026-02-13 23:59:59', NULL,
-     NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+    (5, 1, 24, 74, '모나미 153 ID 볼펜', 'products/74/monami-153id.jpg', 3,
+     25000, 25000, 'ACHIEVED',
+     '2026-03-14 04:46:27.817922',
+     '2026-02-27 04:46:27.817900',
+     NULL,
+     '2026-02-27 04:46:27.800000',
+     '2026-02-27 04:46:27.817000',
+     NULL, NULL);
 
 ALTER TABLE funding
     ALTER COLUMN id RESTART WITH 100;
@@ -374,15 +397,11 @@ ALTER TABLE funding
 -- -----------------------------------------------------------------------------
 INSERT INTO funding_participant_member (id, funding_id, participant_id, nick_name, amount,
                                         created_at, updated_at, created_by, updated_by)
-VALUES (1, 1, 1, '멍청한돼지0009', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (2, 1, 6, '배고픈강아지0007', 555000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (3, 2, 2, '나른한고양이0013', 1200000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (4, 2, 6, '배고픈강아지0007', 159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (5, 3, 2, '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (6, 4, 2, '나른한고양이0013', 1159000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (7, 4, 6, '배고픈강아지0007', 10000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (8, 4, 1, '멍청한돼지0009', 50000, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-       (9, 4, 2, '참가자4', 1000, NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+VALUES
+       (2,2,3,'멍청한고양이2013',45000, '2026-02-27 04:46:27.8179', '2026-02-27 04:46:27.817', null, null),
+       (3,3,3,'멍청한고양이2013',179000, '2026-02-27 04:46:27.8179', '2026-02-27 04:46:27.81', null, null),
+       (4,4,3,'멍청한고양이2013',59900, '2026-02-27 04:46:27.8179', '2026-02-27 04:46:27.12', null, null),
+       (5,5,2, '나른한고양이0013',25000, '2026-02-27 04:46:27.8179', '2026-02-27 04:46:27.817', null, null);
 
 ALTER TABLE funding_participant_member
     ALTER COLUMN id RESTART WITH 100;
@@ -497,10 +516,10 @@ INSERT INTO wallet_history (id, wallet_id, transaction_type, amount, balance_aft
                             created_at, updated_at, created_by, updated_by)
 VALUES (1, 2, 'CHARGE', 500000.00, 500000.00, 'CHARGE', 'CHG-20260205-001', '2026-02-04 10:00:00',
         '2026-02-04 10:00:00', '2026-02-04 10:00:00', 'SYSTEM', 'SYSTEM'),
-       (2, 2, 'PAYMENT', 359000.00, 141000.00, 'PAYMENT', 'ORD-20260205-A1B2C3D4E5F6-20260205170000',
+       (2, 2, 'ORDER_DEDUCT', 359000.00, 141000.00, 'PAYMENT', 'ORD-20260205-A1B2C3D4E5F6-20260205170000',
         '2026-02-05 17:05:00',
         '2026-02-05 17:05:00', '2026-02-05 17:05:00', 'SYSTEM', 'SYSTEM'),
-       (3, 2, 'PAYMENT', 23000.00, 118000.00, 'PAYMENT', 'ORD-20260205-B2C3D4E5F6G7-20260205171000',
+       (3, 2, 'ORDER_DEDUCT', 23000.00, 118000.00, 'PAYMENT', 'ORD-20260205-B2C3D4E5F6G7-20260205171000',
         '2026-02-05 17:15:00',
         '2026-02-05 17:15:00', '2026-02-05 17:15:00', 'SYSTEM', 'SYSTEM'),
        (4, 5, 'CHARGE', 300000.00, 300000.00, 'CHARGE', 'CHG-20260207-001', '2026-02-07 09:00:00',
