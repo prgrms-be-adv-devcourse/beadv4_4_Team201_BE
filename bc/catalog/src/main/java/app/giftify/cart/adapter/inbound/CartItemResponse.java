@@ -18,6 +18,7 @@ public record CartItemResponse(
         Long targetId,
         Long receiverId,
         String receiverNickname,
+        Long productId,
         String productName,
         String imageKey,
         long productPrice,
@@ -48,6 +49,7 @@ public record CartItemResponse(
                     item.getTargetId(),
                     receiverId,
                     receiverNickname,
+                    product.getId(),
                     product.getName(),
                     product.getImageKey(),
                     (long) product.getPrice(),
@@ -72,6 +74,7 @@ public record CartItemResponse(
                 item.getTargetId(),
                 receiverId,
                 receiverNickname,
+                product.getId(),
                 product.getName(),
                 product.getImageKey(),
                 (long) product.getPrice(),
@@ -83,12 +86,13 @@ public record CartItemResponse(
         );
     }
 
-    private static CartItemResponse unavailable(CartItem item,  Long receiverId, String receiverNickname, ItemStatus status, String message) {
+    private static CartItemResponse unavailable(CartItem item, Long receiverId, String receiverNickname, ItemStatus status, String message) {
         return new CartItemResponse(
                 item.getTargetType(),
                 item.getTargetId(),
                 receiverId,
                 receiverNickname,
+                null,
                 null,
                 null,
                 0,
