@@ -1,5 +1,7 @@
 package app.giftify.shared.domain.vo;
 
+import app.giftify.shared.domain.type.FundingStatus;
+
 public record FundingInfo(
         Long fundingId,
         FundingStatus status,

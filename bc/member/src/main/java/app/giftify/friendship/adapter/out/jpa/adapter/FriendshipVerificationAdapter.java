@@ -3,7 +3,7 @@ package app.giftify.friendship.adapter.out.jpa.adapter;
 import app.giftify.friendship.adapter.out.jpa.entity.FriendshipJpaEntity;
 import app.giftify.friendship.adapter.out.jpa.repository.FriendshipJpaRepository;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
-import app.giftify.shared.domain.type.FriendshipStatus;
+import app.giftify.friendship.domain.FriendshipStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

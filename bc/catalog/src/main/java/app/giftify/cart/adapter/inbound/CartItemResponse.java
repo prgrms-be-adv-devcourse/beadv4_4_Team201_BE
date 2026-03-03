@@ -4,6 +4,7 @@ import app.giftify.cart.core.domain.CartItem;
 import app.giftify.cart.core.domain.ItemStatus;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingInfo;
 

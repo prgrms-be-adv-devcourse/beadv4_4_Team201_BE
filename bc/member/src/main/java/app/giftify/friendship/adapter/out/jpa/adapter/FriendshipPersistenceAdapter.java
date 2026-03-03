@@ -8,7 +8,7 @@ import app.giftify.friendship.adapter.out.jpa.mapper.FriendshipMapper;
 import app.giftify.friendship.adapter.out.jpa.repository.FriendshipJpaRepository;
 import app.giftify.friendship.application.port.out.FriendshipRepositoryPort;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.shared.domain.type.FriendshipStatus;
+import app.giftify.friendship.domain.FriendshipStatus;
 import lombok.RequiredArgsConstructor;
 
 @Component

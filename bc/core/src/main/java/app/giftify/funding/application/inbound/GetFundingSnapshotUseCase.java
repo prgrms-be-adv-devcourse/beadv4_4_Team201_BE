@@ -1,6 +1,6 @@
 package app.giftify.funding.application.inbound;
 
-import app.giftify.funding.domain.FundingStatus;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 
 import java.util.Optional;
