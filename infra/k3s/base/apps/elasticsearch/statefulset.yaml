@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: elasticsearch
+  namespace: giftify
   labels:
     app: elasticsearch
 spec:
-  serviceName: elasticsearch
+  serviceName: elasticsearch-headless
   replicas: 1
   selector:
     matchLabels:
@@ -26,8 +27,13 @@ spec:
               value: "single-node"
             - name: xpack.security.enabled
               value: "true"
+            - name: xpack.security.http.ssl.enabled
+              value: "false"
             - name: ES_JAVA_OPTS
               value: "-Xms512m -Xmx512m"
+          envFrom:
+            - secretRef:
+                name: es-secrets
           resources:
             requests:
               memory: "1Gi"
@@ -40,17 +46,19 @@ spec:
               mountPath: /usr/share/elasticsearch/data
           startupProbe:
             exec:
-              command: ["sh", "-c", "curl -sfk https://localhost:9200/_cluster/health || exit 1"]
-            initialDelaySeconds: 30
+              command: ["sh", "-c", "curl -u elastic:$ELASTIC_PASSWORD -sf http://127.0.0.1:9200/_cluster/health || exit 1"]
+            initialDelaySeconds: 60
             periodSeconds: 10
-            failureThreshold: 60
+            failureThreshold: 90
+            timeoutSeconds: 10
           readinessProbe:
             exec:
-              command: ["sh", "-c", "curl -sfk https://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -u elastic:$ELASTIC_PASSWORD -sf http://127.0.0.1:9200/_cluster/health || exit 1"]
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ["sh", "-c", "curl -sfk https://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -u elastic:$ELASTIC_PASSWORD -sf http://127.0.0.1:9200/_cluster/health || exit 1"]
+            initialDelaySeconds: 150
             periodSeconds: 30
   volumeClaimTemplates:
     - metadata:
