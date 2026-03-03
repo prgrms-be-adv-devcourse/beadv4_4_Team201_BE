@@ -26,9 +26,12 @@ spec:
             - name: discovery.type
               value: "single-node"
             - name: xpack.security.enabled
-              value: "false"
+              value: "true"
             - name: ES_JAVA_OPTS
               value: "-Xms512m -Xmx512m"
+          envFrom:
+            - secretRef:
+                name: es-secrets
           resources:
             requests:
               memory: "1Gi"
@@ -41,17 +44,17 @@ spec:
               mountPath: /usr/share/elasticsearch/data
           startupProbe:
             exec:
-              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -u elastic:$ES_PASSWORD -sfk https://127.0.0.1:9200/_cluster/health || exit 1"]
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 60
           readinessProbe:
             exec:
-              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -u elastic:$ES_PASSWORD -sfk https://127.0.0.1:9200/_cluster/health || exit 1"]
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -u elastic:$ES_PASSWORD -sfk https://127.0.0.1:9200/_cluster/health || exit 1"]
             periodSeconds: 30
   volumeClaimTemplates:
     - metadata:
