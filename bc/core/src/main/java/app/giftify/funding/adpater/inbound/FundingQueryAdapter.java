@@ -24,7 +24,7 @@ public class FundingQueryAdapter implements FundingQueryPort {
                 .collect(Collectors.toMap(
                         Funding::getWishlistItemId,
                         funding -> new FundingInfo(
-                                funding.getWishlistItemId(),
+                                funding.getId(),
                                 funding.getStatus(),
                                 funding.getCurrentAmount(),
                                 funding.getTargetAmount() - funding.getCurrentAmount()
