@@ -45,9 +45,10 @@ spec:
           startupProbe:
             exec:
               command: ["sh", "-c", "curl -u elastic:$ES_PASSWORD -sfk https://127.0.0.1:9200/_cluster/health || exit 1"]
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
-            failureThreshold: 60
+            failureThreshold: 90
+            timeoutSeconds: 10
           readinessProbe:
             exec:
               command: ["sh", "-c", "curl -u elastic:$ES_PASSWORD -sfk https://127.0.0.1:9200/_cluster/health || exit 1"]
@@ -55,6 +56,7 @@ spec:
           livenessProbe:
             exec:
               command: ["sh", "-c", "curl -u elastic:$ES_PASSWORD -sfk https://127.0.0.1:9200/_cluster/health || exit 1"]
+            initialDelaySeconds: 150
             periodSeconds: 30
   volumeClaimTemplates:
     - metadata:
