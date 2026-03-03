@@ -57,7 +57,13 @@ public interface TossPaymentsApi {
 		String paymentKey,
 		String orderId,
 		String status,
+		String method,
 		String lastTransactionKey,
+		Long totalAmount,
+		Long balanceAmount,
+		Long suppliedAmount,
+		Long vat,
+		String requestedAt,
 		String approvedAt,
 		CardInfo card,
 		java.util.List<CancelInfo> cancels,
@@ -69,7 +75,15 @@ public interface TossPaymentsApi {
 		}
 
 		@JsonIgnoreProperties(ignoreUnknown = true)
-		record CardInfo(String approveNo) {}
+		record CardInfo(
+			String issuerCode,
+			String acquirerCode,
+			String number,
+			Integer installmentPlanMonths,
+			String approveNo,
+			String cardType,
+			String ownerType
+		) {}
 
 		@JsonIgnoreProperties(ignoreUnknown = true)
 		record CancelInfo(
