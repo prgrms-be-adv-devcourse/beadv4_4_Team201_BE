@@ -3,7 +3,7 @@ package app.giftify.friendship.application.port.out;
 import java.util.List;
 import java.util.Optional;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.shared.domain.type.FriendshipStatus;
+import app.giftify.friendship.domain.FriendshipStatus;
 
 public interface FriendshipRepositoryPort {
 

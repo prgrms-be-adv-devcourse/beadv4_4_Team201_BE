@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import app.giftify.friendship.adapter.out.jpa.entity.FriendshipJpaEntity;
-import app.giftify.shared.domain.type.FriendshipStatus;
+import app.giftify.friendship.domain.FriendshipStatus;
 
 public interface FriendshipJpaRepository extends JpaRepository<FriendshipJpaEntity, Long> {
 

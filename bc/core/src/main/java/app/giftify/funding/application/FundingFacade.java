@@ -2,9 +2,9 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.inbound.dto.*;
-import app.giftify.funding.domain.FundingStatus;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;

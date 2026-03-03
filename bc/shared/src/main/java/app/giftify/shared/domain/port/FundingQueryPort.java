@@ -10,4 +10,7 @@ public interface FundingQueryPort {
     Map<Long, FundingInfo> findFundingInfoByWishlistItemIds(List<Long> wishlistItemIds);
 
     Optional<FundingInfo> findFundingInfoByWishlistItemId(Long wishlistItemId);
+
+    Optional<Long> findFundingIdByWishlistItemId(Long wishlistItemId);
 }
+
