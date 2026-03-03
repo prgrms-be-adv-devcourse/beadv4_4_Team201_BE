@@ -23,6 +23,8 @@ public enum ProductErrorCode implements ErrorCode {
     PRODUCT_NOT_ACTIVE(HttpStatus.BAD_REQUEST.value(), "P207", "판매 중인 상품이 아닙니다."),
     PRODUCT_NOT_IN_INACTIVE_STATUS(HttpStatus.BAD_REQUEST.value(), "P208", "'INACTIVE' 상태의 상품이 아닙니다."),
     INVALID_APPROVAL_ACTION(HttpStatus.BAD_REQUEST.value(), "P209", "올바르지 않은 액션값입니다."),
+    CANNOT_STOP_SALE_DUE_TO_ACTIVE_FUNDING(HttpStatus.BAD_REQUEST.value(), "P210", "진행 중이거나 수령자 수락 대기 중인 펀딩이 있습니다."),
+    PRODUCT_CANNOT_CHANGE_STATUS_TO_REJECTED(HttpStatus.BAD_REQUEST.value(), "P211", "'REJECTED'로 상태를 변경할 수 없습니다."),
 
     // P3xx: 도메인 생성/입력 검증
     PRODUCT_SELLER_REQUIRED(HttpStatus.BAD_REQUEST.value(), "P301", "판매자 정보는 필수입니다."),
@@ -40,7 +42,9 @@ public enum ProductErrorCode implements ErrorCode {
 
     // P5xx: 인프라/동시성 관련
     PRODUCT_STOCK_LOCK_TIMEOUT(HttpStatus.CONFLICT.value(), "P501", "일시적인 문제가 발생했습니다. 다시 시도하세요."),
-    PRODUCT_STOCK_CHANGED(HttpStatus.CONFLICT.value(), "P502", "재고가 변경되었습니다. 다시 시도하세요.");
+    PRODUCT_STOCK_CHANGED(HttpStatus.CONFLICT.value(), "P502", "재고가 변경되었습니다. 다시 시도하세요."),
+    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "P503", "외부 API 호출 중 오류가 발생했습니다."),
+    EXTERNAL_API_CONNECTION_FAILURE(HttpStatus.SERVICE_UNAVAILABLE.value(), "P504", "외부 서비스에 연결할 수 없습니다.");
 
     private final int statusCode;
     private final String code;
