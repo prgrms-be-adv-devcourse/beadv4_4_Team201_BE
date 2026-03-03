@@ -43,4 +43,10 @@ public class FundingQueryAdapter implements FundingQueryPort {
                 funding.getTargetAmount() - funding.getCurrentAmount()
                ));
     }
+
+    @Override
+    public Optional<Long> findFundingIdByWishlistItemId(Long wishlistItemId) {
+        return fundingRepository.findByWishlistItemId(wishlistItemId)
+                .map(Funding::getId);
+    }
 }
