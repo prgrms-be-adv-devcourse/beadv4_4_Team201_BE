@@ -24,7 +24,8 @@ public class FundingQueryAdapter implements FundingQueryPort {
                 .collect(Collectors.toMap(
                         Funding::getWishlistItemId,
                         funding -> new FundingInfo(
-                                funding.getWishlistItemId(),
+                                funding.getId(),
+                                funding.getStatus(),
                                 funding.getCurrentAmount(),
                                 funding.getTargetAmount() - funding.getCurrentAmount()
 //                                ,funding.getTargetAmount(),
@@ -39,8 +40,15 @@ public class FundingQueryAdapter implements FundingQueryPort {
        return fundingRepository.findByWishlistItemId(wishlistItemId)
                .map(funding -> new FundingInfo(
                 funding.getWishlistItemId(),
+                funding.getStatus(),
                 funding.getCurrentAmount(),
                 funding.getTargetAmount() - funding.getCurrentAmount()
                ));
+    }
+
+    @Override
+    public Optional<Long> findFundingIdByWishlistItemId(Long wishlistItemId) {
+        return fundingRepository.findByWishlistItemId(wishlistItemId)
+                .map(Funding::getId);
     }
 }

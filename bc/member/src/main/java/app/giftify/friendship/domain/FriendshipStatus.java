@@ -1,4 +1,4 @@
-package app.giftify.shared.domain.type;
+package app.giftify.friendship.domain;
 
 public enum FriendshipStatus {
     PENDING,

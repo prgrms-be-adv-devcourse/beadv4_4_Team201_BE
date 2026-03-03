@@ -171,7 +171,7 @@ public class CartService
         Map<Long, Member> memberMap = memberRepository.findAllById(receiverIds).stream()
                 .collect(Collectors.toMap(Member::getId, Function.identity()));
 
-		// 4. 유효한 WishlistItem의 Product 조회
+		// 4. 유효한 WishlistItem만 필터링
 		Set<Long> fundingEndedIds = wishlistItemIds.stream()
 				.filter(id -> {
 					WishlistItem wi = wishlistItemMap.get(id);
@@ -181,6 +181,7 @@ public class CartService
 				})
 				.collect(Collectors.toSet());
 
+        // 5. Product 조회
 		List<Long> productIds = wishlistItemMap.values().stream()
 				.filter(wi -> !fundingEndedIds.contains(wi.getId()))
 				.map(WishlistItem::getProductId)
@@ -188,23 +189,25 @@ public class CartService
 		Map<Long, Product> productMap = productRepositoryPort.findAllById(productIds).stream()
 				.collect(Collectors.toMap(Product::getId, Function.identity()));
 
-		// 5. wishlistItemId 기준으로 CartItemResponse 조립에 필요한 컨텍스트 구성
-		record CartItemContext(Product product, Long receiverId, String receiverNickname) {}
-
-		Map<Long, CartItemContext> contextMap = new HashMap<>();
-		for (WishlistItem wi : wishlistItemMap.values()) {
-			Product product = fundingEndedIds.contains(wi.getId())
-					? null : productMap.get(wi.getProductId());
-			Wishlist wishlist = wishlistMap.get(wi.getWishlistId());
-			Long receiverId = wishlist != null ? wishlist.getMemberId() : null;
-			String receiverNickname = receiverId != null && memberMap.get(receiverId) != null
-					? memberMap.get(receiverId).getNickname() : null;
-			contextMap.put(wi.getId(), new CartItemContext(product, receiverId, receiverNickname));
-		}
-
+        // 6. FundingInfo 조회
         Map<Long, FundingInfo> fundingInfoMap = fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds);
 
-		// 6. CartItemResponse 조립
+        // 7. wishlistItemId 기준으로 CartItemResponse 조립에 필요한 컨텍스트 구성
+        record CartItemContext(Product product, Long receiverId, String receiverNickname) {}
+
+        Map<Long, CartItemContext> contextMap = new HashMap<>();
+        for (WishlistItem wi : wishlistItemMap.values()) {
+            Product product = fundingEndedIds.contains(wi.getId())
+					? null : productMap.get(wi.getProductId());
+            Wishlist wishlist = wishlistMap.get(wi.getWishlistId());
+            Long receiverId = wishlist != null ? wishlist.getMemberId() : null;
+            String receiverNickname = receiverId != null && memberMap.get(receiverId) != null
+					? memberMap.get(receiverId).getNickname() : null;
+            contextMap.put(wi.getId(), new CartItemContext(product, receiverId, receiverNickname));
+        }
+
+
+		// 8. CartItemResponse 조립
 		List<CartItemResponse> itemResponses = cart.getItems().stream()
 				.map(item -> {
 					CartItemContext ctx = contextMap.get(item.getTargetId());

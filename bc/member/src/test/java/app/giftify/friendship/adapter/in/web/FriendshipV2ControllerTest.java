@@ -37,7 +37,7 @@ import app.giftify.friendship.application.port.in.RejectFriendRequestUseCase;
 import app.giftify.friendship.application.port.in.RemoveFriendUseCase;
 import app.giftify.friendship.application.port.in.SendFriendRequestUseCase;
 import app.giftify.friendship.domain.Friendship;
-import app.giftify.shared.domain.type.FriendshipStatus;
+import app.giftify.friendship.domain.FriendshipStatus;
 import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.security.common.CurrentMemberId;

@@ -1,8 +1,8 @@
 package app.giftify.funding.adpater.outbound.jpa;
 
-import app.giftify.funding.domain.FundingStatus;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
+import app.giftify.shared.domain.type.FundingStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
