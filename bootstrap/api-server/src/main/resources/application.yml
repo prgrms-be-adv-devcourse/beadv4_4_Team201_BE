@@ -53,7 +53,7 @@ spring:
 
 server:
   port: 8080
-  forward-headers-strategy: native
+  forward-headers-strategy: framework
 
 management:
   endpoints:
