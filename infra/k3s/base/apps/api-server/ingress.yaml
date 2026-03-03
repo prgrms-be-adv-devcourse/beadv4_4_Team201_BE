@@ -13,3 +13,4 @@ spec:
           port: 8080
       middlewares:
         - name: rate-limit
+        - name: forwarded-proto-https
