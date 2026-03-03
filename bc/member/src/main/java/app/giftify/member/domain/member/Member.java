@@ -103,6 +103,14 @@ public class Member extends BaseDomainModel {
 		this.status = MemberStatus.WITHDRAWN;
 	}
 
+	public void reactivate() {
+		this.status = MemberStatus.ACTIVE;
+	}
+
+	public boolean isWithdrawn() {
+		return this.status == MemberStatus.WITHDRAWN;
+	}
+
 	// 회원이 활성 상태가 아닐 경우 예외를 던집니다. (검증 및 흐름 제어용)
 	public void validateActiveStatus() {
 		if (this.status != MemberStatus.ACTIVE) {
