@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: elasticsearch
+  namespace: giftify
   labels:
     app: elasticsearch
 spec:
-  serviceName: elasticsearch
+  serviceName: elasticsearch-headless
   replicas: 1
   selector:
     matchLabels:
@@ -25,7 +26,7 @@ spec:
             - name: discovery.type
               value: "single-node"
             - name: xpack.security.enabled
-              value: "true"
+              value: "false"
             - name: ES_JAVA_OPTS
               value: "-Xms512m -Xmx512m"
           resources:
@@ -40,17 +41,17 @@ spec:
               mountPath: /usr/share/elasticsearch/data
           startupProbe:
             exec:
-              command: ["sh", "-c", "curl -sfk https://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 60
           readinessProbe:
             exec:
-              command: ["sh", "-c", "curl -sfk https://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ["sh", "-c", "curl -sfk https://localhost:9200/_cluster/health || exit 1"]
+              command: ["sh", "-c", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
             periodSeconds: 30
   volumeClaimTemplates:
     - metadata:
