@@ -8,6 +8,7 @@ import app.giftify.wishlist.core.domain.WishlistItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +60,11 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
     @Override
     public void delete(WishlistItem wishlistItem) {
         wishlistItemRepository.deleteById(wishlistItem.getId());
+    }
+
+    @Override
+    public int deleteCompletedItemsUpdatedBefore(LocalDateTime cutoff) {
+        return wishlistItemRepository.deleteCompletedItemsUpdatedBefore(cutoff);
     }
 
     @Override

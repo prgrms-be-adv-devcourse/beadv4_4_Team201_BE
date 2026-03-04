@@ -2,6 +2,7 @@ package app.giftify.wishlist.application.port.out;
 
 import app.giftify.wishlist.core.domain.WishlistItem;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,8 @@ public interface WishlistItemRepositoryPort {
     void deleteByWishlistIdAndProductId(Long wishlistId, Long productId);
 
     void delete(WishlistItem wishlistItem);
+
+    int deleteCompletedItemsUpdatedBefore(LocalDateTime cutoff);
 
     Long count();
 }

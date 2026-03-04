@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
@@ -407,5 +409,36 @@ class WishlistItemServiceTest {
         assertThat(result.get(1L).productName()).isEqualTo("상품1");
         assertThat(result.get(2L).originalWishlistItemId()).isEqualTo(2L);
         assertThat(result.get(2L).productName()).isEqualTo("상품2");
+    }
+
+    @Test
+    @DisplayName("COMPLETED 상태의 만료된 위시리스트아이템을 자동 삭제한다")
+    void deleteExpiredCompletedItems() {
+        // given
+        given(wishlistItemRepositoryPort.deleteCompletedItemsUpdatedBefore(any(LocalDateTime.class)))
+                .willReturn(3);
+
+        // when
+        int deletedCount = wishlistItemService.deleteExpiredCompletedItems();
+
+        // then
+        assertThat(deletedCount).isEqualTo(3);
+        verify(wishlistItemRepositoryPort).deleteCompletedItemsUpdatedBefore(
+                argThat(cutoff -> cutoff.isBefore(LocalDateTime.now().minusDays(14)))
+        );
+    }
+
+    @Test
+    @DisplayName("만료된 위시리스트아이템이 없으면 0을 반환한다")
+    void deleteExpiredCompletedItems_noneExpired() {
+        // given
+        given(wishlistItemRepositoryPort.deleteCompletedItemsUpdatedBefore(any(LocalDateTime.class)))
+                .willReturn(0);
+
+        // when
+        int deletedCount = wishlistItemService.deleteExpiredCompletedItems();
+
+        // then
+        assertThat(deletedCount).isZero();
     }
 }
