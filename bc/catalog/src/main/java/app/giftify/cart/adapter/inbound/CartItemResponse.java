@@ -22,7 +22,7 @@ public record CartItemResponse(
         String productName,
         String imageKey,
         long productPrice,
-        long contributionAmount,  // todo 응답 객체 나누기
+        long contributionAmount,
 
         // 이동 가능한 경우에만 세팅
         Long fundingId,

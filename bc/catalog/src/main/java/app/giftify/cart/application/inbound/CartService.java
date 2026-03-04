@@ -62,7 +62,7 @@ public class CartService
 		TargetType targetType = command.cartItemKey().targetType();
 		validateFundingTarget(targetType);
 
-		// 펀딩 구매 검증
+		// 장바구니 추가 가능 검증
 		Long wishlistItemId = command.cartItemKey().targetId();
 		validateCartItemAddable(wishlistItemId, command);
 
@@ -82,7 +82,7 @@ public class CartService
 			TargetType targetType = command.cartItemKey().targetType();
 			validateFundingTarget(targetType);
 
-			// 펀딩 구매 검증
+			// 장바구니 추가 가능 검증
 			Long wishlistItemId = command.cartItemKey().targetId();
 			validateCartItemAddable(wishlistItemId, command);
 
