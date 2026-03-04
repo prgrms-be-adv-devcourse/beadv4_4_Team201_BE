@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 /**
  * Internal API 클라이언트 설정.
@@ -18,8 +19,11 @@ public class ApiClientConfig {
     public MemberApiClient memberInternalApi(
             RestClient.Builder builder,
             @Value("${app.service.member.url:http://localhost:8080}") String baseUrl) {
-        
-        RestClient restClient = builder.baseUrl(baseUrl).build();
+
+        DefaultUriBuilderFactory uriFactory = new DefaultUriBuilderFactory(baseUrl);
+        uriFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
+
+        RestClient restClient = builder.uriBuilderFactory(uriFactory).build();
 
         return HttpServiceProxyFactory
                 .builderFor(RestClientAdapter.create(restClient))
