@@ -1,34 +1,18 @@
 package app.giftify.cart.application.inbound;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import app.giftify.cart.core.domain.CartItem;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
-import app.giftify.shared.domain.port.FundingQueryPort;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import app.giftify.cart.adapter.inbound.CartResponse;
 import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
+import app.giftify.cart.core.domain.CartItem;
 import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.CartItemKey;
 import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.replica.member.Member;
+import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.domain.port.FundingQueryPort;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -36,6 +20,21 @@ import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CartServiceTest {
@@ -85,6 +84,7 @@ class CartServiceTest {
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product.getStock()).willReturn(10); // 재고 있음
+        given(product.getPrice()).willReturn(50000);
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         given(fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)).willReturn(Optional.empty());
@@ -123,6 +123,7 @@ class CartServiceTest {
         Product product = mock(Product.class);
         given(product.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product.getStock()).willReturn(10); // 재고 있음
+        given(product.getPrice()).willReturn(50000);
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
         given(fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)).willReturn(Optional.empty());
@@ -473,6 +474,7 @@ class CartServiceTest {
         Product product1 = mock(Product.class);
         given(product1.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product1.getStock()).willReturn(10);
+        given(product1.getPrice()).willReturn(50000);
         given(productRepositoryPort.findById(productId1)).willReturn(Optional.of(product1));
 
         // Item 2 Mocking
@@ -484,6 +486,7 @@ class CartServiceTest {
         Product product2 = mock(Product.class);
         given(product2.getStatus()).willReturn(ProductStatus.ACTIVE);
         given(product2.getStock()).willReturn(5);
+        given(product2.getPrice()).willReturn(50000);
         given(productRepositoryPort.findById(productId2)).willReturn(Optional.of(product2));
 
         given(fundingQueryPort.findFundingInfoByWishlistItemId(anyLong())).willReturn(Optional.empty());
