@@ -16,7 +16,11 @@ public class WishlistItemDeleteScheduler {
     @Async("wishlistTaskExecutor")
     @Scheduled(cron = "0 0 0 * * *")
     public void deleteExpiredCompletedItems() {
-        int deletedCount = deleteExpiredWishlistItemUseCase.deleteExpiredCompletedItems();
-        log.info("만료된 COMPLETED 위시리스트아이템 삭제 건수: {}", deletedCount);
+        try {
+            int deletedCount = deleteExpiredWishlistItemUseCase.deleteExpiredCompletedItems();
+            log.info("만료된 COMPLETED 위시리스트아이템 삭제 건수: {}", deletedCount);
+        } catch (Exception e) {
+            log.error("위시리스트아이템 자동 삭제 실패", e);
+        }
     }
 }
