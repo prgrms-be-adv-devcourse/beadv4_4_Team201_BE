@@ -11,7 +11,8 @@ public enum OrderStatus {
     PARTIAL_CANCELING,    // 하나라도 아이템에 CANCELING이 포함된 경우 (우선순위: 1)
     CANCELING,          // 모든 아이템이 CANCELING인 경우
     PARTIAL_CANCELED,   // 일부 취소 후 남은 아이템들이 PAID인 경우 (우선순위: 3)
-    CANCELED            // 모든 아이템이 CANCELED인 경우
+    CANCELED,            // 모든 아이템이 CANCELED인 경우
+    EXPIRED
     ;
 
     public static OrderStatus deriveStatus(List<OrderItemStatus> itemStatuses) {

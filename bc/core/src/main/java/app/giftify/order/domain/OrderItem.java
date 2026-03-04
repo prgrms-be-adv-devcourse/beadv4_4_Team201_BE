@@ -205,6 +205,7 @@ public class OrderItem {
             case OrderItemStatus.CANCELING -> ResultCode.IN_PROGRESS;
             case OrderItemStatus.CANCELED -> ResultCode.ALREADY_PROCESSED;
             case OrderItemStatus.CONFIRMED -> ResultCode.FAIL;
+            case OrderItemStatus.EXPIRED -> ResultCode.FAIL;
         };
     }
 
@@ -222,5 +223,15 @@ public class OrderItem {
 
         status = OrderItemStatus.CONFIRMED;
         confirmedAt = LocalDateTime.now();
+    }
+
+    public void expired() {
+        if (status != OrderItemStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 만료가 불가능한 상태입니다. orderItemId: %d, status: %s", id, status)
+            );
+        }
+        status = OrderItemStatus.EXPIRED;
     }
 }

@@ -3,7 +3,9 @@ package app.giftify.order.adapter.outbound.persistence;
 import app.giftify.order.adapter.outbound.persistence.jpa.JpaOrderRepository;
 import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.Order;
+import app.giftify.order.domain.OrderStatus;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -51,5 +54,16 @@ public class OrderAdapter implements OrderRepository {
     @Override
     public List<Order> getAllByIdInWithItems(List<Long> ids) {
         return jpaOrderRepository.findAllByIdInWithItems(ids);
+    }
+
+    @Override
+    public List<Long> getIdsByStatusAndCreatedAtBefore(OrderStatus status, LocalDateTime threshold) {
+        return jpaOrderRepository.findIdsByStatusAndCreatedAtBefore(status, threshold);
+    }
+
+    @Override
+    public Order getByIdWithItems(Long id) {
+        return jpaOrderRepository.findByIdWithItems(id)
+                .orElseThrow(() -> new DomainException(OrderErrorCode.ORDER_NOT_FOUND, "orderId = " + id));
     }
 }
