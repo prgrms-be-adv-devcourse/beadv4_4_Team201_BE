@@ -18,14 +18,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import app.giftify.payment.adapter.outbound.pg.TossCancelResult;
 import app.giftify.payment.application.inbound.CancelPaymentCommand;
+import app.giftify.payment.application.outbound.PaymentFieldEncryptor;
+import app.giftify.payment.application.outbound.PaymentGateway;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
+import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
@@ -40,6 +45,12 @@ class CancelPaymentServiceTest {
 	@Mock
 	private EventPublisher eventPublisher;
 
+	@Mock
+	private PaymentGateway paymentGateway;
+
+	@Mock
+	private PaymentFieldEncryptor encryptor;
+
 	@InjectMocks
 	private CancelPaymentService cancelPaymentService;
 
@@ -50,6 +61,7 @@ class CancelPaymentServiceTest {
 			.orderId(123L)
 			.orderNumber(orderNumber)
 			.memberId(memberId)
+			.paymentKey("encrypted-payment-key")
 			.type(PaymentType.DEPOSIT_CHARGE)
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
@@ -65,6 +77,7 @@ class CancelPaymentServiceTest {
 			.orderId(123L)
 			.orderNumber(orderNumber)
 			.memberId(memberId)
+			.paymentKey("encrypted-payment-key")
 			.type(PaymentType.DEPOSIT_CHARGE)
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
@@ -73,6 +86,13 @@ class CancelPaymentServiceTest {
 			.status(PaymentStatus.PAID)
 			.paidAt(LocalDateTime.now())
 			.build();
+	}
+
+	private Payment createCanceledPayment(Long paymentId, Long memberId, String orderNumber) {
+		Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
+		payment.markAsCanceled(CancelType.CANCEL, "이전 취소");
+		payment.pullEvents();  // 테스트에 불필요한 이벤트 비우기
+		return payment;
 	}
 
 	@Nested
@@ -126,6 +146,31 @@ class CancelPaymentServiceTest {
 		}
 
 		@Test
+		@DisplayName("PAID 상태 결제 취소 시 PG 취소 API를 호출한다")
+		void cancel_WhenPaid_CallsPgCancel() {
+			// given
+			Long paymentId = 1L;
+			Long memberId = 100L;
+			Payment payment = createPaidPayment(paymentId, memberId, "order-123");
+			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 변심");
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(encryptor.decrypt("encrypted-payment-key")).willReturn("raw-payment-key");
+			given(paymentGateway.cancel(eq("raw-payment-key"), eq("고객 변심"), isNull()))
+				.willReturn(TossCancelResult.success("raw-payment-key", "txn-cancel-123", List.of()));
+			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			cancelPaymentService.cancel(command);
+
+			// then
+			verify(encryptor).decrypt("encrypted-payment-key");
+			verify(paymentGateway).cancel("raw-payment-key", "고객 변심", null);
+			verify(paymentRepository).save(any(Payment.class));
+			verify(eventPublisher).publish(any(PaymentCanceledEvent.class));
+		}
+
+		@Test
 		@DisplayName("결제가 존재하지 않으면 예외가 발생한다")
 		void cancel_PaymentNotFound_ThrowsException() {
 			// given
@@ -167,14 +212,14 @@ class CancelPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("취소 불가능한 상태(PAID)이면 예외가 발생한다")
+		@DisplayName("이미 취소된 결제를 다시 취소하면 예외가 발생한다")
 		void cancel_NotCancelableStatus_ThrowsException() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 요청");
 
-			Payment payment = createPaidPayment(paymentId, memberId, "order-123");
+			Payment payment = createCanceledPayment(paymentId, memberId, "order-123");
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
@@ -185,6 +230,35 @@ class CancelPaymentServiceTest {
 				.isEqualTo(PaymentErrorCode.NOT_CANCELABLE);
 
 			verify(paymentRepository).findById(paymentId);
+		}
+
+		@Test
+		@DisplayName("PAID 상태에서 PG 취소가 실패하면 상태를 유지하고 실패 이벤트를 발행한다")
+		void cancel_WhenPgFails_RecordsCancelFailed() {
+			// given
+			Long paymentId = 1L;
+			Long memberId = 100L;
+			Payment payment = createPaidPayment(paymentId, memberId, "order-123");
+			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 변심");
+
+			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+			given(encryptor.decrypt("encrypted-payment-key")).willReturn("raw-payment-key");
+			given(paymentGateway.cancel(eq("raw-payment-key"), eq("고객 변심"), isNull()))
+				.willReturn(TossCancelResult.failure("ALREADY_CANCELED", "이미 취소된 결제입니다"));
+			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			cancelPaymentService.cancel(command);
+
+			// then
+			verify(paymentGateway).cancel("raw-payment-key", "고객 변심", null);
+			verify(paymentRepository).save(any(Payment.class));
+
+			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+			verify(eventPublisher).publish(eventCaptor.capture());
+			assertThat(eventCaptor.getValue()).isInstanceOf(PaymentCancelFailedEvent.class);
+
+			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 		}
 
 		@Test
@@ -208,7 +282,7 @@ class CancelPaymentServiceTest {
 
 			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 			verify(eventPublisher).publish(eventCaptor.capture());
-			PaymentCanceledEvent event = (PaymentCanceledEvent) eventCaptor.getValue();
+			PaymentCanceledEvent event = (PaymentCanceledEvent)eventCaptor.getValue();
 
 			assertThat(event.data().reason()).isNull();
 		}
@@ -234,7 +308,7 @@ class CancelPaymentServiceTest {
 			// then
 			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 			verify(eventPublisher).publish(eventCaptor.capture());
-			PaymentCanceledEvent event = (PaymentCanceledEvent) eventCaptor.getValue();
+			PaymentCanceledEvent event = (PaymentCanceledEvent)eventCaptor.getValue();
 
 			assertThat(event.data().paymentId()).isEqualTo(paymentId);
 			assertThat(event.data().memberId()).isEqualTo(memberId);
