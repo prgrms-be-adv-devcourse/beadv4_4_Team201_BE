@@ -59,7 +59,6 @@ public class Product extends BaseDomainModel {
 
     /**
      * 상품 상태 변경
-     * todo 상품 상태 변경 이력 컬렉션
      */
     // 상품 등록 승인
     public void approve() {
@@ -85,6 +84,9 @@ public class Product extends BaseDomainModel {
 
     // 상품 상태 검증 todo Map<from,to> 상태 머신
     private void validateTransition(ProductStatus toStatus) {
+        if (this.status == toStatus)
+            throw new ProductException(PRODUCT_CANNOT_CHANGE_TO_SAME_STATUS);
+        
         if (toStatus == DRAFT) {
             throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
         }

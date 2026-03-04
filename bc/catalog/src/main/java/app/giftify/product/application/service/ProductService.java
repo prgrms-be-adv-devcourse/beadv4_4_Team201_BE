@@ -4,6 +4,7 @@ import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
 import app.giftify.product.application.port.in.*;
+import app.giftify.product.application.port.out.FundingClientPort;
 import app.giftify.product.application.port.out.MyProductSearchCommand;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.application.port.out.ProductSearchCommand;
@@ -18,6 +19,7 @@ import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,9 +31,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
-import static app.giftify.product.domain.ProductStatus.INACTIVE;
 import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase {
@@ -39,6 +41,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
     private final ProductSupport productSupport;
+    private final FundingClientPort fundingClientPort;
 
     // 상품 생성 (판매자)
     @Override
@@ -172,7 +175,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
             validateProductOwner(product, sellerId);
             if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
-                throw new ProductException(PRODUCT_STOCK_CHANGED);
+                throw new ProductException(PRODUCT_STOCK_CHANGED); // TODO 재시도 or 재고수정 분리
             }
             product.updateStock(requestDto.stock());
         } else {
@@ -188,13 +191,19 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         var status = requestDto.status();
         if (status != null) {
             switch (status) {
-                case ACTIVE -> {
-                    if (product.getStatus() != ACTIVE)
-                        product.active();
+                case ACTIVE -> { // 도메인에서 상태 검증
+                    product.active();
                 }
-                case INACTIVE -> {
-                    if (product.getStatus() != INACTIVE)
-                        product.inActive();
+                case INACTIVE -> { // 펀딩 체크
+                    log.info("진행 중인 펀딩 확인 중 ...");
+                    boolean isFundingOngoing = fundingClientPort.checkFundingExistsByProductId(productId);
+
+                    if (isFundingOngoing) {
+                        log.info("[판매 중지 변경 실패] 진행 중인 펀딩이 있습니다.");
+                        throw new ProductException(CANNOT_STOP_SALE_DUE_TO_ACTIVE_FUNDING);
+                    }
+                    product.inActive();
+                    log.info("[판매 중지 변경 성공] 변경 완료");
                 }
             }
         }
@@ -206,6 +215,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 product.getName(),
                 product.getImageKey()
         ));
+        log.info("상품 정보가 업데이트 되었습니다.");
 
         return ProductUpdateResult.from(product);
     }
