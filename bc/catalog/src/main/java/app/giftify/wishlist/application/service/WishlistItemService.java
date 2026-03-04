@@ -116,7 +116,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
     /**
      * # 위시리스트아이템 수동 삭제
-     * - PENDING 상태일 때만 수동 삭제 가능
+     * - PENDING, COMPLETED 상태일 때만 수동 삭제 가능
      */
     @Override
     @Transactional
