@@ -3,6 +3,7 @@ package app.giftify.wishlist.adapter.in.scheduler;
 import app.giftify.wishlist.application.port.in.DeleteExpiredWishlistItemUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class WishlistItemDeleteScheduler {
     private final DeleteExpiredWishlistItemUseCase deleteExpiredWishlistItemUseCase;
 
+    @Async("wishlistTaskExecutor")
     @Scheduled(cron = "0 0 0 * * *")
     public void deleteExpiredCompletedItems() {
         int deletedCount = deleteExpiredWishlistItemUseCase.deleteExpiredCompletedItems();
