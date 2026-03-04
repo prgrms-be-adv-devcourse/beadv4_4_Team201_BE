@@ -13,10 +13,12 @@ public class ExpirationJobConfig {
 
     private final JobRepository jobRepository;
     private final ExpirationStepConfig stepConfig;
+    private final ExpirationJobListener jobListener;
 
     @Bean
     public Job expirationJob() {
         return new JobBuilder("expirationJob", jobRepository)
+                .listener(jobListener)
                 .start(stepConfig.expirationStep())
                 .build();
     }
