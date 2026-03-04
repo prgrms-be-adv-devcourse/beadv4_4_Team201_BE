@@ -49,81 +49,61 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
         return wishlistSupport.getOrCreateWishlistByMemberId(memberId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<WishlistItemDetail> getMyWishlistItemDetails(Long memberId, PageRequest pageRequest) {
-        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(memberId);
-        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
-        List<WishlistItemDetail> allDetails = toItemDetails(items);
-        return toPage(allDetails, pageRequest);
-    }
-
-    // 내 위시리스트 아이템 목록 조회
-    @Override
-    @Transactional(readOnly = true)
-    public List<WishlistItemDetail> getMyWishlistItemDetails(Long memberId) {
-        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(memberId);
-
-        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
-        return toItemDetails(items);
-    }
-
-    /**
-     * 타인의 위시리스트 아이템 목록 조회
-     * 타겟 멤버와 친구이면 PUBLIC 또는 FRIENDS_ONLY 위시리스트 조회 가능
-     * 타겟 멤버와 친구가 아니거나, 비로그인 상태이면 PUBLIC 위시리스트일 때만 조회 가능
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<WishlistItemDetail> getWishlistItemDetails(Long targetMemberId, Long currentMemberId) {
-        Wishlist wishlist = wishlistSupport.getWishlistByMemberId(targetMemberId);
-
-        // 본인 위시리스트는 항상 접근 가능
-        boolean isOwner = currentMemberId != null && currentMemberId.equals(targetMemberId);
-
-        if (!isOwner) {
-            // Visibility 체크
-            List<Visibility> visibilities;
-            if (currentMemberId != null && friendshipVerificationPort.areFriends(currentMemberId, targetMemberId)) {
-                visibilities = List.of(Visibility.PUBLIC, Visibility.FRIENDS_ONLY);
-            } else {
-                visibilities = List.of(Visibility.PUBLIC);
-            }
-
-            if (!visibilities.contains(wishlist.getVisibility())) {
-                throw new WishlistNotAccessibleException();
-            }
-        }
-
-        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlist.getId());
-        return toItemDetails(items);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<WishlistItemDetail> getWishlistItemDetails(Long targetMemberId, Long currentMemberId, PageRequest pageRequest) {
-        List<WishlistItemDetail> allDetails = getWishlistItemDetails(targetMemberId, currentMemberId);
-        return toPage(allDetails, pageRequest);
-    }
-
+    // 내 위시리스트 조회 Overview
     @Override
     @Transactional(readOnly = true)
     public WishlistOverview getMyWishlistOverview(Long memberId, PageRequest pageRequest) {
         Wishlist wishlist = wishlistSupport.getOrCreateWishlistByMemberId(memberId);
         String ownerNickname = findNickname(memberId);
-        Page<WishlistItemDetail> itemPage = getMyWishlistItemDetails(memberId, pageRequest);
+        Page<WishlistItemDetail> itemPage = getWishlistItemDetails(wishlist.getId(), pageRequest);
+
         return new WishlistOverview(wishlist, ownerNickname, itemPage);
     }
 
+    // 특정 회원의 위시리스트 조회 Overview
     @Override
     @Transactional(readOnly = true)
     public WishlistOverview getWishlistOverview(Long targetMemberId, Long currentMemberId, PageRequest pageRequest) {
-        Page<WishlistItemDetail> itemPage = getWishlistItemDetails(targetMemberId, currentMemberId, pageRequest);
         Wishlist wishlist = wishlistSupport.getWishlistByMemberId(targetMemberId);
+
+        // 본인 위시리스트는 항상 접근 가능
+        boolean isOwner = currentMemberId != null && currentMemberId.equals(targetMemberId);
+        if (isOwner)
+            return getMyWishlistOverview(currentMemberId, pageRequest);
+
+        /**
+         * 타겟 멤버와 친구이면 PUBLIC 또는 FRIENDS_ONLY 위시리스트 조회 가능
+         * 타겟 멤버와 친구가 아니거나, 비로그인 상태이면 PUBLIC 위시리스트일 때만 조회 가능
+         */
+        // Visibility 체크
+        List<Visibility> visibilities;
+        if (currentMemberId != null && friendshipVerificationPort.areFriends(currentMemberId, targetMemberId)) {
+            visibilities = List.of(Visibility.PUBLIC, Visibility.FRIENDS_ONLY);
+        } else {
+            visibilities = List.of(Visibility.PUBLIC);
+        }
+
+        if (!visibilities.contains(wishlist.getVisibility())) {
+            throw new WishlistNotAccessibleException();
+        }
+
+        Page<WishlistItemDetail> itemPage = getWishlistItemDetails(wishlist.getId(), pageRequest);
         String ownerNickname = findNickname(targetMemberId);
+
         return new WishlistOverview(wishlist, ownerNickname, itemPage);
     }
 
+    // 위시리스트 아이템 목록 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<WishlistItemDetail> getWishlistItemDetails(Long wishlistId, PageRequest pageRequest) {
+
+        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlistId);
+        List<WishlistItemDetail> allDetails = toItemDetails(items);
+        return toPage(allDetails, pageRequest);
+    }
+
+    // 위시리스트 공개 범위 설정
     @Override
     @Transactional
     public Wishlist updateSettings(UpdateSettingsCommand command) {
@@ -163,20 +143,24 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
         Map<Long, String> sellerNicknameMap = memberRepository.findAllById(sellerIds).stream()
                 .collect(Collectors.toMap(Member::getId, Member::getNickname));
 
-        return items.stream().map(item -> {
-            Product product = productMap.get(item.getProductId());
-            String sellerNickname = product != null ? sellerNicknameMap.get(product.getSellerId()) : null;
-            return new WishlistItemDetail(
-                    item,
-                    product != null ? product.getName() : null,
-                    product != null ? product.getPrice() : 0,
-                    product != null ? product.getImageKey() : null,
-                    product != null && product.getStock() == 0, // 품절 여부
-                    product != null && product.getStatus() == ProductStatus.ACTIVE, // 활성화 여부
-                    sellerNickname,
-                    product != null ? product.getCategory() : null
-            );
-        }).toList();
+        // 삭제된 상품은 목록에서 제외
+        return items.stream()
+                .filter(item -> productMap.containsKey(item.getProductId()))
+                .map(item -> {
+                    Product product = productMap.get(item.getProductId());
+                    String sellerNickname = sellerNicknameMap.get(product.getSellerId());
+
+                    return new WishlistItemDetail(
+                            item,
+                            product.getName(),
+                            product.getPrice(),
+                            product.getImageKey(),
+                            product.getStock() == 0,
+                            product.getStatus() == ProductStatus.ACTIVE,
+                            sellerNickname,
+                            product.getCategory()
+                    );
+                }).toList();
     }
 
     private String findNickname(Long memberId) {
