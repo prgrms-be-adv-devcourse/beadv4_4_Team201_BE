@@ -106,7 +106,7 @@ class CancelPaymentServiceTest {
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			String orderId = "order-123";
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 요청");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, memberId, "고객 요청");
 
 			Payment payment = createPendingPayment(paymentId, memberId, orderId);
 
@@ -129,7 +129,7 @@ class CancelPaymentServiceTest {
 			Long paymentId = 1L;
 			Long actualOwnerId = 100L;
 			String orderId = "order-123";
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, SYSTEM_REQUESTER_ID, "시스템 자동 취소");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, SYSTEM_REQUESTER_ID, "시스템 자동 취소");
 
 			Payment payment = createPendingPayment(paymentId, actualOwnerId, orderId);
 
@@ -152,7 +152,7 @@ class CancelPaymentServiceTest {
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			Payment payment = createPaidPayment(paymentId, memberId, "order-123");
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 변심");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, memberId, "고객 변심");
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(encryptor.decrypt("encrypted-payment-key")).willReturn("raw-payment-key");
@@ -176,7 +176,7 @@ class CancelPaymentServiceTest {
 			// given
 			Long paymentId = 999L;
 			Long requesterId = 100L;
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, requesterId, "고객 요청");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, requesterId, "고객 요청");
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.empty());
 
@@ -196,7 +196,7 @@ class CancelPaymentServiceTest {
 			Long paymentId = 1L;
 			Long actualOwnerId = 100L;
 			Long unauthorizedUserId = 200L;
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, unauthorizedUserId, "고객 요청");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, unauthorizedUserId, "고객 요청");
 
 			Payment payment = createPendingPayment(paymentId, actualOwnerId, "order-123");
 
@@ -217,7 +217,7 @@ class CancelPaymentServiceTest {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 요청");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, memberId, "고객 요청");
 
 			Payment payment = createCanceledPayment(paymentId, memberId, "order-123");
 
@@ -239,7 +239,7 @@ class CancelPaymentServiceTest {
 			Long paymentId = 1L;
 			Long memberId = 100L;
 			Payment payment = createPaidPayment(paymentId, memberId, "order-123");
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, "고객 변심");
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, memberId, "고객 변심");
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(encryptor.decrypt("encrypted-payment-key")).willReturn("raw-payment-key");
@@ -267,7 +267,7 @@ class CancelPaymentServiceTest {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, null);
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, memberId, null);
 
 			Payment payment = createPendingPayment(paymentId, memberId, "order-123");
 
@@ -295,7 +295,7 @@ class CancelPaymentServiceTest {
 			Long memberId = 100L;
 			String orderNumber = "order-123";
 			String reason = "고객 변심";
-			CancelPaymentCommand command = new CancelPaymentCommand(paymentId, memberId, reason);
+			CancelPaymentCommand command = CancelPaymentCommand.full(paymentId, memberId, reason);
 
 			Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
 

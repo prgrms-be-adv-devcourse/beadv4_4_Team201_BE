@@ -43,7 +43,7 @@ public class PaymentTimeoutScheduler {
 
 			for (Payment payment : slice.getContent()) {
 				try {
-					CancelPaymentCommand command = new CancelPaymentCommand(
+					CancelPaymentCommand command = CancelPaymentCommand.full( // 스케쥴러에 의한 취소는 완료되지 못한 결제에 대한 전액 취소이므로
 						payment.getId(),
 						SYSTEM_REQUESTER_ID,
 						TIMEOUT_REASON
