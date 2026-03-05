@@ -1,7 +1,6 @@
 package app.giftify.payment.adapter.outbound.pg.config;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,15 +42,14 @@ public class TossPaymentsConfig {
 			.baseUrl(properties.getApi().getBaseUrl())
 			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 			.defaultHeader(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
-			.requestFactory(clientHttpRequestFactory())
+			.requestFactory(clientHttpRequestFactory(properties))
 			.build();
 	}
 
-	private ClientHttpRequestFactory clientHttpRequestFactory() {
+	private ClientHttpRequestFactory clientHttpRequestFactory(TossPaymentsProperties properties) {
 		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-		factory.setConnectTimeout(Duration.ofSeconds(5));
-		factory.setReadTimeout(Duration.ofSeconds(30));
-
+		factory.setConnectTimeout(properties.getTimeout().getConnect());
+		factory.setReadTimeout(properties.getTimeout().getRead());
 		return factory;
 	}
 
