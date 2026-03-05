@@ -25,7 +25,7 @@ public record CancelPaymentCommand(
 		return new CancelPaymentCommand(paymentId, requesterId, reason, null);
 	}
 
-	public static CancelPaymentCommand partial(
+	public static CancelPaymentCommand withAmount(
 		Long paymentId, Long requesterId, String reason, Money cancelAmount
 	) {
 		if (cancelAmount == null || !cancelAmount.isPositive()) {

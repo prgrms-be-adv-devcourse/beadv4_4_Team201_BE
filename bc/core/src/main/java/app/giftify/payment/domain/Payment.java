@@ -85,6 +85,13 @@ public class Payment extends BaseDomainModel {
 		));
 	}
 
+	// charged (PAID, PARTIALLY_CANCELED) -> REFUND, uncharged (PENDING) -> CANCEL
+	public CancelType resolveCancelType() {
+		return (this.status == PaymentStatus.PAID || this.status == PaymentStatus.PARTIALLY_CANCELED)
+			? CancelType.REFUND
+			: CancelType.CANCEL;
+	}
+
 	public void markAsCanceled(CancelType cancelType, String reason) {
 		PaymentEventType eventType = (cancelType == CancelType.REFUND)
 			? PaymentEventType.CANCEL_AFTER_PAID
