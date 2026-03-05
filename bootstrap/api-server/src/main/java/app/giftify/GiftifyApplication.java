@@ -2,6 +2,7 @@ package app.giftify;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
@@ -23,7 +24,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "walletHistory"
 })
 @EnableJpaRepositories(basePackages = {
-        "app.giftify"
+        "app.giftify",
+        "org.springframework.modulith.events.jpa"
+})
+@EntityScan(basePackages = {
+        "app.giftify",
+        "org.springframework.modulith.events.jpa"
 })
 @EnableElasticsearchRepositories(basePackages = "app.giftify")
 @EnableRetry

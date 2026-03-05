@@ -7,16 +7,14 @@ import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
-import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
-import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
-import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
-import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;
+import app.giftify.wishlist.application.port.in.*;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.application.support.WishlistSupport;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
+import app.giftify.wishlist.core.domain.WishlistPolicy;
 import app.giftify.wishlist.core.domain.exception.DuplicateWishlistItemException;
 import app.giftify.wishlist.core.domain.exception.NotWishlistOwnerException;
 import app.giftify.wishlist.core.domain.exception.ProductNotOnSaleException;
@@ -26,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +37,7 @@ import static app.giftify.wishlist.core.domain.WishlistItemStatus.PENDING;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistItemUseCase, RemoveWishlistItemUseCase, GetWishlistItemSnapshotUseCase {
+public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistItemUseCase, RemoveWishlistItemUseCase, GetWishlistItemSnapshotUseCase, DeleteExpiredWishlistItemUseCase {
 
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
     private final WishlistRepositoryPort wishlistRepositoryPort;
@@ -116,7 +115,7 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
 
     /**
      * # 위시리스트아이템 수동 삭제
-     * - PENDING 상태일 때만 수동 삭제 가능
+     * - PENDING, COMPLETED 상태일 때만 수동 삭제 가능
      */
     @Override
     @Transactional
@@ -185,6 +184,16 @@ public class WishlistItemService implements AddWishlistItemUseCase, GetWishlistI
                             );
                         }
                 ));
+    }
+
+    /**
+     * COMPLETED 상태이고 updatedAt이 경과일을 초과한 위시리스트아이템 자동 삭제
+     */
+    @Override
+    @Transactional
+    public int deleteExpiredCompletedItems() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(WishlistPolicy.COMPLETED_EXPIRATION_DAYS);
+        return wishlistItemRepositoryPort.deleteCompletedItemsUpdatedBefore(cutoff);
     }
 
     // 위시리스트아이템의 상태를 체크하여 삭제 가능 여부 검증

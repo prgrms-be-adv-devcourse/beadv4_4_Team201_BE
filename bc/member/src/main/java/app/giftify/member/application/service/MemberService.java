@@ -95,6 +95,10 @@ public class MemberService
 
 		member.updateProfile(request.birthday(), request.address(), request.phoneNum());
 
+		if (request.nickname() != null && !request.nickname().isBlank()) {
+			member.updateInfo(request.nickname(), null, null, null);
+		}
+
 		Member updatedMember = memberRepositoryPort.save(member);
 
 		log.info("[MemberService] 프로필 정보 업데이트 완료: memberId={}", updatedMember.getId());
