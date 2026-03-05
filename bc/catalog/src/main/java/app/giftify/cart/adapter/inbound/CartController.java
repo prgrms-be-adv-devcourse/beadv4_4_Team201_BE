@@ -28,7 +28,7 @@ public class CartController implements CartV2ApiSpec {
 			@CurrentMemberId Long memberId,
 			@RequestBody CartItemRequest request
 	) {
-		CartItemAddResult result = cartService.addItemToMyCart(memberId, new AddCartItemCommand(
+		CartItemAddResult result = cartService.upsertCartItem(memberId, new AddCartItemCommand(
 				new CartItemKey(request.targetType(), request.targetId()),
 				Money.of(request.amount())
 		));
@@ -51,7 +51,7 @@ public class CartController implements CartV2ApiSpec {
 						Money.of(req.amount())
 				)).toList();
 
-		cartService.addItemsToMyCart(memberId, commands);
+		cartService.upsertCartItems(memberId, commands);
 		return ResponseEntity.ok(RsData.success(null, "펀딩 아이템들이 장바구니에 담겼습니다."));
 	}
 
@@ -81,7 +81,7 @@ public class CartController implements CartV2ApiSpec {
 								new CartItemKey(c.targetType(), c.targetId()),
 								Money.of(c.amount())
 						)).toList();
-		cartService.addItemsToMyCart(memberId, commands);
+		cartService.upsertCartItems(memberId, commands);
 		return ResponseEntity.ok(RsData.success(null));
 	}
 

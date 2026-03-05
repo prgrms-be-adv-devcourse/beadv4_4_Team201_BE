@@ -2,6 +2,7 @@ package app.giftify.cart.application.inbound;
 
 import app.giftify.cart.adapter.inbound.CartItemResponse;
 import app.giftify.cart.adapter.inbound.CartResponse;
+import app.giftify.cart.application.inbound.usecase.*;
 import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.CartItem;
@@ -30,6 +31,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Application 단계에서 CARS 논리적 분리
+ * MSA 전환 등 필요 시 물리적 분리 가능
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -49,7 +54,7 @@ public class CartService
 	}
 
 	@Override
-	public CartItemAddResult addItemToMyCart(Long memberId, AddCartItemCommand command) {
+	public CartItemAddResult upsertCartItem(Long memberId, AddCartItemCommand command) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
@@ -57,9 +62,9 @@ public class CartService
 		TargetType targetType = command.cartItemKey().targetType();
 		validateFundingTarget(targetType);
 
-		// 펀딩 구매 검증
+		// 장바구니 추가 가능 검증
 		Long wishlistItemId = command.cartItemKey().targetId();
-		validateFundingPurchase(wishlistItemId, command);
+		validateCartItemAddable(wishlistItemId, command);
 
 		CartItemAddResult result = cart.addItem(targetType, wishlistItemId, command.amount());
 		cartRepositoryPort.save(cart);
@@ -68,7 +73,7 @@ public class CartService
 	}
 
 	@Override
-	public void addItemsToMyCart(Long memberId, List<AddCartItemCommand> commands) {
+	public void upsertCartItems(Long memberId, List<AddCartItemCommand> commands) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 				.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
@@ -77,9 +82,9 @@ public class CartService
 			TargetType targetType = command.cartItemKey().targetType();
 			validateFundingTarget(targetType);
 
-			// 펀딩 구매 검증
+			// 장바구니 추가 가능 검증
 			Long wishlistItemId = command.cartItemKey().targetId();
-			validateFundingPurchase(wishlistItemId, command);
+			validateCartItemAddable(wishlistItemId, command);
 
 			cart.addItem(targetType, wishlistItemId, command.amount());
 		}
@@ -93,8 +98,8 @@ public class CartService
 		}
 	}
 
-	// 펀딩 구매 검증 (Product + WishlistItem 둘 다 검증)
-	private void validateFundingPurchase(Long wishlistItemId, AddCartItemCommand command) {
+	// 장바구니 추가 가능 검증 (Product + WishlistItem 둘 다 검증)
+	private void validateCartItemAddable(Long wishlistItemId, AddCartItemCommand command) {
 		WishlistItem wishlistItem = wishlistItemRepositoryPort.findById(wishlistItemId)
 			.orElseThrow(() -> new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND, wishlistItemId));
 
@@ -112,7 +117,12 @@ public class CartService
 			throw new CartException(CartErrorCode.INVALID_ITEM_STATUS, wishlistItem.getProductId());
 		}
 
-        // 잔여액 검증
+        // 상품 금액 검증
+        if (command.amount().amount().intValue() > product.getPrice()) {
+            throw new CartException(CartErrorCode.EXCEED_PRODUCT_PRICE, product.getPrice());
+        }
+
+        // 펀딩 잔여액 검증
 		FundingInfo fundingInfo = fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)
 				.orElse(null);
 
