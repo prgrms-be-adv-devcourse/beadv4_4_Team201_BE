@@ -54,7 +54,7 @@ public class CartService
 	}
 
 	@Override
-	public CartItemAddResult addItemToMyCart(Long memberId, AddCartItemCommand command) {
+	public CartItemAddResult upsertCartItem(Long memberId, AddCartItemCommand command) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
@@ -73,7 +73,7 @@ public class CartService
 	}
 
 	@Override
-	public void addItemsToMyCart(Long memberId, List<AddCartItemCommand> commands) {
+	public void upsertCartItems(Long memberId, List<AddCartItemCommand> commands) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 				.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
@@ -118,7 +118,7 @@ public class CartService
 		}
 
         // 상품 금액 검증
-        if (command.amount().amount().longValue() > product.getPrice()) {
+        if (command.amount().amount().intValue() > product.getPrice()) {
             throw new CartException(CartErrorCode.EXCEED_PRODUCT_PRICE, product.getPrice());
         }
 

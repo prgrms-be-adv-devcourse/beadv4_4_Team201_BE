@@ -96,7 +96,7 @@ class CartServiceTest {
         );
 
         // when
-        CartItemAddResult result = cartService.addItemToMyCart(memberId, command);
+        CartItemAddResult result = cartService.upsertCartItem(memberId, command);
 
         // then
         assertThat(result).isEqualTo(CartItemAddResult.ADDED);
@@ -135,7 +135,7 @@ class CartServiceTest {
         );
 
         // when
-        CartItemAddResult result = cartService.addItemToMyCart(memberId, command);
+        CartItemAddResult result = cartService.upsertCartItem(memberId, command);
 
         // then
         assertThat(result).isEqualTo(CartItemAddResult.ADDED);
@@ -169,7 +169,7 @@ class CartServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> cartService.addItemToMyCart(memberId, command))
+        assertThatThrownBy(() -> cartService.upsertCartItem(memberId, command))
                 .isInstanceOf(CartException.class);
     }
 
@@ -201,7 +201,7 @@ class CartServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> cartService.addItemToMyCart(memberId, command))
+        assertThatThrownBy(() -> cartService.upsertCartItem(memberId, command))
                 .isInstanceOf(CartException.class);
     }
 
@@ -222,7 +222,7 @@ class CartServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> cartService.addItemToMyCart(memberId, command))
+        assertThatThrownBy(() -> cartService.upsertCartItem(memberId, command))
                 .isInstanceOf(CartException.class);
     }
 
@@ -450,7 +450,7 @@ class CartServiceTest {
 
     @Test
     @DisplayName("여러 상품 장바구니 추가 성공")
-    void addItemsToMyCart_Success() {
+    void upsertCart_Items_Success() {
         // given
         Long wishlistItemId1 = 100L;
         Long productId1 = 200L;
@@ -498,7 +498,7 @@ class CartServiceTest {
         );
 
         // when
-        cartService.addItemsToMyCart(memberId, commands);
+        cartService.upsertCartItems(memberId, commands);
 
         // then
         assertThat(cart.getItemCount()).isEqualTo(2);
