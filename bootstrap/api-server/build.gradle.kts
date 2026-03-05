@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation(libs.spring.modulith.kafka)
+    implementation(libs.spring.modulith.jpa)
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
     runtimeOnly(libs.h2)
@@ -34,7 +35,6 @@ dependencies {
     runtimeOnly(libs.micrometer.prometheus)
 
     testImplementation(libs.spring.boot.starter.test)
-    testImplementation(libs.spring.modulith.jpa)
     testImplementation(libs.rest.assured)
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.awaitility:awaitility")
