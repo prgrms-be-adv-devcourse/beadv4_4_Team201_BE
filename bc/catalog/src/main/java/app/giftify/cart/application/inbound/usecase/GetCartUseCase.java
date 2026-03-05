@@ -1,4 +1,4 @@
-package app.giftify.cart.application.inbound;
+package app.giftify.cart.application.inbound.usecase;
 
 import app.giftify.cart.adapter.inbound.CartResponse;
 
