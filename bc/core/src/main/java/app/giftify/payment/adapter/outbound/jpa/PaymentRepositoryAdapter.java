@@ -58,6 +58,7 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Slice<Payment> findPendingPaymentsBefore(LocalDateTime threshold, Pageable pageable) {
 		Slice<JpaPayment> slice = jpaPaymentRepository.findByStatusAndCreatedAtBefore(
 			PaymentStatus.PENDING, threshold, pageable
@@ -67,7 +68,6 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 			.toList();
 		return new SliceImpl<>(payments, pageable, slice.hasNext());
 	}
-
 
 	@Override
 	@Transactional(readOnly = true)
