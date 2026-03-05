@@ -839,4 +839,41 @@ class OrderServiceTest {
                     .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
         }
     }
+
+    @Nested
+    @DisplayName("주문 만료 처리 (expire)")
+    class Expire {
+
+        @Test
+        @DisplayName("성공: 주문 ID로 CREATED 상태 주문을 조회하여 만료 처리한다")
+        void expire_success() {
+            // given
+            Long orderId = 1L;
+            Order order = OrderFixture.createOrderWithItems(1L, 2);
+            ReflectionTestUtils.setField(order, "id", orderId);
+            given(orderRepository.getByIdWithItems(orderId)).willReturn(order);
+
+            // when
+            orderService.expire(orderId);
+
+            // then
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.EXPIRED);
+            verify(orderRepository, times(1)).getByIdWithItems(orderId);
+        }
+
+        @Test
+        @DisplayName("실패: 존재하지 않는 주문 ID이면 ORDER_NOT_FOUND 예외가 발생한다")
+        void expire_fail_orderNotFound() {
+            // given
+            Long orderId = 999L;
+            given(orderRepository.getByIdWithItems(orderId))
+                    .willThrow(new DomainException(OrderErrorCode.ORDER_NOT_FOUND, "orderId = " + orderId));
+
+            // when & then
+            assertThatThrownBy(() -> orderService.expire(orderId))
+                    .isInstanceOf(DomainException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.ORDER_NOT_FOUND);
+        }
+    }
 }

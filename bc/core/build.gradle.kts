@@ -54,6 +54,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.batch:spring-batch-test")
+    testRuntimeOnly(libs.h2)
 }
 
 tasks.test {
