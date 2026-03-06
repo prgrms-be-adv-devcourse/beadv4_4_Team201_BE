@@ -15,6 +15,10 @@ public enum OrderStatus {
     EXPIRED
     ;
 
+    /**
+     * EXPIRED는 주문 아이템 단위가 아닌 주문 단위이다.
+     * 따라서 주문 아이템을 기준으로 주문 상태를 결정하는 deriveStatus 메서드 내에서 주문 만료는 고려하지 않는다.
+     */
     public static OrderStatus deriveStatus(List<OrderItemStatus> itemStatuses) {
         // 1. 모든 아이템이 동일한 최종 상태인가? (CANCELING, CANCELED, CONFIRMED, PAID 등)
         if (isAllSameStatus(itemStatuses)) {

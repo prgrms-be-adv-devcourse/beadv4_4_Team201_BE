@@ -7,6 +7,7 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Component
 @Slf4j
@@ -19,10 +20,15 @@ public class ExpirationJobListener implements JobExecutionListener {
 
     @Override
     public void afterJob(JobExecution jobExecution) {
-        long duration = Duration.between(
-                jobExecution.getStartTime(),
-                jobExecution.getEndTime()
-        ).toMillis();
+        LocalDateTime startTime = jobExecution.getStartTime();
+        LocalDateTime endTime = jobExecution.getEndTime();
+
+        if (startTime == null || endTime == null) {
+            log.warn(">>> [배치 종료] startTime 또는 endTime 값이 null 입니다. Start Time : {}, End Time : {}", startTime, endTime);
+            return;
+        }
+
+        long duration = Duration.between(startTime, endTime).toMillis();
 
         // 모든 Step의 실행 통계 합산
         int totalReadCount = 0;

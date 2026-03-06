@@ -172,7 +172,7 @@ class ExpirationJobListenerTest {
     }
 
     private String singleLog() {
-        return listAppender.list.get(0).getFormattedMessage();
+        return listAppender.list.getFirst().getFormattedMessage();
     }
 
     private String allLogs() {
