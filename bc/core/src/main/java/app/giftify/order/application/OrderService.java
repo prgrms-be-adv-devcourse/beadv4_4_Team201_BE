@@ -223,6 +223,12 @@ public class OrderService {
         targetOrder.confirmed(itemIds);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void expire(Long orderId) {
+        Order order = orderRepository.getByIdWithItems(orderId);
+
+        order.expired();
+    }
 
 
     private static void validateOwner(Long memberId, Long buyerId) {
