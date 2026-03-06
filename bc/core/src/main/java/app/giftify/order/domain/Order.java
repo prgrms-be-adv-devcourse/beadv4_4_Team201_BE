@@ -20,7 +20,9 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+        @Index(name = "idx_order_status_created_at", columnList = "status, created_at")
+})
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
@@ -75,6 +77,9 @@ public class Order extends BaseAggregateRoot {
 
     @Column
     private LocalDateTime confirmedAt;
+
+    @Column
+    private LocalDateTime expiredAt;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -284,5 +289,19 @@ public class Order extends BaseAggregateRoot {
                 .forEach(OrderItem::confirmed);
 
         synchronizeStatus();
+    }
+
+    public void expired() {
+        if (status != OrderStatus.CREATED) {
+            throw new PolicyException(
+                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+                    String.format("주문 만료가 불가능한 상태입니다. orderId: %d, status: %s", id, status)
+            );
+        }
+
+        this.status = OrderStatus.EXPIRED;
+        this.expiredAt = LocalDateTime.now();
+
+        items.forEach(OrderItem::expired);
     }
 }

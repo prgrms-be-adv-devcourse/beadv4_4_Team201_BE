@@ -308,6 +308,51 @@ class OrderTest {
     }
 
     @Nested
+    @DisplayName("주문 만료 (expired)")
+    class Expired {
+
+        @Test
+        @DisplayName("성공: CREATED 상태 주문이 EXPIRED로 전이되고 만료 시간이 기록된다")
+        void expired_success() {
+            // given
+            Order order = OrderFixture.createOrderWithItems(1L, 2);
+
+            // when
+            order.expired();
+
+            // then
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.EXPIRED);
+            assertNotNull(order.getExpiredAt());
+        }
+
+        @Test
+        @DisplayName("성공: 만료 처리 시 모든 주문 아이템도 EXPIRED 상태가 된다")
+        void expired_items_propagation() {
+            // given
+            Order order = OrderFixture.createOrderWithItems(1L, 2);
+
+            // when
+            order.expired();
+
+            // then
+            assertThat(order.getItems()).allMatch(item -> item.getStatus() == OrderItemStatus.EXPIRED);
+        }
+
+        @Test
+        @DisplayName("실패: CREATED 이외 상태에서 만료 시 INVALID_STATUS_TRANSITION 예외가 발생한다")
+        void expired_fail_invalidStatus() {
+            // given
+            Order order = OrderFixture.createOrderWithStatus(OrderStatus.PAID);
+
+            // when & then
+            assertThatThrownBy(order::expired)
+                    .isInstanceOf(PolicyException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
+        }
+    }
+
+    @Nested
     @DisplayName("부분 취소 유효성 검증 (validatePartialCancelable)")
     class ValidatePartialCancelable {
 

@@ -8,6 +8,7 @@ public enum OrderItemStatus {
     CANCELING,
     CANCELED,
     CONFIRMED,
+    EXPIRED
     ;
 
     public static boolean isSettleable(OrderItemStatus status) {
