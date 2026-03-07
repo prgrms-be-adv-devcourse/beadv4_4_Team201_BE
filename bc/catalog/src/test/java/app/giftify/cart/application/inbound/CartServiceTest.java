@@ -5,7 +5,6 @@ import app.giftify.cart.application.outbound.CartRepositoryPort;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.CartItem;
 import app.giftify.cart.core.domain.CartItemAddResult;
-import app.giftify.cart.core.domain.CartItemKey;
 import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.domain.Product;
@@ -90,10 +89,7 @@ class CartServiceTest {
         given(fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)).willReturn(Optional.empty());
 
 
-        AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
-                amount
-        );
+        AddCartItemCommand command = new AddCartItemCommand(wishlistItemId, amount);
 
         // when
         CartItemAddResult result = cartService.upsertCartItem(memberId, command);
@@ -129,10 +125,7 @@ class CartServiceTest {
         given(fundingQueryPort.findFundingInfoByWishlistItemId(wishlistItemId)).willReturn(Optional.empty());
 
 
-        AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.FUNDING, wishlistItemId), // FUNDING 타입
-                amount
-        );
+        AddCartItemCommand command = new AddCartItemCommand(wishlistItemId, amount);
 
         // when
         CartItemAddResult result = cartService.upsertCartItem(memberId, command);
@@ -163,10 +156,7 @@ class CartServiceTest {
         // given(product.getStock()).willReturn(10); // 상태가 먼저 체크되므로 재고는 상관없을 수 있음
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
-        AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
-                amount
-        );
+        AddCartItemCommand command = new AddCartItemCommand(wishlistItemId, amount);
 
         // when & then
         assertThatThrownBy(() -> cartService.upsertCartItem(memberId, command))
@@ -195,10 +185,7 @@ class CartServiceTest {
         given(product.getStock()).willReturn(0); // 실패 조건: 재고 0
         given(productRepositoryPort.findById(productId)).willReturn(Optional.of(product));
 
-        AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId),
-                amount
-        );
+        AddCartItemCommand command = new AddCartItemCommand(wishlistItemId,amount);
 
         // when & then
         assertThatThrownBy(() -> cartService.upsertCartItem(memberId, command))
@@ -206,9 +193,10 @@ class CartServiceTest {
     }
 
     @Test
-    @DisplayName("일반 상품 추가 실패: TargetType이 FUNDING_PENDING이 아님")
+    @DisplayName("펀딩 상품 추가 실패: WishlistItem의 상태가 COMPLETED임")
     void addItem_Product_Fail_InvalidTargetType() {
         // given
+        Long wishlistItemId = 100L;
         Long productId = 300L;
         Money amount = Money.of(50000);
 
@@ -216,10 +204,12 @@ class CartServiceTest {
         Cart cart = Cart.create(memberId);
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
 
-        AddCartItemCommand command = new AddCartItemCommand(
-                new CartItemKey(TargetType.GENERAL_PRODUCT, productId),
-                amount
-        );
+        // 실패 조건: WishlistItem의 상태가 COMPLETED
+        WishlistItem wishlistItem = mock(WishlistItem.class);
+        given(wishlistItem.getWishlistItemStatus()).willReturn(WishlistItemStatus.COMPLETED);
+        given(wishlistItemRepositoryPort.findById(wishlistItemId)).willReturn(Optional.of(wishlistItem));
+
+        AddCartItemCommand command = new AddCartItemCommand(wishlistItemId,amount);
 
         // when & then
         assertThatThrownBy(() -> cartService.upsertCartItem(memberId, command))
@@ -493,8 +483,8 @@ class CartServiceTest {
 
 
         List<AddCartItemCommand> commands = List.of(
-                new AddCartItemCommand(new CartItemKey(TargetType.FUNDING_PENDING, wishlistItemId1), amount1),
-                new AddCartItemCommand(new CartItemKey(TargetType.FUNDING, wishlistItemId2), amount2)
+                new AddCartItemCommand(wishlistItemId1, amount1),
+                new AddCartItemCommand(wishlistItemId2, amount2)
         );
 
         // when
