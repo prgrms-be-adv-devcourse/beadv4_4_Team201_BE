@@ -10,3 +10,8 @@ tosspayments:
 
 internal-api:
   base-url: http://api-server
+
+batch:
+  order-expiration:
+    interval-minutes: 30
+    threshold-minutes: 30

@@ -43,6 +43,9 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
+    // Batch
+    implementation("org.springframework.boot:spring-boot-starter-batch")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test:$springModulithVersion")
@@ -50,6 +53,8 @@ dependencies {
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
+    testImplementation("org.springframework.batch:spring-batch-test")
+    testRuntimeOnly(libs.h2)
 }
 
 tasks.test {
