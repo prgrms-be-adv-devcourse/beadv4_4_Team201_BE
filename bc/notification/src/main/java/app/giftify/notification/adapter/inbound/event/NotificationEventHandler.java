@@ -31,32 +31,68 @@ public class NotificationEventHandler {
 	private final NotificationRepository notificationRepository;
 	private final NotificationPushPort pushPort;
 
-	// -- Funding 이벤트 (receiverId 미포함, 이벤트 필드 추가 후 활성화) --
-
 	@ApplicationModuleListener
 	public void handleFundingCreated(FundingCreatedEvent event) {
 		for (FundingDetail detail : event.getFundings()) {
 			log.info("[Notification] FundingCreatedEvent: fundingId={}, receiverId={}", detail.fundingId(), detail.receiverId());
+            var meta = typeRegistry.resolve(event.getClass());
+            CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + detail.fundingId());
+            createAndPush(detail.receiverId(), meta.notificationType(),
+                String.valueOf(detail.fundingId()), "FUNDING", ce);
 		}
-		// TODO: event에 receiverId 추가 후 활성화
 	}
 
 	@ApplicationModuleListener
 	public void handleFundingAchieved(FundingAchievedEvent event) {
 		log.info("[Notification] FundingAchievedEvent: fundingId={}", event.getFundingId());
-		// TODO: event에 receiverId + participantIds 추가 후 활성화
-	}
+        var meta = typeRegistry.resolve(event.getClass());
+        CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + event.getFundingId());
+
+        // 수령자에게 알림 전송
+        createAndPush(event.getReceiverId(), meta.notificationType(),
+                String.valueOf(event.getFundingId()), "FUNDING", ce);
+
+        // 참여자들에게 알림 전송
+        if (event.getParticipantIds() != null && !event.getParticipantIds().isEmpty()) {
+        for (Long participantId : event.getParticipantIds()) {
+            createAndPush(participantId, meta.notificationType(),
+                    String.valueOf(event.getFundingId()), "FUNDING", ce);
+            }
+        }
+    }
 
 	@ApplicationModuleListener
 	public void handleFundingExpired(FundingExpiredEvent event) {
 		log.info("[Notification] FundingExpiredEvent: fundingId={}", event.getFundingId());
-		// TODO: event에 receiverId + participantIds 추가 후 활성화
+        var meta = typeRegistry.resolve(event.getClass());
+        CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + event.getFundingId());
+
+        createAndPush(event.getReceiverId(), meta.notificationType(),
+                String.valueOf(event.getFundingId()), "FUNDING", ce);
+
+        if (event.getParticipantIds() != null && !event.getParticipantIds().isEmpty()) {
+            for (Long participantId : event.getParticipantIds()) {
+                createAndPush(participantId, meta.notificationType(),
+                        String.valueOf(event.getFundingId()), "FUNDING", ce);
+            }
+        }
 	}
 
 	@ApplicationModuleListener
 	public void handleFundingCanceled(FundingCanceledEvent event) {
 		log.info("[Notification] FundingCanceledEvent: fundingId={}", event.getFundingId());
-		// TODO: event에 receiverId + participantIds 추가 후 활성화
+        var meta = typeRegistry.resolve(event.getClass());
+        CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + event.getFundingId());
+
+        createAndPush(event.getReceiverId(), meta.notificationType(),
+                String.valueOf(event.getFundingId()), "FUNDING", ce);
+
+        if (event.getParticipantIds() != null && !event.getParticipantIds().isEmpty()) {
+            for (Long participantId : event.getParticipantIds()) {
+                createAndPush(participantId, meta.notificationType(),
+                        String.valueOf(event.getFundingId()), "FUNDING", ce);
+            }
+        }
 	}
 
 	// -- Payment 이벤트 --
