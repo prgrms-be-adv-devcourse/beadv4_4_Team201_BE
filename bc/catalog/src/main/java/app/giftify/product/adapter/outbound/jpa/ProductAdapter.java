@@ -97,6 +97,7 @@ public class ProductAdapter implements ProductRepositoryPort {
         dto.setPage(command.getPage());
         dto.setSize(command.getSize());
         dto.setStatus(command.getStatus());
+        dto.setDeleted(command.isDeleted());
         return dto;
     }
 }

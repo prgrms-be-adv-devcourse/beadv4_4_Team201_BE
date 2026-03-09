@@ -119,7 +119,8 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 searchDto.getSort(),
                 searchDto.getPage(),
                 searchDto.getSize(),
-                searchDto.getStatus()
+                searchDto.getStatus(),
+                searchDto.isDeleted()
         );
 
         Page<Product> result = productRepositoryPort.searchMyProducts(sellerId, command);
