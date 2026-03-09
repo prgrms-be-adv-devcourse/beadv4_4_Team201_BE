@@ -8,7 +8,7 @@ spring:
   modulith: {}
 
   profiles:
-    # ⚠️ active 프로파일을 여기서 고정 X
+    # active 프로파일을 여기서 고정 X
     #
     # [실행 가이드]
     # - 로컬 개발:
