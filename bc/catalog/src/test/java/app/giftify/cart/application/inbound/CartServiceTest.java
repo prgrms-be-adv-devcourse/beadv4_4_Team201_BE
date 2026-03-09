@@ -12,7 +12,6 @@ import app.giftify.product.domain.ProductStatus;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FundingQueryPort;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
@@ -246,7 +245,7 @@ class CartServiceTest {
         Long productId = 200L;
 
         Cart cart = Cart.create(memberId);
-        cart.addItem(TargetType.FUNDING_PENDING, wishlistItemId, Money.of(10000));
+        cart.addItem(wishlistItemId, Money.of(10000));
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
 
         WishlistItem wishlistItem = mock(WishlistItem.class);
@@ -344,14 +343,14 @@ class CartServiceTest {
     void removeItems_Success() {
         // given
         Cart cart = Cart.create(memberId);
-        cart.addItem(TargetType.FUNDING_PENDING, 100L, Money.of(10000));
-        cart.addItem(TargetType.FUNDING_PENDING, 10L, Money.of(20000));
-        cart.addItem(TargetType.FUNDING_PENDING, 20L, Money.of(5000));
+        cart.addItem(100L, Money.of(10000));
+        cart.addItem(10L, Money.of(20000));
+        cart.addItem(20L, Money.of(5000));
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        cartService.removeItems(memberId, TargetType.FUNDING_PENDING, List.of(100L, 10L));
+        cartService.removeItems(memberId, List.of(100L, 10L));
 
         // then
         assertThat(cart.getItemCount()).isEqualTo(1);
@@ -369,7 +368,7 @@ class CartServiceTest {
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> cartService.removeItems(memberId, TargetType.FUNDING_PENDING, List.of(100L)))
+        assertThatThrownBy(() -> cartService.removeItems(memberId,List.of(100L)))
                 .isInstanceOf(CartException.class);
     }
 
@@ -378,8 +377,8 @@ class CartServiceTest {
     void clearCart_Success() {
         // given
         Cart cart = Cart.create(memberId);
-        cart.addItem(TargetType.FUNDING_PENDING, 100L, Money.of(10000));
-        cart.addItem(TargetType.FUNDING, 200L, Money.of(20000));
+        cart.addItem(100L, Money.of(10000));
+        cart.addItem(200L, Money.of(20000));
         given(cartRepository.findByMemberId(memberId)).willReturn(Optional.of(cart));
         given(cartRepository.save(any(Cart.class))).willAnswer(invocation -> invocation.getArgument(0));
 

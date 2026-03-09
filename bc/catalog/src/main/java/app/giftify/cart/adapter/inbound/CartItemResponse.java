@@ -5,7 +5,6 @@ import app.giftify.cart.core.domain.ItemStatus;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.FundingStatus;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingInfo;
 
 /**
@@ -14,7 +13,6 @@ import app.giftify.shared.domain.vo.FundingInfo;
  * -> 어차피 타인의 펀딩 조회 시, 종료된 펀딩은 볼 수 없는 정책임
  */
 public record CartItemResponse(
-        TargetType targetType,
         Long targetId,
         Long receiverId,
         String receiverNickname,
@@ -45,8 +43,7 @@ public record CartItemResponse(
 
         if (product.getStock() <= 0) {
             return new CartItemResponse(
-                    item.getTargetType(),
-                    item.getTargetId(),
+                    item.getWishlistItemId(),
                     receiverId,
                     receiverNickname,
                     product.getId(),
@@ -70,8 +67,7 @@ public record CartItemResponse(
         }
 
         return new CartItemResponse(
-                item.getTargetType(),
-                item.getTargetId(),
+                item.getWishlistItemId(),
                 receiverId,
                 receiverNickname,
                 product.getId(),
@@ -88,8 +84,7 @@ public record CartItemResponse(
 
     private static CartItemResponse unavailable(CartItem item, Long receiverId, String receiverNickname, ItemStatus status, String message) {
         return new CartItemResponse(
-                item.getTargetType(),
-                item.getTargetId(),
+                item.getWishlistItemId(),
                 receiverId,
                 receiverNickname,
                 null,

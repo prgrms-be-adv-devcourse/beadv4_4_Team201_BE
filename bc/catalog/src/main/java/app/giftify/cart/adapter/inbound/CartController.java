@@ -5,7 +5,6 @@ import app.giftify.cart.application.inbound.CartService;
 import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -80,10 +79,9 @@ public class CartController implements CartV2ApiSpec {
 	@DeleteMapping("/items/{targetType}")
 	public ResponseEntity<RsData<Void>> removeItems(
 		@CurrentMemberId Long memberId,
-		@PathVariable(value = "targetType") TargetType targetType,
-		@RequestParam(value = "targetIds", required = false) List<Long> targetIds
+		@RequestParam(value = "targetIds", required = false) List<Long> wishlistItemIds
 	) {
-		cartService.removeItems(memberId, targetType, targetIds);
+		cartService.removeItems(memberId, wishlistItemIds);
 		return ResponseEntity.ok(RsData.success(null));
 	}
 
