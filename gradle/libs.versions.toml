@@ -97,6 +97,8 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 # =============================================================================
 java-jwt = { module = "com.auth0:java-jwt", version.ref = "jwt" }
 dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv" }
+spring-retry = { module = "org.springframework.retry:spring-retry" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3" }
 
 # =============================================================================
 # Testing

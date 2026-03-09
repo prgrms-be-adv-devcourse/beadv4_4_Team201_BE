@@ -12,7 +12,7 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
 
     // Retry
-    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation(libs.spring.retry)
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
     // Redis
