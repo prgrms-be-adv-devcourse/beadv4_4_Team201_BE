@@ -20,7 +20,7 @@ public class CartItemMapper {
         return CartItem.reconstruct(
                 jpaCartItem.getId(),
                 jpaCartItem.getCartId(),
-                jpaCartItem.getTargetId(),
+                jpaCartItem.getWishlistItemId(),
                 Money.of(jpaCartItem.getAmount())
         );
     }

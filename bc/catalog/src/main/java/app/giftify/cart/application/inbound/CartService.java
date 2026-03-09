@@ -15,7 +15,6 @@ import app.giftify.product.domain.ProductStatus;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FundingQueryPort;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingInfo;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
@@ -62,11 +61,12 @@ public class CartService
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
 		// 장바구니 추가 가능 검증
-		Long wishlistItemId = command.targetId();
-		WishlistItem wishlistItem = validateCartItemAddable(wishlistItemId, command);
+		WishlistItem wishlistItem = validateCartItemAddable(command.wishlistItemId(), command);
+        if (!wishlistItem.getWishlistId().equals(command.wishlistId())) {
+            throw new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND, command.wishlistItemId());
+        }
 
-		TargetType targetType = resolveTargetType(wishlistItem.getWishlistItemStatus());
-		CartItemAddResult result = cart.addItem(wishlistItemId, command.amount());
+		CartItemAddResult result = cart.addItem(command.wishlistItemId(), command.amount());
 		cartRepositoryPort.save(cart);
 
 		return result;
@@ -80,10 +80,12 @@ public class CartService
 		for (AddCartItemCommand command : commands) {
 
             // 장바구니 추가 가능 검증
-            Long wishlistItemId = command.targetId();
-            WishlistItem wishlistItem = validateCartItemAddable(wishlistItemId, command);
+            WishlistItem wishlistItem = validateCartItemAddable(command.wishlistItemId(), command);
+            if (!wishlistItem.getWishlistId().equals(command.wishlistId())) {
+                throw new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND, command.wishlistItemId());
+            }
 
-            cart.addItem(wishlistItemId, command.amount());
+            cart.addItem(command.wishlistItemId(), command.amount());
 		}
 
 		cartRepositoryPort.save(cart);
