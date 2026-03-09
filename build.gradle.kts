@@ -83,6 +83,10 @@ subprojects {
         apply(plugin = "io.spring.dependency-management")
 
         // Java 21 Toolchain
+        // Note: Gradle 8.14.x는 Java 24까지 공식 지원.
+        // Java 25 toolchain은 로컬/CI에 JDK가 설치되어 있으면 동작하지만,
+        // 자동 다운로드(toolchain resolver)가 필요하면 Gradle 9.1.0+ 필요.
+        // Gradle 9.x는 아직 preview 단계이므로 도입하지 않음.
         configure<JavaPluginExtension> {
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(21))
