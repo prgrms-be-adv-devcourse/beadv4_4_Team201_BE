@@ -48,7 +48,14 @@ public interface ProductV2ApiSpec {
                     schema = @Schema(allowableValues = {"approve", "reject"})) @PathVariable("action") String action
     );
 
-    @Operation(summary = "상품 수정", description = "판매자가 자신의 상품 정보를 수정합니다. SELLER 권한 필요.")
+    @Operation(summary = "상품 수정", description = """
+            판매자가 자신의 상품을 수정합니다.
+            
+            
+            **주의사항**:
+            - SELLER 권한이 필요합니다.
+            - 진행 중인 펀딩이 있을 경우, INACTIVE 상태로 변경이 불가합니다. (판매를 원치않으면 재고를 0으로 수정하세요)
+            """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증 실패"),
@@ -59,6 +66,26 @@ public interface ProductV2ApiSpec {
             @Parameter(description = "상품 ID", required = true, example = "1") @PathVariable("productId") Long productId,
             @Parameter(hidden = true) Long sellerId,
             @RequestBody ProductUpdateRequestDto requestDto
+    );
+
+    @Operation(summary = "상품 삭제", description = """
+            판매자가 자신의 상품을 삭제합니다.
+            
+            
+            **주의사항**:
+            - SELLER 권한이 필요합니다.
+            - INACTIVE 상태의 상품만 삭제가 가능합니다.
+            - 상품 삭제는 Soft Delete로 처리됩니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "SELLER 권한 없음 또는 본인 상품이 아님"),
+            @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
+    })
+    ResponseEntity<Void> deleteProduct(
+            @Parameter(description = "상품 ID", required = true, example = "1") @PathVariable("productId") Long productId,
+            @Parameter(hidden = true) Long sellerId
     );
 
     @Operation(summary = "상품 단건 조회", description = "상품 ID로 상품 상세 정보를 조회합니다.")

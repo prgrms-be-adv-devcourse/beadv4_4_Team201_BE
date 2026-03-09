@@ -39,6 +39,7 @@ public class ProductController implements ProductV2ApiSpec {
     private final StockHistorySearchUseCase stockHistorySearchUseCase;
     private final ProductEsSearchUseCase productEsSearchUseCase;
     private final ProductEsSyncUseCase productEsSyncUseCase;
+    private final ProductDeleteUseCase productDeleteUseCase;
 
     // 상품 등록
     @PostMapping
@@ -186,6 +187,17 @@ public class ProductController implements ProductV2ApiSpec {
                 resultPage.totalElements());
 
         return ResponseEntity.ok(RsData.success(response));
+    }
+
+    // 상품 삭제
+    @PreAuthorize("hasRole('SELLER')")
+    @DeleteMapping("/my/{productId}")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable("productId") Long productId,
+            @CurrentMemberId Long sellerId
+    ) {
+        productDeleteUseCase.deleteProduct(productId, sellerId);
+        return ResponseEntity.noContent().build();
     }
 
     /**

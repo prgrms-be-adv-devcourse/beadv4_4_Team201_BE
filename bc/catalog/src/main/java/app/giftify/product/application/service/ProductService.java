@@ -36,7 +36,7 @@ import static app.giftify.product.domain.exception.ProductErrorCode.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase {
+public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase, ProductDeleteUseCase {
     private final ProductRepositoryPort productRepositoryPort;
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
@@ -274,5 +274,15 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     private void validateProductOwner(Product product, Long sellerId) {
         if (!product.getSellerId().equals(sellerId))
             throw new ProductException(PRODUCT_NOT_OWNED);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId, Long sellerId) {
+        Product product = productSupport.findByIdAndSellerId(productId, sellerId);
+        product.delete();
+        productRepositoryPort.save(product);
+
+        // Es 도큐먼트 동기화
     }
 }
