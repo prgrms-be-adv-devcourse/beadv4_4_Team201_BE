@@ -1,9 +1,8 @@
 package app.giftify.product.adapter.outbound.jpa;
 
-import org.springframework.stereotype.Component;
-
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
 import app.giftify.product.domain.Product;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProductMapper {
@@ -24,6 +23,7 @@ public class ProductMapper {
                 .imageKey(entity.getImageKey())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .deletedAt(entity.getDeletedAt())
                 .build();
     }
 
@@ -42,7 +42,8 @@ public class ProductMapper {
                     domain.getStock(),
                     domain.getStatus(),
                     domain.getCategory(),
-                    domain.getImageKey()
+                    domain.getImageKey(),
+                    domain.getDeletedAt()
             );
         }
         // 새 엔티티 생성 (ID 없음)

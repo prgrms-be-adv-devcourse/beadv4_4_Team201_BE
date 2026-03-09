@@ -3,16 +3,10 @@ package app.giftify.product.adapter.outbound.jpa.entity;
 import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.support.jpa.BaseJpaEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "PRODUCT")
@@ -49,8 +43,12 @@ public class ProductJpa extends BaseJpaEntity {
     @Column(length = 500)
     private String imageKey;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public ProductJpa(Long id, Long sellerId, String name, String description,
-                      int price, int stock, ProductStatus status, ProductCategory category, String imageKey) {
+                      int price, int stock, ProductStatus status, ProductCategory category, String imageKey,
+                      LocalDateTime deletedAt) {
         super(id);
         this.sellerId = sellerId;
         this.name = name;
@@ -60,5 +58,6 @@ public class ProductJpa extends BaseJpaEntity {
         this.status = status;
         this.category = category;
         this.imageKey = imageKey;
+        this.deletedAt = deletedAt;
     }
 }
