@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.api.paging.Page;
@@ -14,7 +17,7 @@ public interface PaymentRepository {
 
 	Optional<Payment> findById(Long paymentId);
 
-	List<Payment> findPendingPaymentsBefore(LocalDateTime threshold);
+	Slice<Payment> findPendingPaymentsBefore(LocalDateTime threshold, Pageable pageable);
 
 	Optional<Payment> findByPaymentKey(String paymentKey);
 

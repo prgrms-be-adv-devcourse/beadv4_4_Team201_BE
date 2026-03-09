@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +16,9 @@ import app.giftify.payment.domain.PaymentStatus;
 @Repository("paymentBcJpaPaymentRepository")
 public interface JpaPaymentRepository extends JpaRepository<JpaPayment, Long> {
 
-	List<JpaPayment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime threshold);
+	Slice<JpaPayment> findByStatusAndCreatedAtBefore(
+		PaymentStatus status, LocalDateTime threshold, Pageable pageable
+	);
 
 	Optional<JpaPayment> findByPaymentKey(String paymentKey);
 

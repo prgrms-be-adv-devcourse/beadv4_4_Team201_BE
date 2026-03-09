@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,11 +59,14 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Payment> findPendingPaymentsBefore(LocalDateTime threshold) {
-		return jpaPaymentRepository.findByStatusAndCreatedAtBefore(PaymentStatus.PENDING, threshold)
-			.stream()
+	public Slice<Payment> findPendingPaymentsBefore(LocalDateTime threshold, Pageable pageable) {
+		Slice<JpaPayment> slice = jpaPaymentRepository.findByStatusAndCreatedAtBefore(
+			PaymentStatus.PENDING, threshold, pageable
+		);
+		List<Payment> payments = slice.getContent().stream()
 			.map(paymentMapper::toDomain)
 			.toList();
+		return new SliceImpl<>(payments, pageable, slice.hasNext());
 	}
 
 	@Override
