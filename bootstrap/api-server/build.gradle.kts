@@ -23,7 +23,7 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.flyway.core)
-    implementation("org.springframework.retry:spring-retry")
+    implementation(libs.spring.retry)
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation(libs.spring.modulith.kafka)
     implementation(libs.spring.modulith.jpa)

@@ -5,8 +5,6 @@ plugins {
 group = "app.giftify"
 version = "1.0.0-SNAPSHOT"
 
-val springModulithVersion = "1.3.1"
-
 repositories {
     mavenCentral()
 }
@@ -23,9 +21,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
-    // Spring Modulith (버전 명시)
-    implementation("org.springframework.modulith:spring-modulith-starter-core:$springModulithVersion")
-    implementation("org.springframework.modulith:spring-modulith-starter-jpa:$springModulithVersion")
+    // Spring Modulith
+    implementation(libs.spring.modulith.core)
+    implementation(libs.spring.modulith.jpa)
 
     // API Documentation
     implementation(libs.springdoc.openapi)
@@ -40,7 +38,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     // Retry
-    implementation("org.springframework.retry:spring-retry")
+    implementation(libs.spring.retry)
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
     // Batch
@@ -48,9 +46,9 @@ dependencies {
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.modulith:spring-modulith-starter-test:$springModulithVersion")
+    testImplementation(libs.spring.modulith.test)
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    testImplementation(libs.archunit)
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.batch:spring-batch-test")
