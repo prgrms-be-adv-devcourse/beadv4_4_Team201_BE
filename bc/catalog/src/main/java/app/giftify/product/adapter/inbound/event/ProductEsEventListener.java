@@ -4,9 +4,10 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
-import app.giftify.product.domain.event.ProductCdcEvent;
+import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
+import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -43,9 +44,15 @@ public class ProductEsEventListener {
 
     // ES 도큐먼트 업데이트 (sync)
     @ApplicationModuleListener
-    public void handleUpdated(ProductCdcEvent event) {
+    public void handleUpdated(ProductUpdatedEvent event) {
         syncToEs(event.getProductId());
         log.info("ES 도큐먼트 업데이트 완료: {}", event);
+    }
+
+    // ES 도큐먼트 삭제 (sync)
+    @ApplicationModuleListener
+    public void handleDeleted(ProductDeletedEvent event) {
+        productEsPort.deleteById(event.getProductId());
     }
 
     private void syncToEs(Long productId) {

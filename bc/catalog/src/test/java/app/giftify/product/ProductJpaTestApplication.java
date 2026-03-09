@@ -78,6 +78,10 @@ public class ProductJpaTestApplication {
             public PageResponse<ProductResult> searchProducts(ProductEsSearchCommand command) {
                 return PageResponse.of(List.of(), 0, 20, 0);
             }
+
+            @Override
+            public void deleteById(Long productId) {
+            }
         };
     }
 

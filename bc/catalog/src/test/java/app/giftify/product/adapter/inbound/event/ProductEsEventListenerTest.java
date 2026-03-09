@@ -4,9 +4,10 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
-import app.giftify.product.domain.event.ProductCdcEvent;
+import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
+import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -80,7 +81,7 @@ class ProductEsEventListenerTest {
         // given
         Long productId = 4L;
         Product product = createProduct(productId);
-        ProductCdcEvent event = new ProductCdcEvent(productId);
+        ProductUpdatedEvent event = new ProductUpdatedEvent(productId, 10000, "테스트 상품", "image-key");
 
         when(productSupport.findById(productId)).thenReturn(product);
 
@@ -90,6 +91,20 @@ class ProductEsEventListenerTest {
         // then
         verify(productSupport).findById(productId);
         verify(productEsPort).save(product);
+    }
+
+    @Test
+    @DisplayName("ProductDeletedEvent가 발행되면 ES 문서를 삭제한다.")
+    void handleProductDeletedEvent() {
+        // given
+        Long productId = 5L;
+        ProductDeletedEvent event = new ProductDeletedEvent(productId);
+
+        // when
+        listener.handleDeleted(event);
+
+        // then
+        verify(productEsPort).deleteById(productId);
     }
 
     private Product createProduct(Long productId) {

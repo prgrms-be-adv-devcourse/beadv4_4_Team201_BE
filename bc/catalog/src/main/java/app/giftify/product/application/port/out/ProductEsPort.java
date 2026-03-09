@@ -10,4 +10,6 @@ public interface ProductEsPort {
     int syncAll();
 
     PageResponse<ProductResult> searchProducts(ProductEsSearchCommand command);
+
+    void deleteById(Long productId);
 }

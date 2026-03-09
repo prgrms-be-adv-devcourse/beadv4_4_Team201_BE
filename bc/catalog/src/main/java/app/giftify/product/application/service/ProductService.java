@@ -17,6 +17,7 @@ import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -283,6 +284,6 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         product.delete();
         productRepositoryPort.save(product);
 
-        // Es 도큐먼트 동기화
+        eventPublisher.publish(new ProductDeletedEvent(productId));
     }
 }
