@@ -1,5 +1,3 @@
-val springModulithVersion = "1.3.1"
-
 dependencies {
     implementation(project(":bc:shared"))
     implementation(project(":support:common"))
@@ -9,14 +7,14 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation("org.springframework.modulith:spring-modulith-starter-core:$springModulithVersion")
-    implementation("org.springframework.modulith:spring-modulith-starter-jpa:$springModulithVersion")
+    implementation(libs.spring.modulith.core)
+    implementation(libs.spring.modulith.jpa)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
     testImplementation(libs.spring.boot.starter.test)
-    testImplementation("org.springframework.modulith:spring-modulith-starter-test:$springModulithVersion")
+    testImplementation(libs.spring.modulith.test)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
 }
