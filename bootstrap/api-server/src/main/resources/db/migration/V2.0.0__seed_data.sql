@@ -456,25 +456,25 @@ ON CONFLICT DO NOTHING;
 SELECT setval('orders_id_seq', 100, false);
 
 -- ============================================================
--- 13. order_items (6) — #409: FUNDING_GIFT (not FUNDING)
+-- 13. order_items (6) — #409: FUNDING만 지원하므로 order_item_type = FUNDING_GIFT
 -- ============================================================
 INSERT INTO order_items (id, order_id, target_id, target_type, order_item_type, seller_id, receiver_id,
                          price, amount, status, cancelled_at, created_at, updated_at)
-VALUES (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
+VALUES (1, 1, 1, 'FUNDING', 'FUNDING_GIFT', 3, 2,
         359000.00, 359000.00, 'PAID', NULL, '2026-02-05 17:00:00', '2026-02-05 17:05:00'),
 
-       (2, 2, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
+       (2, 2, 2, 'FUNDING', 'FUNDING_GIFT', 3, 2,
         23000.00, 23000.00, 'PAID', NULL, '2026-02-05 17:10:00', '2026-02-06 10:00:00'),
 
-       (3, 3, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
+       (3, 3, 3, 'FUNDING', 'FUNDING_GIFT', 3, 5,
         415000.00, 415000.00, 'CREATED', NULL, '2026-02-07 12:00:00', '2026-02-07 12:00:00'),
 
-       (4, 4, 2, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 6,
+       (4, 4, 2, 'FUNDING', 'FUNDING_GIFT', 3, 6,
         23000.00, 23000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00'),
-       (5, 4, 3, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 6,
+       (5, 4, 3, 'FUNDING', 'FUNDING_GIFT', 3, 6,
         415000.00, 415000.00, 'PAID', NULL, '2026-02-08 14:00:00', '2026-02-08 14:05:00'),
 
-       (6, 5, 5, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 5,
+       (6, 5, 5, 'FUNDING', 'FUNDING_GIFT', 3, 5,
         89000.00, 89000.00, 'CANCELED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00')
 ON CONFLICT DO NOTHING;
 
@@ -621,7 +621,7 @@ INSERT INTO settlement_item (id, order_id, order_item_id, payment_id, seller_id,
 VALUES
     -- order_item 2: 확정 → 정산 완료
     (1, 2, 2, 2, 3,
-     2, 'GENERAL_PRODUCT', 'ITEM_PAYMENT', 'COMPLETED',
+     2, 'FUNDING', 'ITEM_PAYMENT', 'COMPLETED',
      23000.00, 690.00, 1150.00, 21160.00,
      '2026-02-13', '2026-02-06 10:00:00', '2026-02-13 03:00:00', NULL,
      0, NULL, 1,
@@ -629,7 +629,7 @@ VALUES
 
     -- order_item 1: 확정 대기 (order 1은 PAID 상태이므로 CREATED)
     (2, 1, 1, 1, 3,
-     1, 'GENERAL_PRODUCT', 'ITEM_PAYMENT', 'READY',
+     1, 'FUNDING', 'ITEM_PAYMENT', 'READY',
      359000.00, 10770.00, 17950.00, 330280.00,
      '2026-02-12', '2026-02-05 17:05:00', NULL, NULL,
      0, NULL, NULL,
