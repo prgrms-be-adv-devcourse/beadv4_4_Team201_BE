@@ -367,7 +367,7 @@ SELECT setval('wishlist_item_id_seq', 100, false);
 -- 9. cart_item (1)
 -- ============================================================
 INSERT INTO cart_item (id, cart_id, target_type, target_id, amount, wishlist_item_status)
-VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, 'PENDING')
+VALUES (1, 2, 'FUNDING', 9, 539100.00, 'IN_PROGRESS')
 ON CONFLICT DO NOTHING;
 
 SELECT setval('cart_item_id_seq', 100, false);
