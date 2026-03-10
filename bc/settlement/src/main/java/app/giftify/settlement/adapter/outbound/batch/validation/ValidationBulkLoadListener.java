@@ -7,8 +7,8 @@ import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.step.StepExecution;
+import org.springframework.batch.core.listener.StepExecutionListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

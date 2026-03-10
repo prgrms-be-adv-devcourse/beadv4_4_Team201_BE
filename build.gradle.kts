@@ -82,10 +82,14 @@ subprojects {
         apply(plugin = "jacoco")
         apply(plugin = "io.spring.dependency-management")
 
-        // Java 21 Toolchain
+        // Java 25 Toolchain
+        // Note: Gradle 8.14.x는 Java 24까지 공식 지원.
+        // Java 25 toolchain은 로컬/CI에 JDK가 설치되어 있으면 동작하지만,
+        // 자동 다운로드(toolchain resolver)가 필요하면 Gradle 9.1.0+ 필요.
+        // Gradle 9.x는 아직 preview 단계이므로 도입하지 않음.
         configure<JavaPluginExtension> {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(25))
             }
         }
 
@@ -101,12 +105,19 @@ subprojects {
         }
 
         // Spring Boot BOM의 Testcontainers 버전을 version catalog 버전으로 오버라이드
+        ext["lombok.version"] = rootProject.libs.versions.lombok.get()
+
         configurations.all {
             resolutionStrategy.eachDependency {
                 if (requested.group == "org.testcontainers") {
                     useVersion(rootProject.libs.versions.testcontainers.get())
                 }
             }
+        }
+
+        // JUnit Platform Launcher — Gradle 8.x 내장 launcher가 JUnit 6.x와 호환되지 않으므로 명시 추가
+        dependencies {
+            "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
         }
 
         // 테스트 설정

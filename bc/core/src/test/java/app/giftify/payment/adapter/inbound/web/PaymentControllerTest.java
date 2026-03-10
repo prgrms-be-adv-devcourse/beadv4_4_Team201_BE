@@ -27,6 +27,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
@@ -65,7 +67,9 @@ class PaymentControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		objectMapper = new ObjectMapper();
+		objectMapper = new ObjectMapper()
+				.registerModule(new JavaTimeModule())
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 		mockMvc = MockMvcBuilders
 			.standaloneSetup(new PaymentController(
 				chargeDepositUseCase,

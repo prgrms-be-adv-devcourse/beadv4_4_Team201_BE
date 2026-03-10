@@ -68,14 +68,6 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
-# Application
-#application-local.yml
-#application-*-local.yml
-#application-local.properties
-#application-*-local.properties
-#**/application-local.yml
-#**/application-*-local.yml
-
 # Logs
 logs/
 
@@ -100,6 +92,11 @@ bin/
 **/.env.properties
 CLAUDE.md
 
+# Benchmark raw data (too large for Git)
+docs/benchmarks/*.json
+docs/benchmarks/*.log
+docs/benchmarks/*.log.*
+
 ### contains Auth0 credentials
 docs/workthroughs/
 .gw/
@@ -122,6 +119,9 @@ docker-compose.override.yml
 build
 /test-payment.html
 /docs/adr/0001-modular-monolith-architecture.md
+
+# Personal backlog (local only)
+backlog/
 
 # K8s secrets
 infra/k3s/base/secrets.yaml
