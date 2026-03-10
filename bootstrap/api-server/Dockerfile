@@ -12,7 +12,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Build (로컬 개발용 - 소스에서 빌드)
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN chmod +x gradlew && \
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime (로컬 개발용 - builder에서 JAR 복사)
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # 보안: 비루트 사용자 생성
 RUN addgroup -g 1000 spring && \
@@ -58,7 +58,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 EXPOSE 8080
 
 # JVM 최적화 옵션
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseCompactObjectHeaders"
 
 # 애플리케이션 실행
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
@@ -66,7 +66,7 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 # -----------------------------------------------------------------------------
 # Stage 3: Runtime CI (CI용 - 호스트에서 빌드된 JAR 직접 복사)
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine AS runtime-ci
+FROM eclipse-temurin:25-jre-alpine AS runtime-ci
 
 # 보안: 비루트 사용자 생성
 RUN addgroup -g 1000 spring && \
@@ -91,7 +91,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 EXPOSE 8080
 
 # JVM 최적화 옵션
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseCompactObjectHeaders"
 
 # 애플리케이션 실행
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
