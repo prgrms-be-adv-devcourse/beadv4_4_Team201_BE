@@ -8,12 +8,7 @@ import app.giftify.security.common.config.SharedSecurityAutoConfiguration;
 import app.giftify.shared.api.paging.PageResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -24,12 +19,14 @@ import java.util.List;
 
 @SpringBootApplication(
         exclude = {
-                SecurityAutoConfiguration.class,
-                SharedSecurityAutoConfiguration.class,
-                ElasticsearchClientAutoConfiguration.class,
-                ElasticsearchRestClientAutoConfiguration.class,
-                ElasticsearchDataAutoConfiguration.class,
-                ElasticsearchRepositoriesAutoConfiguration.class
+                SharedSecurityAutoConfiguration.class
+        },
+        excludeName = {
+                "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration",
+                "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchClientAutoConfiguration",
+                "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchRestClientAutoConfiguration",
+                "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchAutoConfiguration",
+                "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchRepositoriesAutoConfiguration"
         }
 )
 @ComponentScan(
