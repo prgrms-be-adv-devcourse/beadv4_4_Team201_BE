@@ -126,5 +126,10 @@ build
 # Personal backlog (local only)
 backlog/
 
+# Benchmark raw data (too large for Git)
+docs/benchmarks/*.json
+docs/benchmarks/*.log
+docs/benchmarks/*.log.*
+
 # K8s secrets
 infra/k3s/base/secrets.yaml
