@@ -76,10 +76,10 @@ public class CartController implements CartV2ApiSpec {
 	}
 
 	@Override
-	@DeleteMapping("/items/{targetType}")
+	@DeleteMapping("/items")
 	public ResponseEntity<RsData<Void>> removeItems(
 		@CurrentMemberId Long memberId,
-		@RequestParam(value = "targetIds", required = false) List<Long> wishlistItemIds
+		@RequestParam(value = "wishlistItemIds", required = false) List<Long> wishlistItemIds
 	) {
 		cartService.removeItems(memberId, wishlistItemIds);
 		return ResponseEntity.ok(RsData.success(null));
