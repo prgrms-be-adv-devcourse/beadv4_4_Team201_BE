@@ -14,7 +14,7 @@ on:
       java-version:
         description: 'Java version to use'
         required: false
-        default: '21'
+        default: '25'
         type: string
       run-tests:
         description: 'Run tests'

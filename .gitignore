@@ -123,5 +123,8 @@ build
 /test-payment.html
 /docs/adr/0001-modular-monolith-architecture.md
 
+# Personal backlog (local only)
+backlog/
+
 # K8s secrets
 infra/k3s/base/secrets.yaml

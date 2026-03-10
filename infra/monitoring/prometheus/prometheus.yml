@@ -10,4 +10,4 @@ scrape_configs:
   - job_name: 'giftify-api'
     metrics_path: '/actuator/prometheus'  # metrics_path → Spring Actuator 기본 경로는 /actuator/prometheus
     static_configs:
-      - targets: ['api-server:8080']  # targets: ['api-server:8080'] → Docker 내부 DNS 사용 (localhost가 아님)
+      - targets: ['host.docker.internal:8080']  # IDE에서 실행 시 호스트 머신 접근용 (Docker 내부 배포 시 'api-server:8080'으로 원복)
