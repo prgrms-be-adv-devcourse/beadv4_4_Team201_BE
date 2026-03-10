@@ -1,5 +1,6 @@
 package app.giftify.product;
 
+import app.giftify.product.adapter.outbound.client.ProductApiClientConfig;
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
@@ -42,7 +43,7 @@ import java.util.List;
                 ),
                 @ComponentScan.Filter(
                         type = FilterType.ASSIGNABLE_TYPE,
-                        classes = ProductEsTestApplication.class
+                        classes = {ProductEsTestApplication.class, ProductApiClientConfig.class}
                 )
         }
 )
@@ -76,6 +77,11 @@ public class ProductJpaTestApplication {
                 return PageResponse.of(List.of(), 0, 20, 0);
             }
         };
+    }
+
+    @Bean
+    app.giftify.product.adapter.outbound.client.FundingApiClient fundingApiClient() {
+        return productId -> false;
     }
 
     public static void main(String[] args) {
