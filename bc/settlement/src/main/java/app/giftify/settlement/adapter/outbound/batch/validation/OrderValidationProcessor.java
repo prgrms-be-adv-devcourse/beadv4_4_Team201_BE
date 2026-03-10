@@ -4,7 +4,7 @@ import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementQueue;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 
 @RequiredArgsConstructor
 public class OrderValidationProcessor implements ItemProcessor<SettlementItem, SettlementQueue> {
