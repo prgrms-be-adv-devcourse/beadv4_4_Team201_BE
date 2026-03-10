@@ -16,7 +16,8 @@ public record MyProductDto(
         ProductStatus status,
         String imageKey,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        LocalDateTime deletedAt
 ) {
     public static MyProductDto from(ProductJpa productJpa) {
         if (productJpa == null)
@@ -31,7 +32,8 @@ public record MyProductDto(
                 productJpa.getStatus(),
                 productJpa.getImageKey(),
                 productJpa.getCreatedAt(),
-                productJpa.getUpdatedAt()
+                productJpa.getUpdatedAt(),
+                productJpa.getDeletedAt()
         );
     }
 
@@ -48,7 +50,8 @@ public record MyProductDto(
                 product.getStatus(),
                 product.getImageKey(),
                 product.getCreatedAt(),
-                product.getUpdatedAt()
+                product.getUpdatedAt(),
+                product.getDeletedAt()
         );
     }
 
@@ -65,7 +68,8 @@ public record MyProductDto(
                 result.status(),
                 result.imageKey(),
                 result.createdAt(),
-                result.updatedAt()
+                result.updatedAt(),
+                result.deletedAt()
         );
     }
 }

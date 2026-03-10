@@ -121,6 +121,11 @@ public class ProductEsAdapter implements ProductEsPort {
         return PageResponse.of(results, command.page(), command.size(), totalElements);
     }
 
+    @Override
+    public void deleteById(Long productId) {
+        productEsRepository.deleteById(String.valueOf(productId));
+    }
+
     private Sort buildSort(ProductSearchSortType sortType) {
         if (sortType == null) {
             return Sort.unsorted();

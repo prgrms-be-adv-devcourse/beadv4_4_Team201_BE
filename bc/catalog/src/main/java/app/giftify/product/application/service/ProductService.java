@@ -4,12 +4,10 @@ import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
 import app.giftify.product.application.port.in.*;
-import app.giftify.product.application.port.out.FundingClientPort;
-import app.giftify.product.application.port.out.MyProductSearchCommand;
-import app.giftify.product.application.port.out.ProductRepositoryPort;
-import app.giftify.product.application.port.out.ProductSearchCommand;
+import app.giftify.product.application.port.out.*;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
+import app.giftify.product.domain.ProductPolicy;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
@@ -17,6 +15,7 @@ import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,8 +36,9 @@ import static app.giftify.product.domain.exception.ProductErrorCode.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase {
+public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase, ProductDeleteUseCase, HardDeleteExpiredProductUseCase {
     private final ProductRepositoryPort productRepositoryPort;
+    private final ProductStockHistoryRepositoryPort productStockHistoryRepositoryPort;
     private final MemberRepository memberRepository;
     private final EventPublisher eventPublisher;
     private final ProductSupport productSupport;
@@ -118,7 +119,8 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 searchDto.getSort(),
                 searchDto.getPage(),
                 searchDto.getSize(),
-                searchDto.getStatus()
+                searchDto.getStatus(),
+                searchDto.isDeleted()
         );
 
         Page<Product> result = productRepositoryPort.searchMyProducts(sellerId, command);
@@ -172,8 +174,9 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             } catch (PessimisticLockingFailureException e) {
                 throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
             }
-
             validateProductOwner(product, sellerId);
+            validateNotDeleted(product);
+
             if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
                 throw new ProductException(PRODUCT_STOCK_CHANGED); // TODO 재시도 or 재고수정 분리
             }
@@ -181,6 +184,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         } else {
             product = productSupport.findById(productId);
             validateProductOwner(product, sellerId);
+            validateNotDeleted(product);
         }
 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
@@ -274,5 +278,36 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     private void validateProductOwner(Product product, Long sellerId) {
         if (!product.getSellerId().equals(sellerId))
             throw new ProductException(PRODUCT_NOT_OWNED);
+    }
+
+    // 삭제된 상품 검증
+    private void validateNotDeleted(Product product) {
+        if (product.getDeletedAt() != null)
+            throw new ProductException(PRODUCT_ALREADY_DELETED);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId, Long sellerId) {
+        Product product = productSupport.findByIdAndSellerId(productId, sellerId);
+        product.delete();
+        productRepositoryPort.save(product);
+
+        eventPublisher.publish(new ProductDeletedEvent(productId));
+    }
+
+    @Override
+    @Transactional
+    public int hardDeleteExpiredProducts() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(ProductPolicy.DELETED_RETENTION_DAYS);
+
+        List<Long> expiredProductIds = productRepositoryPort.findExpiredDeletedProductIds(cutoff);
+        if (expiredProductIds.isEmpty()) {
+            return 0;
+        }
+
+        // 삭제 순서: 재고 이력 -> 상품
+        productStockHistoryRepositoryPort.deleteByProductIds(expiredProductIds);
+        return productRepositoryPort.hardDeleteExpiredProducts(cutoff);
     }
 }

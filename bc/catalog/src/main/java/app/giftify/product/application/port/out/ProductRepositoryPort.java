@@ -3,6 +3,7 @@ package app.giftify.product.application.port.out;
 import app.giftify.product.domain.Product;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,8 @@ public interface ProductRepositoryPort {
     List<Product> findAllById(List<Long> productsIds);
 
     Optional<Product> findByIdForUpdate(Long productId);
+
+    List<Long> findExpiredDeletedProductIds(LocalDateTime cutoff);
+
+    int hardDeleteExpiredProducts(LocalDateTime cutoff);
 }
