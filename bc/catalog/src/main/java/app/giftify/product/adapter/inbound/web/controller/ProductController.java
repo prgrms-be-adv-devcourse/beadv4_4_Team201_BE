@@ -190,6 +190,7 @@ public class ProductController implements ProductV2ApiSpec {
     }
 
     // 상품 삭제
+    @Override
     @PreAuthorize("hasRole('SELLER')")
     @DeleteMapping("/my/{productId}")
     public ResponseEntity<Void> deleteProduct(
