@@ -1,9 +1,11 @@
 package app.giftify.product;
 
+import app.giftify.product.adapter.outbound.client.ProductApiClientConfig;
 import app.giftify.security.common.config.SharedSecurityAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
@@ -24,10 +26,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
                 "app.giftify.replica",
                 "app.giftify.support.jpa"
         },
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = ProductJpaTestApplication.class
-        )
+        excludeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.ASSIGNABLE_TYPE,
+                        classes = {ProductJpaTestApplication.class, ProductApiClientConfig.class}
+                )
+        }
 )
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = {
@@ -42,6 +46,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "app.giftify.support.jpa"
 })
 public class ProductEsTestApplication {
+
+    @Bean
+    app.giftify.product.adapter.outbound.client.FundingApiClient fundingApiClient() {
+        return productId -> false;
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(ProductEsTestApplication.class, args);
     }
