@@ -1,4 +1,7 @@
 spring:
+  modulith:
+    runtime:
+      flyway-enabled: true
 
   datasource:
     url: ${DB_URL}
@@ -23,11 +26,9 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: "0"
-    locations: classpath:db/migration
     schemas: g7app
     default-schema: g7app
     create-schemas: true
-    out-of-order: true
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
