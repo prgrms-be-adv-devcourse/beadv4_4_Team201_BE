@@ -13,7 +13,7 @@ import app.giftify.shared.domain.vo.FundingInfo;
  * -> 어차피 타인의 펀딩 조회 시, 종료된 펀딩은 볼 수 없는 정책임
  */
 public record CartItemResponse(
-        Long targetId,
+        Long wishlistItemId,
         Long receiverId,
         String receiverNickname,
         Long productId,
