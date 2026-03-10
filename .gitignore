@@ -68,14 +68,6 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
-# Application
-#application-local.yml
-#application-*-local.yml
-#application-local.properties
-#application-*-local.properties
-#**/application-local.yml
-#**/application-*-local.yml
-
 # Logs
 logs/
 
@@ -99,6 +91,11 @@ bin/
 **/.env
 **/.env.properties
 CLAUDE.md
+
+# Benchmark raw data (too large for Git)
+docs/benchmarks/*.json
+docs/benchmarks/*.log
+docs/benchmarks/*.log.*
 
 ### contains Auth0 credentials
 docs/workthroughs/
