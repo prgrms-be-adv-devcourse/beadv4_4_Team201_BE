@@ -45,6 +45,7 @@ dependencies {
 
     // Test
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.security.test)
     testImplementation(libs.archunit)
     testCompileOnly(libs.lombok)
@@ -56,7 +57,7 @@ dependencies {
 
     // Retry
     implementation(libs.spring.retry)
-    implementation(libs.spring.boot.starter.aop)
+    implementation(libs.spring.boot.starter.aspectj)
 }
 
 tasks.test {
