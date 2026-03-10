@@ -4,6 +4,7 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
+import app.giftify.shared.domain.event.member.SellerNicknameChangedEvent;
 import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
@@ -54,6 +55,12 @@ public class ProductEsEventListener {
     public void handleDeleted(ProductDeletedEvent event) {
         productEsPort.deleteById(event.getProductId());
         log.info("ES 도큐먼트 삭제 완료: {}", event.getProductId());
+    }
+
+    // 판매자 닉네임 변경 시 ES 도큐먼트 일괄 업데이트
+    @ApplicationModuleListener
+    public void handleSellerNicknameChanged(SellerNicknameChangedEvent event) {
+        productEsPort.updateSellerNickname(event.getSellerId(), event.getNickname());
     }
 
     private void syncToEs(Long productId) {
