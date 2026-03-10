@@ -2,7 +2,9 @@ package app.giftify.order.application;
 
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
+import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
 import app.giftify.order.application.outbound.port.OrderItemRepository;
+import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.Order;
 import app.giftify.order.domain.OrderItem;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
@@ -11,6 +13,8 @@ import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.exception.PolicyException;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderConfirmPendingEvent;
 import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,6 +45,12 @@ class FundingOrderServiceTest {
 
     @Mock
     private OrderService orderService;
+
+    @Mock
+    private EventPublisher eventPublisher;
+
+    @Mock
+    private OrderRepository orderRepository;
 
     @InjectMocks
     private FundingOrderService fundingOrderService;
@@ -355,6 +365,113 @@ class FundingOrderServiceTest {
 
             // 예외와 무관하게 두 주문 모두에 대해 확정 요청이 시도됨
             verify(orderService, times(2)).confirmOrderItems(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("펀딩 확정 주문 처리 - 커맨드 기반 (confirmOrderItemsByFunding(ConfirmFundingOrderCommand))")
+    class ConfirmOrderItemsByFundingWithCommand {
+
+        private static final Long PRODUCT_ID = 100L;
+
+        @Test
+        @DisplayName("성공: 모든 아이템이 정상 확정되면 OrderConfirmPendingEvent가 발행되고 주문 상태가 동기화된다")
+        void given_allItemsConfirmed_when_confirmOrderItemsByFundingWithCommand_then_eventPublishedAndOrdersSynchronized() {
+            // given
+            ConfirmFundingOrderCommand command = new ConfirmFundingOrderCommand(FUNDING_ID, PRODUCT_ID);
+            Map<Long, List<Long>> orderIdMap = Map.of(ORDER_ID, List.of(1L, 2L));
+            Order order = OrderFixture.createOrderWithItems(BUYER_ID, 2);
+            ReflectionTestUtils.setField(order, "id", ORDER_ID);
+
+            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID)).willReturn(orderIdMap);
+            given(orderItemRepository.confirmOrderItems(any())).willReturn(2);
+            given(orderRepository.getAllByIdInWithItems(any())).willReturn(List.of(order));
+
+            // when
+            assertThatCode(() -> fundingOrderService.confirmOrderItemsByFunding(command))
+                    .doesNotThrowAnyException();
+
+            // then
+            verify(eventPublisher).publish(any(OrderConfirmPendingEvent.class));
+            verify(orderItemRepository).confirmOrderItems(any());
+            verify(orderRepository).getAllByIdInWithItems(any());
+        }
+
+        @Test
+        @DisplayName("성공: OrderConfirmPendingEvent에 올바른 productId가 담겨 발행된다")
+        void given_command_when_confirmOrderItemsByFundingWithCommand_then_publishesEventWithCorrectProductId() {
+            // given
+            ConfirmFundingOrderCommand command = new ConfirmFundingOrderCommand(FUNDING_ID, PRODUCT_ID);
+            Order order = OrderFixture.createOrderWithItems(BUYER_ID, 1);
+
+            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
+                    .willReturn(Map.of(ORDER_ID, List.of(1L)));
+            given(orderItemRepository.confirmOrderItems(any())).willReturn(1);
+            given(orderRepository.getAllByIdInWithItems(any())).willReturn(List.of(order));
+
+            // when
+            fundingOrderService.confirmOrderItemsByFunding(command);
+
+            // then
+            ArgumentCaptor<OrderConfirmPendingEvent> captor = ArgumentCaptor.forClass(OrderConfirmPendingEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().getItems()).hasSize(1);
+            assertThat(captor.getValue().getItems().get(0).productId()).isEqualTo(PRODUCT_ID);
+        }
+
+        @Test
+        @DisplayName("성공: 확정 대상 아이템 ID 목록이 confirmOrderItems에 올바르게 전달된다")
+        void given_multipleItems_when_confirmOrderItemsByFundingWithCommand_then_allItemIdsPassedToRepository() {
+            // given
+            ConfirmFundingOrderCommand command = new ConfirmFundingOrderCommand(FUNDING_ID, PRODUCT_ID);
+            Map<Long, List<Long>> orderIdMap = Map.of(ORDER_ID, List.of(1L, 2L, 3L));
+            Order order = OrderFixture.createOrderWithItems(BUYER_ID, 3);
+
+            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID)).willReturn(orderIdMap);
+            given(orderItemRepository.confirmOrderItems(any())).willReturn(3);
+            given(orderRepository.getAllByIdInWithItems(any())).willReturn(List.of(order));
+
+            // when
+            fundingOrderService.confirmOrderItemsByFunding(command);
+
+            // then
+            ArgumentCaptor<List<Long>> captor = ArgumentCaptor.forClass(List.class);
+            verify(orderItemRepository).confirmOrderItems(captor.capture());
+            assertThat(captor.getValue()).containsExactlyInAnyOrder(1L, 2L, 3L);
+        }
+
+        @Test
+        @DisplayName("실패: 업데이트된 아이템 수가 기대치보다 적으면 DomainException(INVALID_STATUS_TRANSITION)이 발생한다")
+        void given_mismatchUpdatedCount_when_confirmOrderItemsByFundingWithCommand_then_throwDomainException() {
+            // given
+            ConfirmFundingOrderCommand command = new ConfirmFundingOrderCommand(FUNDING_ID, PRODUCT_ID);
+            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
+                    .willReturn(Map.of(ORDER_ID, List.of(1L, 2L)));
+            given(orderItemRepository.confirmOrderItems(any())).willReturn(1); // 2개 중 1개만 업데이트됨
+
+            // when & then
+            assertThatThrownBy(() -> fundingOrderService.confirmOrderItemsByFunding(command))
+                    .isInstanceOf(DomainException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
+
+            verify(orderRepository, never()).getAllByIdInWithItems(any());
+        }
+
+        @Test
+        @DisplayName("실패: 업데이트된 아이템 수가 0이면 DomainException(INVALID_STATUS_TRANSITION)이 발생한다")
+        void given_zeroUpdatedCount_when_confirmOrderItemsByFundingWithCommand_then_throwDomainException() {
+            // given
+            ConfirmFundingOrderCommand command = new ConfirmFundingOrderCommand(FUNDING_ID, PRODUCT_ID);
+            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
+                    .willReturn(Map.of(ORDER_ID, List.of(1L)));
+            given(orderItemRepository.confirmOrderItems(any())).willReturn(0);
+
+            // when & then
+            assertThatThrownBy(() -> fundingOrderService.confirmOrderItemsByFunding(command))
+                    .isInstanceOf(DomainException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(OrderErrorCode.INVALID_STATUS_TRANSITION);
         }
     }
 }

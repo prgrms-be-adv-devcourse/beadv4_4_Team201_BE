@@ -2,13 +2,21 @@ package app.giftify.order.adapter.inbound.event;
 
 import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
+import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
+import app.giftify.order.domain.errorCode.OrderErrorCode;
+import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
+import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
+import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentEventData;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -17,6 +25,7 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willThrow;
@@ -70,5 +79,97 @@ class OrderEventListenerTest {
 
         // then: 실제로 재시도가 발생했는지 횟수 확인
         verify(orderService, atLeast(2)).completeCancel(any());
+    }
+
+    @Nested
+    @DisplayName("FundingConfirmPendingEvent 처리 (on(FundingConfirmPendingEvent))")
+    class OnFundingConfirmPendingEvent {
+
+        private static final Long FUNDING_ID = 1L;
+        private static final Long PRODUCT_ID = 100L;
+
+        @Test
+        @DisplayName("성공: 정상 처리 후 fundingId를 담은 OrderConfirmedEvent가 발행된다")
+        void given_success_when_onFundingConfirmPendingEvent_then_publishOrderConfirmedEvent() {
+            // given
+            FundingConfirmPendingEvent event = new FundingConfirmPendingEvent(FUNDING_ID, PRODUCT_ID);
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            verify(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
+            ArgumentCaptor<OrderConfirmedEvent> captor = ArgumentCaptor.forClass(OrderConfirmedEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().getFundingId()).isEqualTo(FUNDING_ID);
+        }
+
+        @Test
+        @DisplayName("성공: 커맨드에 이벤트의 fundingId와 productId가 올바르게 전달된다")
+        void given_event_when_onFundingConfirmPendingEvent_then_commandHasCorrectIds() {
+            // given
+            FundingConfirmPendingEvent event = new FundingConfirmPendingEvent(FUNDING_ID, PRODUCT_ID);
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<ConfirmFundingOrderCommand> captor = ArgumentCaptor.forClass(ConfirmFundingOrderCommand.class);
+            verify(fundingOrderService).confirmOrderItemsByFunding(captor.capture());
+            assertThat(captor.getValue().fundingId()).isEqualTo(FUNDING_ID);
+            assertThat(captor.getValue().productId()).isEqualTo(PRODUCT_ID);
+        }
+
+        @Test
+        @DisplayName("실패: BusinessException 발생 시 fundingId를 담은 OrderConfirmFailedEvent가 발행된다")
+        void given_businessException_when_onFundingConfirmPendingEvent_then_publishOrderConfirmFailedEvent() {
+            // given
+            FundingConfirmPendingEvent event = new FundingConfirmPendingEvent(FUNDING_ID, PRODUCT_ID);
+            doThrow(new DomainException(OrderErrorCode.INVALID_STATUS_TRANSITION))
+                    .when(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<OrderConfirmFailedEvent> captor = ArgumentCaptor.forClass(OrderConfirmFailedEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().getFundingId()).isEqualTo(FUNDING_ID);
+        }
+
+        @Test
+        @DisplayName("실패: InfraException 발생 시 fundingId를 담은 OrderConfirmFailedEvent가 발행된다")
+        void given_infraException_when_onFundingConfirmPendingEvent_then_publishOrderConfirmFailedEvent() {
+            // given
+            FundingConfirmPendingEvent event = new FundingConfirmPendingEvent(FUNDING_ID, PRODUCT_ID);
+            doThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT))
+                    .when(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<OrderConfirmFailedEvent> captor = ArgumentCaptor.forClass(OrderConfirmFailedEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().getFundingId()).isEqualTo(FUNDING_ID);
+        }
+
+        @Test
+        @DisplayName("실패: 예상치 못한 예외 발생 시 '예기치 못한 오류 발생' 메시지로 OrderConfirmFailedEvent가 발행된다")
+        void given_unexpectedException_when_onFundingConfirmPendingEvent_then_publishFailedEventWithDefaultMessage() {
+            // given
+            FundingConfirmPendingEvent event = new FundingConfirmPendingEvent(FUNDING_ID, PRODUCT_ID);
+            doThrow(new RuntimeException("DB connection lost"))
+                    .when(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<OrderConfirmFailedEvent> captor = ArgumentCaptor.forClass(OrderConfirmFailedEvent.class);
+            verify(eventPublisher).publish(captor.capture());
+            assertThat(captor.getValue().getFundingId()).isEqualTo(FUNDING_ID);
+            assertThat(captor.getValue().getReason()).isEqualTo("예기치 못한 오류 발생");
+        }
     }
 }
