@@ -7,6 +7,7 @@ import app.giftify.product.application.port.in.ProductUpdateResult;
 import app.giftify.product.application.port.out.FundingClientPort;
 import app.giftify.product.application.port.out.MyProductSearchCommand;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
+import app.giftify.product.application.port.out.ProductStockHistoryRepositoryPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
@@ -50,6 +51,9 @@ class ProductServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private ProductStockHistoryRepositoryPort productStockHistoryRepositoryPort;
 
     @Mock
     private FundingClientPort fundingClientPort;
@@ -336,6 +340,48 @@ class ProductServiceTest {
 
             assertThat(captor.getValue().isDeleted()).isTrue();
             assertThat(captor.getValue().getStatus()).isEqualTo(ProductStatus.INACTIVE);
+        }
+    }
+
+    @Nested
+    @DisplayName("만료된 삭제 상품 하드 삭제 기능 테스트 (hardDeleteExpiredProducts)")
+    class HardDeleteExpiredProductTests {
+
+        @Test
+        @DisplayName("성공: 만료된 상품과 재고 이력이 함께 삭제된다")
+        void hardDeleteExpiredProducts_Success() {
+            // given
+            List<Long> expiredProductIds = List.of(1L, 2L, 3L);
+            given(productRepositoryPort.findExpiredDeletedProductIds(any(LocalDateTime.class)))
+                    .willReturn(expiredProductIds);
+            given(productStockHistoryRepositoryPort.deleteByProductIds(expiredProductIds))
+                    .willReturn(5);
+            given(productRepositoryPort.hardDeleteExpiredProducts(any(LocalDateTime.class)))
+                    .willReturn(3);
+
+            // when
+            int deletedCount = productService.hardDeleteExpiredProducts();
+
+            // then
+            assertThat(deletedCount).isEqualTo(3);
+            verify(productStockHistoryRepositoryPort).deleteByProductIds(expiredProductIds);
+            verify(productRepositoryPort).hardDeleteExpiredProducts(any(LocalDateTime.class));
+        }
+
+        @Test
+        @DisplayName("성공: 만료된 상품이 없으면 0건을 반환하고 삭제를 수행하지 않는다")
+        void hardDeleteExpiredProducts_NoExpiredProducts() {
+            // given
+            given(productRepositoryPort.findExpiredDeletedProductIds(any(LocalDateTime.class)))
+                    .willReturn(List.of());
+
+            // when
+            int deletedCount = productService.hardDeleteExpiredProducts();
+
+            // then
+            assertThat(deletedCount).isEqualTo(0);
+            verify(productStockHistoryRepositoryPort, never()).deleteByProductIds(any());
+            verify(productRepositoryPort, never()).hardDeleteExpiredProducts(any(LocalDateTime.class));
         }
     }
 

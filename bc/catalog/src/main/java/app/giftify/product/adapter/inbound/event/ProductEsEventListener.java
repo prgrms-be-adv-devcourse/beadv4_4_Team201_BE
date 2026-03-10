@@ -53,6 +53,7 @@ public class ProductEsEventListener {
     @ApplicationModuleListener
     public void handleDeleted(ProductDeletedEvent event) {
         productEsPort.deleteById(event.getProductId());
+        log.info("ES 도큐먼트 삭제 완료: {}", event.getProductId());
     }
 
     private void syncToEs(Long productId) {
