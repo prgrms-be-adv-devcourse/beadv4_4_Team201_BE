@@ -4,6 +4,7 @@ import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
+import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentEventData;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +44,9 @@ class OrderEventListenerTest {
 
     @MockitoBean
     private FundingOrderService fundingOrderService;
+
+    @MockitoBean
+    private EventPublisher eventPublisher;
 
     @Test
     @DisplayName("재시도 가능한 에러코드의 InfraException 발생 시 recover가 호출되어야 한다")
