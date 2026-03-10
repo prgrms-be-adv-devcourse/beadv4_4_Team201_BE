@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "FUNDING",
+@Table(name = "FUNDINGS",
         indexes = {
         @Index(
                 name = "idx_funding_wishlist_status",
