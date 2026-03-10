@@ -10,16 +10,22 @@ import app.giftify.product.application.port.out.ProductEsSearchCommand;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductSearchSortType;
 import app.giftify.product.domain.ProductStatus;
+import app.giftify.product.domain.exception.ProductErrorCode;
+import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,6 +33,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class ProductEsAdapter implements ProductEsPort {
 
@@ -124,6 +131,31 @@ public class ProductEsAdapter implements ProductEsPort {
     @Override
     public void deleteById(Long productId) {
         productEsRepository.deleteById(String.valueOf(productId));
+    }
+
+    @Override
+    public void updateSellerNickname(Long sellerId, String nickname) {
+        List<Long> productIds = productRepository.findActiveProductIdsBySellerId(sellerId);
+        if (productIds.isEmpty()) {
+            log.info("판매자 닉네임 ES 업데이트 대상 없음: sellerId={}", sellerId);
+            return;
+        }
+
+        try {
+            List<UpdateQuery> updateQueries = productIds.stream()
+                    .map(id -> UpdateQuery.builder(String.valueOf(id))
+                            // sellerNickname 필드만 새 값으로 변경 (나머지 필드는 그대로 유지)
+                            .withDocument(Document.create().append("sellerNickname", nickname))
+                            .build())
+                    .toList();
+
+            elasticsearchOperations.bulkUpdate(updateQueries, IndexCoordinates.of("products"));
+            log.info("판매자 닉네임 ES 일괄 업데이트 완료: sellerId={}, nickname={}, updated={}",
+                    sellerId, nickname, productIds.size());
+        } catch (Exception e) {
+            log.error("판매자 닉네임 ES 업데이트 실패: sellerId={}, nickname={}", sellerId, nickname, e);
+            throw new ProductException(ProductErrorCode.ES_NICKNAME_UPDATE_FAILED);
+        }
     }
 
     private Sort buildSort(ProductSearchSortType sortType) {

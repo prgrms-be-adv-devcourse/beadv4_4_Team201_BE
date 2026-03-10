@@ -22,6 +22,9 @@ public interface ProductRepository extends JpaRepository<ProductJpa, Long>, Prod
     @Query("SELECT p FROM ProductJpa p WHERE p.id = :id")
     Optional<ProductJpa> findByIdForUpdate(@Param("id") Long id);
 
+    @Query("SELECT p.id FROM ProductJpa p WHERE p.sellerId = :sellerId AND p.deletedAt IS NULL")
+    List<Long> findActiveProductIdsBySellerId(@Param("sellerId") Long sellerId);
+
     @Query("SELECT p.id FROM ProductJpa p WHERE p.deletedAt IS NOT NULL AND p.deletedAt < :cutoff")
     List<Long> findExpiredDeletedProductIds(@Param("cutoff") LocalDateTime cutoff);
 

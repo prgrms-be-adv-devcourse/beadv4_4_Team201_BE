@@ -45,7 +45,8 @@ public enum ProductErrorCode implements ErrorCode {
     PRODUCT_STOCK_LOCK_TIMEOUT(HttpStatus.CONFLICT.value(), "P501", "일시적인 문제가 발생했습니다. 다시 시도하세요."),
     PRODUCT_STOCK_CHANGED(HttpStatus.CONFLICT.value(), "P502", "재고가 변경되었습니다. 다시 시도하세요."),
     EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "P503", "외부 API 호출 중 오류가 발생했습니다."),
-    EXTERNAL_API_CONNECTION_FAILURE(HttpStatus.SERVICE_UNAVAILABLE.value(), "P504", "외부 서비스에 연결할 수 없습니다.");
+    EXTERNAL_API_CONNECTION_FAILURE(HttpStatus.SERVICE_UNAVAILABLE.value(), "P504", "외부 서비스에 연결할 수 없습니다."),
+    ES_NICKNAME_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "P505", "ES 닉네임 업데이트에 실패했습니다.");
 
     private final int statusCode;
     private final String code;
