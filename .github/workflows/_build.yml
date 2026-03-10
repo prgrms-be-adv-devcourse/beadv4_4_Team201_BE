@@ -90,7 +90,7 @@ jobs:
         id: gradle-build
         # clean 제거: GitHub Actions는 매번 새 환경이므로 불필요
         run: >-
-          ./gradlew build --parallel
+          ./gradlew build --parallel --stacktrace
           ${{ inputs.verbose && '--info' || '' }}
           ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
 
