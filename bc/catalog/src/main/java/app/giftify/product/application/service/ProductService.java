@@ -174,8 +174,9 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             } catch (PessimisticLockingFailureException e) {
                 throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
             }
-
             validateProductOwner(product, sellerId);
+            validateNotDeleted(product);
+            
             if (product.getStock() != requestDto.expectedStock()) { // CAS 검증 (판매자가 재고 수정하려는 사이에 재고 변동이 일어남)
                 throw new ProductException(PRODUCT_STOCK_CHANGED); // TODO 재시도 or 재고수정 분리
             }
@@ -183,6 +184,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
         } else {
             product = productSupport.findById(productId);
             validateProductOwner(product, sellerId);
+            validateNotDeleted(product);
         }
 
         Optional.ofNullable(requestDto.name()).ifPresent(product::updateName);
@@ -276,6 +278,12 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     private void validateProductOwner(Product product, Long sellerId) {
         if (!product.getSellerId().equals(sellerId))
             throw new ProductException(PRODUCT_NOT_OWNED);
+    }
+
+    // 삭제된 상품 검증
+    private void validateNotDeleted(Product product) {
+        if (product.getDeletedAt() != null)
+            throw new ProductException(PRODUCT_ALREADY_DELETED);
     }
 
     @Override

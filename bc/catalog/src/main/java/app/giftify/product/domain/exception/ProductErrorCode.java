@@ -25,6 +25,7 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_APPROVAL_ACTION(HttpStatus.BAD_REQUEST.value(), "P209", "올바르지 않은 액션값입니다."),
     CANNOT_STOP_SALE_DUE_TO_ACTIVE_FUNDING(HttpStatus.BAD_REQUEST.value(), "P210", "진행 중이거나 수령자 수락 대기 중인 펀딩이 있습니다."),
     PRODUCT_CANNOT_CHANGE_STATUS_TO_REJECTED(HttpStatus.BAD_REQUEST.value(), "P211", "'REJECTED'로 상태를 변경할 수 없습니다."),
+    PRODUCT_ALREADY_DELETED(HttpStatus.BAD_REQUEST.value(), "P212", "삭제된 상품입니다."),
 
     // P3xx: 도메인 생성/입력 검증
     PRODUCT_SELLER_REQUIRED(HttpStatus.BAD_REQUEST.value(), "P301", "판매자 정보는 필수입니다."),

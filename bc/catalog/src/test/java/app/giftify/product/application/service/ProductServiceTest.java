@@ -1,8 +1,11 @@
 package app.giftify.product.application.service;
 
+import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
+import app.giftify.product.application.port.in.MyProductResult;
 import app.giftify.product.application.port.in.ProductUpdateResult;
 import app.giftify.product.application.port.out.FundingClientPort;
+import app.giftify.product.application.port.out.MyProductSearchCommand;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
@@ -11,19 +14,27 @@ import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductErrorCode;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.never;
@@ -199,6 +210,34 @@ class ProductServiceTest {
         }
 
         @Test
+        @DisplayName("수정 실패: 삭제된 상품 수정 시 PRODUCT_ALREADY_DELETED 예외가 발생한다.")
+        void updateProduct_Fail_AlreadyDeleted() {
+            // given
+            Product deletedProduct = Product.builder()
+                    .id(PRODUCT_ID)
+                    .sellerId(SELLER_ID)
+                    .name("삭제된 상품")
+                    .description("설명")
+                    .price(10000)
+                    .stock(10)
+                    .status(ProductStatus.INACTIVE)
+                    .deletedAt(LocalDateTime.of(2025, 1, 15, 10, 0))
+                    .build();
+
+            ProductUpdateRequestDto requestDto = new ProductUpdateRequestDto(
+                    "수정된 이름", null, null, null, null, null, null
+            );
+
+            given(productSupport.findById(PRODUCT_ID)).willReturn(deletedProduct);
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, SELLER_ID, requestDto))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.PRODUCT_ALREADY_DELETED.getMessage());
+            verify(productRepositoryPort, never()).save(deletedProduct);
+        }
+
+        @Test
         @DisplayName("상태 변경 실패: 진행 중인 펀딩이 있으면 INACTIVE로 변경 시 예외가 발생한다.")
         void updateStatusToInactive_Fail_DueToFunding() {
             // given
@@ -214,6 +253,89 @@ class ProductServiceTest {
             assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, SELLER_ID, requestDto))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.CANNOT_STOP_SALE_DUE_TO_ACTIVE_FUNDING.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("나의 상품 검색 기능 테스트 (searchMyProducts)")
+    class SearchMyProductsTests {
+        private final Long SELLER_ID = 100L;
+
+        @Test
+        @DisplayName("deleted=false(기본값): deleted 필드가 false로 command에 전달된다")
+        void searchMyProducts_deletedFalse() {
+            // given
+            MyProductSearchDto searchDto = new MyProductSearchDto();
+            Product product = createProduct(1L, 10);
+
+            given(productRepositoryPort.searchMyProducts(eq(SELLER_ID), any(MyProductSearchCommand.class)))
+                    .willReturn(new PageImpl<>(List.of(product), PageRequest.of(0, 20), 1));
+
+            // when
+            PageResponse<MyProductResult> result = productService.searchMyProducts(SELLER_ID, searchDto);
+
+            // then
+            ArgumentCaptor<MyProductSearchCommand> captor = ArgumentCaptor.forClass(MyProductSearchCommand.class);
+            verify(productRepositoryPort).searchMyProducts(eq(SELLER_ID), captor.capture());
+
+            assertThat(captor.getValue().isDeleted()).isFalse();
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).deletedAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("deleted=true: deleted 필드가 true로 command에 전달된다")
+        void searchMyProducts_deletedTrue() {
+            // given
+            MyProductSearchDto searchDto = new MyProductSearchDto();
+            searchDto.setDeleted(true);
+
+            Product deletedProduct = Product.builder()
+                    .id(2L)
+                    .sellerId(SELLER_ID)
+                    .name("삭제된 상품")
+                    .description("삭제된 상품 설명")
+                    .price(10000)
+                    .stock(0)
+                    .status(ProductStatus.INACTIVE)
+                    .deletedAt(LocalDateTime.of(2025, 1, 15, 10, 0))
+                    .build();
+
+            given(productRepositoryPort.searchMyProducts(eq(SELLER_ID), any(MyProductSearchCommand.class)))
+                    .willReturn(new PageImpl<>(List.of(deletedProduct), PageRequest.of(0, 20), 1));
+
+            // when
+            PageResponse<MyProductResult> result = productService.searchMyProducts(SELLER_ID, searchDto);
+
+            // then
+            ArgumentCaptor<MyProductSearchCommand> captor = ArgumentCaptor.forClass(MyProductSearchCommand.class);
+            verify(productRepositoryPort).searchMyProducts(eq(SELLER_ID), captor.capture());
+
+            assertThat(captor.getValue().isDeleted()).isTrue();
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).deletedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("deleted=true + status 필터: 두 필터가 모두 command에 전달된다")
+        void searchMyProducts_deletedTrueWithStatusFilter() {
+            // given
+            MyProductSearchDto searchDto = new MyProductSearchDto();
+            searchDto.setDeleted(true);
+            searchDto.setStatus(ProductStatus.INACTIVE);
+
+            given(productRepositoryPort.searchMyProducts(eq(SELLER_ID), any(MyProductSearchCommand.class)))
+                    .willReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+
+            // when
+            productService.searchMyProducts(SELLER_ID, searchDto);
+
+            // then
+            ArgumentCaptor<MyProductSearchCommand> captor = ArgumentCaptor.forClass(MyProductSearchCommand.class);
+            verify(productRepositoryPort).searchMyProducts(eq(SELLER_ID), captor.capture());
+
+            assertThat(captor.getValue().isDeleted()).isTrue();
+            assertThat(captor.getValue().getStatus()).isEqualTo(ProductStatus.INACTIVE);
         }
     }
 
