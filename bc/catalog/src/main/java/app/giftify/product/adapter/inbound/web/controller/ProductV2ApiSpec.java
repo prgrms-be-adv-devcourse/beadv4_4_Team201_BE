@@ -106,7 +106,20 @@ public interface ProductV2ApiSpec {
             @Valid @ModelAttribute ProductSearchDto searchDto
     );
 
-    @Operation(summary = "나의 상품 조회", description = "판매자가 자신이 등록한 상품 목록을 조회합니다. SELLER 권한 필요.")
+    @Operation(summary = "나의 상품 조회", description = """
+            판매자가 자신이 등록한 상품 목록을 조회합니다. SELLER 권한 필요.
+            
+            
+            **필터링 옵션**:
+            - `keyword` — 상품명 또는 설명 키워드 검색
+            - `minPrice` / `maxPrice` — 가격 범위 필터
+            - `inStock` — 재고 있는 상품만 조회 (기본값: false)
+            - `status` — 상품 상태 필터 (DRAFT, ACTIVE, INACTIVE, REJECTED)
+            - `deleted` — 삭제된 상품만 조회 (기본값: false). true 시 soft delete된 상품만 반환
+            - `sort` — 정렬 기준 (latest, priceAsc, priceDesc / 기본값: latest)
+            - `page` — 페이지 번호 (기본값: 0)
+            - `size` — 페이지 크기 (기본값: 20, 최소: 1)
+            """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 검색 파라미터"),
