@@ -4,6 +4,7 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
+import app.giftify.shared.domain.event.member.SellerNicknameChangedEvent;
 import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
@@ -105,6 +106,21 @@ class ProductEsEventListenerTest {
 
         // then
         verify(productEsPort).deleteById(productId);
+    }
+
+    @Test
+    @DisplayName("SellerNicknameChangedEvent가 발행되면 해당 판매자의 ES 도큐먼트 닉네임을 일괄 업데이트한다.")
+    void handleSellerNicknameChanged() {
+        // given
+        Long sellerId = 1L;
+        String newNickname = "새닉네임";
+        SellerNicknameChangedEvent event = new SellerNicknameChangedEvent(sellerId, newNickname);
+
+        // when
+        listener.handleSellerNicknameChanged(event);
+
+        // then
+        verify(productEsPort).updateSellerNickname(sellerId, newNickname);
     }
 
     private Product createProduct(Long productId) {

@@ -80,6 +80,10 @@ public class ProductJpaTestApplication {
             @Override
             public void deleteById(Long productId) {
             }
+
+            @Override
+            public void updateSellerNickname(Long sellerId, String nickname) {
+            }
         };
     }
 

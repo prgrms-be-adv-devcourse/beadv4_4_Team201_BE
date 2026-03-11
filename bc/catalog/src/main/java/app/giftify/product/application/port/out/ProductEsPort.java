@@ -12,4 +12,6 @@ public interface ProductEsPort {
     PageResponse<ProductResult> searchProducts(ProductEsSearchCommand command);
 
     void deleteById(Long productId);
+
+    void updateSellerNickname(Long sellerId, String nickname);
 }
