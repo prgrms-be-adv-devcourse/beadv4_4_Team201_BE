@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.BulkFailureException;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -141,18 +142,23 @@ public class ProductEsAdapter implements ProductEsPort {
             return;
         }
 
-        try {
-            List<UpdateQuery> updateQueries = productIds.stream()
-                    .map(id -> UpdateQuery.builder(String.valueOf(id))
-                            // sellerNickname 필드만 새 값으로 변경 (나머지 필드는 그대로 유지)
-                            .withDocument(Document.create().append("sellerNickname", nickname))
-                            .build())
-                    .toList();
+        List<UpdateQuery> updateQueries = productIds.stream()
+                .map(id -> UpdateQuery.builder(String.valueOf(id))
+                        // sellerNickname 필드만 새 값으로 변경 (나머지 필드는 그대로 유지)
+                        .withDocument(Document.create().append("sellerNickname", nickname))
+                        .build())
+                .toList();
 
+        try {
             elasticsearchOperations.bulkUpdate(updateQueries, IndexCoordinates.of("products"));
             log.info("판매자 닉네임 ES 일괄 업데이트 완료: sellerId={}, nickname={}, updated={}",
                     sellerId, nickname, productIds.size());
-        } catch (Exception e) {
+        } catch (BulkFailureException e) { // 일부 도큐먼트 누락 시, 예외를 던지지 않고 로그 기록
+            int failed = e.getFailedDocuments().size();
+            int succeeded = productIds.size() - failed;
+            log.warn("판매자 닉네임 ES 일괄 업데이트 부분 성공: sellerId={}, nickname={}, succeeded={}, failed={}, failedIds={}",
+                    sellerId, nickname, succeeded, failed, e.getFailedDocuments().keySet());
+        } catch (Exception e) { // ES 연결 실패 등 전체 장애
             log.error("판매자 닉네임 ES 업데이트 실패: sellerId={}, nickname={}", sellerId, nickname, e);
             throw new ProductException(ProductErrorCode.ES_NICKNAME_UPDATE_FAILED);
         }
