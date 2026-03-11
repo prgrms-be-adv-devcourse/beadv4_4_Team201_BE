@@ -7,7 +7,7 @@ import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "wishlist")
+@Table(name = "wishlists")
 @Getter
 @Builder
 @AllArgsConstructor

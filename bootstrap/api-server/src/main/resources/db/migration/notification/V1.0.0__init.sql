@@ -1,5 +1,3 @@
--- bc/notification
-
 create table notifications (
     is_read boolean not null,
     created_at timestamp(6) not null,

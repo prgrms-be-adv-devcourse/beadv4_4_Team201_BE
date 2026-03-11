@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "CART")
+@Table(name = "CARTS")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class JpaCart extends BaseJpaEntity {

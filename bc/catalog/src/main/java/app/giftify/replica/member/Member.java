@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "MEMBER_REPLICA")
+@Table(name = "MEMBER_REPLICAS")
 @Getter
 @NoArgsConstructor
 public class Member { // NOTE CatalogMember 등으로 이름 바꾸기

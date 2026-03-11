@@ -60,7 +60,7 @@ public class ValidationStepConfig {
                 .tasklet((contribution, chunkContext) -> {
                     EntityManager em = EntityManagerFactoryUtils
                             .getTransactionalEntityManager(emf);
-                    em.createNativeQuery("TRUNCATE TABLE settlement_queue").executeUpdate();
+                    em.createNativeQuery("TRUNCATE TABLE settlement_queues").executeUpdate();
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();

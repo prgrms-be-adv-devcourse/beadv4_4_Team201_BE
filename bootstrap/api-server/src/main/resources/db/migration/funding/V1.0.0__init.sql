@@ -1,6 +1,4 @@
--- bc/core: Funding
-
-create table funding (
+create table fundings (
     current_amount integer not null,
     target_amount integer not null,
     achieved_at timestamp(6),
@@ -16,10 +14,12 @@ create table funding (
     status varchar(20) not null,
     created_by varchar(255),
     updated_by varchar(255),
+    product_name varchar(255) not null,
+    image_key varchar(500),
     primary key (id)
 );
 
-create table funding_participant_member (
+create table funding_participant_members (
     amount integer not null,
     created_at timestamp(6) not null,
     funding_id bigint not null,
@@ -29,5 +29,8 @@ create table funding_participant_member (
     created_by varchar(255),
     nick_name varchar(255) not null,
     updated_by varchar(255),
-    primary key (id)
+    primary key (id),
+    constraint fk_funding_participant_funding foreign key (funding_id) references fundings
 );
+
+create index idx_funding_wishlist_status on fundings (wishlist_item_id, status);

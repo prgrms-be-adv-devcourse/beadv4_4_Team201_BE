@@ -9,7 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "PRODUCT")
+@Table(name = "PRODUCTS")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Getter
-@Table(name = "cart_item")
+@Table(name = "cart_items")
 public class JpaCartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
