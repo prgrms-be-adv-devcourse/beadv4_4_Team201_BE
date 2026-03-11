@@ -57,7 +57,7 @@ public class CartItem extends BaseDomainModel {
     public String toString() {
         return "CartItem{" +
                 "cartId=" + cartId +
-                ", targetId='" + wishlistItemId + '\'' +
+                ", wishlistItemId='" + wishlistItemId + '\'' +
                 ", amount=" + amount +
                 '}';
     }
