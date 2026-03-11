@@ -216,13 +216,16 @@ public class CartService
 				.map(item -> {
 					CartItemContext ctx = contextMap.get(item.getWishlistItemId());
                     FundingInfo fundingInfo = fundingInfoMap.get(item.getWishlistItemId());
+					WishlistItem wishlistItem = wishlistItemMap.get(item.getWishlistItemId());
+					Long wishlistId = wishlistItem != null ? wishlistItem.getWishlistId() : null;
 					return CartItemResponse.from(
 							item,
 							fundingEndedIds.contains(item.getWishlistItemId()),
 							ctx != null ? ctx.product() : null,
 							ctx != null ? ctx.receiverId() : null,
 							ctx != null ? ctx.receiverNickname() : null,
-                            fundingInfo
+                            fundingInfo,
+							wishlistId
 					);
 				})
 				.toList();
