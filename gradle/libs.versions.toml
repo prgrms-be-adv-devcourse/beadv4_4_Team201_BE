@@ -61,6 +61,7 @@ spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-s
 spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
 spring-boot-starter-restclient = { module = "org.springframework.boot:spring-boot-starter-restclient" }
 spring-boot-jackson2 = { module = "org.springframework.boot:spring-boot-jackson2" }
+spring-boot-h2console = { module = "org.springframework.boot:spring-boot-h2console" }
 # =============================================================================
 # Spring Modulith
 # =============================================================================

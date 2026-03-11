@@ -33,6 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
     runtimeOnly(libs.h2)
+    runtimeOnly(libs.spring.boot.h2console)
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)
     runtimeOnly(libs.micrometer.prometheus)
