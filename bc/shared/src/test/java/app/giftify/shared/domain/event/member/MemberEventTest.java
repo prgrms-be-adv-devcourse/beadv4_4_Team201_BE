@@ -1,5 +1,6 @@
 package app.giftify.shared.domain.event.member;
 
+import app.giftify.shared.domain.type.MemberRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,14 +33,16 @@ class MemberEventTest {
         Long memberId = 1L;
         String authSub = "auth0|123";
         String nickname = "newTester";
+        MemberRole role = MemberRole.BUYER;
 
         // when
-        MemberUpdatedEvent event = new MemberUpdatedEvent(memberId, authSub, nickname);
+        MemberUpdatedEvent event = new MemberUpdatedEvent(memberId, authSub, nickname, role);
 
         // then
         assertThat(event.getMemberId()).isEqualTo(memberId);
         assertThat(event.getAuthSub()).isEqualTo(authSub);
         assertThat(event.getNickname()).isEqualTo(nickname);
+        assertThat(event.getRole()).isEqualTo(role);
         assertThat(event.toString()).contains("memberId=1", "authSub='auth0|123'", "nickname='newTester'");
     }
 }

@@ -3,12 +3,11 @@ package app.giftify.product.adapter.outbound.jpa.repository;
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<ProductJpa, Long>, ProductQueryRepository {
@@ -23,4 +22,13 @@ public interface ProductRepository extends JpaRepository<ProductJpa, Long>, Prod
     @Query("SELECT p FROM ProductJpa p WHERE p.id = :id")
     Optional<ProductJpa> findByIdForUpdate(@Param("id") Long id);
 
+    @Query("SELECT p.id FROM ProductJpa p WHERE p.sellerId = :sellerId AND p.status NOT IN ('DRAFT', 'REJECTED') AND p.deletedAt IS NULL")
+    List<Long> findActiveProductIdsBySellerId(@Param("sellerId") Long sellerId);
+
+    @Query("SELECT p.id FROM ProductJpa p WHERE p.deletedAt IS NOT NULL AND p.deletedAt < :cutoff")
+    List<Long> findExpiredDeletedProductIds(@Param("cutoff") LocalDateTime cutoff);
+
+    @Modifying(clearAutomatically = true) // 쿼리 실행 후 자동으로 em.clear()를 호출해서 영속성 컨텍스트를 초기화
+    @Query("DELETE FROM ProductJpa p WHERE p.deletedAt IS NOT NULL AND p.deletedAt < :cutoff")
+    int deleteExpiredProducts(@Param("cutoff") LocalDateTime cutoff);
 }

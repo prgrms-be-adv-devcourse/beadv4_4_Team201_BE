@@ -1,6 +1,10 @@
 # 개발 환경 (docker-compose, 개발 서버)
 # PostgreSQL 사용, 환경변수로 접속 정보 주입
 spring:
+  modulith:
+    runtime:
+      flyway-enabled: true
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/giftify_db}
     username: ${DB_USERNAME:giftify}
@@ -48,11 +52,9 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: "0"
-    locations: classpath:db/migration
     schemas: g7app
     default-schema: g7app
     create-schemas: true
-    out-of-order: true
 
   sql:
     init:

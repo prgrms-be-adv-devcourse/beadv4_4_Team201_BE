@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -35,5 +36,10 @@ public class ProductStockHistoryAdapter implements ProductStockHistoryRepository
     public Page<ProductStockHistory> searchStockHistories(Long sellerId, StockHistorySearchCommand searchCommand) {
         Page<ProductStockHistoryJpa> entityPage = productStockHistoryRepository.searchStockHistories(sellerId, searchCommand);
         return entityPage.map(productStockHistoryMapper::toDomain);
+    }
+
+    @Override
+    public int deleteByProductIds(List<Long> productIds) {
+        return productStockHistoryRepository.deleteByProductIdIn(productIds);
     }
 }

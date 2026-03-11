@@ -1,5 +1,7 @@
 package app.giftify.shared.api.paging;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record PageRequest(int page, int size) {
 
     public PageRequest {
@@ -22,6 +24,7 @@ public record PageRequest(int page, int size) {
         return new PageRequest(0, 10);
     }
 
+    @JsonIgnore
     public long getOffset() {
         return (long) page * size;
     }

@@ -217,13 +217,6 @@ public class OrderService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void confirmOrderItems(Long orderId, Set<Long> itemIds) {
-        Order targetOrder = orderRepository.getByIdWithItemsAndLock(orderId);
-
-        targetOrder.confirmed(itemIds);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void expire(Long orderId) {
         Order order = orderRepository.getByIdWithItems(orderId);
 

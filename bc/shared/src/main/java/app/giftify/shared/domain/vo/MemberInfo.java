@@ -1,5 +1,7 @@
 package app.giftify.shared.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import app.giftify.shared.domain.type.MemberRole;
 
 /**
@@ -45,6 +47,7 @@ public record MemberInfo(
 	 *
 	 * @return memberId가 존재하면 true
 	 */
+	@JsonIgnore
 	public boolean isRegistered() {
 		return memberId != null;
 	}

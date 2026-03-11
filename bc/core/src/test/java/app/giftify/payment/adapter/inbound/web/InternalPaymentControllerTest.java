@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
 import app.giftify.payment.application.inbound.InternalPaymentQueryUseCase;
@@ -47,7 +49,9 @@ class InternalPaymentControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		objectMapper = new ObjectMapper();
+		objectMapper = new ObjectMapper()
+				.registerModule(new JavaTimeModule())
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 		mockMvc = MockMvcBuilders
 			.standaloneSetup(new InternalPaymentController(
 				internalPaymentQueryUseCase,

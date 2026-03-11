@@ -24,7 +24,6 @@ class PayloadHasherTest {
 
     @BeforeEach
     void setUp() {
-        // 실제 로직 검증을 위해 실제 ObjectMapper 사용 (추천)
         objectMapper = new ObjectMapper();
         payloadHasher = new PayloadHasher(objectMapper);
     }

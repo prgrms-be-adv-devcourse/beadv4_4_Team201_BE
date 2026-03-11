@@ -19,7 +19,7 @@ jobs:
     name: Build & Test
     uses: ./.github/workflows/_build.yml
     with:
-      java-version: '21'
+      java-version: '25'
       run-tests: true
       # PR 단계에서는 커버리지 필수
       generate-coverage: true

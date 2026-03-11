@@ -3,9 +3,15 @@ package app.giftify.order.adapter.inbound.event;
 import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
+import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
+import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.InfraException;
+import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
+import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
+import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentEvent;
@@ -25,6 +31,7 @@ public class OrderEventListener {
 
     private final OrderService orderService;
     private final FundingOrderService fundingOrderService;
+	private final EventPublisher eventPublisher;
 
 	@Retryable(
 			retryFor = InfraException.class,
@@ -66,10 +73,26 @@ public class OrderEventListener {
     }
 
 	@ApplicationModuleListener
-	public void on (FundingAcceptedEvent event) {
-		log.info("[이벤트 수신] 펀딩 수령 확정 -> 주문 확정 시작. FundingId: {}", event.getFundingId());
+	public void on(FundingConfirmPendingEvent event) {
+		log.info("[이벤트 수신] 펀딩 수령 확정 대기 -> 주문 확정 시작. FundingId: {}", event.getFundingId());
 
-		fundingOrderService.confirmOrderItemsByFunding(event.getFundingId());
+		ConfirmFundingOrderCommand command = new ConfirmFundingOrderCommand(event.getFundingId(), event.getProductId());
+
+		try {
+			fundingOrderService.confirmOrderItemsByFunding(command);
+
+			eventPublisher.publish(new OrderConfirmedEvent(event.getFundingId()));
+		} catch (BusinessException | InfraException e) {
+			log.error("[주문 확정 실패] 정의된 예외 발생. ErrorCode: {}, FundingId: {}, productId: {}", e.getErrorCode().getCode(), event.getFundingId(), event.getProductId(), e);
+
+			eventPublisher.publish(new OrderConfirmFailedEvent(event.getFundingId(), e.getMessage()));
+			throw e;
+		} catch (Exception e) {
+			log.error("[주문 확정 실패] 알 수 없는 예외 발생. FundingId: {}, productId: {}", event.getFundingId(), event.getProductId(), e);
+
+			eventPublisher.publish(new OrderConfirmFailedEvent(event.getFundingId(), "예기치 못한 오류 발생"));
+			throw e;
+		}
 	}
 
 	/**

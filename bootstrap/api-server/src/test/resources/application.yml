@@ -13,6 +13,9 @@ spring:
   flyway:
     enabled: false
 
+  jackson:
+    use-jackson2-defaults: true
+
 logging:
   level:
     org.springframework.modulith: DEBUG

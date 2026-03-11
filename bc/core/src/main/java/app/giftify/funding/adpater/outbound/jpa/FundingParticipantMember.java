@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "FUNDING_PARTICIPANT_MEMBER")
+@Table(name = "FUNDING_PARTICIPANT_MEMBERS")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FundingParticipantMember extends BaseJpaEntity {

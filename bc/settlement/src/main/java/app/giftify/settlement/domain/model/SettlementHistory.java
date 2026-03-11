@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"seller_id", "settlement_date"}))
+@Table(name = "settlement_histories", uniqueConstraints = @UniqueConstraint(columnNames = {"seller_id", "settlement_date"}))
 public class SettlementHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -8,9 +8,11 @@ import lombok.Setter;
 @Setter
 public class MyProductSearchCommand extends ProductSearchCommand {
     private ProductStatus status;
+    private boolean deleted;
 
-    public MyProductSearchCommand(String keyword, Integer minPrice, Integer maxPrice, Boolean inStock, String sort, int page, int size, ProductStatus status) {
+    public MyProductSearchCommand(String keyword, Integer minPrice, Integer maxPrice, Boolean inStock, String sort, int page, int size, ProductStatus status, boolean deleted) {
         super(keyword, minPrice, maxPrice, inStock, sort, page, size);
         this.status = status;
+        this.deleted = deleted;
     }
 }

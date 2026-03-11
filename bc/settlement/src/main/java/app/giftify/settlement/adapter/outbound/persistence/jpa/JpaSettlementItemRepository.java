@@ -24,7 +24,7 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
             value = """
             SELECT s.order_id as orderId,
                    SUM(s.settlement_amount) as total
-            FROM settlement_item s
+            FROM settlement_items s
             WHERE s.order_id IN :orderIds
             GROUP BY s.order_id
         """,
@@ -101,14 +101,14 @@ public interface JpaSettlementItemRepository extends JpaRepository<SettlementIte
                 WHEN BOOL_OR(status = 'CANCELLED') AND NOT BOOL_OR(status != 'CANCELLED') THEN 'CANCELLED'
                 ELSE 'COMPLETED'
             END as status
-        FROM settlement_item
+        FROM settlement_items
         WHERE seller_id = :sellerId
         GROUP BY TO_CHAR(COALESCE(settled_at, expected_date), 'YYYY-MM'), order_id
         ORDER BY settlementMonth DESC, orderId DESC
     """, countQuery = """
         SELECT COUNT(*) FROM (
             SELECT DISTINCT TO_CHAR(COALESCE(settled_at, expected_date), 'YYYY-MM'), order_id
-            FROM settlement_item
+            FROM settlement_items
             WHERE seller_id = :sellerId
         ) AS temp
     """, nativeQuery = true)

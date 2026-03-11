@@ -2,7 +2,7 @@ package app.giftify.settlement.adapter.outbound.batch.execution;
 
 import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;

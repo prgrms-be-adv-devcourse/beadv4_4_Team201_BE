@@ -10,4 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MyProductSearchDto extends ProductSearchDto { // 나의 상품 검색 (판매자)
     private ProductStatus status; // optional
+    private boolean deleted = false;
 }

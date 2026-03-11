@@ -14,7 +14,7 @@ on:
       java-version:
         description: 'Java version to use'
         required: false
-        default: '21'
+        default: '25'
         type: string
       run-tests:
         description: 'Run tests'
@@ -64,12 +64,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK ${{ inputs.java-version || '21' }}
+      # Gradle 8.14.4의 번들 Kotlin 컴파일러가 Java 25 버전 파싱 불가 (KT-77518)
+      # → Gradle은 JDK 21에서 실행하고, 컴파일 toolchain만 JDK 25 사용
+      - name: Set up JDK 21 (Gradle runtime)
         uses: actions/setup-java@v4.6.0
         with:
           distribution: 'temurin'
-          java-version: ${{ inputs.java-version || '21' }}
+          java-version: '21'
           cache: gradle
+
+      - name: Set up JDK ${{ inputs.java-version || '25' }} (compilation toolchain)
+        uses: actions/setup-java@v4.6.0
+        with:
+          distribution: 'temurin'
+          java-version: ${{ inputs.java-version || '25' }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4.2.2
@@ -89,9 +97,11 @@ jobs:
       - name: Build
         id: gradle-build
         # clean 제거: GitHub Actions는 매번 새 환경이므로 불필요
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
         run: >-
           ./gradlew build --parallel
-          ${{ inputs.verbose && '--info' || '' }}
+          ${{ inputs.verbose && '--info --stacktrace' || '' }}
           ${{ inputs.generate-coverage && 'jacocoAggregatedReport' || '' }}
 
       # 배포용 Jar 업로드 (옵션)

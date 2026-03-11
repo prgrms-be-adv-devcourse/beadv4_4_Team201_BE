@@ -26,10 +26,11 @@ public class Product extends BaseDomainModel {
     private String imageKey;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     @Builder
     public Product(Long id, Long sellerId, String name, String description, int price, int stock, ProductStatus status,
-                   ProductCategory category, String imageKey, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                   ProductCategory category, String imageKey, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
         super(id);
         validateCreation(sellerId, name, description, price, stock);
         this.sellerId = sellerId;
@@ -42,6 +43,7 @@ public class Product extends BaseDomainModel {
         this.imageKey = imageKey;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 
     private static void validateCreation(Long sellerId, String name, String description, int price, int stock) {
@@ -86,7 +88,7 @@ public class Product extends BaseDomainModel {
     private void validateTransition(ProductStatus toStatus) {
         if (this.status == toStatus)
             throw new ProductException(PRODUCT_CANNOT_CHANGE_TO_SAME_STATUS);
-        
+
         if (toStatus == DRAFT) {
             throw new ProductException(PRODUCT_CANNOT_CHANGE_STATUS_TO_DRAFT);
         }
@@ -218,5 +220,15 @@ public class Product extends BaseDomainModel {
     ) {
         StockChangeResult result = new StockChangeResult(sellerId, productId, beforeStock, afterStock, delta, changeType);
         registerEvent(new ProductStockUpdatedEvent(result));
+    }
+
+    /**
+     * 상품 삭제
+     * INACTIVE 상품만 soft delete 가능
+     */
+    public void delete() {
+        if (this.status != INACTIVE)
+            throw new ProductException(PRODUCT_NOT_IN_INACTIVE_STATUS);
+        this.deletedAt = LocalDateTime.now();
     }
 }

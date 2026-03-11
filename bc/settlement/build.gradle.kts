@@ -19,10 +19,10 @@ dependencies {
 
     // Retry
     implementation(libs.spring.retry)
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-aspectj")
 
     // batch
-    implementation("org.springframework.boot:spring-boot-starter-batch")
+    implementation(libs.spring.boot.starter.batch.jdbc)
 
     // Test
     testImplementation(libs.spring.boot.starter.test)
