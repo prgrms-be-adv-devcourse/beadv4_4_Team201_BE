@@ -4,6 +4,7 @@ import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
+import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
@@ -128,8 +129,8 @@ class OrderEventListenerTest {
             doThrow(new DomainException(OrderErrorCode.INVALID_STATUS_TRANSITION))
                     .when(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
 
-            // when
-            orderEventListener.on(event);
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event)).isInstanceOf(BusinessException.class);
 
             // then
             ArgumentCaptor<OrderConfirmFailedEvent> captor = ArgumentCaptor.forClass(OrderConfirmFailedEvent.class);
@@ -145,10 +146,9 @@ class OrderEventListenerTest {
             doThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT))
                     .when(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
 
-            // when
-            orderEventListener.on(event);
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event)).isInstanceOf(InfraException.class);
 
-            // then
             ArgumentCaptor<OrderConfirmFailedEvent> captor = ArgumentCaptor.forClass(OrderConfirmFailedEvent.class);
             verify(eventPublisher).publish(captor.capture());
             assertThat(captor.getValue().getFundingId()).isEqualTo(FUNDING_ID);
@@ -162,8 +162,8 @@ class OrderEventListenerTest {
             doThrow(new RuntimeException("DB connection lost"))
                     .when(fundingOrderService).confirmOrderItemsByFunding(any(ConfirmFundingOrderCommand.class));
 
-            // when
-            orderEventListener.on(event);
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event)).isInstanceOf(Exception.class);
 
             // then
             ArgumentCaptor<OrderConfirmFailedEvent> captor = ArgumentCaptor.forClass(OrderConfirmFailedEvent.class);

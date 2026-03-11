@@ -73,13 +73,6 @@ public class OrderEventListener {
     }
 
 	@ApplicationModuleListener
-	public void on (FundingAcceptedEvent event) {
-		log.info("[이벤트 수신] 펀딩 수령 확정 -> 주문 확정 시작. FundingId: {}", event.getFundingId());
-
-		fundingOrderService.confirmOrderItemsByFunding(event.getFundingId());
-	}
-
-	@ApplicationModuleListener
 	public void on(FundingConfirmPendingEvent event) {
 		log.info("[이벤트 수신] 펀딩 수령 확정 대기 -> 주문 확정 시작. FundingId: {}", event.getFundingId());
 
@@ -93,10 +86,12 @@ public class OrderEventListener {
 			log.error("[주문 확정 실패] 정의된 예외 발생. ErrorCode: {}, FundingId: {}, productId: {}", e.getErrorCode().getCode(), event.getFundingId(), event.getProductId(), e);
 
 			eventPublisher.publish(new OrderConfirmFailedEvent(event.getFundingId(), e.getMessage()));
+			throw e;
 		} catch (Exception e) {
 			log.error("[주문 확정 실패] 알 수 없는 예외 발생. FundingId: {}, productId: {}", event.getFundingId(), event.getProductId(), e);
 
 			eventPublisher.publish(new OrderConfirmFailedEvent(event.getFundingId(), "예기치 못한 오류 발생"));
+			throw e;
 		}
 	}
 

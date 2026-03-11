@@ -29,11 +29,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -249,127 +247,7 @@ class FundingOrderServiceTest {
     }
 
     @Nested
-    @DisplayName("펀딩 수령 확정 주문 처리 (confirmOrderItemsByFunding)")
-    class ConfirmOrderItemsByFunding {
-
-        @Test
-        @DisplayName("성공: 단일 주문에 속한 아이템을 확정할 때 confirmOrderItems를 정확한 인자로 1회 호출한다")
-        void given_singleOrder_when_confirmOrderItemsByFunding_then_confirmOrderItemsCalledOnce() {
-            // given
-            Long orderId = 10L;
-            Long itemId1 = 1L;
-            Long itemId2 = 2L;
-
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of(orderId, List.of(itemId1, itemId2)));
-
-            // when
-            fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID);
-
-            // then
-            ArgumentCaptor<Set<Long>> captor = ArgumentCaptor.forClass(Set.class);
-            verify(orderService, times(1)).confirmOrderItems(eq(orderId), captor.capture());
-            assertThat(captor.getValue()).containsExactlyInAnyOrder(itemId1, itemId2);
-        }
-
-        @Test
-        @DisplayName("성공: 여러 주문에 걸쳐 있을 때 주문별로 각각 confirmOrderItems를 호출한다")
-        void given_multipleOrders_when_confirmOrderItemsByFunding_then_confirmOrderItemsCalledForEachOrder() {
-            // given
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of(
-                            10L, List.of(1L),
-                            20L, List.of(2L)
-                    ));
-
-            // when
-            fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID);
-
-            // then
-            verify(orderService, times(2)).confirmOrderItems(any(), any());
-        }
-
-        @Test
-        @DisplayName("성공: 매핑 결과가 비어있으면 confirmOrderItems를 호출하지 않는다")
-        void given_emptyMap_when_confirmOrderItemsByFunding_then_confirmOrderItemsNeverCalled() {
-            // given
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of());
-
-            // when
-            fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID);
-
-            // then
-            verify(orderService, never()).confirmOrderItems(any(), any());
-        }
-
-        @Test
-        @DisplayName("성공: confirmOrderItems에서 BusinessException이 발생해도 예외가 삼켜지고 정상 종료된다")
-        void given_businessException_when_confirmOrderItemsByFunding_then_exceptionSwallowed() {
-            // given
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of(10L, List.of(1L)));
-            doThrow(new PolicyException(OrderErrorCode.INVALID_STATUS_TRANSITION))
-                    .when(orderService).confirmOrderItems(any(), any());
-
-            // when & then
-            assertThatCode(() -> fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID))
-                    .doesNotThrowAnyException();
-        }
-
-        @Test
-        @DisplayName("성공: confirmOrderItems에서 InfraException이 발생해도 예외가 삼켜지고 정상 종료된다")
-        void given_infraException_when_confirmOrderItemsByFunding_then_exceptionSwallowed() {
-            // given
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of(10L, List.of(1L)));
-            doThrow(new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT))
-                    .when(orderService).confirmOrderItems(any(), any());
-
-            // when & then
-            assertThatCode(() -> fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID))
-                    .doesNotThrowAnyException();
-        }
-
-        @Test
-        @DisplayName("성공: confirmOrderItems에서 RuntimeException이 발생해도 예외가 삼켜지고 정상 종료된다")
-        void given_runtimeException_when_confirmOrderItemsByFunding_then_exceptionSwallowed() {
-            // given
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of(10L, List.of(1L)));
-            doThrow(new RuntimeException("예상치 못한 오류"))
-                    .when(orderService).confirmOrderItems(any(), any());
-
-            // when & then
-            assertThatCode(() -> fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID))
-                    .doesNotThrowAnyException();
-        }
-
-        @Test
-        @DisplayName("성공: 여러 주문 중 하나에서 예외가 발생해도 나머지 주문 확정 처리가 계속된다")
-        void given_exceptionOnOneOrder_when_confirmOrderItemsByFunding_then_otherOrdersStillProcessed() {
-            // given
-            given(orderItemRepository.getItemIdMapByFundingId(FUNDING_ID))
-                    .willReturn(Map.of(
-                            10L, List.of(1L),
-                            20L, List.of(2L)
-                    ));
-            // 첫 번째 호출 실패, 두 번째 호출 정상
-            doThrow(new PolicyException(OrderErrorCode.INVALID_STATUS_TRANSITION))
-                    .doNothing()
-                    .when(orderService).confirmOrderItems(any(), any());
-
-            // when & then
-            assertThatCode(() -> fundingOrderService.confirmOrderItemsByFunding(FUNDING_ID))
-                    .doesNotThrowAnyException();
-
-            // 예외와 무관하게 두 주문 모두에 대해 확정 요청이 시도됨
-            verify(orderService, times(2)).confirmOrderItems(any(), any());
-        }
-    }
-
-    @Nested
-    @DisplayName("펀딩 확정 주문 처리 - 커맨드 기반 (confirmOrderItemsByFunding(ConfirmFundingOrderCommand))")
+    @DisplayName("펀딩 확정 주문 처리")
     class ConfirmOrderItemsByFundingWithCommand {
 
         private static final Long PRODUCT_ID = 100L;

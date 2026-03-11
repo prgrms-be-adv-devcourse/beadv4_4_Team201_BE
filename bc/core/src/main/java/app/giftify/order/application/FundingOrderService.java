@@ -62,25 +62,6 @@ public class FundingOrderService {
         });
     }
 
-    @Transactional(readOnly = true)
-    public void confirmOrderItemsByFunding(Long fundingId) {
-        Map<Long, List<Long>> orderIdMap = orderItemRepository.getItemIdMapByFundingId(fundingId);
-
-        Set<Long> orderIds = orderIdMap.keySet();
-
-        orderIds.forEach(orderId -> {
-            List<Long> targetItemIds = orderIdMap.get(orderId);
-            try {
-                orderService.confirmOrderItems(orderId, new HashSet<>(targetItemIds));
-            } catch (BusinessException | InfraException e) {
-                ErrorCode errorCode = e.getErrorCode();
-                log.error("[주문 확정 실패] orderId: {}, errorCode: {}, message = {}", orderId, errorCode.getCode(), errorCode.getMessage(), e);
-            } catch (Exception e) {
-                log.error("[주문 확정 실패] orderId: {}, message = {}", orderId, e.getMessage(), e);
-            }
-        });
-    }
-
     @Transactional
     public void confirmOrderItemsByFunding(ConfirmFundingOrderCommand command) {
         eventPublisher.publish(
