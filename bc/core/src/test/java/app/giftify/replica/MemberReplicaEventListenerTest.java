@@ -2,6 +2,7 @@ package app.giftify.replica;
 
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
+import app.giftify.shared.domain.type.MemberRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +39,7 @@ class MemberReplicaEventListenerTest {
     void handleMemberUpdatedEvent() {
         Long memberId = 1L;
         String nickname = "수정된닉네임";
-        MemberUpdatedEvent event = new MemberUpdatedEvent(memberId, "auth0|user1", nickname);
+        MemberUpdatedEvent event = new MemberUpdatedEvent(memberId, "auth0|user1", nickname, MemberRole.BUYER);
 
         listener.handle(event);
 
