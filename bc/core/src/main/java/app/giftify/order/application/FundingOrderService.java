@@ -2,11 +2,16 @@ package app.giftify.order.application;
 
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
+import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
 import app.giftify.order.application.outbound.port.OrderItemRepository;
+import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.Order;
 import app.giftify.order.domain.OrderItem;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.*;
+import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.shared.domain.event.order.OrderConfirmPendingEvent;
+import app.giftify.shared.domain.vo.ConfirmItem;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +29,8 @@ import java.util.stream.Collectors;
 public class FundingOrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderService orderService;
+    private final EventPublisher eventPublisher;
+    private final OrderRepository orderRepository;
 
     @Transactional(readOnly = true)
     public void requestCancelFundingOrder(CancelFundingOrderCommand command) {
@@ -55,23 +62,31 @@ public class FundingOrderService {
         });
     }
 
-    @Transactional(readOnly = true)
-    public void confirmOrderItemsByFunding(Long fundingId) {
-        Map<Long, List<Long>> orderIdMap = orderItemRepository.getItemIdMapByFundingId(fundingId);
+    @Transactional
+    public void confirmOrderItemsByFunding(ConfirmFundingOrderCommand command) {
+        eventPublisher.publish(
+                new OrderConfirmPendingEvent(
+                        List.of(ConfirmItem.ofFunding(command.productId()))
+                )
+        );
 
-        Set<Long> orderIds = orderIdMap.keySet();
+        Map<Long, List<Long>> orderIdMap = orderItemRepository.getItemIdMapByFundingId(command.fundingId());
 
-        orderIds.forEach(orderId -> {
-            List<Long> targetItemIds = orderIdMap.get(orderId);
-            try {
-                orderService.confirmOrderItems(orderId, new HashSet<>(targetItemIds));
-            } catch (BusinessException | InfraException e) {
-                ErrorCode errorCode = e.getErrorCode();
-                log.error("[주문 확정 실패] orderId: {}, errorCode: {}, message = {}", orderId, errorCode.getCode(), errorCode.getMessage(), e);
-            } catch (Exception e) {
-                log.error("[주문 확정 실패] orderId: {}, message = {}", orderId, e.getMessage(), e);
-            }
-        });
+        List<Long> orderItemIds = orderIdMap.values().stream()
+                .flatMap(List::stream)
+                .toList();
+
+        int updatedItems = orderItemRepository.confirmOrderItems(orderItemIds);
+
+        if (updatedItems != orderItemIds.size()) {
+            log.error("[주문 확정 실패] 주문 아이템 중 확정할 수 없는 상태의 아이템이 포함되어 있습니다. Expected Count: {}, Updated Count: {}, OrderItem IDs : {}",
+                    orderItemIds.size(), updatedItems, orderItemIds);
+
+            throw new DomainException(OrderErrorCode.INVALID_STATUS_TRANSITION);
+        }
+
+        List<Order> orders = orderRepository.getAllByIdInWithItems(new ArrayList<>(orderIdMap.keySet()));
+        orders.forEach(Order::synchronizeStatus);
     }
 
     private static void validateItemsNotEmpty(Long fundingId, List<OrderItem> orderItems) {

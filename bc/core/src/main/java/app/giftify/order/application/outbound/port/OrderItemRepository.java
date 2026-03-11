@@ -14,4 +14,6 @@ public interface OrderItemRepository {
     List<OrderItem> getOrderItemsWithOrderAndFindingId(Long findingId);
 
     Map<Long, List<Long>> getItemIdMapByFundingId(Long fundingId);
+
+    int confirmOrderItems(List<Long> ids);
 }
