@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -70,6 +71,7 @@ public interface TossPaymentsApi {
 		String code,
 		String message
 	) {
+		@JsonIgnore
 		public boolean isSuccess() {
 			return code == null;
 		}
