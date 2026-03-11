@@ -4,6 +4,7 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import app.giftify.shared.domain.event.member.SellerNicknameChangedEvent;
+import app.giftify.shared.domain.type.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,8 @@ public class MemberEventListener {
     @ApplicationModuleListener
     public void handle(MemberUpdatedEvent event) {
         syncMember(event.getMemberId(), event.getNickname());
-        eventPublisher.publish(new SellerNicknameChangedEvent(event.getMemberId(), event.getNickname()));
+        if (event.getRole() == MemberRole.SELLER)
+            eventPublisher.publish(new SellerNicknameChangedEvent(event.getMemberId(), event.getNickname()));
     }
 
     private void syncMember(Long memberId, String nickname) {
