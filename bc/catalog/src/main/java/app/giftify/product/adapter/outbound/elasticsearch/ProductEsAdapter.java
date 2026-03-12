@@ -29,6 +29,7 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,13 +45,17 @@ public class ProductEsAdapter implements ProductEsPort {
     private final MemberRepository memberRepository;
     private final ElasticsearchOperations elasticsearchOperations;
     private final ProductSearchQueryBuilder queryBuilder;
+    private final ProductEmbeddingAdapter embeddingService;
 
     @Override
     public void save(Product product) {
         String sellerNickname = memberRepository.findById(product.getSellerId())
                 .map(Member::getNickname)
                 .orElse("UNKNOWN");
-        ProductDocument document = ProductEsMapper.toDocument(product, sellerNickname);
+//        String embeddingInput = embeddingService.buildEmbeddingInput(product.getName(), product.getDescription());
+        String embeddingInput = embeddingService.buildEmbeddingInput(product);
+        float[] embedding = embeddingService.embed(embeddingInput);
+        ProductDocument document = ProductEsMapper.toDocument(product, sellerNickname, embedding);
 
         productEsRepository.save(document);
     }
@@ -65,19 +70,25 @@ public class ProductEsAdapter implements ProductEsPort {
         Map<Long, String> sellerNicknameMap = memberRepository.findAll().stream()
                 .collect(Collectors.toMap(Member::getId, Member::getNickname));
 
-        List<ProductDocument> documents = products.stream().map(
-                product -> {
-                    String sellerNickname = sellerNicknameMap.getOrDefault(product.getSellerId(), "UNKNOWN");
-                    return ProductEsMapper.toDocument(product, sellerNickname);
-                }
-        ).toList();
+        List<String> embeddingInputs = products.stream()
+//                .map(p -> embeddingService.buildEmbeddingInput(p.getName(), p.getDescription()))
+                .map(embeddingService::buildEmbeddingInput)
+                .toList();
+        List<float[]> embeddings = embeddingService.embedBatch(embeddingInputs);
+
+        List<ProductDocument> documents = new ArrayList<>();
+        for (int i = 0; i < products.size(); i++) {
+            Product product = products.get(i);
+            String sellerNickname = sellerNicknameMap.getOrDefault(product.getSellerId(), "UNKNOWN");
+            documents.add(ProductEsMapper.toDocument(product, sellerNickname, embeddings.get(i)));
+        }
 
         productEsRepository.saveAll(documents);
         return documents.size();
     }
 
     /**
-     * Elasticsearch 검색 기능 구현
+     * Elasticsearch 검색 기능 구현 (BM25 + KNN 하이브리드)
      */
     @Override
     public PageResponse<ProductResult> searchProducts(ProductEsSearchCommand command) {
@@ -87,13 +98,31 @@ public class ProductEsAdapter implements ProductEsPort {
         // sort
         Sort sort = buildSort(command.sort());
 
-        NativeQuery nativeQuery = NativeQuery.builder()
+        var nativeQueryBuilder = NativeQuery.builder()
                 .withQuery(query)
-                .withPageable(PageRequest.of(command.page(), command.size(), sort))
-                .build();
+                .withPageable(PageRequest.of(command.page(), command.size(), sort));
+
+        // 키워드가 있으면 KNN 검색도 함께 수행 (하이브리드 검색)
+        if (command.keyword() != null && !command.keyword().isBlank()) {
+//            String embeddingInput = embeddingService.buildEmbeddingInput(command.keyword(), null);
+            // [수정] 신규 메서드 buildSearchInput 호출
+            String embeddingInput = embeddingService.buildSearchInput(command.keyword());
+            float[] queryVector = embeddingService.embed(embeddingInput);
+            nativeQueryBuilder.withKnnSearches(queryBuilder.createKnnSearch(queryVector));
+        }
+
+        NativeQuery nativeQuery = nativeQueryBuilder.build();
 
         // 실제 검색 실행
         SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(nativeQuery, ProductDocument.class);
+
+        // ================= [수정된 부분: 로그 추가] =================
+        log.info("======= [ES 검색 점수 분석 시작: 검색어 '{}'] =======", command.keyword());
+        searchHits.getSearchHits().forEach(hit -> {
+            log.info("상품명: {}, 스코어: {}", hit.getContent().getName(), hit.getScore());
+        });
+        log.info("=================================================");
+        // =========================================================
 
         // 결과가 없으면 바로 반환
         if (searchHits.getTotalHits() == 0) {
