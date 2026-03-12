@@ -7,6 +7,7 @@ version = "1.0.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencies {
@@ -36,6 +37,10 @@ dependencies {
     // ElasticSearch
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
+    // Spring AI
+    implementation(platform("org.springframework.ai:spring-ai-bom:2.0.0-M2"))
+    implementation("org.springframework.ai:spring-ai-starter-model-openai")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -52,8 +57,11 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
     testImplementation(libs.testcontainers.elasticsearch)
+    testImplementation(libs.testcontainers.ollama)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
+    testImplementation("org.springframework.ai:spring-ai-starter-model-ollama")
+    testImplementation("org.springframework.ai:spring-ai-spring-boot-testcontainers")
 
     // Retry
     implementation(libs.spring.retry)

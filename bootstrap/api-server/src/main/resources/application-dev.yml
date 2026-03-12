@@ -22,6 +22,14 @@ spring:
   elasticsearch:
     uris: ${ES_URIS:http://localhost:9200} # ES는 HTTP REST API로 통신하기 때문에 전체 URL을 지정하는 uris를 사용
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: text-embedding-3-small
+          dimensions: 1024
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
