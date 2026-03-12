@@ -27,7 +27,16 @@ import java.util.List;
                 "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchClientAutoConfiguration",
                 "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchRestClientAutoConfiguration",
                 "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchAutoConfiguration",
-                "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchRepositoriesAutoConfiguration"
+                "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchRepositoriesAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration",
+                "org.springframework.ai.model.ollama.autoconfigure.OllamaApiAutoConfiguration",
+                "org.springframework.ai.model.ollama.autoconfigure.OllamaChatAutoConfiguration",
+                "org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration"
         }
 )
 @ComponentScan(

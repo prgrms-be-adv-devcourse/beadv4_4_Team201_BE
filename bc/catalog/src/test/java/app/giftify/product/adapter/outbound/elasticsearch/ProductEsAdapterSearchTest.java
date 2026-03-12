@@ -14,9 +14,12 @@ import app.giftify.shared.api.paging.PageResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +27,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ProductEsTestApplication.class)
+@Import(TestContainersOllamaConfig.class)
+@ActiveProfiles("test")
 class ProductEsAdapterSearchTest {
 
     @Autowired
@@ -37,6 +42,9 @@ class ProductEsAdapterSearchTest {
 
     @Autowired
     private ElasticsearchOperations elasticsearchOperations;
+
+    @Autowired
+    private EmbeddingModel embeddingModel;
 
     @BeforeEach
     void setUp() {
@@ -57,7 +65,7 @@ class ProductEsAdapterSearchTest {
                 createJpaEntity("강아지 하네스 에어 메쉬", "반려견 산책용 하네스", 25000, 10, ProductCategory.PET, ProductStatus.INACTIVE)
         ));
 
-        // 2. ES에 도큐먼트 저장 - JPA 자동 생성된 ID로 매핑
+        // 2. ES에 도큐먼트 저장 - 실제 임베딩 생성
         List<ProductDocument> documents = savedEntities.stream()
                 .map(jpa -> createDocument(
                         jpa.getId().toString(), "테스트셀러", jpa.getName(), jpa.getDescription(),
@@ -84,14 +92,16 @@ class ProductEsAdapterSearchTest {
     }
 
     @Test
-    @DisplayName("ngram 매칭: '레고' 검색 시 레고 상품만 조회된다")
+    @DisplayName("ngram 매칭: '레고' 검색 시 레고 상품이 상위에 조회된다")
     void searchByNgramLego() {
         var command = searchCommand("레고");
 
         PageResponse<ProductResult> result = productEsAdapter.searchProducts(command);
 
         assertThat(result.content()).isNotEmpty();
-        assertThat(result.content()).allMatch(p -> p.name().contains("레고"));
+        // 하이브리드 검색(BM25 + KNN)이므로 상위 2개가 레고 상품인지 확인
+        assertThat(result.content().get(0).name()).contains("레고");
+        assertThat(result.content().get(1).name()).contains("레고");
     }
 
     @Test
@@ -226,9 +236,12 @@ class ProductEsAdapterSearchTest {
 
     private ProductDocument createDocument(String id, String sellerNickname, String name,
                                            String description, int price, String category, String status) {
+        String embeddingInput = name + " " + (description != null ? description : "");
+        float[] embedding = embeddingModel.embed(embeddingInput);
         return new ProductDocument(
                 id, sellerNickname, name, description, price,
-                category, status, "image-" + id, LocalDateTime.now()
+                category, status, "image-" + id, LocalDateTime.now(),
+                embedding
         );
     }
 

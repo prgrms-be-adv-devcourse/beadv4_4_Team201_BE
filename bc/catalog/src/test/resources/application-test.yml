@@ -12,3 +12,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  ai:
+    ollama:
+      embedding:
+        model: bge-m3
+        options:
+          dimensions: 1024

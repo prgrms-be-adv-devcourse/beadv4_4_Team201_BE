@@ -17,7 +17,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
                 SharedSecurityAutoConfiguration.class
         },
         excludeName = {
-                "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration"
+                "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration",
+                "org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration"
         }
 )
 @ComponentScan(
