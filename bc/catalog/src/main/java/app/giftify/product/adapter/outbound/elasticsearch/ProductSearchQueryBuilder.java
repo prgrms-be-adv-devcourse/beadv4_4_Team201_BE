@@ -1,10 +1,14 @@
 package app.giftify.product.adapter.outbound.elasticsearch;
 
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
+import co.elastic.clients.elasticsearch._types.KnnSearch;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ProductSearchQueryBuilder {
@@ -76,5 +80,20 @@ public class ProductSearchQueryBuilder {
         }
 
         return Query.of(q -> q.bool(boolBuilder.build()));
+    }
+
+    public KnnSearch createKnnSearch(float[] queryVector) {
+        List<Float> vectorList = new ArrayList<>(queryVector.length);
+        for (float v : queryVector) {
+            vectorList.add(v);
+        }
+        return KnnSearch.of(knn -> knn
+                .field("embedding")
+                .queryVector(vectorList)
+                .k(5)
+                .numCandidates(50)
+                .boost(20f)
+                .filter(f -> f.term(t -> t.field("status").value("ACTIVE")))
+        );
     }
 }

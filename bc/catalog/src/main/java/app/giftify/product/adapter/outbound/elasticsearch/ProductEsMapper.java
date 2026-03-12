@@ -8,7 +8,7 @@ import app.giftify.product.domain.ProductStatus;
 
 public class ProductEsMapper {
 
-    public static ProductDocument toDocument(Product product, String sellerNickname) {
+    public static ProductDocument toDocument(Product product, String sellerNickname, float[] embedding) {
         return new ProductDocument(
                 String.valueOf(product.getId()),
                 sellerNickname,
@@ -18,7 +18,8 @@ public class ProductEsMapper {
                 product.getCategory().name(),
                 product.getStatus().name(),
                 product.getImageKey(),
-                product.getCreatedAt()
+                product.getCreatedAt(),
+                embedding
         );
     }
 
