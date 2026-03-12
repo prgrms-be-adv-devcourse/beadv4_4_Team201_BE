@@ -2,9 +2,9 @@
 # =============================================================================
 # Core Versions
 # =============================================================================
-springBoot = "3.4.1"
+springBoot = "4.0.3"
 springDependencyManagement = "1.1.7"
-springModulith = "1.3.1"
+springModulith = "2.0.3"
 
 # =============================================================================
 # Database & ORM
@@ -21,7 +21,7 @@ jwt = "4.4.0"
 # =============================================================================
 # Utilities
 # =============================================================================
-lombok = "1.18.30"
+lombok = "1.18.42"
 dotenv = "3.0.0"
 
 # =============================================================================
@@ -36,7 +36,7 @@ testcontainersRedis = "2.2.4"
 # Monitoring & Docs
 # =============================================================================
 micrometer = "1.12.2"
-springdoc = "2.8.9"
+springdoc = "3.0.2"
 
 [libraries]
 # =============================================================================
@@ -52,9 +52,16 @@ spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-
 spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
+spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
+spring-boot-starter-batch-jdbc = { module = "org.springframework.boot:spring-boot-starter-batch-jdbc" }
+spring-boot-starter-data-redis-test = { module = "org.springframework.boot:spring-boot-starter-data-redis-test" }
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
-spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop"}
+spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-starter-aspectj", version.ref = "springBoot" }
+spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
+spring-boot-starter-restclient = { module = "org.springframework.boot:spring-boot-starter-restclient" }
+spring-boot-jackson2 = { module = "org.springframework.boot:spring-boot-jackson2" }
+spring-boot-h2console = { module = "org.springframework.boot:spring-boot-h2console" }
 # =============================================================================
 # Spring Modulith
 # =============================================================================
@@ -63,6 +70,7 @@ spring-modulith-jpa = { module = "org.springframework.modulith:spring-modulith-s
 spring-modulith-test = { module = "org.springframework.modulith:spring-modulith-starter-test", version.ref = "springModulith" }
 spring-modulith-events-api = { module = "org.springframework.modulith:spring-modulith-events-api", version.ref = "springModulith" }
 spring-modulith-kafka = { module = "org.springframework.modulith:spring-modulith-events-kafka", version.ref = "springModulith" }
+spring-modulith-runtime = { module = "org.springframework.modulith:spring-modulith-runtime", version.ref = "springModulith" }
 
 # =============================================================================
 # Spring Security
@@ -97,7 +105,7 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 # =============================================================================
 java-jwt = { module = "com.auth0:java-jwt", version.ref = "jwt" }
 dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv" }
-spring-retry = { module = "org.springframework.retry:spring-retry" }
+spring-retry = { module = "org.springframework.retry:spring-retry", version = "2.0.11" }
 commons-lang3 = { module = "org.apache.commons:commons-lang3" }
 
 # =============================================================================
@@ -113,8 +121,8 @@ spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-te
 # =============================================================================
 # Monitoring & Documentation
 # =============================================================================
-micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
-micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-core = { module = "io.micrometer:micrometer-core" }
+micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
 springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 [plugins]

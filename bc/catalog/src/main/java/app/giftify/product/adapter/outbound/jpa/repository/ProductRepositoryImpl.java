@@ -50,6 +50,13 @@ public class ProductRepositoryImpl implements ProductQueryRepository {
         // sellerId 고정
         where.and(product.sellerId.eq(sellerId));
 
+        // 삭제 필터
+        if (searchDto.isDeleted()) {
+            where.and(product.deletedAt.isNotNull());
+        } else {
+            where.and(product.deletedAt.isNull());
+        }
+
         // 상품 상태 필터
         if (searchDto.getStatus() != null) {
             where.and(product.status.eq(searchDto.getStatus()));

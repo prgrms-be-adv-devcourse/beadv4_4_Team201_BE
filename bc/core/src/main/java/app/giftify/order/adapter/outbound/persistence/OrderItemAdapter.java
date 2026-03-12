@@ -39,5 +39,10 @@ public class OrderItemAdapter implements OrderItemRepository {
         return jpaOrderItemRepository.findItemIdMapByFundingId(fundingId, TargetType.FUNDING);
     }
 
+    @Override
+    public int confirmOrderItems(List<Long> ids) {
+        return jpaOrderItemRepository.confirmOrderItems(ids);
+    }
+
 
 }

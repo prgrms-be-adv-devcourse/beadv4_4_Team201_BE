@@ -4,8 +4,15 @@ import java.time.LocalDateTime;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import app.giftify.friendship.domain.FriendshipStatus;
 import app.giftify.support.jpa.BaseJpaEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "friendships")
@@ -13,10 +20,6 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class FriendshipJpaEntity extends BaseJpaEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(name = "requester_id", nullable = false)
     private Long requesterId;
@@ -33,15 +36,10 @@ public class FriendshipJpaEntity extends BaseJpaEntity {
 
     public FriendshipJpaEntity(Long id, Long requesterId, Long receiverId,
                                 FriendshipStatus status, LocalDateTime acceptedAt) {
-        this.id = id;
+        super(id);
         this.requesterId = requesterId;
         this.receiverId = receiverId;
         this.status = status;
         this.acceptedAt = acceptedAt;
-    }
-
-    @Override
-    public Long getId() {
-        return id;
     }
 }

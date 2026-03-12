@@ -3,6 +3,7 @@ package app.giftify.order.adapter.outbound.persistence.jpa;
 import app.giftify.order.domain.OrderItem;
 import app.giftify.shared.domain.type.TargetType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -38,4 +39,9 @@ public interface JpaOrderItemRepository extends JpaRepository<OrderItem, Long> {
         Long getOrderId();
         Long getItemId();
     }
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE OrderItem oi SET oi.status = 'CONFIRMED' " +
+            "WHERE oi.id IN :ids AND oi.status = 'PENDING'")
+    int confirmOrderItems(@Param("ids") List<Long> ids);
 }

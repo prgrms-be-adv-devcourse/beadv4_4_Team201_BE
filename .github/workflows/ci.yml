@@ -29,7 +29,7 @@ jobs:
     name: Build & Test
     uses: ./.github/workflows/_build.yml
     with:
-      java-version: '21'
+      java-version: '25'
       # [최적화] push 이벤트이고, 브랜치가 main이면 테스트 생략 (머지 큐에서 이미 했으므로)
       # 그 외(merge_group, develop 브랜치 push 등)는 테스트 수행
       run-tests: ${{ github.event_name != 'push' || github.ref_name != 'main' }}

@@ -3,20 +3,16 @@ package app.giftify.order.adapter.outbound.batch;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.OrderStatus;
-import app.giftify.security.common.config.SharedSecurityAutoConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -43,11 +39,11 @@ import static org.mockito.Mockito.verify;
 )
 class ExpirationJobTest {
 
-    @EnableAutoConfiguration(exclude = {
-            SecurityAutoConfiguration.class,
-            SecurityFilterAutoConfiguration.class,
-            OAuth2ResourceServerAutoConfiguration.class,
-            SharedSecurityAutoConfiguration.class
+    @EnableAutoConfiguration(excludeName = {
+            "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration",
+            "org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration",
+            "org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration",
+            "app.giftify.security.common.config.SharedSecurityAutoConfiguration"
     })
     static class BatchAutoConfig {
     }

@@ -4,9 +4,11 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
-import app.giftify.product.domain.event.ProductCdcEvent;
+import app.giftify.shared.domain.event.member.SellerNicknameChangedEvent;
+import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
+import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -80,7 +82,7 @@ class ProductEsEventListenerTest {
         // given
         Long productId = 4L;
         Product product = createProduct(productId);
-        ProductCdcEvent event = new ProductCdcEvent(productId);
+        ProductUpdatedEvent event = new ProductUpdatedEvent(productId, 10000, "테스트 상품", "image-key");
 
         when(productSupport.findById(productId)).thenReturn(product);
 
@@ -90,6 +92,35 @@ class ProductEsEventListenerTest {
         // then
         verify(productSupport).findById(productId);
         verify(productEsPort).save(product);
+    }
+
+    @Test
+    @DisplayName("ProductDeletedEvent가 발행되면 ES 문서를 삭제한다.")
+    void handleProductDeletedEvent() {
+        // given
+        Long productId = 5L;
+        ProductDeletedEvent event = new ProductDeletedEvent(productId);
+
+        // when
+        listener.handleDeleted(event);
+
+        // then
+        verify(productEsPort).deleteById(productId);
+    }
+
+    @Test
+    @DisplayName("SellerNicknameChangedEvent가 발행되면 해당 판매자의 ES 도큐먼트 닉네임을 일괄 업데이트한다.")
+    void handleSellerNicknameChanged() {
+        // given
+        Long sellerId = 1L;
+        String newNickname = "새닉네임";
+        SellerNicknameChangedEvent event = new SellerNicknameChangedEvent(sellerId, newNickname);
+
+        // when
+        listener.handleSellerNicknameChanged(event);
+
+        // then
+        verify(productEsPort).updateSellerNickname(sellerId, newNickname);
     }
 
     private Product createProduct(Long productId) {

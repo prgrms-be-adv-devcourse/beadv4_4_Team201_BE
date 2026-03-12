@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Immutable
-@Table(name = "PRODUCT_STOCK_HISTORY")
+@Table(name = "PRODUCT_STOCK_HISTORIES")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

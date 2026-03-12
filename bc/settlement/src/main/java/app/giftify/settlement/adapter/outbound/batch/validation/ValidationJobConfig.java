@@ -1,7 +1,7 @@
 package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.Job;
+import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;

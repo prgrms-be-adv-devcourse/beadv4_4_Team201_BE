@@ -7,10 +7,10 @@ import app.giftify.shared.api.exception.InfraException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -60,7 +60,7 @@ public class ValidationStepConfig {
                 .tasklet((contribution, chunkContext) -> {
                     EntityManager em = EntityManagerFactoryUtils
                             .getTransactionalEntityManager(emf);
-                    em.createNativeQuery("TRUNCATE TABLE settlement_queue").executeUpdate();
+                    em.createNativeQuery("TRUNCATE TABLE settlement_queues").executeUpdate();
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();

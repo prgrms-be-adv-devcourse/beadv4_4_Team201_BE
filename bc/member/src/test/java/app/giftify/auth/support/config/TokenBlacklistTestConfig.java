@@ -1,6 +1,6 @@
 package app.giftify.auth.support.config;
 
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -11,7 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 @Configuration
-@Import(RedisAutoConfiguration.class)
+@Import(DataRedisAutoConfiguration.class)
 public class TokenBlacklistTestConfig {
 
 	@Bean
