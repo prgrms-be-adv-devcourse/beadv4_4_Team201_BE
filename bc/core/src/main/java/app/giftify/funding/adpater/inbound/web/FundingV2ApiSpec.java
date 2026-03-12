@@ -91,7 +91,7 @@ public interface FundingV2ApiSpec {
             @ApiResponse(responseCode = "403",description = "수령자 권한 없음 (F008)"),
             @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)")
     })
-    ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
+    ResponseEntity<RsData<FundingCompleteResponseDto>> requestFundingAcceptance(
             @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 

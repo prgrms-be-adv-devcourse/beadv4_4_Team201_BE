@@ -3,6 +3,7 @@ package app.giftify.shared.domain.type;
 public enum FundingStatus {
     IN_PROGRESS,    // 펀딩 진행 중
     ACHIEVED,       // 목표액 달성 및 수령자 확정 대기 중
+    ACCEPTANCE_PENDING,      // 수락 확정 중
     ACCEPTED,       // 수령자 확정
     REFUSED,        // 수령자 거절
     EXPIRED,        // 기한 만료

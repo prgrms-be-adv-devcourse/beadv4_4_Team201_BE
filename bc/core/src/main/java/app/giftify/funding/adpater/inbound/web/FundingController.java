@@ -91,10 +91,10 @@ public class FundingController implements FundingV2ApiSpec {
     // 펀딩 수락
     @Override
     @PostMapping("/{id}/accept")
-    public ResponseEntity<RsData<FundingCompleteResponseDto>> acceptFunding(
+    public ResponseEntity<RsData<FundingCompleteResponseDto>> requestFundingAcceptance(
             @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId) {
-        FundingCompleteResponseDto funding = fundingFacade.acceptFunding(id, memberId);
+        FundingCompleteResponseDto funding = fundingFacade.requestFundingAcceptance(id, memberId);
         return ResponseEntity.ok(RsData.success(funding));
     }
 

@@ -123,8 +123,8 @@ public class FundingFacade {
     }
 
     @Transactional
-    public FundingCompleteResponseDto acceptFunding(Long id, Long memberId) {
-        return fundingAcceptUseCase.acceptFunding(id, memberId);
+    public FundingCompleteResponseDto requestFundingAcceptance(Long id, Long memberId) {
+        return fundingAcceptUseCase.requestFundingAcceptance(id, memberId);
     }
 
     @Transactional(readOnly = true)

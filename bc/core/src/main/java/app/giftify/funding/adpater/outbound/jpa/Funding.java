@@ -154,13 +154,27 @@ public class Funding extends BaseJpaEntity {
         this.closedAt = LocalDateTime.now();
     }
 
-    public void accept() {
+    // 펀딩 수락 확정 대기
+    public void pendingAcceptance() {
+        if (this.getStatus() == FundingStatus.ACCEPTANCE_PENDING || this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
+            throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
+        }
+
+        if (this.status != FundingStatus.ACHIEVED) {
+             throw new FundingException(FundingErrorCode.NOT_ACHIEVED, "목표 금액을 달성한 펀딩만 수락할 수 있습니다.");
+        }
+
+        this.status = FundingStatus.ACCEPTANCE_PENDING;
+    }
+
+    // 펀딩 수락 확정 완료
+    public void confirmAcceptance() {
         if (this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
             throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
         }
 
-        if (this.getStatus() != FundingStatus.ACHIEVED) {
-            throw new FundingException(FundingErrorCode.NOT_ACHIEVED);
+        if (this.status != FundingStatus.ACCEPTANCE_PENDING) {
+             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId());
         }
 
         this.status = FundingStatus.ACCEPTED;
