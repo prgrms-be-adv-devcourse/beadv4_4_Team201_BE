@@ -5,7 +5,6 @@ import app.giftify.cart.core.domain.ItemStatus;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.type.FundingStatus;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingInfo;
 
 /**
@@ -14,8 +13,8 @@ import app.giftify.shared.domain.vo.FundingInfo;
  * -> 어차피 타인의 펀딩 조회 시, 종료된 펀딩은 볼 수 없는 정책임
  */
 public record CartItemResponse(
-        TargetType targetType,
-        Long targetId,
+        Long wishlistItemId,
+        Long wishlistId,
         Long receiverId,
         String receiverNickname,
         Long productId,
@@ -31,22 +30,22 @@ public record CartItemResponse(
         ItemStatus status,
         String statusMessage
 ) {
-    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId, String receiverNickname, FundingInfo fundingInfo) {
+    public static CartItemResponse from(CartItem item, boolean isFundingEnded, Product product, Long receiverId, String receiverNickname, FundingInfo fundingInfo, Long wishlistId) {
 
         if (isFundingEnded) {
-            return unavailable(item, receiverId, receiverNickname, ItemStatus.FUNDING_ENDED, "종료된 펀딩입니다.");
+            return unavailable(item, receiverId, receiverNickname, ItemStatus.FUNDING_ENDED, "종료된 펀딩입니다.", wishlistId);
         }
         if (product == null) {
-            return unavailable(item, receiverId, receiverNickname, ItemStatus.DISCONTINUED, "더 이상 판매되지 않는 상품입니다.");
+            return unavailable(item, receiverId, receiverNickname, ItemStatus.DISCONTINUED, "더 이상 판매되지 않는 상품입니다.", wishlistId);
         }
         if (product.getStatus() != ProductStatus.ACTIVE) {
-            return unavailable(item, receiverId, receiverNickname, ItemStatus.DISCONTINUED, "판매 중지된 상품입니다.");
+            return unavailable(item, receiverId, receiverNickname, ItemStatus.DISCONTINUED, "판매 중지된 상품입니다.", wishlistId);
         }
 
         if (product.getStock() <= 0) {
             return new CartItemResponse(
-                    item.getTargetType(),
-                    item.getTargetId(),
+                    item.getWishlistItemId(),
+                    wishlistId,
                     receiverId,
                     receiverNickname,
                     product.getId(),
@@ -70,8 +69,8 @@ public record CartItemResponse(
         }
 
         return new CartItemResponse(
-                item.getTargetType(),
-                item.getTargetId(),
+                item.getWishlistItemId(),
+                wishlistId,
                 receiverId,
                 receiverNickname,
                 product.getId(),
@@ -86,10 +85,10 @@ public record CartItemResponse(
         );
     }
 
-    private static CartItemResponse unavailable(CartItem item, Long receiverId, String receiverNickname, ItemStatus status, String message) {
+    private static CartItemResponse unavailable(CartItem item, Long receiverId, String receiverNickname, ItemStatus status, String message, Long wishlistId) {
         return new CartItemResponse(
-                item.getTargetType(),
-                item.getTargetId(),
+                item.getWishlistItemId(),
+                wishlistId,
                 receiverId,
                 receiverNickname,
                 null,

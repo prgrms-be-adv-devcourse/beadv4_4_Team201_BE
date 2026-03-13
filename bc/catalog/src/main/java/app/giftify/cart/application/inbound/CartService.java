@@ -15,7 +15,6 @@ import app.giftify.product.domain.ProductStatus;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FundingQueryPort;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.FundingInfo;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
@@ -62,11 +61,12 @@ public class CartService
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));
 
 		// 장바구니 추가 가능 검증
-		Long wishlistItemId = command.targetId();
-		WishlistItem wishlistItem = validateCartItemAddable(wishlistItemId, command);
+		WishlistItem wishlistItem = validateCartItemAddable(command.wishlistItemId(), command);
+        if (!wishlistItem.getWishlistId().equals(command.wishlistId())) {
+            throw new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND, command.wishlistItemId());
+        }
 
-		TargetType targetType = resolveTargetType(wishlistItem.getWishlistItemStatus());
-		CartItemAddResult result = cart.addItem(targetType, wishlistItemId, command.amount());
+		CartItemAddResult result = cart.addItem(command.wishlistItemId(), command.amount());
 		cartRepositoryPort.save(cart);
 
 		return result;
@@ -80,26 +80,16 @@ public class CartService
 		for (AddCartItemCommand command : commands) {
 
             // 장바구니 추가 가능 검증
-            Long wishlistItemId = command.targetId();
-            WishlistItem wishlistItem = validateCartItemAddable(wishlistItemId, command);
+            WishlistItem wishlistItem = validateCartItemAddable(command.wishlistItemId(), command);
+            if (!wishlistItem.getWishlistId().equals(command.wishlistId())) {
+                throw new CartException(CartErrorCode.WISHLIST_ITEM_NOT_FOUND, command.wishlistItemId());
+            }
 
-            // 타입 도출
-            TargetType targetType = resolveTargetType(wishlistItem.getWishlistItemStatus());
-
-			cart.addItem(targetType, wishlistItemId, command.amount());
+            cart.addItem(command.wishlistItemId(), command.amount());
 		}
 
 		cartRepositoryPort.save(cart);
 	}
-
-    private TargetType resolveTargetType(WishlistItemStatus status) {
-        if (status == WishlistItemStatus.PENDING) {
-            return TargetType.FUNDING_PENDING;
-        } else if (status == WishlistItemStatus.IN_PROGRESS) {
-            return TargetType.FUNDING;
-        }
-        throw new CartException(CartErrorCode.INVALID_ITEM_STATUS);
-    }
 
 	// 장바구니 추가 가능 검증 (Product + WishlistItem 둘 다 검증)
 	private WishlistItem validateCartItemAddable(Long wishlistItemId, AddCartItemCommand command) {
@@ -163,7 +153,7 @@ public class CartService
 		}
 
 		List<Long> wishlistItemIds = cart.getItems().stream()
-				.map(CartItem::getTargetId)
+				.map(CartItem::getWishlistItemId)
 				.toList();
 
 		// 1. WishlistItem 조회
@@ -224,15 +214,18 @@ public class CartService
 		// 8. CartItemResponse 조립
 		List<CartItemResponse> itemResponses = cart.getItems().stream()
 				.map(item -> {
-					CartItemContext ctx = contextMap.get(item.getTargetId());
-                    FundingInfo fundingInfo = fundingInfoMap.get(item.getTargetId());
+					CartItemContext ctx = contextMap.get(item.getWishlistItemId());
+                    FundingInfo fundingInfo = fundingInfoMap.get(item.getWishlistItemId());
+					WishlistItem wishlistItem = wishlistItemMap.get(item.getWishlistItemId());
+					Long wishlistId = wishlistItem != null ? wishlistItem.getWishlistId() : null;
 					return CartItemResponse.from(
 							item,
-							fundingEndedIds.contains(item.getTargetId()),
+							fundingEndedIds.contains(item.getWishlistItemId()),
 							ctx != null ? ctx.product() : null,
 							ctx != null ? ctx.receiverId() : null,
 							ctx != null ? ctx.receiverNickname() : null,
-                            fundingInfo
+                            fundingInfo,
+							wishlistId
 					);
 				})
 				.toList();
@@ -243,10 +236,10 @@ public class CartService
 
 	// 내 카트에서 상품 제거
 	@Override
-	public void removeItems(Long memberId, TargetType targetType, List<Long> targetIds) {
+	public void removeItems(Long memberId, List<Long> wishlistItemIds) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND, memberId));
-		cart.removeItems(targetType, targetIds);
+		cart.removeItems(wishlistItemIds);
 		cartRepositoryPort.save(cart);
 	}
 

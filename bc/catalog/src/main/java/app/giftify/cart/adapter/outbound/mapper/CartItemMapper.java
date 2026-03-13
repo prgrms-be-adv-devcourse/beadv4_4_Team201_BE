@@ -11,8 +11,7 @@ public class CartItemMapper {
     public JpaCartItem toJpaEntity(CartItem cartItem) {
         return JpaCartItem.from(
                 cartItem.getId(),
-                cartItem.getTargetType(),
-                cartItem.getTargetId(),
+                cartItem.getWishlistItemId(),
                 cartItem.getAmount().amount()
         );
     }
@@ -21,8 +20,7 @@ public class CartItemMapper {
         return CartItem.reconstruct(
                 jpaCartItem.getId(),
                 jpaCartItem.getCartId(),
-                jpaCartItem.getTargetType(),
-                jpaCartItem.getTargetId(),
+                jpaCartItem.getWishlistItemId(),
                 Money.of(jpaCartItem.getAmount())
         );
     }

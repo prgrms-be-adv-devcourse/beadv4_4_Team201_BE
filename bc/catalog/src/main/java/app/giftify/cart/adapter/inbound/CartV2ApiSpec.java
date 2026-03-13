@@ -1,18 +1,15 @@
 package app.giftify.cart.adapter.inbound;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
-import app.giftify.shared.domain.type.TargetType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -66,10 +63,8 @@ public interface CartV2ApiSpec {
 	@ApiResponse(responseCode = "200", description = "삭제 성공")
 	ResponseEntity<RsData<Void>> removeItems(
 		@Parameter(hidden = true) @CurrentMemberId Long memberId,
-		@Parameter(description = "타겟 타입", example = "FUNDING_PENDING")
-		@PathVariable(value = "targetType") TargetType targetType,
-		@Parameter(description = "타겟 ID 목록", example = "1,2,3")
-		@RequestParam(value = "targetIds") List<Long> targetIds
+		@Parameter(description = "위시리스트 아이템 ID 목록", example = "1,2,3")
+		@RequestParam(value = "targetIds") List<Long> wishlistItemIds
 	);
 
 	@Operation(summary = "장바구니 비우기")

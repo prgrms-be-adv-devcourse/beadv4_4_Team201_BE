@@ -4,7 +4,6 @@ import app.giftify.cart.adapter.outbound.jpa.JpaCart;
 import app.giftify.cart.adapter.outbound.jpa.JpaCartItem;
 import app.giftify.cart.core.domain.Cart;
 import app.giftify.cart.core.domain.CartItem;
-import app.giftify.cart.core.domain.CartItemKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,9 +33,9 @@ public JpaCart toJpaEntity(Cart cart) {
      * 엔티티 -> 도메인 (조회할 때)
      */
     public Cart toDomain(JpaCart jpaCart) {
-        Map<CartItemKey, CartItem> items = jpaCart.getItems().stream()
+        Map<Long, CartItem> items = jpaCart.getItems().stream()
                 .collect(Collectors.toMap(
-                        itemEntity -> new CartItemKey(itemEntity.getTargetType(), itemEntity.getTargetId()),
+                        itemEntity -> itemEntity.getWishlistItemId(),
                         cartItemMapper::toDomain  // ✅ Mapper 재사용
                 ));
 
