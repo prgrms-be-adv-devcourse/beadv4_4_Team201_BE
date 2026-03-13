@@ -1,11 +1,17 @@
 /**
- * Stress Test — 피크 트래픽 시뮬레이션.
+ * Soak Test (Endurance Test) — 장시간 안정성 검증.
  *
- * business-scenario.js(평균 60 VU)의 200%인 120 VU까지 올려
- * 시스템이 피크 부하에서도 SLO를 유지하는지 검증.
+ * 평균 부하(30 VU)로 30분간 실행하여
+ * 시간 경과에 따른 성능 저하를 감지한다.
  *
- * k6 공식 권장: Average-Load 통과 후 실행.
- * AWS Well-Architected: Stepped Load Testing 패턴 적용.
+ * 감지 대상:
+ * - 메모리 누수 (JVM heap 점진적 증가)
+ * - DB 커넥션풀 고갈 (HikariCP 대기 타임아웃)
+ * - 로그 파일 디스크 점유
+ * - GC pause 증가
+ *
+ * k6 공식 권장: 평균 프로덕션 부하로 수 시간 실행.
+ * 여기서는 30분 축약 버전. 프로덕션은 4-8시간 권장.
  */
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
@@ -30,26 +36,24 @@ const accounts = new SharedArray('accounts', function () {
     return JSON.parse(open('../data/test-accounts.json'));
 });
 
-// Stepped Load: 30 → 60 → 90 → 120(피크) → 60 → 0
-// 각 단계에서 명확한 데이터 포인트 생성 (AWS 권장)
+const SOAK_DURATION = __ENV.SOAK_DURATION || '30m';
+
 export const options = {
     setupTimeout: '120s',
     stages: [
-        { duration: '30s', target: 30 },
-        { duration: '60s', target: 60 },
-        { duration: '60s', target: 90 },
-        { duration: '120s', target: 120 },
-        { duration: '60s', target: 60 },
-        { duration: '15s', target: 0 },
+        { duration: '2m', target: 30 },
+        { duration: SOAK_DURATION, target: 30 },
+        { duration: '1m', target: 0 },
     ],
+    // SLO는 Average-Load와 동일하되, 시간 경과에 따른 degradation 감지가 목적
     thresholds: {
-        'http_req_duration{name:product_search}': ['p(95)<500'],
-        'http_req_duration{name:product_detail}': ['p(95)<500'],
-        'http_req_duration{name:wishlist}': ['p(95)<500'],
-        'http_req_duration{name:cart_add}': ['p(95)<1000'],
-        'http_req_duration{name:funding_list}': ['p(95)<500'],
-        'http_req_failed': ['rate<0.05'],
-        'error_rate': ['rate<0.10'],
+        'http_req_duration{name:product_search}': ['p(95)<200'],
+        'http_req_duration{name:product_detail}': ['p(95)<200'],
+        'http_req_duration{name:wishlist}': ['p(95)<200'],
+        'http_req_duration{name:cart_add}': ['p(95)<500'],
+        'http_req_duration{name:funding_list}': ['p(95)<200'],
+        'http_req_failed': ['rate<0.01'],
+        'error_rate': ['rate<0.05'],
     },
 };
 
@@ -71,6 +75,8 @@ export default function (data) {
     const opts = data.mockAuth
         ? mockAuthHeaders(1001 + (__VU % 100))
         : authHeaders(data.tokens[__VU % data.tokens.length]);
+
+    // business-scenario.js와 동일한 전체 여정
 
     // 1. Product Search
     let productId = randomItem(PRODUCT_IDS);
@@ -95,7 +101,7 @@ export default function (data) {
     });
 
     if (!searchOk) { sleep(1 + Math.random() * 2); return; }
-    sleep(0.2 + Math.random() * 0.3);
+    sleep(0.3 + Math.random() * 0.5);
 
     // 2. Product Detail
     group('2_product_detail', function () {
@@ -108,7 +114,7 @@ export default function (data) {
         errorRate.add(res.status >= 500);
     });
 
-    sleep(0.2 + Math.random() * 0.3);
+    sleep(0.3 + Math.random() * 0.5);
 
     // 3. Wishlist
     group('3_wishlist', function () {
@@ -121,7 +127,7 @@ export default function (data) {
         errorRate.add(res.status >= 400);
     });
 
-    sleep(0.1 + Math.random() * 0.2);
+    sleep(0.2 + Math.random() * 0.3);
 
     // 4. Cart Add
     const wishItem = getRandomWishlistItem();
@@ -136,7 +142,7 @@ export default function (data) {
         errorRate.add(res.status >= 500);
     });
 
-    sleep(0.1 + Math.random() * 0.2);
+    sleep(0.2 + Math.random() * 0.3);
 
     // 5. Funding List
     group('5_funding_list', function () {
@@ -150,9 +156,10 @@ export default function (data) {
         errorRate.add(res.status >= 400);
     });
 
-    sleep(0.3 + Math.random() * 0.5);
+    sleep(0.5 + Math.random() * 1.0);
 }
 
 export function teardown(data) {
-    console.log(`Stress Test 완료. 인증: ${data.mockAuth ? 'Mock Auth' : 'Auth0 JWT'}`);
+    console.log(`Soak Test 완료 (${SOAK_DURATION}). 인증: ${data.mockAuth ? 'Mock Auth' : 'Auth0 JWT'}`);
+    console.log('Grafana/Actuator에서 heap 사용량, GC 빈도, 커넥션풀 상태를 확인하세요.');
 }

@@ -99,6 +99,7 @@ docs/benchmarks/*.log.*
 
 ### contains Auth0 credentials
 docs/workthroughs/
+docs/superpowers/
 .gw/
 .worktrees/
 .cursorignore
@@ -125,3 +126,6 @@ backlog/
 
 # K8s secrets
 infra/k3s/base/secrets.yaml
+
+# k6 load test - Auth0 test account credentials
+infra/monitoring/k6/data/test-accounts.json
