@@ -126,7 +126,7 @@ export default function (data) {
     // 4. Cart Add
     const wishItem = getRandomWishlistItem();
     group('4_cart_add', function () {
-        const body = JSON.stringify({ targetId: wishItem.wishlistItemId, amount: 10000 });
+        const body = JSON.stringify({ wishlistId: wishItem.wishlistId, wishlistItemId: wishItem.wishlistItemId, amount: 10000 });
         const res = http.post(
             `${BASE_URL}/api/v2/carts`, body,
             Object.assign({}, opts, { tags: { name: 'cart_add' } })

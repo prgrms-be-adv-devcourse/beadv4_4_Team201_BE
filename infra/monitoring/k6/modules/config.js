@@ -72,6 +72,7 @@ export function getRandomWishlistItem() {
     const receiver = randomItem(RECEIVER_WISHLISTS);
     return {
         receiverId: receiver.memberId,
+        wishlistId: receiver.wishlistId,
         wishlistItemId: randomItem(receiver.itemIds),
     };
 }

@@ -205,10 +205,9 @@ export default function (data) {
     sleep(0.2 + Math.random() * 0.3);
 
     // ── Step 4: 장바구니 추가 ──────────────────────
-    // targetId = wishlistItemId (서버가 wishlistItemId로 해석)
     const wishItem = getRandomWishlistItem();
     group('4_cart_add', function () {
-        const body = JSON.stringify({targetId: wishItem.wishlistItemId, amount: 10000});
+        const body = JSON.stringify({ wishlistId: wishItem.wishlistId, wishlistItemId: wishItem.wishlistItemId, amount: 10000 });
         const res = http.post(
             `${BASE_URL}/api/v2/carts`,
             body,

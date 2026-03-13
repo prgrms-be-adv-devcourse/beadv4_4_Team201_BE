@@ -96,10 +96,10 @@ export default function (data) {
 
     sleep(0.2);
 
-    // 4. Cart Add — targetId = wishlistItemId (서버가 wishlistItemId로 해석)
+    // 4. Cart Add
     group('cart', function () {
         const wishItem = getRandomWishlistItem();
-        const body = JSON.stringify({ targetId: wishItem.wishlistItemId, amount: 10000 });
+        const body = JSON.stringify({ wishlistId: wishItem.wishlistId, wishlistItemId: wishItem.wishlistItemId, amount: 10000 });
         const res = http.post(
             `${BASE_URL}/api/v2/carts`, body,
             Object.assign({}, opts, { tags: { name: 'cart_add' } })

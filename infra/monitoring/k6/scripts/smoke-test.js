@@ -72,10 +72,9 @@ export default function () {
     });
 
     // ── 5. Cart Add (auth required) ──
-    // targetId = wishlistItemId (서버가 wishlistItemId로 해석)
     group('cart_add', function () {
         const item = RECEIVER_WISHLISTS[0];
-        const body = JSON.stringify({ targetId: item.itemIds[0], amount: 10000 });
+        const body = JSON.stringify({ wishlistId: item.wishlistId, wishlistItemId: item.itemIds[0], amount: 10000 });
         const res = http.post(`${BASE_URL}/api/v2/carts`, body, opts);
         check(res, {
             'cart 200/201/400': (r) =>
