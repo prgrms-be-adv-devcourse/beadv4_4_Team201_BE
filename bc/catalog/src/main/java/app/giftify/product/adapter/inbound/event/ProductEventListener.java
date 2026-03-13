@@ -26,10 +26,10 @@ public class ProductEventListener {
     public void handleOrderConfirmed(OrderConfirmPendingEvent event) {
         Map<Long, Long> productQuantityMap = event.getItems().stream()
                 .collect(Collectors.toMap(ConfirmItem::productId, ConfirmItem::quantity));
-        log.info("[product] 주문 확정 이벤트를 받았습니다. | 상품 수: {}", productQuantityMap.size());
+        log.info("[product] 주문 확정 진행 이벤트를 받았습니다. | 상품 수: {}", productQuantityMap.size());
 
         decreaseProductStockUseCase.decreaseStockByOrder(productQuantityMap);
-        log.info("[product] 주문 재고 차감 완료 | 상품 수: {}", productQuantityMap.size());
+        log.info("[product] 주문 상품 재고 차감 완료 | 상품 수: {}", productQuantityMap.size());
     }
 
     // 재고 이력 생성
