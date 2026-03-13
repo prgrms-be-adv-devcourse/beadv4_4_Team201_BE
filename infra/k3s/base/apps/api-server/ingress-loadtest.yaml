@@ -1,0 +1,19 @@
+# 부하테스트 전용 IngressRoute — rate-limit 미적용, IP 화이트리스트 적용
+# 테스트 시작 전: kubectl apply -f ingress-loadtest.yaml
+# 테스트 종료 후: kubectl delete ingressroute api-ingress-loadtest ( 꼭 삭제해줘야 함!! 안 그러면 다 털렸쥬? 당함!!!!!!!)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api-ingress-loadtest
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`giftify-api-loadtest.chan99k.dev`)
+      kind: Rule
+      services:
+        - name: api-server
+          port: 8080
+      middlewares:
+        - name: loadtest-ip-whitelist
+        - name: forwarded-proto-https
