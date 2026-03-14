@@ -11,7 +11,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "FUNDING_PARTICIPANT_MEMBERS")
+@Table(name = "FUNDING_PARTICIPANT_MEMBERS",
+uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uk_funding_participant_member",
+                columnNames = {"funding_id", "participant_id"}
+        )
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FundingParticipantMember extends BaseJpaEntity {
