@@ -11,7 +11,11 @@ import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,7 +31,15 @@ public class FundingContributeUseCase {
     private final MemberReplicaRepository memberReplicaRepository;
     private final EventPublisher eventPublisher;
 
+    @Retryable(
+            value = {
+                    OptimisticLockException.class,
+                    ObjectOptimisticLockingFailureException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 50)
+    )
     public List<Funding> contribute(List<FundingContributeRequest> requests, Long participantId) {
+
         List<Funding> result = new ArrayList<>();
 
         List<Long> fundingIds = requests.stream()
