@@ -77,7 +77,7 @@ class ProductServiceTest {
             given(productSupport.findByIdForUpdate(productId)).willReturn(product);
 
             // when
-            productService.decreaseStockByOrder(Map.of(productId, 2L));
+            productService.decreaseStockByOrder(Map.of(productId, 2));
 
             // then
             assertThat(product.getStock()).isEqualTo(3);
@@ -94,7 +94,7 @@ class ProductServiceTest {
             given(productSupport.findByIdForUpdate(productId)).willReturn(product);
 
             // when
-            productService.decreaseStockByOrder(Map.of(productId, 1L));
+            productService.decreaseStockByOrder(Map.of(productId, 1));
 
             // then
             assertThat(product.getStock()).isEqualTo(0);
@@ -111,7 +111,7 @@ class ProductServiceTest {
             given(productSupport.findByIdForUpdate(productId)).willReturn(product);
 
             // when & then
-            assertThatThrownBy(() -> productService.decreaseStockByOrder(Map.of(productId, 1L)))
+            assertThatThrownBy(() -> productService.decreaseStockByOrder(Map.of(productId, 1)))
                     .isInstanceOf(ProductException.class);
             assertThat(product.getStock()).isEqualTo(0);
             verify(productRepositoryPort, never()).save(product);
@@ -126,7 +126,7 @@ class ProductServiceTest {
                     .willThrow(new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
             // when & then
-            assertThatThrownBy(() -> productService.decreaseStockByOrder(Map.of(productId, 1L)))
+            assertThatThrownBy(() -> productService.decreaseStockByOrder(Map.of(productId, 1)))
                     .isInstanceOf(ProductException.class);
         }
     }

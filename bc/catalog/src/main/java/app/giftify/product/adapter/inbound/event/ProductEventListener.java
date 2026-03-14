@@ -24,7 +24,7 @@ public class ProductEventListener {
     // 주문의 이벤트를 받아 상품 재고 감소 (펀딩/일반 주문 통합)
     @EventListener
     public void handleOrderConfirmed(OrderConfirmPendingEvent event) {
-        Map<Long, Long> productQuantityMap = event.getItems().stream()
+        Map<Long, Integer> productQuantityMap = event.getItems().stream()
                 .collect(Collectors.toMap(ConfirmItem::productId, ConfirmItem::quantity));
         log.info("[product] 주문 확정 진행 이벤트를 받았습니다. | 상품 수: {}", productQuantityMap.size());
 

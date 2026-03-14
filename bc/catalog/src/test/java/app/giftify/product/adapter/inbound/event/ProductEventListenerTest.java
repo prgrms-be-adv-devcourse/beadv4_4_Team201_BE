@@ -43,8 +43,8 @@ class ProductEventListenerTest {
     void handleOrderConfirmed_Success() {
         // given
         List<ConfirmItem> items = List.of(
-                ConfirmItem.of(1L, 2L),
-                ConfirmItem.of(2L, 3L)
+                ConfirmItem.of(1L, 2),
+                ConfirmItem.of(2L, 3)
         );
         OrderConfirmPendingEvent event = new OrderConfirmPendingEvent(items);
 
@@ -53,19 +53,19 @@ class ProductEventListenerTest {
 
         // then
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<Map<Long, Long>> captor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<Long, Integer>> captor = ArgumentCaptor.forClass(Map.class);
         verify(decreaseProductStockUseCase).decreaseStockByOrder(captor.capture());
 
-        Map<Long, Long> captured = captor.getValue();
-        assertThat(captured).containsEntry(1L, 2L);
-        assertThat(captured).containsEntry(2L, 3L);
+        Map<Long, Integer> captured = captor.getValue();
+        assertThat(captured).containsEntry(1L, 2);
+        assertThat(captured).containsEntry(2L, 3);
     }
 
     @Test
     @DisplayName("주문 확정 이벤트 처리 중 재고가 부족하면 예외가 전파된다")
     void handleOrderConfirmed_OutOfStock() {
         // given
-        List<ConfirmItem> items = List.of(ConfirmItem.of(1L, 5L));
+        List<ConfirmItem> items = List.of(ConfirmItem.of(1L, 5));
         OrderConfirmPendingEvent event = new OrderConfirmPendingEvent(items);
 
         doThrow(new ProductException(ProductErrorCode.PRODUCT_OUT_OF_STOCK))
@@ -80,7 +80,7 @@ class ProductEventListenerTest {
     @DisplayName("주문 확정 이벤트 처리 중 상품이 존재하지 않으면 예외가 전파된다")
     void handleOrderConfirmed_ProductNotFound() {
         // given
-        List<ConfirmItem> items = List.of(ConfirmItem.of(999L, 1L));
+        List<ConfirmItem> items = List.of(ConfirmItem.of(999L, 1));
         OrderConfirmPendingEvent event = new OrderConfirmPendingEvent(items);
 
         doThrow(new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND))

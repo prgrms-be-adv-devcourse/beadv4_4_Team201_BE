@@ -86,7 +86,7 @@ class ProductStockConcurrencyTest {
                 try {
                     readyLatch.countDown();
                     startLatch.await();      // 스레드 시작 대기
-                    productService.decreaseStockByOrder(Map.of(productId, 1L));
+                    productService.decreaseStockByOrder(Map.of(productId, 1));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
@@ -154,7 +154,7 @@ class ProductStockConcurrencyTest {
                 try {
                     readyLatch.countDown();
                     startLatch.await();
-                    productService.decreaseStockByOrder(Map.of(productId, 1L));
+                    productService.decreaseStockByOrder(Map.of(productId, 1));
                     successCount.incrementAndGet();
                 } catch (ProductException e) {
                     productExceptionCount.incrementAndGet();
@@ -222,7 +222,7 @@ class ProductStockConcurrencyTest {
         int sellerExpectedStock = initialStock;
 
         // when - 펀딩 차감 먼저 실행 (100 → 99)
-        productService.decreaseStockByOrder(Map.of(productId, 1L));
+        productService.decreaseStockByOrder(Map.of(productId, 1));
 
         // then - 판매자가 재고를 50으로 수정 시도 (expectedStock=100이지만 실제 DB=99)
         ProductUpdateRequestDto updateRequest = new ProductUpdateRequestDto(
@@ -281,7 +281,7 @@ class ProductStockConcurrencyTest {
 
         int userCount = 5;
         // 각 사용자가 A×1, B×1, C×1 주문
-        Map<Long, Long> orderItems = Map.of(idA, 1L, idB, 1L, idC, 1L);
+        Map<Long, Integer> orderItems = Map.of(idA, 1, idB, 1, idC, 1);
 
         ExecutorService executorService = Executors.newFixedThreadPool(userCount);
         CountDownLatch readyLatch = new CountDownLatch(userCount);

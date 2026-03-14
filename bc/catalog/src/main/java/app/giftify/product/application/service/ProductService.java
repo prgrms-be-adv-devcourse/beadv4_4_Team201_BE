@@ -231,12 +231,12 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
      */
     @Transactional
     @Override
-    public void decreaseStockByOrder(Map<Long, Long> productQuantityMap) {
+    public void decreaseStockByOrder(Map<Long, Integer> productQuantityMap) {
         var sorted = new TreeMap<>(productQuantityMap); // ProductId를 오름차순으로 정렬
 
         for (var entry : sorted.entrySet()) {
             Long productId = entry.getKey();
-            Long quantity = entry.getValue();
+            int quantity = entry.getValue();
 
             Product product;
             try {
@@ -245,7 +245,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
                 throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
             }
 
-            product.decreaseStock(quantity.intValue());
+            product.decreaseStock(quantity);
             productRepositoryPort.save(product);
 
             product.pullEvents().forEach(eventPublisher::publish);
