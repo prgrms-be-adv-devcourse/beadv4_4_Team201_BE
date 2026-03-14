@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
@@ -225,23 +226,30 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     }
 
     /**
-     * 펀딩에 의한 재고 감소
-     * 비관적 락 - 배타 잠금 적용
+     * 주문에 의한 재고 감소 (펀딩/일반 주문 통합)
+     * 데드락 방지를 위해 productId 오름차순으로 배타 잠금 획득
      */
     @Transactional
     @Override
-    public void decreaseStockByFunding(Long productId) {
-        Product product;
-        try {
-            product = productSupport.findByIdForUpdate(productId); // 배타 잠금
-        } catch (PessimisticLockingFailureException e) {
-            throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+    public void decreaseStockByOrder(Map<Long, Integer> productQuantityMap) {
+        var sorted = new TreeMap<>(productQuantityMap); // ProductId를 오름차순으로 정렬
+
+        for (var entry : sorted.entrySet()) {
+            Long productId = entry.getKey();
+            int quantity = entry.getValue();
+
+            Product product;
+            try {
+                product = productSupport.findByIdForUpdate(productId);
+            } catch (PessimisticLockingFailureException e) {
+                throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+            }
+
+            product.decreaseStock(quantity);
+            productRepositoryPort.save(product);
+
+            product.pullEvents().forEach(eventPublisher::publish);
         }
-
-        product.decreaseStockByFunding();
-        productRepositoryPort.save(product);
-
-        product.pullEvents().forEach(eventPublisher::publish);
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)
