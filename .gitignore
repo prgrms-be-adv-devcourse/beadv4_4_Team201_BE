@@ -127,5 +127,6 @@ backlog/
 # K8s secrets
 infra/k3s/base/secrets.yaml
 
-# k6 load test - Auth0 test account credentials
+# k6 load test
 infra/monitoring/k6/data/test-accounts.json
+infra/monitoring/k6/results/
