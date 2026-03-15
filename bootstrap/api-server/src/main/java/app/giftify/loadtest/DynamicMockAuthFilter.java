@@ -37,7 +37,14 @@ public class DynamicMockAuthFilter extends OncePerRequestFilter {
         String userIdHeader = request.getHeader(HEADER_USER_ID);
 
         if (userIdHeader != null && !userIdHeader.isBlank()) {
-            Long memberId = Long.parseLong(userIdHeader);
+            final long memberId;
+            try {
+                memberId = Long.parseLong(userIdHeader);
+            } catch (NumberFormatException ex) {
+                log.warn("Invalid X-Test-User-ID header: '{}', skipping mock authentication", userIdHeader);
+                filterChain.doFilter(request, response);
+                return;
+            }
             MemberRole role = parseRole(request.getHeader(HEADER_USER_ROLE));
 
             // MemberPrincipalFilter와 동일한 MemberAuthenticationToken을 생성하여
