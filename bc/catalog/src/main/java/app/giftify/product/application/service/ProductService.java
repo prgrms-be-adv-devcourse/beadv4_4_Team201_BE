@@ -246,7 +246,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             }
 
             product.decreaseStock(quantity);
-            productRepositoryPort.save(product);
+            productRepositoryPort.saveAndFlush(product);
 
             product.pullEvents().forEach(eventPublisher::publish);
         }

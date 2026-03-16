@@ -81,7 +81,7 @@ class ProductServiceTest {
 
             // then
             assertThat(product.getStock()).isEqualTo(3);
-            verify(productRepositoryPort).save(product);
+            verify(productRepositoryPort).saveAndFlush(product);
             verify(eventPublisher).publish(any(ProductStockUpdatedEvent.class));
         }
 
@@ -98,7 +98,7 @@ class ProductServiceTest {
 
             // then
             assertThat(product.getStock()).isEqualTo(0);
-            verify(productRepositoryPort).save(product);
+            verify(productRepositoryPort).saveAndFlush(product);
             verify(eventPublisher).publish(any(ProductSaleDisabledEvent.class));
         }
 
