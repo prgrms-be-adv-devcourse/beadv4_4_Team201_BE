@@ -82,7 +82,6 @@ class OrderServiceTest {
         @DisplayName("일반 구매 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
         void placeOrder_success_normalProduct() {
             given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
-            given(fundingQueryPort.findFundingInfoByWishlistItemIds(List.of())).willReturn(Map.of());
             given(targetTypeResolver.resolve(any(), any())).willReturn(TargetType.DIRECT_PURCHASE);
             given(targetIdResolver.resolve(any(), any(), any())).willReturn(productId);
             given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
@@ -103,7 +102,6 @@ class OrderServiceTest {
 
             // 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
             verify(productPort, times(1)).getProductSnapshots(productIds);
-            verify(fundingQueryPort, times(1)).findFundingInfoByWishlistItemIds(List.of());
             verify(orderRepository, times(1)).save(any(Order.class));
             verify(eventPublisher, atLeastOnce()).publish(any());
         }
