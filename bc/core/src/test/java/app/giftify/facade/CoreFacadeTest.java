@@ -15,7 +15,6 @@ import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.FundingSnapshot;
 import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,12 +27,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CoreFacade 테스트")
@@ -64,9 +62,6 @@ class CoreFacadeTest {
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemCommand));
 
-			FundingSnapshot fundingSnapshot = mock(FundingSnapshot.class);
-			given(fundingFacade.getSnapshot(10L)).willReturn(Optional.of(fundingSnapshot));
-
 			OrderItemSnapshot orderItemSnapshot = OrderItemSnapshot.builder()
 				.orderItemId(1L).orderId(1L).targetId(10L)
 				.targetType(TargetType.FUNDING).orderItemType(OrderItemType.FUNDING_GIFT)
@@ -86,7 +81,7 @@ class CoreFacadeTest {
 				.createdAt(LocalDateTime.of(2026, 2, 18, 10, 0))
 				.build();
 
-			given(orderService.createOrder(any(), anyList())).willReturn(orderSnapshot);
+			given(orderService.createOrder(any())).willReturn(orderSnapshot);
 
 			PaymentCreatedResult paymentResult = new PaymentCreatedResult(
 				1L, "ORD-001", PaymentStatus.PAID, "pay-key", "txn-key",
@@ -98,8 +93,7 @@ class CoreFacadeTest {
 
 			// then
 			InOrder inOrder = inOrder(fundingFacade, orderService, createPaymentService);
-			inOrder.verify(fundingFacade).getSnapshot(10L);
-			inOrder.verify(orderService).createOrder(any(), anyList());
+			inOrder.verify(orderService).createOrder(any());
 			inOrder.verify(createPaymentService).create(any());
 			inOrder.verify(orderService).markOrderAsPaid(any());
 			inOrder.verify(fundingFacade).processFundingActions(orderSnapshot);
@@ -113,8 +107,6 @@ class CoreFacadeTest {
 					1L, 10L, null, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemRequest));
-
-			given(fundingFacade.getSnapshot(10L)).willReturn(Optional.empty());
 
 			OrderItemSnapshot orderItemSnapshot = OrderItemSnapshot.builder()
 				.orderItemId(1L).orderId(42L).targetId(10L)
@@ -134,7 +126,7 @@ class CoreFacadeTest {
 				.status(OrderStatus.CREATED)
 				.createdAt(LocalDateTime.of(2026, 2, 18, 10, 0))
 				.build();
-			given(orderService.createOrder(any(), anyList())).willReturn(orderSnapshot);
+			given(orderService.createOrder(any())).willReturn(orderSnapshot);
 
 			PaymentCreatedResult paymentResult = new PaymentCreatedResult(
 				1L, "ORD-042", PaymentStatus.PAID, "pay-key", "txn-key",

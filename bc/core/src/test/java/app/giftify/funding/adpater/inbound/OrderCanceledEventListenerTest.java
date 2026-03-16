@@ -74,7 +74,7 @@ class OrderCanceledEventListenerTest {
                 orderItemId,
                 buyerId,
                 targetId,
-                TargetType.GENERAL_PRODUCT,
+                TargetType.DIRECT_PURCHASE,
                 cancelAmount
         );
 
@@ -133,7 +133,7 @@ class OrderCanceledEventListenerTest {
                 42L,
                 buyerId,
                 81L,
-                TargetType.GENERAL_PRODUCT,
+                TargetType.DIRECT_PURCHASE,
                 Money.of(5000)
         );
 

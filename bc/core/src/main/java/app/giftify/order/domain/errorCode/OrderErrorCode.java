@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public enum OrderErrorCode implements ErrorCode {
 
-    INVALID_TARGET_ID(HttpStatus.BAD_REQUEST.value(), "ORDER-100", "유효하지 않은 상품 아이디입니다."),
+    INVALID_TARGET_ID(HttpStatus.BAD_REQUEST.value(), "ORDER-100", "유효하지 않은 타겟 아이디입니다."),
     INVALID_SELLER_ID(HttpStatus.BAD_REQUEST.value(), "ORDER-101", "유효하지 않은 판매자 ID입니다."),
     AMOUNT_EXCEEDS_PRICE(HttpStatus.BAD_REQUEST.value(), "ORDER-102", "주문 금액이 상품 금액을 초과했습니다."),
 
@@ -32,8 +32,8 @@ public enum OrderErrorCode implements ErrorCode {
 
     INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT.value(), "ORDER-119", "잘못된 상태 변경 요청입니다."),
     INVALID_STATUS_CANCEL(HttpStatus.BAD_REQUEST.value(), "ORDER-122", "이미 취소 중이거나 확정된 상품이 포함되어 있어 주문 취소가 불가합니다."),
-    CANCEL_AMOUNT_MISMATCH(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ORDER-123", "취소 금액이 일치하지 않습니다.")
-    ;
+    CANCEL_AMOUNT_MISMATCH(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ORDER-123", "취소 금액이 일치하지 않습니다."),
+    INVALID_FUNDING_REFERENCE(HttpStatus.BAD_REQUEST.value(), "ORDER-124", "요청한 위시리스트 상품 펀딩 정보와 펀딩 정보가 일치하지 않습니다.");
 
     private final int statusCode;
     private final String code;

@@ -11,4 +11,5 @@ public record PlaceOrderItemCommand(
         Money amount,
         OrderItemType orderItemType
 ) {
+
 }

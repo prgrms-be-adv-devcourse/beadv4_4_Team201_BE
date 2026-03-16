@@ -34,11 +34,7 @@ public class CoreFacade {
      */
     @Transactional
     public PlaceOrderResult participateFunding(ParticipateFundingCommand command) {
-        List<FundingSnapshot> fundingSnapshots = getFundingSnapshots(command);
-
-        PlaceOrderCommand placeOrderCommand = PlaceOrderCommand.of(command);
-
-        OrderSnapshot orderSnapshot = orderService.createOrder(placeOrderCommand, fundingSnapshots);
+        OrderSnapshot orderSnapshot = orderService.createOrder(PlaceOrderCommand.of(command));
 
         CreateFundingPaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
         PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);

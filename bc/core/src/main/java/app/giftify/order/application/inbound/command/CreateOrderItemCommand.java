@@ -49,10 +49,10 @@ public record CreateOrderItemCommand (
         }
         if (isNormalGifting(orderItemType)) {
             validateNormalGifting(fundingId);
-            return TargetType.GENERAL_PRODUCT;
+            return TargetType.DIRECT_PURCHASE;
         }
         if (isNormalOrder(orderItemType)) {
-            return TargetType.GENERAL_PRODUCT;
+            return TargetType.DIRECT_PURCHASE;
         }
 
         throw new PolicyException(OrderErrorCode.UNSUPPORTED_ORDER_COMBINATION);
