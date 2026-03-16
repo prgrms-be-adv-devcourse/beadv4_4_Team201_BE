@@ -1,13 +1,9 @@
 package app.giftify.order.application;
 
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.order.adapter.outbound.client.WishlistClient;
 import app.giftify.order.application.dto.OrderCancelProcessingResult;
 import app.giftify.order.application.dto.OrderCancelSummary;
-import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
-import app.giftify.order.application.inbound.command.PlaceOrderCommand;
-import app.giftify.order.application.inbound.command.CreateOrderItemCommand;
-import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.order.application.inbound.command.*;
 import app.giftify.order.application.inbound.vo.OrderDetail;
 import app.giftify.order.application.inbound.vo.OrderItemDetail;
 import app.giftify.order.application.inbound.vo.OrderSummary;
@@ -35,7 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +49,7 @@ public class OrderService {
 
     @Transactional
     public OrderSnapshot createOrder(PlaceOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
-        Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = requestWishlistItemSnapshots(command.itemRequests());
+        Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = requestWishlistItemSnapshots(command.items());
 
         Map<Long, Long> fundingIdMap = mapFundingIdByWishlistItemId(fundingSnapshots);
 
@@ -247,28 +245,28 @@ public class OrderService {
 
     private static @NonNull List<CreateOrderItemCommand> toOrderItemCommands(PlaceOrderCommand command, Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap) {
 
-        return command.itemRequests().stream()
+        return command.items().stream()
                 .map(itemRequest -> generateOrderItemCommand(wishlistItemSnapshotMap, fundingIdMap, itemRequest))
                 .toList();
     }
 
-    private static CreateOrderItemCommand generateOrderItemCommand(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap, PlaceOrderItemRequest itemRequest) {
-        WishlistItemSnapshot wishlistItemSnapshot = getWishlistItemSnapshot(wishlistItemSnapshotMap, itemRequest);
+    private static CreateOrderItemCommand generateOrderItemCommand(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap, PlaceOrderItemCommand item) {
+        WishlistItemSnapshot wishlistItemSnapshot = getWishlistItemSnapshot(wishlistItemSnapshotMap, item);
         return CreateOrderItemCommand.of(
-                itemRequest.orderItemType(),
-                itemRequest.wishlistItemId(),
-                itemRequest.receiverId(),
-                itemRequest.amount(),
+                item.orderItemType(),
+                item.wishlistItemId(),
+                item.receiverId(),
+                item.amount(),
                 wishlistItemSnapshot,
-                fundingIdMap.getOrDefault(itemRequest.wishlistItemId(), null)
+                fundingIdMap.getOrDefault(item.wishlistItemId(), null)
         );
     }
 
-    private static WishlistItemSnapshot getWishlistItemSnapshot(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, PlaceOrderItemRequest itemRequest) {
-        if (!wishlistItemSnapshotMap.containsKey(itemRequest.wishlistItemId()))
+    private static WishlistItemSnapshot getWishlistItemSnapshot(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, PlaceOrderItemCommand item) {
+        if (!wishlistItemSnapshotMap.containsKey(item.wishlistItemId()))
             throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND);
         else
-            return wishlistItemSnapshotMap.get(itemRequest.wishlistItemId());
+            return wishlistItemSnapshotMap.get(item.wishlistItemId());
     }
 
     private static Map<Long, Long> mapFundingIdByWishlistItemId(List<FundingSnapshot> fundingSnapshots) {
@@ -279,9 +277,9 @@ public class OrderService {
                 ));
     }
 
-    private Map<Long, WishlistItemSnapshot> requestWishlistItemSnapshots(List<PlaceOrderItemRequest> itemRequests) {
-        List<Long> wishlistItemIds = itemRequests.stream()
-                .map(PlaceOrderItemRequest::wishlistItemId).toList();
+    private Map<Long, WishlistItemSnapshot> requestWishlistItemSnapshots(List<PlaceOrderItemCommand> items) {
+        List<Long> wishlistItemIds = items.stream()
+                .map(PlaceOrderItemCommand::wishlistItemId).toList();
 
 
         Map<Long, WishlistItemSnapshot> snapshotList = wishlistClient.getSnapshotList(wishlistItemIds);

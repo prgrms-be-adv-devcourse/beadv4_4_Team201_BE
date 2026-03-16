@@ -1,7 +1,6 @@
 package app.giftify.order.adapter.inbound.web.dto.request;
 
 import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.vo.Money;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -12,7 +11,7 @@ public record PlaceOrderItemRequest(
         Long wishlistItemId,
         Long fundingId,
         @NotNull Long receiverId,
-        @NotNull Money amount,
+        @NotNull Long amount,
         @NotNull OrderItemType orderItemType
 ) {
 }

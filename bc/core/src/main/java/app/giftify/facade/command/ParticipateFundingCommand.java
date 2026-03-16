@@ -1,7 +1,6 @@
 package app.giftify.facade.command;
 
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderRequest;
+import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.shared.domain.type.PaymentMethod;
 
 import java.util.List;
@@ -9,13 +8,18 @@ import java.util.List;
 public record ParticipateFundingCommand(
         Long buyerId,
         PaymentMethod method,
-        List<PlaceOrderItemRequest> items
+        List<ParticipateFundingItemCommand> items
 ) {
-    public static ParticipateFundingCommand of(Long buyerId, PlaceOrderRequest request) {
-        return new ParticipateFundingCommand(
-                buyerId,
-                request.method(),
-                request.items()
-        );
+    public List<PlaceOrderItemCommand> getPlaceOrderItemCommands() {
+        return items().stream()
+                .map(item -> new PlaceOrderItemCommand(
+                        item.productId(),
+                        item.wishlistItemId(),
+                        item.fundingId(),
+                        item.receiverId(),
+                        item.amount(),
+                        item.orderItemType()
+                ))
+                .toList();
     }
 }

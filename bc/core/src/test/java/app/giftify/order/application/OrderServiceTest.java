@@ -1,9 +1,9 @@
 package app.giftify.order.application;
 
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.order.adapter.outbound.client.WishlistClient;
 import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.*;
@@ -64,7 +64,7 @@ class OrderServiceTest {
     private final Long wishlistItemId = 100L;
     private final Long productId = 500L;
 
-    private final PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
+    private final PlaceOrderItemCommand itemCommand = new PlaceOrderItemCommand(
             productId,
             wishlistItemId,
             null,
@@ -76,7 +76,7 @@ class OrderServiceTest {
     private final PlaceOrderCommand command = new PlaceOrderCommand(
             buyerId,
             PaymentMethod.DEPOSIT,
-            List.of(itemRequest)
+            List.of(itemCommand)
     );
 
     private final Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = Map.of(

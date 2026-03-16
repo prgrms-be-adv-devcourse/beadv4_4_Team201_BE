@@ -1,9 +1,9 @@
 package app.giftify.facade;
 
 import app.giftify.facade.command.ParticipateFundingCommand;
+import app.giftify.facade.command.ParticipateFundingItemCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.funding.application.FundingFacade;
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.domain.OrderItemSnapshot;
 import app.giftify.order.domain.OrderItemStatus;
@@ -59,10 +59,10 @@ class CoreFacadeTest {
 		@DisplayName("주문 생성 성공 시 전체 흐름이 순서대로 실행된다")
 		void placeOrder_ExecutesInOrder() {
 			// given
-			PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
+			ParticipateFundingItemCommand itemCommand = new ParticipateFundingItemCommand(
 				1L, 10L, null,  200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
-				100L, PaymentMethod.CARD, List.of(itemRequest));
+				100L, PaymentMethod.CARD, List.of(itemCommand));
 
 			FundingSnapshot fundingSnapshot = mock(FundingSnapshot.class);
 			given(fundingFacade.getSnapshot(10L)).willReturn(Optional.of(fundingSnapshot));
@@ -109,7 +109,7 @@ class CoreFacadeTest {
 		@DisplayName("결과로 orderId를 반환한다")
 		void placeOrder_ReturnsOrderId() {
 			// given
-			PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
+			ParticipateFundingItemCommand itemRequest = new ParticipateFundingItemCommand(
 					1L, 10L, null, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemRequest));
