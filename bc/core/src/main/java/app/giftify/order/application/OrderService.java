@@ -50,7 +50,7 @@ public class OrderService {
     private final OrderCancelProcessor orderCancelProcessor;
 
     @Transactional
-    public OrderSnapshot createOrder(@Valid CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
+    public OrderSnapshot createOrder(CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
         Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = requestWishlistItemSnapshots(command.itemRequests());
 
         Map<Long, Long> fundingIdMap = mapFundingIdByWishlistItemId(fundingSnapshots);
