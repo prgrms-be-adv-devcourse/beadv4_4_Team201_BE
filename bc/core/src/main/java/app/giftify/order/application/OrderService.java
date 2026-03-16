@@ -57,13 +57,9 @@ public class OrderService {
     public OrderSnapshot createOrder(PlaceOrderCommand command) {
         // 1. 필요한 외부 데이터 일괄 조회
         Map<Long, ProductSnapshot> productSnapshots = productPort.getProductSnapshots(command.getProductIds());
-        Map<Long, FundingInfo> fundingInfoMap = fundingPort.findFundingInfoByWishlistItemIds(
-                command.getWishlistItemIdsByOrderItemType(EnumSet.of(OrderItemType.NORMAL_GIFT, OrderItemType.FUNDING_GIFT))
-        );
+        Map<Long, FundingInfo> fundingInfoMap = fetchFundingInfosIfNeeded(command);
 
-        if (productSnapshots == null || fundingInfoMap == null) {
-            throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND);
-        }
+        validateRequiredSnapshot(productSnapshots, fundingInfoMap);
 
         // 2. 주문 아이템 생성
         List<OrderItem> orderItems = createOrderItems(command.items(), productSnapshots, fundingInfoMap);
@@ -278,6 +274,22 @@ public class OrderService {
         return productSnapshot;
     }
 
+    private Map<Long, FundingInfo> fetchFundingInfosIfNeeded(PlaceOrderCommand command) {
+        if (command.isAllNormalOrder()) {
+            return Collections.emptyMap();
+        }
+
+        return fundingPort.findFundingInfoByWishlistItemIds(
+                command.getWishlistItemIdsByOrderItemType(EnumSet.of(OrderItemType.NORMAL_GIFT, OrderItemType.FUNDING_GIFT))
+        );
+    }
+
+    private void validateRequiredSnapshot(Map<Long, ProductSnapshot> products, Map<Long, FundingInfo> fundings) {
+        // 포트가 null을 반환할 가능성에 대비한 방어 로직
+        if (products == null || fundings == null) {
+            throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND);
+        }
+    }
 
     private static void validateOwner(Long memberId, Long buyerId) {
         if (!Objects.equals(buyerId, memberId)) {

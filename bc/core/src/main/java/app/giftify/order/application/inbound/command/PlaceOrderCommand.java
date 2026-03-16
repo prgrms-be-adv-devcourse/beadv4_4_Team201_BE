@@ -32,4 +32,9 @@ public record PlaceOrderCommand(
                 .map(PlaceOrderItemCommand::wishlistItemId)
                 .toList();
     }
+
+    public boolean isAllNormalOrder() {
+        return items.stream()
+                .allMatch(item -> item.orderItemType() == OrderItemType.NORMAL_ORDER);
+    }
 }
