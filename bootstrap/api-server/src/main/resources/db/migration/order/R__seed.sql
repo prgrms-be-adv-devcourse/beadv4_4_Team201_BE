@@ -56,3 +56,33 @@ VALUES (1, 1, 1, 'GENERAL_PRODUCT', 'NORMAL_ORDER', 3, 2,
         89000.00, 89000.00, 'CANCELED', '2026-02-08 16:00:00', '2026-02-08 15:00:00', '2026-02-08 16:00:00');
 
 SELECT setval('order_items_id_seq', 100, false);
+
+-- Loadtest: core_member_replicas for BUYER + SELLER accounts
+DO $$
+DECLARE
+  _id bigint;
+BEGIN
+  IF current_schema() = 'loadtest' THEN
+    -- Givers (1001-1050)
+    FOR _id IN 1001..1050 LOOP
+      INSERT INTO core_member_replicas (id, nickname)
+      VALUES (_id, 'loadtester' || LPAD((_id - 1000)::text, 3, '0'))
+      ON CONFLICT (id) DO NOTHING;
+    END LOOP;
+
+    -- Receivers (1051-1060)
+    FOR _id IN 1051..1060 LOOP
+      INSERT INTO core_member_replicas (id, nickname)
+      VALUES (_id, 'loadtester' || LPAD((_id - 1000)::text, 3, '0'))
+      ON CONFLICT (id) DO NOTHING;
+    END LOOP;
+
+    -- Sellers (1101-1110)
+    FOR _id IN 1101..1110 LOOP
+      INSERT INTO core_member_replicas (id, nickname)
+      VALUES (_id, 'seller' || LPAD((_id - 1100)::text, 3, '0'))
+      ON CONFLICT (id) DO NOTHING;
+    END LOOP;
+  END IF;
+END
+$$;

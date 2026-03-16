@@ -1,0 +1,18 @@
+# 부하테스트 전용 IngressRoute — rate-limit 미적용
+# Traefik Pod 내부에서 소스 IP가 SNAT되어 IP Whitelist가 동작하지 않음
+# 대신 GCP 방화벽(allow-internal)이 loadtest 서브넷만 허용하므로 보안은 유지됨
+# 테스트 시작 전: kubectl apply -f ingress-loadtest.yaml
+# 테스트 종료 후: kubectl delete ingressroute api-ingress-loadtest
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api-ingress-loadtest
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`giftify-api-loadtest.chan99k.dev`)
+      kind: Rule
+      services:
+        - name: api-server
+          port: 8080

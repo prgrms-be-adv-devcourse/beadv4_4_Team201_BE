@@ -1,12 +1,15 @@
 /**
- * Spike Test — 갑작스러운 트래픽 폭증 시뮬레이션.
+ * Breakpoint Test — 시스템 한계점 탐색.
  *
- * 이벤트 오픈, 타임세일, SNS 바이럴 등으로 인한
- * 순간 트래픽 급증 시 시스템 생존 여부 검증.
+ * 요청률을 지속적으로 올려서 SLO가 깨지는 지점을 찾는다.
+ * abortOnFail: true로 threshold 위반 시 자동 중단.
  *
- * k6 권장: ramping-arrival-rate executor 사용.
- * VU 기반이 아닌 요청률(requests/sec) 기반으로
- * 서버 응답 속도와 무관하게 일정한 부하를 가한다.
+ * 결과 해석:
+ * - 중단 시점의 VU 수 = 시스템 최대 동시 사용자 수
+ * - 중단 시점의 req/s = 시스템 최대 처리량(throughput)
+ * - 에러 유형으로 병목 지점 파악 (DB? Network? CPU?)
+ *
+ * k6 공식 권장: 시스템 상한선 파악 목적. 몇 차례만 실행.
  */
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
@@ -28,36 +31,29 @@ const accounts = new SharedArray('accounts', function () {
     return JSON.parse(open('../data/test-accounts.json'));
 });
 
-// ramping-arrival-rate: 초당 요청 수 기반 부하 제어
-// 정상(10 req/s) → 급증(100 req/s) → 유지 → 복귀
+// 20 VU에서 시작하여 10분간 300 VU까지 선형 증가
+// abortOnFail: threshold 위반 시 즉시 중단
+const MAX_VUS = parseInt(__ENV.MAX_VUS || '300');
+
 export const options = {
     setupTimeout: '120s',
-    scenarios: {
-        spike: {
-            executor: 'ramping-arrival-rate',
-            startRate: 10,
-            timeUnit: '1s',
-            preAllocatedVUs: 50,
-            maxVUs: 200,
-            stages: [
-                { target: 10, duration: '30s' },
-                { target: 100, duration: '10s' },
-                { target: 100, duration: '60s' },
-                { target: 10, duration: '10s' },
-                { target: 10, duration: '30s' },
-            ],
-        },
-    },
+    stages: [
+        { duration: '30s', target: 20 },
+        { duration: '10m', target: MAX_VUS },
+    ],
     thresholds: {
-        'http_req_duration{name:product_search}': ['p(95)<1000'],
-        'http_req_duration{name:cart_add}': ['p(95)<2000'],
-        'http_req_failed': ['rate<0.10'],
-        'error_rate': ['rate<0.15'],
+        'http_req_duration': [
+            { threshold: 'p(95)<2000', abortOnFail: true, delayAbortEval: '30s' },
+        ],
+        'http_req_failed': [
+            { threshold: 'rate<0.15', abortOnFail: true, delayAbortEval: '30s' },
+        ],
     },
 };
 
 export function setup() {
     if (MOCK_AUTH) {
+        console.log(`Breakpoint Test: 0 → ${MAX_VUS} VU (Mock Auth)`);
         return { tokens: [], mockAuth: true };
     }
     const tokens = getTokens(
@@ -67,6 +63,7 @@ export function setup() {
     if (tokens.length === 0) {
         throw new Error('토큰 발급 실패. Auth0 환경변수를 확인하세요.');
     }
+    console.log(`Breakpoint Test: 0 → ${MAX_VUS} VU (Auth0 JWT, ${tokens.length} tokens)`);
     return { tokens, mockAuth: false };
 }
 
@@ -75,11 +72,9 @@ export default function (data) {
         ? mockAuthHeaders(1001 + (__VU % 100))
         : authHeaders(data.tokens[__VU % data.tokens.length]);
 
-    // Spike 시나리오: 핵심 경로만 빠르게 반복
-    // 검색 → 장바구니 (가장 부하가 큰 쓰기 경로)
+    // 핵심 경로: 검색 → 장바구니 (최소 시나리오로 병목 탐색)
 
     // 1. Product Search
-    let productId = randomItem(PRODUCT_IDS);
     group('search', function () {
         const keyword = randomItem(SEARCH_KEYWORDS);
         const res = http.get(
@@ -90,6 +85,8 @@ export default function (data) {
         searchDuration.add(res.timings.duration);
         errorRate.add(res.status >= 400);
     });
+
+    sleep(0.1);
 
     // 2. Cart Add
     const wishItem = getRandomWishlistItem();
@@ -103,8 +100,14 @@ export default function (data) {
         cartDuration.add(res.timings.duration);
         errorRate.add(res.status >= 500);
     });
+
+    sleep(0.1);
 }
 
 export function teardown(data) {
-    console.log(`Spike Test 완료. 인증: ${data.mockAuth ? 'Mock Auth' : 'Auth0 JWT'}`);
+    console.log('──────────────────────────────────');
+    console.log('Breakpoint Test 완료');
+    console.log(`목표 최대 VU: ${MAX_VUS}`);
+    console.log('k6 출력에서 중단 시점의 VU 수와 req/s를 확인하세요.');
+    console.log('──────────────────────────────────');
 }
