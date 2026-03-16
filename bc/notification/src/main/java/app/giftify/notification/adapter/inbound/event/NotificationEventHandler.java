@@ -18,11 +18,12 @@ import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.event.product.ProductSellerOrderReceivedEvent;
 import app.giftify.shared.domain.vo.FundingDetail;
-import app.giftify.shared.domain.vo.SellerOrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -145,15 +146,18 @@ public class NotificationEventHandler {
         var meta = typeRegistry.resolve(event.getClass());
         CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "product-seller-order");
 
-        for (SellerOrderItem item : event.getItems()) {
-            String content = "[%s] %d개의 주문이 인입되었습니다".formatted(item.productName(), item.quantity());
-            Notification notification = notificationFactory.createSingle(
-                    item.sellerId(), meta.notificationType(),
-                    String.valueOf(item.productId()), "PRODUCT",
-                    ce, content);
-            Notification saved = notificationRepository.save(notification);
-            pushPort.send(item.sellerId(), saved);
-        }
+        List<Notification> notifications = event.getItems().stream()
+                .map(item -> {
+                    String content = "[%s] %d개의 주문이 인입되었습니다".formatted(item.productName(), item.quantity());
+                    return notificationFactory.createSingle(
+                            item.sellerId(), meta.notificationType(),
+                            String.valueOf(item.productId()), "PRODUCT",
+                            ce, content);
+                })
+                .toList();
+
+        List<Notification> saved = notificationRepository.saveAll(notifications);
+        saved.forEach(n -> pushPort.send(n.getRecipientId(), n));
     }
 
     // -- 헬퍼 --

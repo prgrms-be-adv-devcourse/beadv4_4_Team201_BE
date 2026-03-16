@@ -229,12 +229,11 @@ class NotificationEventHandlerTest {
                     eq("1"), eq("PRODUCT"), eq(ce), eq("[상품A] 2개의 주문이 인입되었습니다"))).willReturn(notifA);
             given(notificationFactory.createSingle(eq(sellerB), eq(NotificationType.PRODUCT_SELLER_ORDER_RECEIVED),
                     eq("2"), eq("PRODUCT"), eq(ce), eq("[상품B] 3개의 주문이 인입되었습니다"))).willReturn(notifB);
-            given(notificationRepository.save(notifA)).willReturn(savedA);
-            given(notificationRepository.save(notifB)).willReturn(savedB);
+            given(notificationRepository.saveAll(List.of(notifA, notifB))).willReturn(List.of(savedA, savedB));
 
             eventHandler.handleProductSellerOrderReceived(event);
 
-            then(notificationRepository).should(times(2)).save(any(Notification.class));
+            then(notificationRepository).should().saveAll(List.of(notifA, notifB));
             then(pushPort).should().send(sellerA, savedA);
             then(pushPort).should().send(sellerB, savedB);
         }
@@ -266,11 +265,11 @@ class NotificationEventHandlerTest {
                     eq("1"), eq("PRODUCT"), eq(ce), eq("[상품A] 4개의 주문이 인입되었습니다"))).willReturn(notifA);
             given(notificationFactory.createSingle(eq(sellerId), eq(NotificationType.PRODUCT_SELLER_ORDER_RECEIVED),
                     eq("2"), eq("PRODUCT"), eq(ce), eq("[상품B] 2개의 주문이 인입되었습니다"))).willReturn(notifB);
-            given(notificationRepository.save(any(Notification.class))).willAnswer(inv -> inv.getArgument(0));
+            given(notificationRepository.saveAll(List.of(notifA, notifB))).willReturn(List.of(notifA, notifB));
 
             eventHandler.handleProductSellerOrderReceived(event);
 
-            then(notificationRepository).should(times(2)).save(any(Notification.class));
+            then(notificationRepository).should().saveAll(List.of(notifA, notifB));
             then(pushPort).should(times(2)).send(eq(sellerId), any(Notification.class));
         }
     }
