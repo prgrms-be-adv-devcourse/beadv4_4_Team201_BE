@@ -30,6 +30,7 @@ import {
     randomItem,
     SEARCH_KEYWORDS,
     getRandomWishlistItem,
+    generateIdempotencyKey,
 } from '../modules/config.js';
 
 // -- 커스텀 메트릭 --
@@ -282,7 +283,10 @@ export default function (data) {
             const res = http.post(
                 `${BASE_URL}/api/v2/orders`,
                 body,
-                Object.assign({}, opts, {tags: {name: 'order_create'}})
+                Object.assign({}, opts, {
+                    tags: {name: 'order_create'},
+                    headers: Object.assign({}, opts.headers, {'X-Idempotency-Key': generateIdempotencyKey()})
+                })
             );
             check(res, {'order ok': (r) => r.status === 200 || r.status === 201});
             orderDuration.add(res.timings.duration);

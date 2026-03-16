@@ -13,7 +13,7 @@ export const MOCK_AUTH = (__ENV.MOCK_AUTH || 'false').toLowerCase() === 'true';
 
 // __ENV는 -e CLI 플래그로 주입된 환경변수 전용 객체. Node.js의 process.env와 유사하지만 k6 런타임 전용
 
-export const SEARCH_KEYWORDS = ['에어팟', '스타벅스', '닌텐도', '다이슨', '레고', '랜턴', '고양이', '스피커'];
+export const SEARCH_KEYWORDS = ['소니', '애플워치', '로지텍', '키크론', '레고', '랜턴', '고양이', '스피커'];
 export const PRODUCT_IDS = [11, 14, 25, 30, 38, 49, 58, 66, 76, 85, 91, 98];
 
 // Phase 2: Auth0 실제 JWT 토큰 + CF-Access 헤더
@@ -83,4 +83,8 @@ export function getRandomWishlistItem() {
         wishlistId: receiver.wishlistId,
         wishlistItemId: randomItem(receiver.itemIds),
     };
+}
+
+export function generateIdempotencyKey() {
+    return `k6-${__VU}-${__ITER}-${Date.now()}`;
 }
