@@ -2,18 +2,17 @@ package app.giftify.order.adapter.inbound.web.dto.request;
 
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.vo.Money;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * 주문 항목 DTO
- * @param wishlistItemId
- * @param receiverId
- * @param amount
- * @param orderItemType
  */
 public record PlaceOrderItemRequest(
+        @NotNull Long productId,
         Long wishlistItemId,
-        Long receiverId,
-        Money amount,
-        OrderItemType orderItemType
+        Long fundingId,
+        @NotNull Long receiverId,
+        @NotNull Money amount,
+        @NotNull OrderItemType orderItemType
 ) {
 }

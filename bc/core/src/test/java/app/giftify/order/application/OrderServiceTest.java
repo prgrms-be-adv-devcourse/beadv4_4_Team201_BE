@@ -65,7 +65,9 @@ class OrderServiceTest {
     private final Long productId = 500L;
 
     private final PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
+            productId,
             wishlistItemId,
+            null,
             2002L,
             Money.of("15000"),
             OrderItemType.FUNDING_GIFT

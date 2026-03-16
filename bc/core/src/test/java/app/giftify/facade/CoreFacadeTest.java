@@ -1,13 +1,22 @@
 package app.giftify.facade;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
+import app.giftify.facade.command.ParticipateFundingCommand;
+import app.giftify.facade.vo.PlaceOrderResult;
+import app.giftify.funding.application.FundingFacade;
+import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
+import app.giftify.order.application.OrderService;
+import app.giftify.order.domain.OrderItemSnapshot;
+import app.giftify.order.domain.OrderItemStatus;
+import app.giftify.order.domain.OrderSnapshot;
+import app.giftify.order.domain.OrderStatus;
+import app.giftify.payment.application.CreatePaymentService;
+import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.domain.type.OrderItemType;
+import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.shared.domain.type.TargetType;
+import app.giftify.shared.domain.vo.FundingSnapshot;
+import app.giftify.shared.domain.vo.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,23 +26,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.facade.command.ParticipateFundingCommand;
-import app.giftify.facade.vo.PlaceOrderResult;
-import app.giftify.funding.application.FundingFacade;
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
-import app.giftify.order.application.OrderService;
-import app.giftify.order.domain.OrderSnapshot;
-import app.giftify.order.domain.OrderStatus;
-import app.giftify.payment.application.CreatePaymentService;
-import app.giftify.payment.application.inbound.PaymentCreatedResult;
-import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.order.domain.OrderItemSnapshot;
-import app.giftify.order.domain.OrderItemStatus;
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.FundingSnapshot;
-import app.giftify.shared.domain.vo.Money;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CoreFacade 테스트")
@@ -60,7 +60,7 @@ class CoreFacadeTest {
 		void placeOrder_ExecutesInOrder() {
 			// given
 			PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
-				10L, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
+				1L, 10L, null,  200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemRequest));
 
@@ -110,7 +110,7 @@ class CoreFacadeTest {
 		void placeOrder_ReturnsOrderId() {
 			// given
 			PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
-				10L, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
+					1L, 10L, null, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemRequest));
 
