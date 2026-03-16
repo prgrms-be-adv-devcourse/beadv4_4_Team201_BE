@@ -17,7 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.command.ParticipateFundingCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.funding.application.FundingFacade;
 import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
@@ -61,7 +61,7 @@ class CoreFacadeTest {
 			// given
 			PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
 				10L, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
-			PlaceOrderCommand command = new PlaceOrderCommand(
+			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemRequest));
 
 			FundingSnapshot fundingSnapshot = mock(FundingSnapshot.class);
@@ -94,7 +94,7 @@ class CoreFacadeTest {
 			given(createPaymentService.create(any())).willReturn(paymentResult);
 
 			// when
-			PlaceOrderResult result = coreFacade.placeOrder(command);
+			PlaceOrderResult result = coreFacade.participateFunding(command);
 
 			// then
 			InOrder inOrder = inOrder(fundingFacade, orderService, createPaymentService);
@@ -111,7 +111,7 @@ class CoreFacadeTest {
 			// given
 			PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
 				10L, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
-			PlaceOrderCommand command = new PlaceOrderCommand(
+			ParticipateFundingCommand command = new ParticipateFundingCommand(
 				100L, PaymentMethod.CARD, List.of(itemRequest));
 
 			given(fundingFacade.getSnapshot(10L)).willReturn(Optional.empty());
@@ -142,7 +142,7 @@ class CoreFacadeTest {
 			given(createPaymentService.create(any())).willReturn(paymentResult);
 
 			// when
-			PlaceOrderResult result = coreFacade.placeOrder(command);
+			PlaceOrderResult result = coreFacade.participateFunding(command);
 
 			// then
 			assertThat(result.orderId()).isEqualTo(42L);

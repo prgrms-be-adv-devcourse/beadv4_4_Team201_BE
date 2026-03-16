@@ -6,13 +6,13 @@ import app.giftify.shared.domain.type.PaymentMethod;
 
 import java.util.List;
 
-public record PlaceOrderCommand(
+public record ParticipateFundingCommand(
         Long buyerId,
         PaymentMethod method,
         List<PlaceOrderItemRequest> items
 ) {
-    public static PlaceOrderCommand of(Long buyerId, PlaceOrderRequest request) {
-        return new PlaceOrderCommand(
+    public static ParticipateFundingCommand of(Long buyerId, PlaceOrderRequest request) {
+        return new ParticipateFundingCommand(
                 buyerId,
                 request.method(),
                 request.items()

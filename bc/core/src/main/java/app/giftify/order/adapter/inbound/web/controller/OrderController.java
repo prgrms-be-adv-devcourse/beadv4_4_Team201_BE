@@ -1,7 +1,7 @@
 package app.giftify.order.adapter.inbound.web.controller;
 
 import app.giftify.facade.CoreFacade;
-import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.command.ParticipateFundingCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.order.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
 import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderRequest;
@@ -44,9 +44,9 @@ public class OrderController implements OrderControllerSpec {
             @CurrentMemberId Long memberId,
             @Valid @RequestBody PlaceOrderRequest orderRequest
     ) {
-        PlaceOrderCommand command = PlaceOrderCommand.of(memberId, orderRequest);
+        ParticipateFundingCommand command = ParticipateFundingCommand.of(memberId, orderRequest);
 
-        PlaceOrderResult response = coreFacade.placeOrder(command);
+        PlaceOrderResult response = coreFacade.participateFunding(command);
 
         return ResponseEntity.ok(RsData.success(response));
     }

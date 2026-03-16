@@ -5,7 +5,7 @@ import app.giftify.order.adapter.outbound.client.WishlistClient;
 import app.giftify.order.application.dto.OrderCancelProcessingResult;
 import app.giftify.order.application.dto.OrderCancelSummary;
 import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
-import app.giftify.order.application.inbound.command.CreateOrderCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.order.application.inbound.vo.OrderDetail;
@@ -50,7 +50,7 @@ public class OrderService {
     private final OrderCancelProcessor orderCancelProcessor;
 
     @Transactional
-    public OrderSnapshot createOrder(CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
+    public OrderSnapshot createOrder(PlaceOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
         Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = requestWishlistItemSnapshots(command.itemRequests());
 
         Map<Long, Long> fundingIdMap = mapFundingIdByWishlistItemId(fundingSnapshots);
@@ -245,7 +245,7 @@ public class OrderService {
         }
     }
 
-    private static @NonNull List<CreateOrderItemCommand> toOrderItemCommands(CreateOrderCommand command, Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap) {
+    private static @NonNull List<CreateOrderItemCommand> toOrderItemCommands(PlaceOrderCommand command, Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap) {
 
         return command.itemRequests().stream()
                 .map(itemRequest -> generateOrderItemCommand(wishlistItemSnapshotMap, fundingIdMap, itemRequest))

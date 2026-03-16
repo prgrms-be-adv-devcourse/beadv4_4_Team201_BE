@@ -2,7 +2,7 @@ package app.giftify.order.application;
 
 import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
 import app.giftify.order.adapter.outbound.client.WishlistClient;
-import app.giftify.order.application.inbound.command.CreateOrderCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderRepository;
@@ -71,7 +71,7 @@ class OrderServiceTest {
             OrderItemType.FUNDING_GIFT
     );
 
-    private final CreateOrderCommand command = new CreateOrderCommand(
+    private final PlaceOrderCommand command = new PlaceOrderCommand(
             buyerId,
             PaymentMethod.DEPOSIT,
             List.of(itemRequest)
