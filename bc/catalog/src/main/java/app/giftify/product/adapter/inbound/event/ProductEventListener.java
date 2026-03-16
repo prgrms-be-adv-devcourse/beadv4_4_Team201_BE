@@ -36,8 +36,10 @@ public class ProductEventListener {
         List<SellerOrderItem> sellerOrderItems = decreaseProductStockUseCase.decreaseStockByOrder(productQuantityMap);
         log.info("[product] 주문 상품 재고 차감 완료 | 상품 수: {}", productQuantityMap.size());
 
-        eventPublisher.publish(new ProductSellerOrderReceivedEvent(sellerOrderItems));
-        log.info("[product] 판매자 주문 인입 이벤트 발행 완료 | 항목 수: {}", sellerOrderItems.size());
+        if (!sellerOrderItems.isEmpty()) {
+            eventPublisher.publish(new ProductSellerOrderReceivedEvent(sellerOrderItems));
+            log.info("[product] 판매자 주문 인입 이벤트 발행 완료 | 항목 수: {}", sellerOrderItems.size());
+        }
     }
 
     // 재고 이력 생성
