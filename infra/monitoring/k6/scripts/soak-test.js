@@ -76,7 +76,7 @@ export default function (data) {
         ? mockAuthHeaders(1001 + (__VU % 100))
         : authHeaders(data.tokens[__VU % data.tokens.length]);
 
-    // business-scenario.js와 동일한 전체 여정
+    // funding-scenario.js와 동일한 전체 여정
 
     // 1. Product Search
     let productId = randomItem(PRODUCT_IDS);

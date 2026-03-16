@@ -1,6 +1,6 @@
 /**
  * Quick Test — 30초 단축 시나리오.
- * business-scenario.js와 동일한 여정을 5 VU × 30초로 실행.
+ * funding-scenario.js와 동일한 여정을 5 VU × 30초로 실행.
  * 빠른 반복 디버깅용.
  */
 import http from 'k6/http';

@@ -2,8 +2,8 @@
  * ★ Insight ─────────────────────────────────────
  * 동시성 경합(Race Condition) 전용 테스트.
  *
- * business-scenario.js와의 차이:
- * - business-scenario: 다양한 API를 순차 호출하며 "부하" 측정
+ * funding-scenario.js와의 차이:
+ * - funding-scenario: 다양한 API를 순차 호출하며 "부하" 측정
  * - concurrency-test: 동일 리소스에 100명이 동시 접근하여 "정합성" 검증
  *
  * 핵심 executor: "shared-iterations"

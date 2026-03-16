@@ -124,7 +124,18 @@ BEGIN
            (1097, 'loadtest-097@giftify-test.com', 'loadtester097', '2000-01-01', 'BUYER', '서울시 테스트구', '010-0000-0097', 'LT097', 'ACTIVE', 'auth0|69b2a5be992ecf3ff93c6c80', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
            (1098, 'loadtest-098@giftify-test.com', 'loadtester098', '2000-01-01', 'BUYER', '서울시 테스트구', '010-0000-0098', 'LT098', 'ACTIVE', 'auth0|69b2a5be992ecf3ff93c6c81', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
            (1099, 'loadtest-099@giftify-test.com', 'loadtester099', '2000-01-01', 'BUYER', '서울시 테스트구', '010-0000-0099', 'LT099', 'ACTIVE', 'auth0|69b2a5be992ecf3ff93c6c82', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
-           (1100, 'loadtest-100@giftify-test.com', 'loadtester100', '2000-01-01', 'BUYER', '서울시 테스트구', '010-0000-0100', 'LT100', 'ACTIVE', 'auth0|69b2a5be992ecf3ff93c6c83', NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+           (1100, 'loadtest-100@giftify-test.com', 'loadtester100', '2000-01-01', 'BUYER', '서울시 테스트구', '010-0000-0100', 'LT100', 'ACTIVE', 'auth0|69b2a5be992ecf3ff93c6c83', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           -- Seller accounts for load testing (1101-1110)
+           (1101, 'loadtest-seller-001@giftify-test.com', 'seller001', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0001', 'LTSELLER001', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f16', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1102, 'loadtest-seller-002@giftify-test.com', 'seller002', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0002', 'LTSELLER002', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f17', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1103, 'loadtest-seller-003@giftify-test.com', 'seller003', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0003', 'LTSELLER003', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f18', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1104, 'loadtest-seller-004@giftify-test.com', 'seller004', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0004', 'LTSELLER004', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f19', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1105, 'loadtest-seller-005@giftify-test.com', 'seller005', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0005', 'LTSELLER005', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f1a', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1106, 'loadtest-seller-006@giftify-test.com', 'seller006', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0006', 'LTSELLER006', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f1b', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1107, 'loadtest-seller-007@giftify-test.com', 'seller007', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0007', 'LTSELLER007', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f1c', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1108, 'loadtest-seller-008@giftify-test.com', 'seller008', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0008', 'LTSELLER008', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f1d', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1109, 'loadtest-seller-009@giftify-test.com', 'seller009', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0009', 'LTSELLER009', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f1e', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+           (1110, 'loadtest-seller-010@giftify-test.com', 'seller010', '2000-01-01', 'SELLER', '서울시 테스트구', '010-0001-0010', 'LTSELLER010', 'ACTIVE', 'auth0|69b79b18992ecf3ff93e0f1f', NOW(), NOW(), 'SYSTEM', 'SYSTEM');
 
     PERFORM setval('members_id_seq', 1200, false);
   END IF;

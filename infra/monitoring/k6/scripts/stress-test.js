@@ -1,7 +1,7 @@
 /**
  * Stress Test — 피크 트래픽 시뮬레이션.
  *
- * business-scenario.js(평균 60 VU)의 200%인 120 VU까지 올려
+ * funding-scenario.js(평균 60 VU)의 200%인 120 VU까지 올려
  * 시스템이 피크 부하에서도 SLO를 유지하는지 검증.
  *
  * k6 공식 권장: Average-Load 통과 후 실행.

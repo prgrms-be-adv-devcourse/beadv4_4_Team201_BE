@@ -33,10 +33,10 @@ export function authHeaders(token) {
 
 // Phase 1: DynamicMockAuthFilter용 헤더. JWT 없이 사용자를 식별한다.
 // memberId는 VU 번호 기반으로 생성하여 VU별로 다른 사용자로 동작.
-export function mockAuthHeaders(memberId) {
+export function mockAuthHeaders(memberId, role = 'BUYER') {
     const headers = {
         'X-Test-User-ID': String(memberId),
-        'X-Test-User-ROLE': 'BUYER',
+        'X-Test-User-ROLE': role,
         'Content-Type': 'application/json',
     };
 
@@ -51,6 +51,14 @@ export function mockAuthHeaders(memberId) {
 export function randomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
+
+// Loadtest member ranges
+// Givers: 1001-1050 (BUYER), Receivers: 1051-1060 (BUYER), Sellers: 1101-1110 (SELLER)
+export const GIVER_IDS = Array.from({length: 50}, (_, i) => 1001 + i);
+export const RECEIVER_IDS = Array.from({length: 10}, (_, i) => 1051 + i);
+export const SELLER_IDS = Array.from({length: 10}, (_, i) => 1101 + i);
+
+export const PRODUCT_CATEGORIES = ['ELECTRONICS', 'BEAUTY', 'FASHION', 'LIVING', 'FOODS', 'TOYS', 'OUTDOOR', 'PET', 'KITCHEN'];
 
 // Receiver wishlist mapping: Receivers(1051-1060)의 위시리스트 아이템
 // wishlist_id == member_id (seed 규칙), itemIds = 1001~1100 (10개씩)
