@@ -139,6 +139,32 @@ public class OrderEventListener {
 		throw e;
 	}
 
+	@Recover
+	public void recover(InfraException e, FundingCanceledEvent event) {
+		log.error("================================================================");
+		log.error("[최종 장애] 주문 취소 처리 최종 실패 (시스템 자동 복구 불가)");
+		log.error("Funding ID: {}", event.getFundingId());
+		log.error("Event ID: {}", event.getEventId());
+		log.error("Event Type: {}", event.getClass().getSimpleName());
+		log.error("Reason: {}", e.getMessage());
+		log.error("조치 사항: DB 상태 확인 후 수동 정정 필요");
+		log.error("================================================================");
+		throw e;
+	}
+
+	@Recover
+	public void recover(InfraException e, FundingExpiredEvent event) {
+		log.error("================================================================");
+		log.error("[최종 장애] 주문 취소 처리 최종 실패 (시스템 자동 복구 불가)");
+		log.error("Funding ID: {}", event.getFundingId());
+		log.error("Event ID: {}", event.getEventId());
+		log.error("Event Type: {}", event.getClass().getSimpleName());
+		log.error("Reason: {}", e.getMessage());
+		log.error("조치 사항: DB 상태 확인 후 수동 정정 필요");
+		log.error("================================================================");
+		throw e;
+	}
+
 	private static void log(InfraException e, PaymentEvent event) {
 		Long orderId = event.data().orderId();
 
