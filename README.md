@@ -1,525 +1,248 @@
 # Giftify Backend
 
-![main](https://github.com/github/docs/actions/workflows/main.yml/badge.svg?branch=main)
-![develop](https://github.com/github/docs/actions/workflows/main.yml/badge.svg?branch=develop) 
-[![CI - Build & Test](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml) [![CodeQL](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/github-code-scanning/codeql) [![PR Pipeline](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/pr.yml/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/pr.yml) [![Pull Request Labeler](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/pr-labeler.yml/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/pr-labeler.yml) 
-
-N/A - 프로젝트 설명이 추가될 예정입니다.
-
----
-
-## 프로젝트 목표
-
-1. **N/A** - 비즈니스 목표가 추가될 예정입니다.
-2. **N/A**
-3. **N/A**
+[![CI - develop](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml?query=branch%3Adevelop)
+[![CI - Build & Test](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/github-code-scanning/codeql)
+[![Release](https://img.shields.io/github/v/release/prgrms-be-adv-devcourse/beadv4_4_Team201_BE?label=Release)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/releases)
+![Java](https://img.shields.io/badge/Java-25-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-6DB33F)
 
 ---
 
-## 주요 기능
+## Project Overview
 
-### MVP (Minimum Viable Product)
+Giftify는 여러 친구가 함께 선물을 펀딩하는 플랫폼입니다. 친구의 위시리스트를 확인하고, 마음에 드는 상품에 공동으로 펀딩하여 특별한 선물을 만들 수 있습니다.
 
-| 우선순위 | 기능  | 설명  | 구현 상태 |
-|:----:|-----|-----|:-----:|
-| N/A  | N/A | N/A |  미구현  |
+---
 
-### 주요 기능 구현률
+## Key Features
+
+### Feature Implementation Status
 
 ```
-전체 기능: ░░░░░░░░░░░░░░░░░░░░░  0% (0/TBD)
+전체 기능: █████████████████████  100% (57/57 UseCase)
 ```
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 회원 관리 | Auth0 기반 인증, Progressive Profiling | ✅ |
+| 친구 관계 | 친구 요청/수락/거절, 친구 위시리스트 조회 | ✅ |
+| 위시리스트 | 상품 담기, 공개/비공개 설정, 친구 공유 | ✅ |
+| 상품 관리 | 판매자 상품 등록/승인, Elasticsearch 검색 | ✅ |
+| 펀딩 | 친구 위시리스트 아이템에 공동 펀딩 참여 | ✅ |
+| 결제 | TossPayments PG 연동, 예치금 충전 | ✅ |
+| 지갑 | 충전/차감/출금, 잔액 관리, 이력 조회 | ✅ |
+| 정산 | 펀딩 완료 → 판매자 정산, 배치 처리 | ✅ |
+| 알림 | SSE 실시간 알림, 읽음 처리 | ✅ |
+| 장바구니 | 위시리스트 아이템 장바구니 담기 | ✅ |
 
 ---
 
-## 기술 스택
+## Tech Stack
 
-### Backend
-
-| 구분        | 기술              | 버전    |
-|-----------|-----------------|-------|
-| Language  | Java            | 21    |
-| Framework | Spring Boot     | 3.2.2 |
-| Security  | Spring Security | -     |
-| ORM       | JPA             | -     |
-| Query     | QueryDSL        | -     |
-
-### Database
-
-| 구분        | 기술         | 용도        |
-|-----------|------------|-----------|
-| RDBMS     | PostgreSQL | 메인 데이터베이스 |
-| In-Memory | H2         | 로컬 테스트용   |
-| Migration | N/A        | -         |
-
-### Testing
-
-| 구분        | 기술      |
-|-----------|---------|
-| Framework | JUnit 5 |
-| Assertion | N/A     |
-| Mocking   | N/A     |
-| Container | N/A     |
-
-### Build & Infra
-
-| 구분         | 기술                      |
-|------------|-------------------------|
-| Build      | Gradle 8.5 (Kotlin DSL) |
-| Container  | Docker Container        |
-| Monitoring | Grafana / Prometheus    |
-| API Docs   | SpringDoc OpenAPI 2.3.0 |
+| Category | Technology | Version |
+|----------|-----------|---------|
+| Language | Java | 25 |
+| Framework | Spring Boot | 4.0.3 |
+| Architecture | Spring Modulith | 2.0.3 |
+| Database | PostgreSQL | 16 |
+| ORM | JPA + QueryDSL | 5.1.0 |
+| Search | Elasticsearch | 9.2.4 |
+| Cache | Redis | 7 |
+| Auth | Auth0 (OAuth2 + JWT) | - |
+| Payment | TossPayments | - |
+| Messaging | Kafka (Redpanda) | - |
+| Migration | Flyway (Module-aware) | - |
+| Monitoring | Prometheus + Grafana | - |
+| Load Test | k6 | 1.6.1 |
+| Testing | JUnit 5, Mockito, Testcontainers | - |
+| Build | Gradle 8.14 (Kotlin DSL) | - |
+| API Docs | SpringDoc OpenAPI | 3.0.2 |
+| CI/CD | GitHub Actions + ArgoCD | - |
+| Infra | GCP + k3s + Cloudflare Tunnel | - |
 
 ---
 
 ## Architecture
 
-### 아키텍처 다이어그램
+### System Architecture
 
-N/A - 아키텍쳐 다이어그램이 추가될 예정입니다.
+> Architecture diagram: [`docs/images/architecture.png`](docs/images/architecture.png) 
 
-### ER 다이어그램
+Modular Monolith 아키텍처를 채택하여 Spring Modulith와 Hexagonal Architecture를 결합했습니다. 각 BC(Bounded Context)는 독립적으로 개발 및 테스트 가능하며, BC 간 통신은 명확한 Port Interface와 Event로만 이루어집니다.
 
-N/A - 데이터베이스 스키마가 설계될 예정입니다.
+### Module Structure
+
+```
+bc/
+├── shared/          # Shared kernel (events, VO, types)
+├── member/          # Member, Auth, Friendship
+├── catalog/         # Product, Wishlist, Cart
+├── core/            # Order, Payment, Funding, Wallet
+├── settlement/      # Settlement (batch)
+└── notification/    # Notification (SSE)
+
+bootstrap/
+└── api-server/      # Spring Boot application entry point
+
+support/
+├── common/          # Utilities, exceptions, response format
+├── security/        # Auth filters, principal
+├── web/             # CORS, exception handler, idempotency
+├── logging/         # Logging config
+└── jpa/             # JPA auditing, QueryDSL config
+```
+
+### Inter-Module Communication
+
+- **동기 통신**: Port Interface + Internal API Client (조회 Query)
+- **비동기 통신**: `@ApplicationModuleListener` (명령 Command)
+- **규칙**: BC 간 직접 import 금지, Cross-schema JOIN 금지 (ID 참조만)
 
 ---
 
-## 실행 방법
+## Load Test Results
 
-### 사전 요구사항
+### SLO Definition
 
-- Java 21+
-- Gradle 8.5+
+| Metric | Current SLO | Target SLO | Google SRE |
+|--------|:----------:|:----------:|:----------:|
+| Read API p95 | < 500ms | < 200ms | < 100ms |
+| Write API p95 | < 1000ms | < 500ms | < 250ms |
+| Error Rate | < 5% | < 0.5% | < 0.1% |
 
-### 1. 저장소 클론
+### Baseline Results (2026-03-16, Cycle 0)
+
+| Test | VU | RPS | p95 | Error Rate | Status |
+|------|-----|-----|-----|-----------|--------|
+| Stress | 120 | 177.76 | 270.25ms | 0.002% | ✅ PASS |
+| Soak (33min) | 30 | 51 | 8.76ms | 0% | ✅ PASS |
+| Spike | 200 | 95 | 1.34s | 0% | ⚠️ SLO 위반 |
+| Breakpoint | 294 | 155 | 2.01s | 0% | ⚠️ ABORT |
+
+Stress Test(120 VU) 기준 모든 SLO 충족. Spike/Breakpoint는 한계 탐색 목적으로 일부 위반 확인. 자세한 분석은 아래 보고서 참조.
+
+→ Detailed report: [`docs/reports/2026-03-16-load-test-report.md`](docs/reports/2026-03-16-load-test-report.md)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Java 25+
+- Gradle 8.14+
+- Docker
+
+### 1. Clone & Environment Setup
 
 ```bash
 git clone https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE.git
 cd giftify-be
-```
-
-### 2. 환경 변수 설정
-
-```bash
-# .env.sample을 복사하여 .env 파일 생성
 cp .env.sample .env
-
-# .env 파일을 편집하여 필요한 환경 변수 설정
-# - PostgreSQL 데이터베이스 설정
-# - Auth0 인증 설정
 ```
 
-### 3. Docker Compose로 실행
-
-#### 옵션 A: 로컬 빌드
+### 2. Run with Docker Compose
 
 ```bash
-# Docker Compose로 PostgreSQL + API 서버 실행
 docker-compose up -d
-
-# 로그 확인
 docker-compose logs -f api-server
-
-# 중지
-docker-compose down
 ```
 
-### 4. 애플리케이션 직접 실행 (Docker 없이)
+### 3. Run Directly (without Docker)
 
 ```bash
-# 빌드 (테스트 제외)
 ./gradlew clean build -x test
-
-# 애플리케이션 실행
 ./gradlew :bootstrap:api-server:bootRun
 ```
 
-### 5. k3d (Kubernetes) 로 실행
-
-로컬에서 k3d(Docker 내 K3s)를 사용하여 Kubernetes 환경으로 배포할 수 있습니다.
-
-#### 사전 요구사항
-
-| 도구 | 설치 방법 | 확인 명령 |
-|------|----------|----------|
-| Docker | [docker.com](https://docs.docker.com/get-docker/) 또는 OrbStack | `docker version` |
-| k3d | `brew install k3d` | `k3d version` |
-| kubectl | `brew install kubectl` | `kubectl version --client` |
-
-#### Quick Start
+### 4. Health Check
 
 ```bash
-# 1. k3d 클러스터 생성
-./infra/k3s/scripts/k3s-local-create.sh
-
-# 2. secrets.yaml 생성 (최초 1회)
-cp infra/k3s/base/secrets.yaml.template infra/k3s/base/secrets.yaml
-#    -> secrets.yaml 열어서 <REPLACE> 부분을 .env 파일의 값으로 교체
-#    -> SPRING_PROFILES_ACTIVE 를 "dev" 로 변경
-
-# 3. 빌드 + 배포
-./infra/k3s/scripts/k3s-local-deploy.sh
-
-# 4. 확인
-kubectl get pods -n giftify
 curl http://localhost:8080/actuator/health
 ```
 
-#### secrets.yaml 작성 가이드
-
-`secrets.yaml.template`을 복사한 뒤 프로젝트 루트의 `.env` 파일을 참고하여 값을 채웁니다.
-
-```
-secrets.yaml.template 항목         .env 대응 키
-------------------------------    ----------------------
-DB_PASSWORD                       DB_PASSWORD
-REDIS_PASSWORD                    REDIS_PASSWORD
-AUTH0_DOMAIN                      AUTH0_DOMAIN
-AUTH0_CLIENT_ID                   AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET               AUTH0_CLIENT_SECRET
-AUTH0_AUDIENCE                    AUTH0_AUDIENCE
-TOSSPAYMENTS_SECRET_KEY           TOSSPAYMENTS_SECRET_KEY
-PAYMENT_ENCRYPTION_PASSWORD       PAYMENT_ENCRYPTION_PASSWORD
-PAYMENT_ENCRYPTION_SALT           PAYMENT_ENCRYPTION_SALT
-POSTGRES_PASSWORD                 DB_PASSWORD (동일 값)
-```
-
-주의사항:
-- `SPRING_PROFILES_ACTIVE`를 `"dev"`로 설정해야 합니다 (템플릿 기본값은 `"prod"`)
-- `TUNNEL_TOKEN`은 로컬 테스트 시 아무 값이나 넣어도 됩니다 (cloudflared가 비활성화됨)
-- `secrets.yaml`은 `.gitignore`에 등록되어 있으므로 커밋되지 않습니다
-
-#### 디렉토리 구조
-
-```
-infra/k3s/
-  base/                          # 환경 공통 매니페스트
-    namespace.yaml               #   giftify 네임스페이스
-    secrets.yaml.template        #   시크릿 템플릿
-    kustomization.yaml           #   Kustomize 리소스 목록
-    apps/
-      api-server/                #   API Server (Deployment + Service)
-      postgres/                  #   PostgreSQL 16 (StatefulSet + Headless Service)
-      redis/                     #   Redis 7 (Deployment + Service)
-      prometheus/                #   Prometheus (Deployment + Service + ConfigMap)
-      grafana/                   #   Grafana (Deployment + Service + ConfigMap + Dashboards)
-      k6/                        #   k6 부하 테스트 (Job + ConfigMap)
-    traefik/
-      ingress-routes/api.yaml    #   Traefik IngressRoute (/ -> api-server:8080)
-      middleware/rate-limit.yaml  #   Rate Limit (100req/s, burst 50)
-    cloudflare/
-      tunnel-deployment.yaml     #   Cloudflare Tunnel (prod 전용)
-  overlays/
-    dev-k3s/                     # 로컬 k3d 환경 오버레이
-    prod/                        # EC2 K3s 운영 환경 오버레이
-  scripts/
-    k3s-local-create.sh          # k3d 클러스터 생성 (로컬)
-    k3s-local-deploy.sh          # 이미지 빌드 + k3d 배포 (로컬)
-    k3s-local-delete.sh          # k3d 클러스터 삭제 (로컬)
-    k3s-ec2-setup.sh             # Docker/k3d/kubectl 설치 + 클러스터 생성 (EC2)
-    k3s-ec2-deploy.sh            # GHCR 이미지 풀 + 배포 (EC2)
-```
-
-#### 스크립트 상세
-
-**k3s-local-create.sh** - k3d 클러스터를 생성합니다. 포트 매핑:
-
-```
-호스트 8080 -> 클러스터 80  (HTTP, Traefik)
-호스트 8443 -> 클러스터 443 (HTTPS, Traefik)
-```
-
-```bash
-# 기본 클러스터명 "giftify"
-./infra/k3s/scripts/k3s-local-create.sh
-
-# 커스텀 클러스터명
-./infra/k3s/scripts/k3s-local-create.sh my-cluster
-```
-
-**k3s-local-deploy.sh** - Docker 이미지를 빌드하고 k3d 클러스터에 배포합니다.
-
-```
-1. ./gradlew :bootstrap:api-server:bootJar (JAR 빌드)
-2. docker build -t giftify-api-server:local
-3. k3d image import (이미지를 k3d 클러스터로 전송)
-4. kubectl apply -f secrets.yaml
-5. kubectl apply -k overlays/dev-k3s
-6. kubectl rollout status (배포 완료 대기)
-```
-
-**k3s-local-delete.sh** - 클러스터를 삭제합니다. PVC 데이터도 함께 삭제됩니다.
-
-```bash
-./infra/k3s/scripts/k3s-local-delete.sh
-```
-
-#### 주요 명령어
-
-```bash
-# Pod 상태 확인
-kubectl get pods -n giftify
-
-# 특정 Pod 로그
-kubectl logs -f <pod-name> -n giftify
-
-# Pod 재시작 (이미지 업데이트 없이)
-kubectl rollout restart deployment/api-server -n giftify
-
-# 코드 변경 후 재배포
-./infra/k3s/scripts/k3s-local-deploy.sh
-
-# Kustomize 결과 미리보기 (적용 없이)
-kubectl kustomize infra/k3s/overlays/dev-k3s/
-
-# PostgreSQL 접속
-kubectl exec -it postgres-0 -n giftify -- psql -U giftify -d giftify_db
-
-# 모니터링 대시보드 접속 (Traefik IngressRoute, port-forward 불필요)
-# Grafana:    http://grafana.localhost:8080
-# Prometheus: http://prometheus.localhost:8080
-# Redpanda:         http://redpanda.localhost:8080
-# Redpanda Console: http://redpanda-console.localhost:8080
-```
-
-#### docker-compose와의 관계
-
-k3d 환경과 기존 docker-compose 환경은 같은 포트(8080)를 사용하므로 동시에 실행할 수 없습니다.
-k3d를 사용할 때는 docker-compose를 먼저 중지하세요.
-
-```bash
-# docker-compose 중지
-docker-compose down
-
-# k3d 클러스터 생성 및 배포
-./infra/k3s/scripts/k3s-local-create.sh
-./infra/k3s/scripts/k3s-local-deploy.sh
-```
-
-두 환경 모두 `SPRING_PROFILES_ACTIVE=dev`를 사용하며, 동일한 `.env` 값을 참조합니다.
-
-#### Troubleshooting
-
-**Spring Boot 기동이 느린 경우** - dev-k3s 오버레이에 `startupProbe`가 설정되어 있어 최대 약 10분까지 기동을 기다립니다.
-`kubectl logs -f <pod-name> -n giftify`로 기동 진행 상황을 확인하세요.
-
-**OrbStack 사용 시 네트워크 문제** - OrbStack의 프록시 설정이 k3d 컨테이너의 DNS 해석을 방해할 수 있습니다.
-OrbStack 설정에서 프록시를 비활성화하거나, 문제 지속 시 OrbStack을 재시작하세요.
-
-**Pod가 CrashLoopBackOff인 경우**
-
-```bash
-# 로그 확인
-kubectl logs <pod-name> -n giftify
-
-# 이전 컨테이너 로그 (재시작된 경우)
-kubectl logs <pod-name> -n giftify --previous
-```
-
-흔한 원인:
-- `secrets.yaml` 미적용 또는 값 누락
-- PostgreSQL이 아직 기동 중 (api-server보다 먼저 Ready 상태여야 함)
-- Docker 이미지가 k3d에 임포트되지 않음 (`k3d image import` 확인)
-
-### 6. EC2 배포 (k3d)
-
-EC2 t3.large (2 vCPU, 8 GiB) 인스턴스에 동일한 k3d 클러스터를 배포합니다.
-
-#### 사전 요구사항
-
-- EC2 인스턴스 (Amazon Linux 2023, t3.large 이상)
-- 보안 그룹: SSH(22) 오픈
-- GHCR Personal Access Token (패키지 read 권한)
-
-#### 1회성 셋업
-
-```bash
-# EC2에 접속 후
-git clone <repo-url>
-cd giftify-be
-
-# Docker, k3d, kubectl 설치 + 클러스터 생성
-./infra/k3s/scripts/k3s-ec2-setup.sh
-```
-
-Docker 설치 직후 그룹 변경이 필요하면 스크립트가 안내 후 종료됩니다. 재로그인 후 다시 실행하세요.
-
-#### 배포
-
-```bash
-# secrets.yaml 생성 (최초 1회)
-cp infra/k3s/base/secrets.yaml.template infra/k3s/base/secrets.yaml
-#    -> <REPLACE> 부분을 실제 값으로 교체
-#    -> SPRING_PROFILES_ACTIVE 는 "prod" 유지
-#    -> TUNNEL_TOKEN 에 Cloudflare Tunnel 토큰 입력
-
-# 배포 (최초 - GHCR PAT 전달)
-./infra/k3s/scripts/k3s-ec2-deploy.sh v1.0.0 ghp_xxxxxxxxxxxx
-
-# 배포 (이후 - ghcr-secret 재사용)
-./infra/k3s/scripts/k3s-ec2-deploy.sh v1.0.1
-```
-
-#### 외부 접근
-
-| 방법 | 용도 | 설명 |
-|------|------|------|
-| Cloudflare Tunnel | API 외부 공개 | cloudflared가 Cloudflare Edge로 아웃바운드 연결, 인바운드 포트 불필요 |
-| SSH 터널 | 모니터링 접근 | `ssh -L 8080:localhost:8080 ec2-user@<IP>` 후 로컬과 동일하게 `*.localhost:8080` 사용 |
-
-Cloudflare Dashboard에서 tunnel route를 설정하면 API가 외부에 노출됩니다. 모니터링 도구(Grafana, Prometheus 등)는 SSH 터널로만 접근하는 것을 권장합니다.
-
-#### 로컬 k3d와의 차이
-
-| 항목 | 로컬 (dev-k3s) | EC2 (prod) |
-|------|---------------|------------|
-| 이미지 | 로컬 빌드 (imagePullPolicy: Never) | GHCR Pull (imagePullPolicy: Always) |
-| 프로파일 | dev | prod |
-| Cloudflare Tunnel | 비활성 (replicas: 0) | 활성 (replicas: 1) |
-| 스크립트 | k3s-local-*.sh | k3s-ec2-*.sh |
-
-### 7. Health Check
-
-```bash
-# Root Health Check
-curl http://localhost:8080/health
-
-# Member Health Check
-curl http://localhost:8080/member/health
-
-# Auth Health Check
-curl http://localhost:8080/auth/health
-
-```
-
-### 8. 모니터링
-
-Docker Compose와 k3d 환경 모두에서 Prometheus + Grafana 모니터링을 제공합니다.
-
-#### 접속 URL
-
-| 서비스         | Docker Compose                            | k3d                                        | 설명                  |
-|-------------|-------------------------------------------|--------------------------------------------|---------------------|
-| Grafana     | http://localhost:3000                     | http://grafana.localhost:8080              | 대시보드              |
-| Prometheus  | http://localhost:9090                     | http://prometheus.localhost:8080           | 메트릭 수집/조회       |
-| Redpanda    | -                                         | http://redpanda.localhost:8080             | 메시지 브로커 REST API |
-| Redpanda Console | -                                    | http://redpanda-console.localhost:8080     | 메시지 브로커 웹 UI    |
-| API Metrics | http://localhost:8080/actuator/prometheus | http://localhost:8080/actuator/prometheus   | Spring Actuator 메트릭 |
-
-#### Grafana 대시보드
-
-아래 대시보드가 자동으로 프로비저닝됩니다.
-
-| 대시보드 | 설명 |
-|---------|------|
-| Spring Boot 3.x Statistics | JVM Micrometer 메트릭 (ID: 19004) |
-| Token Blacklist Security | 토큰 블랙리스트 보안 메트릭 |
-
-1. http://grafana.localhost:8080 접속 (admin/admin), Docker Compose 시 http://localhost:3000
-2. Dashboards 메뉴에서 대시보드 확인
-
-#### k6 부하 테스트
-
-```bash
-# Docker Compose 환경 - Homebrew로 설치한 경우
-k6 run infra/monitoring/k6/scripts/smoke-test.js
-
-# Docker Compose 환경 - Docker로 실행하는 경우
-docker run --rm \
-  -v $(pwd)/infra/monitoring/k6/scripts:/scripts \
-  --add-host=host.docker.internal:host-gateway \
-  grafana/k6 run /scripts/smoke-test.js
-
-# k3d 환경 - 클러스터 내 Job으로 실행
-kubectl apply -f infra/k3s/base/apps/k6/job.yaml -n giftify
-kubectl logs job/k6-smoke-test -n giftify
-```
-
 ---
 
-#### 로컬에서 이미지 빌드
-
-```bash
-# Dockerfile로 직접 빌드
-docker build -t giftify-api-server:local .
-
-# 또는 docker-compose로 빌드
-docker-compose build
-docker-compose up -d
-```
-
----
-
-## API 문서 (Swagger UI)
+## API Documentation
 
 애플리케이션 실행 후 아래 URL에서 API 문서를 확인할 수 있습니다.
 
-| 엔드포인트        | URL                                    | 설명                    |
-|--------------|----------------------------------------|-----------------------|
-| Swagger UI   | http://localhost:8080/swagger-ui.html  | 인터랙티브 API 문서          |
-| OpenAPI JSON | http://localhost:8080/v3/api-docs      | OpenAPI 3.0 스펙 (JSON) |
-| OpenAPI YAML | http://localhost:8080/v3/api-docs.yaml | OpenAPI 3.0 스펙 (YAML) |
+| Endpoint | URL | Description |
+|----------|-----|-------------|
+| Swagger UI | http://localhost:8080/swagger-ui.html | 인터랙티브 API 문서 |
+| OpenAPI JSON | http://localhost:8080/v3/api-docs | OpenAPI 3.0 스펙 (JSON) |
 
-> **인증**이 필요한 API 요청 시 `Authorization: Bearer {JWT_TOKEN}` 헤더가 필요합니다.
-> Swagger UI에서 상단의 `Authorize` 버튼을 클릭하여 토큰을 설정할 수 있습니다.
+인증이 필요한 API는 Swagger UI 상단의 `Authorize` 버튼을 클릭하여 JWT 토큰을 설정하세요.
 
 ---
 
-## API 엔드포인트
-
-### Health Check _(개발용 - 추후 삭제 예정)_
-
-| Method | Endpoint         | 설명         |
-|--------|------------------|------------|
-| GET    | `/health`        | 루트 헬스체크    |
-| GET    | `/member/health` | 회원 모듈 헬스체크 |
-| GET    | `/auth/health`   | 인증 모듈 헬스체크 |
-
----
-
-## 문서
-
-| 문서  | 설명               |
-|-----|------------------|
-| N/A | 추가 문서가 작성될 예정입니다 |
-| N/A | 추가 문서가 작성될 예정입니다 |
-| N/A | 추가 문서가 작성될 예정입니다 |
-
----
-
-## 브랜치 전략
-
-N/A - Git 브랜치 전략- Github Flow 이 작성될 예정입니다.
-
----
-
-## 테스트 실행
+## Testing
 
 ```bash
-# 전체 테스트
 ./gradlew test
-
-# 특정 모듈 테스트
 ./gradlew :bc:member:test
-
-# 테스트 커버리지 리포트
 ./gradlew jacocoAggregatedReport
 ```
 
 ---
 
-## 라이선스
+## Project Structure
 
-N/A
+```
+.
+├── bc/                     # Bounded Contexts
+│   ├── catalog/           # Product, Wishlist, Cart
+│   ├── core/              # Order, Payment, Funding, Wallet
+│   ├── member/            # Member, Auth, Friendship
+│   ├── notification/      # Notification (SSE)
+│   ├── settlement/        # Settlement (batch)
+│   └── shared/            # Shared kernel
+├── bootstrap/
+│   └── api-server/        # Spring Boot entry point
+├── support/               # Technical modules (no domain logic)
+│   ├── common/
+│   ├── jpa/
+│   ├── logging/
+│   ├── security/
+│   └── web/
+├── infra/                 # Infrastructure configurations
+│   ├── k3s/              # Kubernetes manifests
+│   ├── elasticsearch/    # Elasticsearch configuration
+│   └── monitoring/       # Prometheus, Grafana, k6
+└── docs/                 # Documentation
+```
 
 ---
 
-## 기여자
+## Related Documents
 
-N/A
+| Document | Description |
+|----------|-------------|
+| [Load Test Report](docs/reports/2026-03-16-load-test-report.md) | Cycle 0 Baseline 부하테스트 결과 |
+| [Swagger UI](http://localhost:8080/swagger-ui.html) | API 문서 (로컬 실행 후) |
+
+### GitHub Wiki
+
+| Page | Description |
+|------|-------------|
+| [Home](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki) | 프로젝트 위키 홈 |
+| [Payment System](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/Payment-System) | 결제 시스템 아키텍처 (TossPayments 연동, 멱등성) |
+| [Funding Domain](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/Funding-Domain) | 펀딩 도메인 설계 (동시성 제어, 상태 전이) |
+| [Auth Architecture](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/Auth-Architecture) | Auth0 인증 아키텍처 (SPA SDK, Token Blacklist) |
+| [Event Architecture](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/Event-Architecture) | Spring Modulith 이벤트 기반 통신 |
+| [ADR: Modular Monolith](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/ADR-Modular-Monolith) | 모듈러 모놀리스 아키텍처 결정 배경 |
+| [ADR: Module-aware Flyway](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/ADR-Module-aware-Flyway) | 모듈별 독립 Flyway 마이그레이션 전환 |
+| [Load Test Guide](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/wiki/Load-Test-Guide) | k6 부하테스트 실행 가이드 |
 
 ---
 
-## 연락처
+## Contributors
 
-N/A
+TBD
+
+---
+
+## License
+
+TBD

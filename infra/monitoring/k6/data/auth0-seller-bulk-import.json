@@ -1,0 +1,52 @@
+[
+  {
+    "email": "loadtest-seller-001@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-002@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-003@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-004@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-005@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-006@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-007@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-008@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-009@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  },
+  {
+    "email": "loadtest-seller-010@giftify-test.com",
+    "email_verified": true,
+    "password_hash": "$2b$10$c7y6aD9ytiRANEfVLqIPA.Bk5gLpQjykFMy3ZTTVfhus.olutQYoy"
+  }
+]

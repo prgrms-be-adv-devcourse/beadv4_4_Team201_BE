@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface ProductRepositoryPort {
     Product save(Product product);
 
+    void saveAndFlush(Product product);
+
     Optional<Product> findById(Long productId);
 
     Optional<Product> findByIdAndSellerId(Long productId, Long sellerId);

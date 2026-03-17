@@ -1,18 +1,17 @@
 package app.giftify.order.application;
 
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
-import app.giftify.order.adapter.outbound.client.WishlistClient;
 import app.giftify.order.application.dto.OrderCancelProcessingResult;
 import app.giftify.order.application.dto.OrderCancelSummary;
 import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
-import app.giftify.order.application.inbound.command.CreateOrderCommand;
-import app.giftify.order.application.inbound.command.CreateOrderItemCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.order.application.inbound.vo.OrderDetail;
 import app.giftify.order.application.inbound.vo.OrderItemDetail;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderItemRepository;
 import app.giftify.order.application.outbound.port.OrderRepository;
+import app.giftify.order.application.outbound.port.ProductPort;
 import app.giftify.order.domain.*;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.*;
@@ -21,10 +20,12 @@ import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import app.giftify.shared.domain.event.order.OrderCanceledEvent;
 import app.giftify.shared.domain.event.order.OrderCreatedEvent;
 import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
+import app.giftify.shared.domain.port.FundingQueryPort;
+import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.FundingSnapshot;
+import app.giftify.shared.domain.vo.FundingInfo;
 import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.shared.domain.vo.ProductSnapshot;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,25 +47,30 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final EventPublisher eventPublisher;
-    private final WishlistClient wishlistClient;
     private final OrderCancelProcessor orderCancelProcessor;
+    private final FundingQueryPort fundingPort;
+    private final ProductPort productPort;
+    private final TargetTypeResolver targetTypeResolver;
+    private final TargetIdResolver targetIdResolver;
 
     @Transactional
-    public OrderSnapshot createOrder(@Valid CreateOrderCommand command, List<FundingSnapshot> fundingSnapshots) {
-        Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = requestWishlistItemSnapshots(command.itemRequests());
+    public OrderSnapshot createOrder(PlaceOrderCommand command) {
+        // 1. 필요한 외부 데이터 일괄 조회
+        Map<Long, ProductSnapshot> productSnapshots = productPort.getProductSnapshots(command.getProductIds());
+        Map<Long, FundingInfo> fundingInfoMap = fetchFundingInfosIfNeeded(command);
 
-        Map<Long, Long> fundingIdMap = mapFundingIdByWishlistItemId(fundingSnapshots);
+        validateRequiredSnapshot(productSnapshots, fundingInfoMap);
 
-        List<CreateOrderItemCommand> orderItemCommands = toOrderItemCommands(command, wishlistItemSnapshotMap, fundingIdMap);
-        List<OrderItem> orderItems = createOrderItems(orderItemCommands);
+        // 2. 주문 아이템 생성
+        List<OrderItem> orderItems = createOrderItems(command.items(), productSnapshots, fundingInfoMap);
 
+        // 3. 주문 엔티티 생성 및 저장
         Order order = Order.create(command.buyerId(), orderItems, command.method());
         Order savedOrder = orderRepository.save(order);
 
+        // 4. 스냅샷 변환 및 이벤트 발행
         OrderSnapshot orderSnapshot = savedOrder.toSnapshot();
-
-        publishOrderItemCreatedEventWithoutPendingType(orderSnapshot);
-        publishOrderCreatedEvent(orderSnapshot);
+        handleOrderEvents(orderSnapshot);
 
         return orderSnapshot;
     }
@@ -223,6 +229,67 @@ public class OrderService {
         order.expired();
     }
 
+    private List<OrderItem> createOrderItems(
+            List<PlaceOrderItemCommand> items,
+            Map<Long, ProductSnapshot> products,
+            Map<Long, FundingInfo> fundings
+    ) {
+        return items.stream()
+                .map(item -> {
+                    ProductSnapshot product = getProductSnapshotOrThrow(item.productId(), products);
+                    FundingInfo funding = fundings.get(item.wishlistItemId());
+
+                    TargetType targetType = targetTypeResolver.resolve(item.orderItemType(), funding);
+                    Long targetId = targetIdResolver.resolve(item, targetType, funding);
+
+                    if (targetId == null) {
+                        throw new DomainException(OrderErrorCode.INVALID_TARGET_ID);
+                    }
+
+                    return OrderItem.create(
+                            targetId,
+                            targetType,
+                            item.orderItemType(),
+                            product.sellerId(),
+                            item.receiverId(),
+                            Money.of(product.price()),
+                            item.amount()
+                    );
+                })
+                .toList();
+    }
+
+    private void handleOrderEvents(OrderSnapshot snapshot) {
+        publishOrderItemCreatedEventWithoutPendingType(snapshot);
+        publishOrderCreatedEvent(snapshot);
+    }
+
+    private static ProductSnapshot getProductSnapshotOrThrow(Long productId, Map<Long, ProductSnapshot> productSnapshots) {
+        ProductSnapshot productSnapshot = productSnapshots.get(productId);
+        if (productSnapshot == null) {
+            throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND,
+                    String.format("상품 정보를 찾을 수 없습니다. productId = %d", productId));
+        }
+
+        return productSnapshot;
+    }
+
+    private Map<Long, FundingInfo> fetchFundingInfosIfNeeded(PlaceOrderCommand command) {
+        if (command.isAllNormalOrder()) {
+            return Collections.emptyMap();
+        }
+
+        return fundingPort.findFundingInfoByWishlistItemIds(
+                command.getWishlistItemIdsByOrderItemType(EnumSet.of(OrderItemType.NORMAL_GIFT, OrderItemType.FUNDING_GIFT))
+        );
+    }
+
+    private void validateRequiredSnapshot(Map<Long, ProductSnapshot> products, Map<Long, FundingInfo> fundings) {
+        // 포트가 null을 반환할 가능성에 대비한 방어 로직
+        if (products == null || fundings == null) {
+            throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND);
+        }
+    }
 
     private static void validateOwner(Long memberId, Long buyerId) {
         if (!Objects.equals(buyerId, memberId)) {
@@ -237,58 +304,6 @@ public class OrderService {
         return order.getItems().stream()
                 .map(OrderItemDetail::of)
                 .toList();
-    }
-
-    private static void validateSnapshots(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap) {
-        if (wishlistItemSnapshotMap == null || wishlistItemSnapshotMap.isEmpty()) {
-            throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND);
-        }
-    }
-
-    private static @NonNull List<CreateOrderItemCommand> toOrderItemCommands(CreateOrderCommand command, Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap) {
-
-        return command.itemRequests().stream()
-                .map(itemRequest -> generateOrderItemCommand(wishlistItemSnapshotMap, fundingIdMap, itemRequest))
-                .toList();
-    }
-
-    private static CreateOrderItemCommand generateOrderItemCommand(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, Map<Long, Long> fundingIdMap, PlaceOrderItemRequest itemRequest) {
-        WishlistItemSnapshot wishlistItemSnapshot = getWishlistItemSnapshot(wishlistItemSnapshotMap, itemRequest);
-        return CreateOrderItemCommand.of(
-                itemRequest.orderItemType(),
-                itemRequest.wishlistItemId(),
-                itemRequest.receiverId(),
-                itemRequest.amount(),
-                wishlistItemSnapshot,
-                fundingIdMap.getOrDefault(itemRequest.wishlistItemId(), null)
-        );
-    }
-
-    private static WishlistItemSnapshot getWishlistItemSnapshot(Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap, PlaceOrderItemRequest itemRequest) {
-        if (!wishlistItemSnapshotMap.containsKey(itemRequest.wishlistItemId()))
-            throw new DomainException(OrderErrorCode.SNAPSHOTS_NOT_FOUND);
-        else
-            return wishlistItemSnapshotMap.get(itemRequest.wishlistItemId());
-    }
-
-    private static Map<Long, Long> mapFundingIdByWishlistItemId(List<FundingSnapshot> fundingSnapshots) {
-        return fundingSnapshots.stream()
-                .collect(Collectors.toMap(
-                        FundingSnapshot::wishlistItemId, // Key 추출
-                        FundingSnapshot::fundingId
-                ));
-    }
-
-    private Map<Long, WishlistItemSnapshot> requestWishlistItemSnapshots(List<PlaceOrderItemRequest> itemRequests) {
-        List<Long> wishlistItemIds = itemRequests.stream()
-                .map(PlaceOrderItemRequest::wishlistItemId).toList();
-
-
-        Map<Long, WishlistItemSnapshot> snapshotList = wishlistClient.getSnapshotList(wishlistItemIds);
-
-        validateSnapshots(snapshotList);
-
-        return snapshotList;
     }
 
     private void publishOrderCreatedEvent(OrderSnapshot orderSnapshot) {
@@ -312,19 +327,5 @@ public class OrderService {
                     );
                     eventPublisher.publish(event);
                 });
-    }
-
-    private static @NonNull List<OrderItem> createOrderItems(List<CreateOrderItemCommand> commands) {
-        return commands.stream()
-                .map(command -> OrderItem.create(
-                        command.targetId(),
-                        command.targetType(),
-                        command.orderItemType(),
-                        command.sellerId(),
-                        command.receiverId(),
-                        command.price(),
-                        command.amount())
-                )
-                .toList();
     }
 }

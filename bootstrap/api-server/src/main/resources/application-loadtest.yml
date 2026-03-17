@@ -1,0 +1,36 @@
+# 부하테스트용 오버레이 — 부하테스트 전용 설정
+# 활성화: SPRING_PROFILES_ACTIVE=prod,loadtest
+# prod 설정 위에 덮어쓰며, 스키마 격리 + 로그 최소화 + Mock Auth 활성화
+spring:
+  datasource:
+    hikari:
+      connection-init-sql: SET search_path TO loadtest, public
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: loadtest
+
+  flyway:
+    schemas: loadtest
+    default-schema: loadtest
+    create-schemas: true
+
+loadtest:
+  mock-auth:
+    enabled: true
+
+logging:
+  level:
+    root: WARN
+    app.giftify: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name:giftify}
+      env: loadtest

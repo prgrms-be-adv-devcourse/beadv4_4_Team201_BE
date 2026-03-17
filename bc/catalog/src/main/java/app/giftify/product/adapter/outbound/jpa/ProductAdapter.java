@@ -31,6 +31,12 @@ public class ProductAdapter implements ProductRepositoryPort {
     }
 
     @Override
+    public void saveAndFlush(Product product) {
+        ProductJpa entity = productMapper.toEntity(product);
+        productRepository.saveAndFlush(entity);
+    }
+
+    @Override
     public Optional<Product> findById(Long productId) {
         return productRepository.findById(productId)
                 .map(productMapper::toDomain);

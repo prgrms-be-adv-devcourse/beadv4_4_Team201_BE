@@ -1,11 +1,11 @@
 package app.giftify.order.application;
 
-import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderItemRequest;
-import app.giftify.order.adapter.outbound.client.WishlistClient;
-import app.giftify.order.application.inbound.command.CreateOrderCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderRepository;
+import app.giftify.order.application.outbound.port.ProductPort;
 import app.giftify.order.domain.*;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.order.domain.fixture.OrderFixture;
@@ -16,12 +16,15 @@ import app.giftify.shared.api.exception.PolicyException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import app.giftify.shared.domain.event.order.OrderCanceledEvent;
+import app.giftify.shared.domain.port.FundingQueryPort;
+import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.FundingSnapshot;
+import app.giftify.shared.domain.vo.FundingInfo;
 import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.shared.domain.vo.ProductSnapshot;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -48,107 +51,267 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
-    @Mock
-    private OrderRepository orderRepository;
-
-    @Mock
-    private WishlistClient wishlistClient;
-
-    @Mock
-    private EventPublisher eventPublisher;
+    @Mock private OrderRepository orderRepository;
+    @Mock private ProductPort productPort;
+    @Mock private FundingQueryPort fundingQueryPort;
+    @Mock private EventPublisher eventPublisher;
+    @Mock private TargetTypeResolver targetTypeResolver;
+    @Mock private TargetIdResolver targetIdResolver;
 
     @InjectMocks
     private OrderService orderService;
 
-    private final Long buyerId = 1L;
     private final Long wishlistItemId = 100L;
     private final Long productId = 500L;
-
-    private final PlaceOrderItemRequest itemRequest = new PlaceOrderItemRequest(
-            wishlistItemId,
-            2002L,
-            Money.of("15000"),
-            OrderItemType.FUNDING_GIFT
-    );
-
-    private final CreateOrderCommand command = new CreateOrderCommand(
-            buyerId,
-            PaymentMethod.DEPOSIT,
-            List.of(itemRequest)
-    );
-
-    private final Map<Long, WishlistItemSnapshot> wishlistItemSnapshotMap = Map.of(
-            wishlistItemId,
-            new WishlistItemSnapshot(
-                    wishlistItemId,
+    private final Map<Long, ProductSnapshot> productSnapshots = Map.of(
+            productId,
+            new ProductSnapshot(
                     productId,
-                    "productName",
                     200000,
-                    200L,
-                    2002L,
-                    "products/101/crowcanyon-mug2.jpg"
+                    200L
             )
     );
 
     private final List<Long> wishlistItemIds = List.of(wishlistItemId);
+    private final List<Long> productIds = List.of(productId);
 
-    @Test
-    @DisplayName("일반 선물 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
-    void createOrder_success_normalGift() {
-        // given
-        given(wishlistClient.getSnapshotList(wishlistItemIds)).willReturn(wishlistItemSnapshotMap);
+    @Nested
+    @DisplayName("주문 생성 처리 (placeOrder)")
+    class PlaceOrder {
+        @Test
+        @DisplayName("일반 구매 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
+        void placeOrder_success_normalProduct() {
+            given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
+            given(targetTypeResolver.resolve(any(), any())).willReturn(TargetType.DIRECT_PURCHASE);
+            given(targetIdResolver.resolve(any(), any(), any())).willReturn(productId);
+            given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                ReflectionTestUtils.setField(order, "id", 1L);
+                return order;
+            });
 
-        // 저장 로직 모킹 (ID와 Number가 포함된 Order 반환)
-        given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
-            Order order = invocation.getArgument(0);
-            ReflectionTestUtils.setField(order, "id", 1L);
-            return order;
-        });
+            // when
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(null, OrderItemType.NORMAL_ORDER);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            OrderSnapshot result = orderService.createOrder(command);
 
-        // when
-        OrderSnapshot result = orderService.createOrder(command, List.of());
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.orderItemSnapshots()).hasSize(1);
+            assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(productId);
 
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.orderItemSnapshots()).hasSize(1);
+            // 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
+            verify(productPort, times(1)).getProductSnapshots(productIds);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(eventPublisher, atLeastOnce()).publish(any());
+        }
 
-        // 3. 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
-        verify(wishlistClient, times(1)).getSnapshotList(wishlistItemIds);
-        verify(orderRepository, times(1)).save(any(Order.class));
-        verify(eventPublisher, atLeastOnce()).publish(any());
+        @Test
+        @DisplayName("일반 선물 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
+        void placeOrder_success_normalGift() {
+            // given
+            given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
+            given(fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds)).willReturn(Map.of());
+            given(targetTypeResolver.resolve(any(), any())).willReturn(TargetType.DIRECT_GIFT);
+            given(targetIdResolver.resolve(any(), any(), any())).willReturn(wishlistItemId);
+            given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                ReflectionTestUtils.setField(order, "id", 1L);
+                return order;
+            });
+
+            // when
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(null, OrderItemType.NORMAL_GIFT);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            OrderSnapshot result = orderService.createOrder(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.orderItemSnapshots()).hasSize(1);
+            assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(wishlistItemId);
+
+            // 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
+            verify(productPort, times(1)).getProductSnapshots(productIds);
+            verify(fundingQueryPort, times(1)).findFundingInfoByWishlistItemIds(wishlistItemIds);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(eventPublisher, atLeastOnce()).publish(any());
+        }
+
+        @Test
+        @DisplayName("펀딩 중인 상품 일반 선물 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
+        void placeOrder_success_normalGift_directGiftOnFunding() {
+            final Long fundingId = 101L;
+
+            // given
+            given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
+            given(fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds)).willReturn(Map.of(
+                    wishlistItemId,
+                    new FundingInfo(
+                            fundingId,
+                            FundingStatus.IN_PROGRESS,
+                            180000,
+                            20000
+                    )
+            ));
+            given(targetTypeResolver.resolve(any(), any())).willReturn(TargetType.DIRECT_GIFT_ON_FUNDING);
+            given(targetIdResolver.resolve(any(), any(), any())).willReturn(wishlistItemId);
+            given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                ReflectionTestUtils.setField(order, "id", 1L);
+                return order;
+            });
+
+            // when
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(fundingId, OrderItemType.NORMAL_GIFT);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            OrderSnapshot result = orderService.createOrder(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.orderItemSnapshots()).hasSize(1);
+            assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(wishlistItemId);
+
+            // 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
+            verify(productPort, times(1)).getProductSnapshots(productIds);
+            verify(fundingQueryPort, times(1)).findFundingInfoByWishlistItemIds(wishlistItemIds);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(eventPublisher, atLeastOnce()).publish(any());
+        }
+
+        @Test
+        @DisplayName("첫 기여 펀딩 선물 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
+        void placeOrder_success_fundingGift_fundingPending() {
+            // given
+            given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
+            given(fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds)).willReturn(Map.of());
+            given(targetTypeResolver.resolve(any(), any())).willReturn(TargetType.FUNDING_PENDING);
+            given(targetIdResolver.resolve(any(), any(), any())).willReturn(wishlistItemId);
+            given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                ReflectionTestUtils.setField(order, "id", 1L);
+                return order;
+            });
+
+            // when
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(null, OrderItemType.FUNDING_GIFT);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            OrderSnapshot result = orderService.createOrder(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.orderItemSnapshots()).hasSize(1);
+            assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(wishlistItemId);
+
+            // 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
+            verify(productPort, times(1)).getProductSnapshots(productIds);
+            verify(fundingQueryPort, times(1)).findFundingInfoByWishlistItemIds(wishlistItemIds);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(eventPublisher, atLeastOnce()).publish(any());
+        }
+
+        @Test
+        @DisplayName("기존 펀딩 선물 주문 생성 성공 - 모든 단계가 정상적으로 수행된다")
+        void placeOrder_success_fundingGift_funding() {
+            final Long fundingId = 101L;
+
+            // given
+            given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
+            given(fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds)).willReturn(Map.of(
+                    wishlistItemId,
+                    new FundingInfo(
+                            fundingId,
+                            FundingStatus.IN_PROGRESS,
+                            180000,
+                            20000
+                    )
+            ));
+            given(targetTypeResolver.resolve(any(), any())).willReturn(TargetType.FUNDING);
+            given(targetIdResolver.resolve(any(), any(), any())).willReturn(fundingId);
+            given(orderRepository.save(any(Order.class))).willAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                ReflectionTestUtils.setField(order, "id", 1L);
+                return order;
+            });
+
+            // when
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(fundingId, OrderItemType.FUNDING_GIFT);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            OrderSnapshot result = orderService.createOrder(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.orderItemSnapshots()).hasSize(1);
+            assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(fundingId);
+
+            // 검증: 스냅샷 조회, 저장, 이벤트 발행 호출 여부
+            verify(productPort, times(1)).getProductSnapshots(productIds);
+            verify(fundingQueryPort, times(1)).findFundingInfoByWishlistItemIds(wishlistItemIds);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(eventPublisher, atLeastOnce()).publish(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 상품 정보가 없을 경우 예외가 발생한다")
+        void placeOrder_fail_productSnapshotNotFound() {
+            // given
+            given(productPort.getProductSnapshots(productIds)).willReturn(null);
+
+            // when & then
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(null, OrderItemType.NORMAL_ORDER);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            assertThatThrownBy(() -> orderService.createOrder(command))
+                    .isInstanceOf(DomainException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", OrderErrorCode.SNAPSHOTS_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("실패 - 펀딩 정보가 없을 경우 예외가 발생한다")
+        void placeOrder_fail_fundingInfoNotFound() {
+            // given
+            given(fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds)).willReturn(null);
+
+            // when & then
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(1L, OrderItemType.FUNDING_GIFT);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            assertThatThrownBy(() -> orderService.createOrder(command))
+                    .isInstanceOf(DomainException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", OrderErrorCode.SNAPSHOTS_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("실패 - 진행 중인 펀딩 선물 주문이면서 펀딩 정보가 없을 경우 예외가 발생한다.")
+        void placeOrder_fail_fundingInfoNotFound_onFundingGift() {
+            // given
+            given(productPort.getProductSnapshots(productIds)).willReturn(productSnapshots);
+            given(fundingQueryPort.findFundingInfoByWishlistItemIds(wishlistItemIds)).willReturn(Map.of());
+            given(targetTypeResolver.resolve(any(), any())).willThrow(new PolicyException(OrderErrorCode.UNSUPPORTED_ORDER_COMBINATION));
+
+            // when & then
+            PlaceOrderItemCommand itemCommand = createPlaceOrderItemCommand(1L, OrderItemType.FUNDING_GIFT);
+            PlaceOrderCommand command = createPlaceOrderCommand(itemCommand);
+            assertThatThrownBy(() -> orderService.createOrder(command))
+                    .isInstanceOf(PolicyException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", OrderErrorCode.UNSUPPORTED_ORDER_COMBINATION);
+        }
     }
 
-    @Test
-    @DisplayName("실패 - 위시리스트 스냅샷 정보를 찾을 수 없는 경우 예외가 발생한다")
-    void createOrder_fail_snapshotNotFound() {
-        // given
-        // 존재하지 않는 맵 상황 시뮬레이션 (빈 리스트 반환)
-        given(wishlistClient.getSnapshotList(wishlistItemIds)).willReturn(null);
-
-        // when & then
-        assertThatThrownBy(() -> orderService.createOrder(command, List.of()))
-                .isInstanceOf(DomainException.class)
-                .hasFieldOrPropertyWithValue("errorCode", OrderErrorCode.SNAPSHOTS_NOT_FOUND);
+    private @NonNull PlaceOrderCommand createPlaceOrderCommand(PlaceOrderItemCommand itemCommand) {
+        return new PlaceOrderCommand(
+                1L,
+                PaymentMethod.DEPOSIT,
+                List.of(itemCommand)
+        );
     }
 
-    @Test
-    @DisplayName("펀딩 참여 주문 - fundingId가 OrderItem에 정상적으로 매핑된다")
-    void createOrder_success_withFundingId() {
-        // given
-        Long fundingId = 500L;
-
-        FundingSnapshot fundingSnapshot = new FundingSnapshot(fundingId, wishlistItemId);
-
-        given(wishlistClient.getSnapshotList(wishlistItemIds)).willReturn(wishlistItemSnapshotMap);
-        given(orderRepository.save(any(Order.class))).willAnswer(inv -> inv.getArgument(0));
-
-        // when
-        OrderSnapshot result = orderService.createOrder(command, List.of(fundingSnapshot));
-
-        // then
-        // OrderItem의 targetId가 fundingId와 일치하는지 확인
-        assertThat(result.orderItemSnapshots().getFirst().targetId()).isEqualTo(fundingId);
-        assertThat(result.orderItemSnapshots().getFirst().targetType()).isEqualTo(TargetType.FUNDING);
+    private @NonNull PlaceOrderItemCommand createPlaceOrderItemCommand(Long fundingId, OrderItemType orderItemType) {
+        return new PlaceOrderItemCommand(
+                productId,
+                wishlistItemId,
+                fundingId,
+                2002L,
+                Money.of("15000"),
+                orderItemType
+        );
     }
 
     @Test
