@@ -1,6 +1,5 @@
 package app.giftify.cart.adapter.outbound.jpa;
 
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -22,10 +21,7 @@ public class JpaCartItem {
     @Column(name = "cart_id", insertable = false, updatable = false)
     private Long cartId;  // 읽기 전용 필드 (FK)
 
-    @Enumerated(EnumType.STRING)
-    private TargetType targetType;
-
-    private Long targetId;
+    private Long wishlistItemId;
 
     private BigDecimal amount;
 
@@ -34,14 +30,12 @@ public class JpaCartItem {
 
     public static JpaCartItem from(
             Long id,
-            TargetType targetType,
-            Long targetId,
+            Long wishlistItemId,
             BigDecimal amount
     ) {
         JpaCartItem item = new JpaCartItem();
         item.id = id;
-        item.targetType = targetType;
-        item.targetId = targetId;
+        item.wishlistItemId = wishlistItemId;
         item.amount = amount;
         return item;
     }

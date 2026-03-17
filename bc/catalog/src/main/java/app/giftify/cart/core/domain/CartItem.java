@@ -3,7 +3,6 @@ package app.giftify.cart.core.domain;
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 
 /**
@@ -11,16 +10,14 @@ import app.giftify.shared.domain.vo.Money;
  */
 public class CartItem extends BaseDomainModel {
     private final Long cartId;
-    private final TargetType targetType;
-    private final Long targetId;    // String ?
+    private final Long wishlistItemId;
     private Money amount;
     private static final Money MIN_CONTRIBUTION = Money.of(1000);
 
-    private CartItem(Long id, Long cartId, TargetType targetType, Long targetId, Money amount) {
+    private CartItem(Long id, Long cartId, Long wishlistItemId, Money amount) {
         super(id);
         this.cartId = cartId;
-        this.targetType = targetType;
-        this.targetId = targetId;
+        this.wishlistItemId = wishlistItemId;
         this.amount = amount;
         validate(amount);
     }
@@ -28,9 +25,9 @@ public class CartItem extends BaseDomainModel {
     /*
     장바구니에 담을 새로운 항목 객체 생성
      */
-    public static CartItem create(Long cartId, TargetType targetType, Long targetId, Money amount) {
+    public static CartItem create(Long cartId, Long wishlistItemId, Money amount) {
         // 생성 시점에는 ID가 없으므로 null 전달
-        return new CartItem(null, cartId, targetType, targetId, amount);
+        return new CartItem(null, cartId, wishlistItemId, amount);
     }
 
     public void updateAmount(Money newAmount) {
@@ -45,16 +42,14 @@ public class CartItem extends BaseDomainModel {
     }
 
     // DB에서 조회한 데이터로 재구성할 때 사용
-    public static CartItem reconstruct(Long id, Long cartId, TargetType targetType, Long targetId, Money amount) {
+    public static CartItem reconstruct(Long id, Long cartId, Long wishlistItemId, Money amount) {
         if (id == null) {
             throw new CartException(CartErrorCode.CARTITEM_ID_REQUIRED);
         }
-        return new CartItem(id, cartId, targetType, targetId, amount);
+        return new CartItem(id, cartId, wishlistItemId, amount);
     }
 
-    public TargetType getTargetType() { return targetType; }
-
-    public Long getTargetId() { return targetId; }
+    public Long getWishlistItemId() { return wishlistItemId; }
 
     public Money getAmount() { return amount; }
 
@@ -62,8 +57,7 @@ public class CartItem extends BaseDomainModel {
     public String toString() {
         return "CartItem{" +
                 "cartId=" + cartId +
-                ", targetType=" + targetType +
-                ", targetId='" + targetId + '\'' +
+                ", wishlistItemId='" + wishlistItemId + '\'' +
                 ", amount=" + amount +
                 '}';
     }

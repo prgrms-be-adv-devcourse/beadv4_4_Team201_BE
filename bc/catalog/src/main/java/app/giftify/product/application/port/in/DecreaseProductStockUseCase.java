@@ -1,8 +1,8 @@
 package app.giftify.product.application.port.in;
 
-public interface DecreaseProductStockUseCase {
-    // 펀딩에 의한 재고 감소
-    void decreaseStockByFunding(Long productId);
+import java.util.Map;
 
-    // todo 일반 주문에 의한 재고 감소
+public interface DecreaseProductStockUseCase {
+    // 주문에 의한 재고 감소 (펀딩/일반 주문 통합)
+    void decreaseStockByOrder(Map<Long, Integer> productQuantityMap);
 }

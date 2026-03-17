@@ -345,8 +345,8 @@ ALTER TABLE wishlist_items
 -- -----------------------------------------------------------------------------
 -- 9. CART_ITEM (장바구니 아이템) — V1.2.2
 -- -----------------------------------------------------------------------------
-INSERT INTO cart_items (id, cart_id, target_type, target_id, amount, wishlist_item_status)
-VALUES (1, 2, 'FUNDING_PENDING', 1, 359000.00, 'PENDING')
+INSERT INTO cart_items (id, cart_id, wishlist_item_id, amount, wishlist_item_status)
+VALUES (1, 2, 1, 359000.00, 'PENDING')
        ;
 
 ALTER TABLE cart_items

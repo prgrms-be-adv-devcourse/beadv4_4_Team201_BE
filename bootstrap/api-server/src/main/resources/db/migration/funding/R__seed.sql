@@ -36,3 +36,26 @@ VALUES
     (5, 5, 2, '나른한고양이0013', 25000, '2026-02-27 04:46:27', '2026-02-27 04:46:27', NULL, NULL);
 
 SELECT setval('funding_participant_members_id_seq', 100, false);
+
+-- Loadtest: Active funding for concurrency test
+DO $$
+BEGIN
+  IF current_schema() = 'loadtest' THEN
+    INSERT INTO fundings (id, version, wishlist_item_id, product_id, product_name, image_key,
+                          receiver_id, target_amount, current_amount, status, deadline,
+                          created_at, updated_at, created_by, updated_by)
+    VALUES
+      (1001, 0, 1001, 11, '소니 WH-1000XM5', 'products/11/sony-xm5.jpg',
+       1051, 100000, 0, 'IN_PROGRESS', NOW() + INTERVAL '30 days',
+       NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+      (1002, 0, 1011, 14, '로지텍 MX Master 3S', 'products/14/logitech-mx-3s.jpg',
+       1052, 100000, 0, 'IN_PROGRESS', NOW() + INTERVAL '30 days',
+       NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+      (1003, 0, 1021, 25, '신지모루 맥세이프 보조배터리', 'products/25/sinjimoru-magsafe.jpg',
+       1053, 100000, 0, 'IN_PROGRESS', NOW() + INTERVAL '30 days',
+       NOW(), NOW(), 'SYSTEM', 'SYSTEM');
+
+    PERFORM setval('fundings_id_seq', 1100, false);
+  END IF;
+END
+$$;

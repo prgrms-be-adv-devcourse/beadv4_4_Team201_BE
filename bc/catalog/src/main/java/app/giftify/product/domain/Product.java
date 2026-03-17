@@ -148,31 +148,7 @@ public class Product extends BaseDomainModel {
         registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, newStock - beforeStock, StockChangeType.MANUAL_SELLER);
     }
 
-    // 펀딩에 의한 상품 재고 감소
-    public void decreaseStockByFunding() {
-        validateStockForFunding();
-
-        int beforeStock = this.stock;
-        --this.stock;
-
-        if (this.stock == 0 && this.status == ACTIVE)
-            registerEvent(new ProductSaleDisabledEvent(this.getId()));
-
-        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_COMPLETED);
-    }
-
-    // 펀딩에 의한 상품 재고 추가 (반품 등등)
-    public void increaseStockByFunding() {
-        int beforeStock = this.stock;
-        ++this.stock;
-
-        if (beforeStock == 0 && this.status == ACTIVE)
-            registerEvent(new ProductSaleEnabledEvent(this.getId()));
-
-        registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_REFUNDED);
-    }
-
-    // 일반 주문에 의한 상품 재고 감소
+    // 주문에 의한 상품 재고 감소
     public void decreaseStock(int quantity) {
         validateStockForOrder(quantity);
 
@@ -185,7 +161,7 @@ public class Product extends BaseDomainModel {
         registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_COMPLETED);
     }
 
-    // 일반 주문에 의한 상품 재고 추가 (반품 등등)
+    // 주문에 의한 상품 재고 추가 (반품 등등)
     public void increaseStock(int quantity) {
         int beforeStock = this.stock;
         this.stock += quantity;
@@ -196,14 +172,7 @@ public class Product extends BaseDomainModel {
         registerStockUpdatedEvent(this.sellerId, this.getId(), beforeStock, this.stock, this.stock - beforeStock, StockChangeType.ORDER_REFUNDED);
     }
 
-    // 펀딩 재고 검증: 펀딩은 항상 1개 차감이므로 재고가 1 미만이면 불가
-    private void validateStockForFunding() {
-        if (this.stock < 1) {
-            throw new ProductException(PRODUCT_OUT_OF_STOCK);
-        }
-    }
-
-    // 일반 주문 재고 검증: 주문 수량만큼 재고가 있어야 함
+    // 주문 재고 검증: 주문 수량만큼 재고가 있어야 함
     private void validateStockForOrder(int quantity) {
         if (this.stock < quantity) {
             throw new ProductException(PRODUCT_OUT_OF_STOCK);

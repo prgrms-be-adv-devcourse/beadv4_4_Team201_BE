@@ -57,6 +57,7 @@ public class WishlistEventListener {
                 "[Wishlist] 위시리스트상품의 펀딩이 달성되었습니다.");
     }
 
+    // 펀딩 수령자의 수락 요청 -> 펀딩 수락 진행 -> 주문 확정 -> 펀딩 수락 변경 완료 -> 위시리스트아이템 COMPLETED
     @ApplicationModuleListener
     public void handleFundingAccepted(FundingAcceptedEvent event) {
         updateStatus(event.getWishlistItemId(),

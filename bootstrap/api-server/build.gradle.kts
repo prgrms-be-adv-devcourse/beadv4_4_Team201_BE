@@ -15,6 +15,8 @@ dependencies {
     implementation(project(":support:common"))
     implementation(project(":support:logging"))
     implementation(project(":support:security"))
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.oauth2.resource.server)
     implementation(project(":support:web"))
     implementation(project(":support:jpa"))
     implementation(libs.dotenv)

@@ -1,10 +1,12 @@
 package app.giftify.cart.core.domain;
 
 import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.type.TargetType;
 import app.giftify.shared.domain.vo.Money;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 장바구니란 무엇인가,
@@ -13,9 +15,9 @@ import java.util.*;
  */
 public class Cart extends BaseDomainModel {
     private final Long memberId;
-    private final Map<CartItemKey, CartItem> items; // 복합 키 사용
+    private final Map<Long, CartItem> items; // 복합 키 사용
 
-    private Cart(Long id, Long memberId, Map<CartItemKey, CartItem> items) {
+    private Cart(Long id, Long memberId, Map<Long, CartItem> items) {
         super(id);
         this.memberId = memberId;
         this.items = items != null ? new HashMap<>(items) : new HashMap<>(); // 방어적 복사
@@ -28,22 +30,20 @@ public class Cart extends BaseDomainModel {
     /*
      DB에서 조회한 데이터로 재구성
      */
-    public static Cart reconstruct(Long id, Long memberId, Map<CartItemKey, CartItem> items) {
+    public static Cart reconstruct(Long id, Long memberId, Map<Long, CartItem> items) {
         return new Cart(id, memberId, items);
     }
 
     /*
     장바구니에 상품 추가
      */
-    public CartItemAddResult addItem(TargetType targetType, Long targetId, Money amount) {
+    public CartItemAddResult addItem(Long wishlistItemId, Money amount) {
         // 금액 검증은 CartItem이 함
-        CartItemKey key = new CartItemKey(targetType, targetId);
-
-        if (items.containsKey(key)) {
-            items.get(key).updateAmount(amount);
+        if (items.containsKey(wishlistItemId)) {
+            items.get(wishlistItemId).updateAmount(amount);
             return CartItemAddResult.UPDATED;
         } else {
-            items.put(key, CartItem.create(this.getId(), targetType, targetId, amount));
+            items.put(wishlistItemId, CartItem.create(this.getId(), wishlistItemId, amount));
             return CartItemAddResult.ADDED;
         }
     }
@@ -51,16 +51,13 @@ public class Cart extends BaseDomainModel {
     /*
     장바구니에서 상품 삭제
      */
-    public void removeItems(TargetType targetType, List<Long> targetIds) {
-        for (Long targetId : targetIds) {
-            CartItemKey key = new CartItemKey(targetType, targetId);
+    public void removeItems(List<Long> wishlistItemIds) {
+        for (Long wishlistItemId : wishlistItemIds) {
             // 없으면 무시하고 다음 아이템으로 진행
-            items.remove(key);
+            items.remove(wishlistItemId);
         }
     }
-    /*
-    장바구니 전체 비우기
-     */
+
     public void clearItems() {
         items.clear();
     }
