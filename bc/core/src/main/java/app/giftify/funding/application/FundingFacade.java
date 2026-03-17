@@ -160,7 +160,6 @@ public class FundingFacade {
 
     @Transactional
     public FundingCompleteResponseDto retryAcceptFunding(Long id, Long memberId) {
-        LocalDateTime now = LocalDateTime.now();
-        return fundingRetryAcceptUseCase.retryAccept(id, now, memberId);
+        return fundingRetryAcceptUseCase.retryAccept(id, memberId);
     }
 }

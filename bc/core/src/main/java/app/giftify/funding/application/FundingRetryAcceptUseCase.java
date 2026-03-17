@@ -15,11 +15,13 @@ import java.time.LocalDateTime;
 public class FundingRetryAcceptUseCase {
     private final FundingRepository fundingRepository;
 
-    public FundingCompleteResponseDto retryAccept(Long fundingId, LocalDateTime now, Long memberId) {
+    public FundingCompleteResponseDto retryAccept(Long fundingId, Long memberId) {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(()-> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, fundingId));
 
         funding.validateReceiver(memberId);
+
+        LocalDateTime now = LocalDateTime.now();
 
         if (!funding.canRetryAccept(now)) {
             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_RETRY_ACCEPT, fundingId);
