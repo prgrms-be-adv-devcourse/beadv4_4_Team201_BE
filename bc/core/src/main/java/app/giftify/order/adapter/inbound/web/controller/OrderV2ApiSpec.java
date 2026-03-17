@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "Order V2", description = "주문 API (v2)")
-public interface OrderControllerSpec {
+public interface OrderV2ApiSpec {
     @Operation(summary = "주문 생성", description = "로그인된 회원 ID로 단일/복수 주문 항목에 대해 주문을 생성합니다.")
     @ApiResponse(responseCode = "201", description = "주문 생성 성공")
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
