@@ -17,6 +17,7 @@ import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
+import app.giftify.shared.domain.vo.SellerOrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -25,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
@@ -231,8 +229,9 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
      */
     @Transactional
     @Override
-    public void decreaseStockByOrder(Map<Long, Integer> productQuantityMap) {
+    public List<SellerOrderItem> decreaseStockByOrder(Map<Long, Integer> productQuantityMap) {
         var sorted = new TreeMap<>(productQuantityMap); // ProductId를 오름차순으로 정렬
+        List<SellerOrderItem> sellerOrderItems = new ArrayList<>(sorted.size());
 
         for (var entry : sorted.entrySet()) {
             Long productId = entry.getKey();
@@ -249,7 +248,13 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
             productRepositoryPort.saveAndFlush(product);
 
             product.pullEvents().forEach(eventPublisher::publish);
+
+            sellerOrderItems.add(new SellerOrderItem(
+                    product.getSellerId(), product.getId(), product.getName(), quantity
+            ));
         }
+
+        return sellerOrderItems;
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)
