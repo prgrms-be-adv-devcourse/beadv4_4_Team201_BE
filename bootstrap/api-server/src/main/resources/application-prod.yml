@@ -61,6 +61,13 @@ logging:
     app.giftify: INFO
 
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+
 management:
   metrics:
     tags:
