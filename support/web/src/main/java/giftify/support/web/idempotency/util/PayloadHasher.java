@@ -2,8 +2,8 @@ package giftify.support.web.idempotency.util;
 
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonProcessingException;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
