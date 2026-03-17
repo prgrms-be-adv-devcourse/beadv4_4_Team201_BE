@@ -170,11 +170,11 @@ public class FundingGetUseCase {
     }
 
     /**
-     * productId로 진행 중/수락 대기 중인 펀딩 존재여부 조회
+     * productId로 활성 상태 펀딩 존재여부 조회
      */
     @Transactional(readOnly = true)
     public boolean checkFundingExistsByProductId(Long productId) {
-        return fundingRepository.existsByProductIdAndStatusIn(productId, List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED));
+        return fundingRepository.existsByProductIdAndStatusIn(productId, List.of(FundingStatus.IN_PROGRESS, FundingStatus.ACHIEVED, FundingStatus.ACCEPTING, FundingStatus.ACCEPT_FAILED));
     }
 
     /**
