@@ -161,4 +161,19 @@ public interface FundingV2ApiSpec {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "펀딩 수락 재시도",
+            description = "재고 이슈로 수락에 실패한 펀딩의 수락을 재시도 합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "펀딩 수락 재시도 성공"),
+            @ApiResponse(responseCode = "403", description = "수령자 권한 없음(F008)"),
+            @ApiResponse(responseCode = "404",description = "펀딩을 찾을 수 없음 (F006)"),
+            @ApiResponse(responseCode = "404", description = "이미 수락 진행 중 (F015)"),
+            @ApiResponse(responseCode = "404", description = "수락 대기 중 상태가 아님 (F016)")
+    })
+    ResponseEntity<RsData<FundingCompleteResponseDto>> retryAcceptFunding(
+            @PathVariable("id") Long id,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

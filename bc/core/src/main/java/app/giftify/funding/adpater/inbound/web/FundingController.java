@@ -157,6 +157,7 @@ public class FundingController implements FundingV2ApiSpec {
         return ResponseEntity.ok(RsData.success(fundings));
     }
 
+    @Override
     @PostMapping("/retyrAccept/{id}")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> retryAcceptFunding(
             @PathVariable("id") Long id,
