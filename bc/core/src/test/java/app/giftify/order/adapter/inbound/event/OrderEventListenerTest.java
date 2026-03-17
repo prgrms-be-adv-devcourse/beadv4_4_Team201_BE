@@ -12,6 +12,7 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
+import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
@@ -128,6 +129,104 @@ class OrderEventListenerTest {
             verify(fundingOrderService).requestCancelFundingOrder(captor.capture());
             assertThat(captor.getValue().fundingId()).isEqualTo(FUNDING_ID);
             assertThat(captor.getValue().amount()).isEqualTo(Money.of(CANCELED_AMOUNT));
+        }
+
+        @Test
+        @DisplayName("실패: InfraException 발생 시 재시도 후 recover가 호출된다")
+        void given_infraException_when_onFundingCanceledEvent_then_retryAndRecover() {
+            // given
+            FundingCanceledEvent event = new FundingCanceledEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, CANCELED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+            InfraException retryableException = new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT);
+            willThrow(retryableException)
+                    .given(fundingOrderService).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event))
+                    .isInstanceOf(InfraException.class);
+
+            verify(fundingOrderService, atLeast(2)).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+        }
+
+        @Test
+        @DisplayName("실패: InfraException 중 재시도 불가능한 에러는 즉시 전파된다")
+        void given_nonRetryableInfraException_when_onFundingCanceledEvent_then_immediatelyPropagated() {
+            // given
+            FundingCanceledEvent event = new FundingCanceledEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, CANCELED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+            InfraException nonRetryableException = new InfraException(InfraErrorCode.DB_CONSTRAINT_VIOLATION);
+            willThrow(nonRetryableException)
+                    .given(fundingOrderService).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event))
+                    .isInstanceOf(InfraException.class);
+
+            verify(fundingOrderService, times(1)).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("FundingExpiredEvent 처리 (on(FundingExpiredEvent))")
+    class OnFundingExpiredEvent {
+
+        private static final Long FUNDING_ID = 1L;
+        private static final Long WISHLIST_ITEM_ID = 10L;
+        private static final Integer EXPIRED_AMOUNT = 50000;
+        private static final Long RECEIVER_ID = 100L;
+
+        @Test
+        @DisplayName("성공: 정상 처리 후 requestCancelFundingOrder가 호출된다")
+        void given_success_when_onFundingExpiredEvent_then_callRequestCancelFundingOrder() {
+            // given
+            FundingExpiredEvent event = new FundingExpiredEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, EXPIRED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            verify(fundingOrderService).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+        }
+
+        @Test
+        @DisplayName("성공: 커맨드에 이벤트의 fundingId와 expiredAmount가 올바르게 전달된다")
+        void given_event_when_onFundingExpiredEvent_then_commandHasCorrectData() {
+            // given
+            FundingExpiredEvent event = new FundingExpiredEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, EXPIRED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<CancelFundingOrderCommand> captor =
+                    ArgumentCaptor.forClass(CancelFundingOrderCommand.class);
+            verify(fundingOrderService).requestCancelFundingOrder(captor.capture());
+            assertThat(captor.getValue().fundingId()).isEqualTo(FUNDING_ID);
+            assertThat(captor.getValue().amount()).isEqualTo(Money.of(EXPIRED_AMOUNT));
+        }
+
+        @Test
+        @DisplayName("실패: InfraException 발생 시 재시도 후 recover가 호출된다")
+        void given_infraException_when_onFundingExpiredEvent_then_retryAndRecover() {
+            // given
+            FundingExpiredEvent event = new FundingExpiredEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, EXPIRED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+            InfraException retryableException = new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT);
+            willThrow(retryableException)
+                    .given(fundingOrderService).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event))
+                    .isInstanceOf(InfraException.class);
+
+            verify(fundingOrderService, atLeast(2)).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
         }
     }
 
