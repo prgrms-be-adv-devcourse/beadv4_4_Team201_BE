@@ -72,8 +72,8 @@ class FundingOrderServiceTest {
             ReflectionTestUtils.setField(items.get(0), "id", 1L);
             ReflectionTestUtils.setField(items.get(1), "id", 2L);
 
-            Money expiredAmount = Money.of("2000"); // 아이템 2개 × 1000원
-            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, expiredAmount);
+            Money amount = Money.of("2000"); // 아이템 2개 × 1000원
+            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, amount);
 
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(items);
 
@@ -106,8 +106,8 @@ class FundingOrderServiceTest {
             allItems.addAll(order1.getItems());
             allItems.addAll(order2.getItems());
 
-            Money expiredAmount = Money.of("2000"); // 주문 2개 × 1000원
-            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, expiredAmount);
+            Money amount = Money.of("2000"); // 주문 2개 × 1000원
+            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, amount);
 
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(allItems);
 
@@ -162,8 +162,8 @@ class FundingOrderServiceTest {
             Order order = OrderFixture.createOrderWithItems(BUYER_ID, 2);
             ReflectionTestUtils.setField(order, "id", ORDER_ID);
 
-            Money expiredAmount = Money.of("2000");
-            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, expiredAmount);
+            Money amount = Money.of("2000");
+            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, amount);
 
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(order.getItems());
             given(orderService.requestCancelOrderItems(any()))
@@ -181,8 +181,8 @@ class FundingOrderServiceTest {
             Order order = OrderFixture.createOrderWithItems(BUYER_ID, 2);
             ReflectionTestUtils.setField(order, "id", ORDER_ID);
 
-            Money expiredAmount = Money.of("2000");
-            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, expiredAmount);
+            Money amount = Money.of("2000");
+            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, amount);
 
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(order.getItems());
             given(orderService.requestCancelOrderItems(any()))
@@ -200,8 +200,8 @@ class FundingOrderServiceTest {
             Order order = OrderFixture.createOrderWithItems(BUYER_ID, 2);
             ReflectionTestUtils.setField(order, "id", ORDER_ID);
 
-            Money expiredAmount = Money.of("2000");
-            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, expiredAmount);
+            Money amount = Money.of("2000");
+            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, amount);
 
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(order.getItems());
             given(orderService.requestCancelOrderItems(any()))
@@ -228,8 +228,8 @@ class FundingOrderServiceTest {
             allItems.addAll(order1.getItems());
             allItems.addAll(order2.getItems());
 
-            Money expiredAmount = Money.of("2000");
-            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, expiredAmount);
+            Money amount = Money.of("2000");
+            CancelFundingOrderCommand command = new CancelFundingOrderCommand(FUNDING_ID, amount);
 
             given(orderItemRepository.getOrderItemsWithOrderAndFindingId(FUNDING_ID)).willReturn(allItems);
             // 첫 번째 호출에서 예외 발생, 두 번째 호출은 정상 처리

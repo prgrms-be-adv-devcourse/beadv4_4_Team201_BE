@@ -39,7 +39,7 @@ public class FundingOrderService {
         List<OrderItem> orderItems = orderItemRepository.getOrderItemsWithOrderAndFindingId(fundingId);
 
         validateItemsNotEmpty(command.fundingId(), orderItems);
-        validateTotalAmountMatch(command.expiredAmount(), orderItems);
+        validateTotalAmountMatch(command.amount(), orderItems);
 
         Map<Order, List<Long>> orderItemsByOrderId = groupOrderItemsByOrder(orderItems);
 

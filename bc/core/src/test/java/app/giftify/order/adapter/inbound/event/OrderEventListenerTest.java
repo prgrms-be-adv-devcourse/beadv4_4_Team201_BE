@@ -127,7 +127,7 @@ class OrderEventListenerTest {
                     ArgumentCaptor.forClass(CancelFundingOrderCommand.class);
             verify(fundingOrderService).requestCancelFundingOrder(captor.capture());
             assertThat(captor.getValue().fundingId()).isEqualTo(FUNDING_ID);
-            assertThat(captor.getValue().expiredAmount()).isEqualTo(Money.of(CANCELED_AMOUNT));
+            assertThat(captor.getValue().amount()).isEqualTo(Money.of(CANCELED_AMOUNT));
         }
     }
 
