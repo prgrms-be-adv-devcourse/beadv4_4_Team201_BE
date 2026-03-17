@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v2/wallet")
 @RequiredArgsConstructor
 @Validated
-public class WalletController implements WalletV2Api {
+public class WalletController implements WalletV2ApiSpec {
 	private final WithdrawWalletUseCase withdrawWalletUseCase;
 	private final QueryWalletUseCase queryWalletUseCase;
 	private final QueryWalletHistoryUseCase queryWalletHistoryUseCase;
