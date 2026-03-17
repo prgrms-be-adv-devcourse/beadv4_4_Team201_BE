@@ -5,6 +5,7 @@ public enum NotificationType {
 	FUNDING_ACHIEVED("펀딩이 완료되었습니다"),
 	FUNDING_EXPIRED("펀딩이 만료되었습니다"),
 	FUNDING_CANCELED("펀딩이 취소되었습니다"),
+    FUNDING_FAIL_ACCEPT("펀딩 수락이 실패했습니다. 재수락 해주세요"),
 	FRIEND_REQUEST_RECEIVED("친구 요청이 도착했습니다"),
 	FRIEND_REQUEST_ACCEPTED("친구 요청이 수락되었습니다"),
 	PAYMENT_SUCCEEDED("결제가 완료되었습니다"),

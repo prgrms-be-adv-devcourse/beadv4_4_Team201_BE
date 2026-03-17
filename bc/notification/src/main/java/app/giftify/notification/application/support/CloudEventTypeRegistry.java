@@ -3,13 +3,10 @@ package app.giftify.notification.application.support;
 import java.net.URI;
 import java.util.Map;
 
-import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
+import app.giftify.shared.domain.event.funding.*;
 import org.springframework.stereotype.Component;
 
 import app.giftify.notification.domain.NotificationType;
-import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
-import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
-import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
@@ -31,6 +28,7 @@ public class CloudEventTypeRegistry {
 		FundingAchievedEvent.class, new CloudEventMeta("app.giftify.funding.achieved", SOURCE_FUNDING, NotificationType.FUNDING_ACHIEVED),
 		FundingExpiredEvent.class, new CloudEventMeta("app.giftify.funding.expired", SOURCE_FUNDING, NotificationType.FUNDING_EXPIRED),
 		FundingCanceledEvent.class, new CloudEventMeta("app.giftify.funding.canceled", SOURCE_FUNDING, NotificationType.FUNDING_CANCELED),
+        FundingFailAcceptEvent.class, new CloudEventMeta("app.giftify.funding.fail-accept", SOURCE_FUNDING, NotificationType.FUNDING_FAIL_ACCEPT),
 		PaymentSucceededEvent.class, new CloudEventMeta("app.giftify.payment.succeeded", SOURCE_PAYMENT, NotificationType.PAYMENT_SUCCEEDED),
 		PaymentFailedEvent.class, new CloudEventMeta("app.giftify.payment.failed", SOURCE_PAYMENT, NotificationType.PAYMENT_FAILED),
 		PaymentCanceledEvent.class, new CloudEventMeta("app.giftify.payment.canceled", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_SUCCEEDED),

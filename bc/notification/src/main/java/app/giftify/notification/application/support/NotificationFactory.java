@@ -40,6 +40,7 @@ public class NotificationFactory {
 			case FUNDING_ACHIEVED -> "펀딩이 목표 금액을 달성했습니다";
 			case FUNDING_EXPIRED -> "펀딩이 기한이 지나 만료되었습니다";
 			case FUNDING_CANCELED -> "펀딩이 취소되었습니다";
+            case FUNDING_FAIL_ACCEPT -> "펀딩 수락이 실패했습니다. 재수락 해주세요";
 			case FRIEND_REQUEST_RECEIVED -> "새로운 친구 요청을 확인해보세요";
 			case FRIEND_REQUEST_ACCEPTED -> "친구 요청이 수락되어 친구가 되었습니다";
 			case PAYMENT_SUCCEEDED -> "결제가 성공적으로 처리되었습니다";

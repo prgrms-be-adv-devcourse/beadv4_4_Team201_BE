@@ -31,6 +31,16 @@ public class NotificationEventHandler {
 	private final NotificationRepository notificationRepository;
 	private final NotificationPushPort pushPort;
 
+    @ApplicationModuleListener
+    public void handleFundingFailAccept(FundingFailAcceptEvent event) {
+        log.info("[Notification] FundingFailAcceptEvent: fundingId={}, receiverId={}" , event.fundingId() , event.receiverId());
+        var meta = typeRegistry.resolve(event.getClass());
+        CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + event.fundingId());
+
+        createAndPush(event.receiverId(), meta.notificationType(),
+                String.valueOf(event.fundingId()), "FUNDING", ce);
+    }
+
 	@ApplicationModuleListener
 	public void handleFundingCreated(FundingCreatedEvent event) {
 		for (FundingDetail detail : event.getFundings()) {

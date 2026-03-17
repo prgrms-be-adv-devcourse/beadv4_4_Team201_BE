@@ -60,9 +60,10 @@ public class Funding extends BaseJpaEntity {
     @Column
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
+    @Column
+    private LocalDateTime acceptedFailedAt;
 
-    private Funding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer productPrice) {
-        this.wishlistItemId = wishlistItemId;
+    private Funding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer productPrice) {     this.wishlistItemId = wishlistItemId;
         this.productId = productId;
         this.productName = productName;
         this.imageKey = imageKey;
@@ -156,7 +157,11 @@ public class Funding extends BaseJpaEntity {
 
     // 펀딩 수락 확정 대기
     public void pendingAcceptance() {
-        if (this.getStatus() == FundingStatus.ACCEPTANCE_PENDING || this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
+        if (this.getStatus() == FundingStatus.ACCEPTING) {
+            throw new FundingException(FundingErrorCode.ALREADY_PENDING, this.getId());
+        }
+
+        if (this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
             throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
         }
 
@@ -164,7 +169,7 @@ public class Funding extends BaseJpaEntity {
              throw new FundingException(FundingErrorCode.NOT_ACHIEVED, "목표 금액을 달성한 펀딩만 수락할 수 있습니다.");
         }
 
-        this.status = FundingStatus.ACCEPTANCE_PENDING;
+        this.status = FundingStatus.ACCEPTING;
     }
 
     // 펀딩 수락 확정 완료
@@ -173,7 +178,7 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
         }
 
-        if (this.status != FundingStatus.ACCEPTANCE_PENDING) {
+        if (this.status != FundingStatus.ACCEPTING) {
              throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId());
         }
 
@@ -203,5 +208,25 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_WITHDRAWAL);
         }
         this.currentAmount -= amount;
+    }
+
+    /**
+     * 수락 재시도 가능 여부
+     */
+    public boolean canRetryAccept(LocalDateTime now) {
+        if (status != FundingStatus.ACCEPT_FAILED) return false;
+
+        return acceptedFailedAt.plusMinutes(10).isBefore(now);
+    }
+
+    /**
+     * 펀딩 수락 실패 상태로 변경
+     */
+    public void markAcceptFailed() {
+        if (this.status != FundingStatus.ACCEPTING) {
+            throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_RETRY_ACCEPT);
+        }
+        this.status = FundingStatus.ACCEPT_FAILED;
+        this.acceptedFailedAt = LocalDateTime.now();
     }
 }
