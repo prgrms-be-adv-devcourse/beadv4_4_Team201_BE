@@ -11,13 +11,17 @@ public enum NotificationType {
 	PAYMENT_SUCCEEDED("결제가 완료되었습니다"),
 	PAYMENT_FAILED("결제에 실패했습니다"),
 	PAYMENT_CANCEL_SUCCEEDED("결제 취소가 완료되었습니다"),
-	PAYMENT_CANCEL_FAILED("결제 취소에 실패했습니다");
+	PAYMENT_CANCEL_FAILED("결제 취소에 실패했습니다"),
+    PRODUCT_SELLER_ORDER_RECEIVED("[판매자 알림] 새로운 주문이 인입되었습니다");
 
-	private final String title;
 
-	NotificationType(String title) {
-		this.title = title;
-	}
+    private final String title;
 
-	public String getTitle() { return title; }
+    NotificationType(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 }

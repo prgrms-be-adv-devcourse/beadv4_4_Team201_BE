@@ -1,38 +1,50 @@
 package app.giftify.notification.application.support;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import app.giftify.notification.application.CloudEventEnvelope;
 import app.giftify.notification.domain.Notification;
 import app.giftify.notification.domain.NotificationType;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class NotificationFactory {
 
-	public Notification createSingle(
-		Long recipientId, NotificationType type,
-		String referenceId, String referenceType,
-		CloudEventEnvelope sourceEvent
-	) {
-		return new Notification(
-			recipientId, type,
-			type.getTitle(), resolveContent(type),
-			referenceId, referenceType,
-			sourceEvent.id(), sourceEvent.type(), sourceEvent.source()
-		);
-	}
+    public Notification createSingle(
+            Long recipientId, NotificationType type,
+            String referenceId, String referenceType,
+            CloudEventEnvelope sourceEvent
+    ) {
+        return new Notification(
+                recipientId, type,
+                type.getTitle(), resolveContent(type),
+                referenceId, referenceType,
+                sourceEvent.id(), sourceEvent.type(), sourceEvent.source()
+        );
+    }
 
-	public List<Notification> createForMultipleRecipients(
-		List<Long> recipientIds, NotificationType type,
-		String referenceId, String referenceType,
-		CloudEventEnvelope sourceEvent
-	) {
-		return recipientIds.stream()
-			.map(id -> createSingle(id, type, referenceId, referenceType, sourceEvent))
-			.toList();
-	}
+    public Notification createSingle(
+            Long recipientId, NotificationType type,
+            String referenceId, String referenceType,
+            CloudEventEnvelope sourceEvent, String customContent
+    ) {
+        return new Notification(
+                recipientId, type,
+                type.getTitle(), customContent,
+                referenceId, referenceType,
+                sourceEvent.id(), sourceEvent.type(), sourceEvent.source()
+        );
+    }
+
+    public List<Notification> createForMultipleRecipients(
+            List<Long> recipientIds, NotificationType type,
+            String referenceId, String referenceType,
+            CloudEventEnvelope sourceEvent
+    ) {
+        return recipientIds.stream()
+                .map(id -> createSingle(id, type, referenceId, referenceType, sourceEvent))
+                .toList();
+    }
 
 	private String resolveContent(NotificationType type) {
 		return switch (type) {
@@ -47,6 +59,7 @@ public class NotificationFactory {
 			case PAYMENT_FAILED -> "결제 처리 중 문제가 발생했습니다";
 			case PAYMENT_CANCEL_SUCCEEDED -> "결제 취소가 정상적으로 처리되었습니다";
 			case PAYMENT_CANCEL_FAILED -> "결제 취소 처리 중 문제가 발생했습니다";
+            case PRODUCT_SELLER_ORDER_RECEIVED -> "판매 중인 상품에 대해 새로운 주문이 인입되었습니다";
 		};
 	}
 }
