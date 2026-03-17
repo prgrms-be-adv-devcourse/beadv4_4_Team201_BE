@@ -29,6 +29,7 @@ public class FundingFacade {
     private final FundingRefuseUseCase fundingRefuseUseCase;
     private final FundingAcceptUseCase fundingAcceptUseCase;
     private final GetFundingSnapshotUseCase getFundingSnapshotUseCase;
+    private final FundingRetryAcceptUseCase fundingRetryAcceptUseCase;
 
     // todo : 쓰이는 곳에서 아래 Map으로 바뀌면 제거 예정
     @Transactional(readOnly = true)
@@ -155,5 +156,11 @@ public class FundingFacade {
     @Transactional(readOnly = true)
     public PageResponse<FundingResponseDto> getFriendsFundings(int page, int size, Long memberId) {
         return fundingGetUseCase.getFriendsFundings(page, size, memberId);
+    }
+
+    @Transactional
+    public FundingCompleteResponseDto retryAcceptFunding(Long id, Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+        return fundingRetryAcceptUseCase.retryAccept(id, now, memberId);
     }
 }

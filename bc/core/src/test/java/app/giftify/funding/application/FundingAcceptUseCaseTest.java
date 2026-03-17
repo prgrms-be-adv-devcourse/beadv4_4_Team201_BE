@@ -54,7 +54,7 @@ class FundingAcceptUseCaseTest {
         fundingAcceptUseCase.requestFundingAcceptance(fundingId, memberId);
 
         // then
-        assertThat(funding.getStatus()).isEqualTo(FundingStatus.ACCEPTANCE_PENDING);
+        assertThat(funding.getStatus()).isEqualTo(FundingStatus.ACCEPTING);
         verify(eventPublisher, times(1)).publish(any(FundingConfirmPendingEvent.class));
     }
 
@@ -68,7 +68,7 @@ class FundingAcceptUseCaseTest {
 
         Funding funding = Funding.startFunding(1L, 10L, "Product", "img", memberId, targetAmount);
         ReflectionTestUtils.setField(funding, "id", fundingId);
-        ReflectionTestUtils.setField(funding, "status", FundingStatus.ACCEPTANCE_PENDING); // 이미 대기 상태
+        ReflectionTestUtils.setField(funding, "status", FundingStatus.ACCEPTING); // 이미 대기 상태
 
         given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
 
@@ -157,7 +157,7 @@ class FundingAcceptUseCaseTest {
         Long memberId = 100L;
 
         Funding funding = Funding.startFunding(1L, 10L, "Product", "img", memberId, targetAmount);
-        ReflectionTestUtils.setField(funding, "status", FundingStatus.ACCEPTANCE_PENDING); // 수락 대기 상태
+        ReflectionTestUtils.setField(funding, "status", FundingStatus.ACCEPTING); // 수락 대기 상태
 
         given(fundingRepository.findById(fundingId)).willReturn(Optional.of(funding));
 

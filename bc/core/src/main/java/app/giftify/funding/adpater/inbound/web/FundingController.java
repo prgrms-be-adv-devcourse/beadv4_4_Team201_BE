@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/fundings")
@@ -153,5 +155,13 @@ public class FundingController implements FundingV2ApiSpec {
             @Parameter(hidden = true) @CurrentMemberId Long memberId) {
         PageResponse<FundingResponseDto> fundings = fundingFacade.getFriendsFundings(page, size, memberId);
         return ResponseEntity.ok(RsData.success(fundings));
+    }
+
+    @PostMapping("/retyrAccept/{id}")
+    public ResponseEntity<RsData<FundingCompleteResponseDto>> retryAcceptFunding(
+            @PathVariable("id") Long id,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId) {
+        FundingCompleteResponseDto funding = fundingFacade.retryAcceptFunding(id, memberId);
+        return ResponseEntity.ok(RsData.success(funding));
     }
 }

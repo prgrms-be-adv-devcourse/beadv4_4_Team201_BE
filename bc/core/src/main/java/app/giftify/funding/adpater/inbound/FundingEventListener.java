@@ -1,15 +1,22 @@
 package app.giftify.funding.adpater.inbound;
 
+import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adpater.outbound.repository.FundingRepository;
 import app.giftify.funding.application.FundingAcceptUseCase;
+import app.giftify.funding.application.FundingFailAcceptUseCase;
 import app.giftify.funding.application.SyncFundingProductUseCase;
 import app.giftify.funding.application.WithdrawFundingUseCase;
+import app.giftify.funding.domain.exception.FundingErrorCode;
+import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.shared.domain.event.order.OrderCanceledEvent;
+import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.support.common.annotation.EventIdempotent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +27,10 @@ public class FundingEventListener {
 	private final WithdrawFundingUseCase withdrawFundingUseCase;
     private final FundingAcceptUseCase fundingAcceptUseCase;
     private final SyncFundingProductUseCase syncFundingProductUseCase;
+    private final FundingFailAcceptUseCase fundingFailAcceptUseCase;
 
 
-	@ApplicationModuleListener
+    @ApplicationModuleListener
 	@EventIdempotent(prefix = "FUNDING_WITHDRAW")
 	public void handleOrderCanceled(OrderCanceledEvent event) {
 		event.getItems().stream()
@@ -41,7 +49,7 @@ public class FundingEventListener {
 			});
 	}
 
-    @ApplicationModuleListener
+    @EventListener
     public void handleConfirmFunding(OrderConfirmedEvent event) {
         fundingAcceptUseCase.confirmFundingAcceptance(event.getFundingId());
     }
@@ -49,5 +57,10 @@ public class FundingEventListener {
     @ApplicationModuleListener
     public void handleProductUpdated(ProductUpdatedEvent event) {
         syncFundingProductUseCase.syncFundingProduct(event.getProductId(), event.getProductPrice(), event.getProductName(), event.getImageKey());
+    }
+
+    @EventListener
+    public void handleOrderConfirmFail(OrderConfirmFailedEvent event) {
+        fundingFailAcceptUseCase.execute(event.getFundingId());
     }
 }
