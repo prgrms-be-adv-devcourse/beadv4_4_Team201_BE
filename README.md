@@ -4,8 +4,14 @@
 [![CI - Build & Test](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/actions/workflows/github-code-scanning/codeql)
 [![Release](https://img.shields.io/github/v/release/prgrms-be-adv-devcourse/beadv4_4_Team201_BE?label=Release)](https://github.com/prgrms-be-adv-devcourse/beadv4_4_Team201_BE/releases)
+
 ![Java](https://img.shields.io/badge/Java-25-orange)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-6DB33F)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-6DB33F?logo=springboot&logoColor=white)
+![Spring Modulith](https://img.shields.io/badge/Spring%20Modulith-2.0.3-6DB33F?logo=spring&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)
+![QueryDSL](https://img.shields.io/badge/QueryDSL-5.1.0-0078D4)
+![Gradle](https://img.shields.io/badge/Gradle-8.14-02303A?logo=gradle&logoColor=white)
+![SpringDoc OpenAPI](https://img.shields.io/badge/SpringDoc-3.0.2-85EA2D?logo=swagger&logoColor=black)
 
 ---
 
