@@ -24,4 +24,16 @@ public class OrderApiClientConfig {
                 .build()
                 .createClient(WishlistClient.class);
     }
+
+    @Bean
+    public ProductClient productClient(RestClient.Builder builder) {
+        RestClient restClient = builder
+                .baseUrl(baseUrl)
+                .build();
+
+        return HttpServiceProxyFactory
+                .builderFor(RestClientAdapter.create(restClient))
+                .build()
+                .createClient(ProductClient.class);
+    }
 }
