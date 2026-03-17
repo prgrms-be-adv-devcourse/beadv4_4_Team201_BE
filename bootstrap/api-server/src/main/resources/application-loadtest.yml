@@ -10,6 +10,7 @@ spring:
     properties:
       hibernate:
         default_schema: loadtest
+        generate_statistics: true
 
   flyway:
     schemas: loadtest
