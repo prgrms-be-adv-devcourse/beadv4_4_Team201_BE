@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import tools.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import app.giftify.payment.domain.Payment;
@@ -119,7 +119,7 @@ public class JpaPayment extends BaseJpaEntity {
 		String orderItemsJson;
 		try {
 			orderItemsJson = objectMapper.writeValueAsString(payment.getOrderItems());
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new PaymentException(PaymentErrorCode.INTERNAL_SERVER_ERROR,
 				"[JpaPayment] orderItems JSON 직렬화 실패", e);
 		}
@@ -146,7 +146,7 @@ public class JpaPayment extends BaseJpaEntity {
 		OrderItemSnapshot[] orderItems;
 		try {
 			orderItems = objectMapper.readValue(orderItemsJson, OrderItemSnapshot[].class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new PaymentException(PaymentErrorCode.INTERNAL_SERVER_ERROR,
 				"[JpaPayment] orderItems JSON 역직렬화 실패", e);
 		}
