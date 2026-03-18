@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @Tag(name = "Wallet V2", description = "예치금 지갑 API (v2)")
-public interface WalletV2Api {
+public interface WalletV2ApiSpec {
 
     @Operation(
             summary = "예치금 출금 요청",
@@ -93,12 +93,12 @@ public interface WalletV2Api {
             summary = "예치금 거래 내역 조회",
             description = """
                     현재 로그인한 사용자의 예치금 거래 내역을 조회합니다.
-                    
+
                     **거래 유형**:
                     - CHARGE: 충전
                     - WITHDRAW: 출금
                     - PAYMENT: 결제
-                    
+
                     **페이징**:
                     - page: 페이지 번호 (0부터 시작, 기본값: 0)
                     - size: 페이지 크기 (기본값: 20, 최대: 100)

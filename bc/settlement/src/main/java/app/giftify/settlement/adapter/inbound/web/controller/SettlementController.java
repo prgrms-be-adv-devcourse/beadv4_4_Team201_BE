@@ -18,10 +18,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/settlements")
 @RequiredArgsConstructor
-public class SettlementController {
+public class SettlementController implements SettlementV2ApiSpec {
 
     private final SettlementItemService settlementItemService;
 
+    @Override
     @GetMapping
     public ResponseEntity<RsData<PageResponse<SettlementSummary>>> getSettlementSummary(
             @CurrentMemberId Long sellerId,

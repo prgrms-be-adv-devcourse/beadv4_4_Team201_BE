@@ -22,9 +22,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 @Tag(name = "Member V2", description = "회원 정보 관리 API (v2)")
-public interface MemberV2Api {
-
-    // ========== 가입된 회원 전용 (memberId 사용) ==========
+public interface MemberV2ApiSpec {
 
     @Operation(
             summary = "내 정보 조회",
@@ -76,8 +74,6 @@ public interface MemberV2Api {
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
-    // ========== 미가입 사용자도 호출 가능 (authSub 사용) ==========
-
     @Operation(
             summary = "회원가입 (추가 정보 입력)",
             description = """
@@ -115,8 +111,6 @@ public interface MemberV2Api {
     ResponseEntity<RsData<RegistrationStatusResponse>> checkRegistration(
             @Parameter(hidden = true) @CurrentAuthSub String authSub
     );
-
-    // ========== 인증 불필요 ==========
 
     @Operation(
             summary = "닉네임 중복 확인",

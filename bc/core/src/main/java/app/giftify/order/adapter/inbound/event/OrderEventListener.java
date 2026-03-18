@@ -9,6 +9,7 @@ import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAcceptedEvent;
 import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
+import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
@@ -69,6 +70,21 @@ public class OrderEventListener {
                         event.getFundingId(),
                         Money.of(event.getExpiredAmount()
                         )
+                ));
+    }
+
+    @Retryable(
+            retryFor = InfraException.class,
+			exceptionExpression = "#root.errorCode.isRetryable",
+            backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
+    )
+    @ApplicationModuleListener
+    public void on(FundingCanceledEvent event) {
+        log.info("[이벤트 수신] 펀딩 취소 -> 주문 취소 반영 시작. FundingId: {}", event.getFundingId());
+        fundingOrderService.requestCancelFundingOrder(
+                new CancelFundingOrderCommand(
+                        event.getFundingId(),
+                        Money.of(event.getCanceledAmount())
                 ));
     }
 

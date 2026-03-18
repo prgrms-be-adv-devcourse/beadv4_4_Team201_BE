@@ -32,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v2/orders")
 @RequiredArgsConstructor
-public class OrderController implements OrderControllerSpec {
+public class OrderController implements OrderV2ApiSpec {
 
     private final CoreFacade coreFacade;
     private final OrderService orderService;
