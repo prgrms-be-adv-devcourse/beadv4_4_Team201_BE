@@ -158,7 +158,7 @@ public class FundingController implements FundingV2ApiSpec {
     }
 
     @Override
-    @PostMapping("/retyrAccept/{id}")
+    @PostMapping("/retryAccept/{id}")
     public ResponseEntity<RsData<FundingCompleteResponseDto>> retryAcceptFunding(
             @PathVariable("id") Long id,
             @Parameter(hidden = true) @CurrentMemberId Long memberId) {
