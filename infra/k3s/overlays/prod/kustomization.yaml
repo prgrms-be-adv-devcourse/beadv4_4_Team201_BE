@@ -15,20 +15,6 @@ images:
     newTag: 9.2.4-custom-v2
 
 patches:
-  - target:
-      kind: StatefulSet
-      name: minio
-    patch: |-
-      - op: replace
-        path: /spec/replicas
-        value: 0
-  - target:
-      kind: Job
-      name: minio-init
-    patch: |-
-      - op: add
-        path: /spec/suspend
-        value: true
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
