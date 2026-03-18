@@ -162,6 +162,30 @@ AGE-SECRET-KEY-1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 - **개인키** (`AGE-SECRET-KEY-...`): 절대 공유 금지. 본인 머신에만 보관.
 - 키 파일 분실 시 새로 생성하고 `.sops.yaml`에 공개키 교체 → `sops updatekeys` 실행.
 
+### Recovery 키
+
+Primary 키 분실에 대비한 별도의 키쌍이다.
+
+```
+Primary 키   = 각 팀원의 로컬 머신에 보관. 일상 암/복호화에 사용.
+Recovery 키  = 1Password 등 별도 안전한 곳에 보관. 비상 시에만 사용.
+```
+
+- `.sops.yaml`에 Primary와 Recovery **공개키 모두** 등록되어 있다.
+- SOPS는 등록된 모든 공개키로 암호화하므로, 어느 키의 개인키로든 복호화 가능하다.
+- Recovery **개인키**는 로컬 시스템(`keys.txt`)에 등록하지 않는다.
+- Recovery 키가 필요한 상황: Primary 키 분실, 팀원 전원 키 접근 불가 등.
+
+**Recovery 키로 복호화 (비상 시):**
+
+```bash
+# Recovery 개인키를 임시로 지정하여 복호화
+SOPS_AGE_KEY_FILE=/path/to/recovery-key.txt \
+  sops -d infra/k3s/overlays/prod/api-server-secrets.enc.yaml
+
+# 복호화 후 임시 파일 즉시 삭제
+```
+
 ---
 
 ## 3. 공개키 공유
