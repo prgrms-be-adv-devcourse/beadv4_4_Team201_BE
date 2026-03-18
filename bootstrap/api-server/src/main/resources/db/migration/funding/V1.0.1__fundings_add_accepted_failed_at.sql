@@ -1,5 +1,5 @@
 ALTER TABLE fundings
-    ADD COLUMN IF NOT EXISTS accepted_failed_at
+    ADD COLUMN IF NOT EXISTS accepted_failed_at TIMESTAMP;
 
 INSERT INTO fundings (id, version, wishlist_item_id, product_id, product_name, image_key, receiver_id,
     target_amount, current_amount, status,
