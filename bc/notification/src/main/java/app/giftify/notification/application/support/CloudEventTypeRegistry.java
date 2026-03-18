@@ -1,5 +1,11 @@
 package app.giftify.notification.application.support;
 
+import java.net.URI;
+import java.util.Map;
+
+import app.giftify.shared.domain.event.funding.*;
+import org.springframework.stereotype.Component;
+
 import app.giftify.notification.domain.NotificationType;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
@@ -27,17 +33,18 @@ public class CloudEventTypeRegistry {
     public record CloudEventMeta(String ceType, URI ceSource, NotificationType notificationType) {
     }
 
-    private static final Map<Class<?>, CloudEventMeta> REGISTRY = Map.of(
-            FundingCreatedEvent.class, new CloudEventMeta("app.giftify.funding.created", SOURCE_FUNDING, NotificationType.FUNDING_CREATED),
-            FundingAchievedEvent.class, new CloudEventMeta("app.giftify.funding.achieved", SOURCE_FUNDING, NotificationType.FUNDING_ACHIEVED),
-            FundingExpiredEvent.class, new CloudEventMeta("app.giftify.funding.expired", SOURCE_FUNDING, NotificationType.FUNDING_EXPIRED),
-            FundingCanceledEvent.class, new CloudEventMeta("app.giftify.funding.canceled", SOURCE_FUNDING, NotificationType.FUNDING_CANCELED),
-            PaymentSucceededEvent.class, new CloudEventMeta("app.giftify.payment.succeeded", SOURCE_PAYMENT, NotificationType.PAYMENT_SUCCEEDED),
-            PaymentFailedEvent.class, new CloudEventMeta("app.giftify.payment.failed", SOURCE_PAYMENT, NotificationType.PAYMENT_FAILED),
-            PaymentCanceledEvent.class, new CloudEventMeta("app.giftify.payment.canceled", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_SUCCEEDED),
-            PaymentCancelFailedEvent.class, new CloudEventMeta("app.giftify.payment.cancel-failed", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_FAILED),
-            ProductSellerOrderReceivedEvent.class, new CloudEventMeta("app.giftify.product.seller-order-received", SOURCE_PRODUCT, NotificationType.PRODUCT_SELLER_ORDER_RECEIVED)
-    );
+	private static final Map<Class<?>, CloudEventMeta> REGISTRY = Map.of(
+		FundingCreatedEvent.class, new CloudEventMeta("app.giftify.funding.created", SOURCE_FUNDING, NotificationType.FUNDING_CREATED),
+		FundingAchievedEvent.class, new CloudEventMeta("app.giftify.funding.achieved", SOURCE_FUNDING, NotificationType.FUNDING_ACHIEVED),
+		FundingExpiredEvent.class, new CloudEventMeta("app.giftify.funding.expired", SOURCE_FUNDING, NotificationType.FUNDING_EXPIRED),
+		FundingCanceledEvent.class, new CloudEventMeta("app.giftify.funding.canceled", SOURCE_FUNDING, NotificationType.FUNDING_CANCELED),
+        FundingFailAcceptEvent.class, new CloudEventMeta("app.giftify.funding.fail-accept", SOURCE_FUNDING, NotificationType.FUNDING_FAIL_ACCEPT),
+		PaymentSucceededEvent.class, new CloudEventMeta("app.giftify.payment.succeeded", SOURCE_PAYMENT, NotificationType.PAYMENT_SUCCEEDED),
+		PaymentFailedEvent.class, new CloudEventMeta("app.giftify.payment.failed", SOURCE_PAYMENT, NotificationType.PAYMENT_FAILED),
+		PaymentCanceledEvent.class, new CloudEventMeta("app.giftify.payment.canceled", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_SUCCEEDED),
+		PaymentCancelFailedEvent.class, new CloudEventMeta("app.giftify.payment.cancel-failed", SOURCE_PAYMENT, NotificationType.PAYMENT_CANCEL_FAILED),
+        ProductSellerOrderReceivedEvent.class, new CloudEventMeta("app.giftify.product.seller-order-received", SOURCE_PRODUCT, NotificationType.PRODUCT_SELLER_ORDER_RECEIVED)
+	);
 
     public CloudEventMeta resolve(Class<?> eventClass) {
         CloudEventMeta meta = REGISTRY.get(eventClass);

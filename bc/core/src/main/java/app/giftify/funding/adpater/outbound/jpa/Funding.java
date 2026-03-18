@@ -60,6 +60,8 @@ public class Funding extends BaseJpaEntity {
     @Column
     private LocalDateTime achievedAt;   // 펀딩 달성 시각 : 달성 후 2주내 미수락 시 종료되어야 하니까
 
+    @Column
+    private LocalDateTime acceptedFailedAt;
 
     private Funding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer productPrice) {
         this.wishlistItemId = wishlistItemId;
@@ -154,13 +156,31 @@ public class Funding extends BaseJpaEntity {
         this.closedAt = LocalDateTime.now();
     }
 
-    public void accept() {
+    // 펀딩 수락 확정 대기
+    public void pendingAcceptance() {
+        if (this.getStatus() == FundingStatus.ACCEPTING) {
+            throw new FundingException(FundingErrorCode.ALREADY_PENDING, this.getId());
+        }
+
         if (this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
             throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
         }
 
-        if (this.getStatus() != FundingStatus.ACHIEVED) {
-            throw new FundingException(FundingErrorCode.NOT_ACHIEVED);
+        if (this.status != FundingStatus.ACHIEVED && this.status != FundingStatus.ACCEPT_FAILED) {
+             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId(), this.getStatus().toString());
+        }
+
+        this.status = FundingStatus.ACCEPTING;
+    }
+
+    // 펀딩 수락 확정 완료
+    public void confirmAcceptance() {
+        if (this.getStatus() == FundingStatus.ACCEPTED || this.getStatus() == FundingStatus.REFUSED) {
+            throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
+        }
+
+        if (this.status != FundingStatus.ACCEPTING) {
+             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId(), this.getStatus().toString());
         }
 
         this.status = FundingStatus.ACCEPTED;
@@ -189,5 +209,29 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_WITHDRAWAL);
         }
         this.currentAmount -= amount;
+    }
+
+    /**
+     * 수락 재시도 가능 여부
+     */
+    public boolean canRetryAccept(LocalDateTime now) {
+        if (this.status != FundingStatus.ACCEPT_FAILED) {
+            throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_RETRY_ACCEPT, this.getId());
+        }
+
+        if (this.acceptedFailedAt == null) return false;
+
+        return acceptedFailedAt.plusMinutes(10).isBefore(now);
+    }
+
+    /**
+     * 펀딩 수락 실패 상태로 변경
+     */
+    public void markAcceptFailed() {
+        if (this.status != FundingStatus.ACCEPTING) {
+            throw new FundingException(FundingErrorCode.INVALID_FUNDING_STATUS, this.getId(), this.getStatus().toString());
+        }
+        this.status = FundingStatus.ACCEPT_FAILED;
+        this.acceptedFailedAt = LocalDateTime.now();
     }
 }

@@ -8,10 +8,7 @@ import app.giftify.notification.application.support.CloudEventTypeRegistry;
 import app.giftify.notification.application.support.NotificationFactory;
 import app.giftify.notification.domain.Notification;
 import app.giftify.notification.domain.NotificationType;
-import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
-import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
-import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
-import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
+import app.giftify.shared.domain.event.funding.*;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
@@ -37,9 +34,19 @@ public class NotificationEventHandler {
     private final NotificationPushPort pushPort;
 
     @ApplicationModuleListener
-    public void handleFundingCreated(FundingCreatedEvent event) {
-        for (FundingDetail detail : event.getFundings()) {
-            log.info("[Notification] FundingCreatedEvent: fundingId={}, receiverId={}", detail.fundingId(), detail.receiverId());
+    public void handleFundingFailAccept(FundingFailAcceptEvent event) {
+        log.info("[Notification] FundingFailAcceptEvent: fundingId={}, receiverId={}" , event.fundingId() , event.receiverId());
+        var meta = typeRegistry.resolve(event.getClass());
+        CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + event.fundingId());
+
+        createAndPush(event.receiverId(), meta.notificationType(),
+                String.valueOf(event.fundingId()), "FUNDING", ce);
+    }
+
+	@ApplicationModuleListener
+	public void handleFundingCreated(FundingCreatedEvent event) {
+		for (FundingDetail detail : event.getFundings()) {
+			log.info("[Notification] FundingCreatedEvent: fundingId={}, receiverId={}", detail.fundingId(), detail.receiverId());
             var meta = typeRegistry.resolve(event.getClass());
             CloudEventEnvelope ce = cloudEventMapper.fromDomainEvent(event, "funding-" + detail.fundingId());
             createAndPush(detail.receiverId(), meta.notificationType(),

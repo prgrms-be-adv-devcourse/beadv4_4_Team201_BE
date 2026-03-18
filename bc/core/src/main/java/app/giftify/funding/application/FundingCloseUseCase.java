@@ -74,6 +74,7 @@ public class FundingCloseUseCase {
                 .map(funding -> new FundingCompleteResponseDto(
                         funding.getId(),
                         funding.getWishlistItemId(),
+                        funding.getProductName(),
                         funding.getStatus(),
                         funding.getClosedAt()
                 ))
