@@ -125,7 +125,7 @@ class FundingAcceptUseCaseTest {
         // when & then
         assertThatThrownBy(() -> fundingAcceptUseCase.requestFundingAcceptance(fundingId, memberId))
                 .isInstanceOf(FundingException.class)
-                .hasFieldOrPropertyWithValue("errorCode", FundingErrorCode.NOT_ACHIEVED);
+                .hasFieldOrPropertyWithValue("errorCode", FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING);
     }
 
     @Test

@@ -20,7 +20,7 @@ public class FundingAcceptUseCase {
 
     public FundingCompleteResponseDto requestFundingAcceptance(Long fundingId, Long memberId) {
         Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
-                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + fundingId)
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, fundingId)
         );
 
         funding.validateReceiver(memberId);
@@ -37,7 +37,7 @@ public class FundingAcceptUseCase {
 
     public void confirmFundingAcceptance(Long fundingId) {
         Funding funding = fundingRepository.findById(fundingId).orElseThrow(() ->
-                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, "펀딩을 찾을 수 없습니다. ID: " + fundingId)
+                new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, fundingId)
         );
 
         funding.confirmAcceptance();

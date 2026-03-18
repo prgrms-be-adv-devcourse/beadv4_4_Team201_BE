@@ -166,8 +166,8 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
         }
 
-        if (this.status != FundingStatus.ACHIEVED || this.status != FundingStatus.ACCEPT_FAILED) {
-             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, "미달성이거나 수락 재시도 불가능한 펀딩입니다.", this.getId());
+        if (this.status != FundingStatus.ACHIEVED && this.status != FundingStatus.ACCEPT_FAILED) {
+             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId(), this.getStatus().toString());
         }
 
         this.status = FundingStatus.ACCEPTING;
@@ -180,7 +180,7 @@ public class Funding extends BaseJpaEntity {
         }
 
         if (this.status != FundingStatus.ACCEPTING) {
-             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId());
+             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, this.getId(), this.getStatus().toString());
         }
 
         this.status = FundingStatus.ACCEPTED;
@@ -229,8 +229,7 @@ public class Funding extends BaseJpaEntity {
      */
     public void markAcceptFailed() {
         if (this.status != FundingStatus.ACCEPTING) {
-            throw new FundingException(FundingErrorCode.INVALID_FUNDING_STATUS,
-                    "ACCEPTING 상태에서만 수락 실패 처리가 가능합니다. 펀딩ID: %d, 현재 상태: %s" , this.getId(), this.getStatus());
+            throw new FundingException(FundingErrorCode.INVALID_FUNDING_STATUS, this.getId(), this.getStatus().toString());
         }
         this.status = FundingStatus.ACCEPT_FAILED;
         this.acceptedFailedAt = LocalDateTime.now();
