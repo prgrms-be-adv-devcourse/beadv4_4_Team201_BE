@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -37,6 +38,9 @@ class FundingControllerTest {
 	private FundingFacade fundingFacade;
 
 	private static final Long FUNDING_ID = 1L;
+	private static final Long WISHLIST_ITEM_ID = 10L;
+	private static final String PRODUCT_NAME = "상품 이름";
+	private static final LocalDateTime CLOSE_AT = LocalDateTime.of(2025, 6, 1, 12, 0);
 
 	@BeforeEach
 	void setUp() {
@@ -53,7 +57,7 @@ class FundingControllerTest {
 	}
 
 	private FundingCompleteResponseDto dummyCompleteResponse(FundingStatus status) {
-		return new FundingCompleteResponseDto(FUNDING_ID, 10L, status, LocalDateTime.of(2025, 6, 1, 12, 0));
+		return new FundingCompleteResponseDto(FUNDING_ID, WISHLIST_ITEM_ID, PRODUCT_NAME, status, CLOSE_AT);
 	}
 
 	@Nested
@@ -80,7 +84,10 @@ class FundingControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.result").value("SUCCESS"))
 				.andExpect(jsonPath("$.data.fundingId").value(FUNDING_ID))
-				.andExpect(jsonPath("$.data.status").value("CLOSED"));
+				.andExpect(jsonPath("$.data.wishlistItemId").value(WISHLIST_ITEM_ID))
+				.andExpect(jsonPath("$.data.productName").value(PRODUCT_NAME))
+				.andExpect(jsonPath("$.data.status").value("CLOSED"))
+				.andExpect(jsonPath("$.data.closeAt").value(CLOSE_AT.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
 		}
 	}
 
@@ -108,7 +115,10 @@ class FundingControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.result").value("SUCCESS"))
 				.andExpect(jsonPath("$.data.fundingId").value(FUNDING_ID))
-				.andExpect(jsonPath("$.data.status").value("EXPIRED"));
+				.andExpect(jsonPath("$.data.wishlistItemId").value(WISHLIST_ITEM_ID))
+				.andExpect(jsonPath("$.data.productName").value(PRODUCT_NAME))
+				.andExpect(jsonPath("$.data.status").value("EXPIRED"))
+				.andExpect(jsonPath("$.data.closeAt").value(CLOSE_AT.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
 		}
 	}
 }
