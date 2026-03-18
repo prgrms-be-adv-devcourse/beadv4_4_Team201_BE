@@ -63,7 +63,8 @@ public class Funding extends BaseJpaEntity {
     @Column
     private LocalDateTime acceptedFailedAt;
 
-    private Funding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer productPrice) {     this.wishlistItemId = wishlistItemId;
+    private Funding(Long wishlistItemId, Long productId, String productName, String imageKey, Long receiverId, Integer productPrice) {
+        this.wishlistItemId = wishlistItemId;
         this.productId = productId;
         this.productName = productName;
         this.imageKey = imageKey;
@@ -165,8 +166,8 @@ public class Funding extends BaseJpaEntity {
             throw new FundingException(FundingErrorCode.ALREADY_DECIDED, this.getId());
         }
 
-        if (this.status != FundingStatus.ACHIEVED) {
-             throw new FundingException(FundingErrorCode.NOT_ACHIEVED, "목표 금액을 달성한 펀딩만 수락할 수 있습니다.");
+        if (this.status != FundingStatus.ACHIEVED || this.status != FundingStatus.ACCEPT_FAILED) {
+             throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_ACCEPTANCE_PENDING, "미달성이거나 수락 재시도 불가능한 펀딩입니다.", this.getId());
         }
 
         this.status = FundingStatus.ACCEPTING;
@@ -214,7 +215,11 @@ public class Funding extends BaseJpaEntity {
      * 수락 재시도 가능 여부
      */
     public boolean canRetryAccept(LocalDateTime now) {
-        if (status != FundingStatus.ACCEPT_FAILED) return false;
+        if (this.status != FundingStatus.ACCEPT_FAILED) {
+            throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_RETRY_ACCEPT, this.getId());
+        }
+
+        if (this.acceptedFailedAt == null) return false;
 
         return acceptedFailedAt.plusMinutes(10).isBefore(now);
     }
@@ -224,7 +229,8 @@ public class Funding extends BaseJpaEntity {
      */
     public void markAcceptFailed() {
         if (this.status != FundingStatus.ACCEPTING) {
-            throw new FundingException(FundingErrorCode.INVALID_STATUS_FOR_RETRY_ACCEPT);
+            throw new FundingException(FundingErrorCode.INVALID_FUNDING_STATUS,
+                    "ACCEPTING 상태에서만 수락 실패 처리가 가능합니다. 펀딩ID: %d, 현재 상태: %s" , this.getId(), this.getStatus());
         }
         this.status = FundingStatus.ACCEPT_FAILED;
         this.acceptedFailedAt = LocalDateTime.now();

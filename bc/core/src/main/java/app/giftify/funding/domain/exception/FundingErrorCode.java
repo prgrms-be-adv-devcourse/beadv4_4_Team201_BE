@@ -20,6 +20,7 @@ public enum FundingErrorCode implements ErrorCode {
     INVALID_STATUS_FOR_ACCEPTANCE_PENDING (HttpStatus.BAD_REQUEST.value(), "F014", "수락 대기 상태인 펀딩만 확정할 수 있습니다. ID: %d"),
     ALREADY_PENDING (HttpStatus.BAD_REQUEST.value(), "F015", "이미 수락 진행 중입니다. ID: %d"),
     INVALID_STATUS_FOR_RETRY_ACCEPT(HttpStatus.BAD_REQUEST.value(), "F016", "수락 대기 상태인 펀딩만 재시도할 수 있습니다. ID: %d"),
+    INVALID_FUNDING_STATUS(HttpStatus.BAD_REQUEST.value(), "F017", "올바른 상태가 아닙니다. 펀딩ID: %d, 현재 상태: %s"),
 
     EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F100", "외부 API 오류입니다."),
     SNAPSHOT_INCONSISTENCY(HttpStatus.INTERNAL_SERVER_ERROR.value(), "F101", "위시리스트 아이템 스냅샷 데이터가 일관되지 않습니다.");
