@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: 'infra/k3s/secrets-plain/.*\.yaml$' # 요 경로에 매칭되는 녀석들을 아래 actually-good-encryption 공개키로 암호화
+    age: >-
+      age1f0utknkpm97442amhksw87jrxd9nmkflqcv6dpek4aml63kh4ckszpy5yz

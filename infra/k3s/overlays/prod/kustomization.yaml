@@ -4,6 +4,9 @@ kind: Kustomization
 resources:
   - ../../base
 
+generators:
+  - ./secret-generator.yaml  # "이 .enc.yaml 파일들을 복호화해줘" -> secret generator
+
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
     newTag: latest
@@ -113,4 +116,3 @@ patches:
       - op: replace
         path: /spec/routes/0/match
         value: "Host(`giftify-elasticsearch.chan99k.dev`)"
-
