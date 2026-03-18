@@ -9,6 +9,8 @@ import app.giftify.shared.domain.event.funding.FundingFailAcceptEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -17,6 +19,7 @@ public class FundingFailAcceptUseCase {
     private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void execute(Long fundingId) {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, fundingId));
