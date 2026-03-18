@@ -1,0 +1,83 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+patches:
+  # repo-server: ksops plugin + age key mount
+  - target:
+      kind: Deployment
+      name: argocd-repo-server
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-repo-server
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: install-ksops
+                image: viaductoss/ksops:v4.4.0
+                command: ["/bin/sh", "-c"]
+                args:
+                  - mv ksops /custom-tools/;
+                    mv kustomize /custom-tools/;
+                volumeMounts:
+                  - mountPath: /custom-tools
+                    name: custom-tools
+            containers:
+              - name: argocd-repo-server
+                env:
+                  - name: SOPS_AGE_KEY_FILE
+                    value: /sops-age/keys.txt
+                  - name: XDG_CONFIG_HOME
+                    value: /.config
+                volumeMounts:
+                  - mountPath: /usr/local/bin/kustomize
+                    name: custom-tools
+                    subPath: kustomize
+                  - mountPath: /usr/local/bin/ksops
+                    name: custom-tools
+                    subPath: ksops
+                  - mountPath: /sops-age
+                    name: sops-age-key
+            volumes:
+              - name: custom-tools
+                emptyDir: {}
+              - name: sops-age-key
+                secret:
+                  secretName: sops-age-key
+
+  # argocd-server: --insecure (Cloudflare Tunnel handles TLS)
+  - target:
+      kind: Deployment
+      name: argocd-server
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-server
+      spec:
+        template:
+          spec:
+            containers:
+              - name: argocd-server
+                args:
+                  - /usr/local/bin/argocd-server
+                  - --insecure
+
+  # argocd-cm: enable ksops exec plugin
+  - target:
+      kind: ConfigMap
+      name: argocd-cm
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-cm
+      data:
+        kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
