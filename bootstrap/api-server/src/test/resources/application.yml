@@ -9,6 +9,7 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
+    defer-datasource-initialization: true
 
   flyway:
     enabled: false
@@ -16,6 +17,14 @@ spring:
   jackson:
     use-jackson2-defaults: true
 
+  batch:
+    job:
+      enabled: false
+
+
 logging:
   level:
     org.springframework.modulith: DEBUG
+
+internal-api:
+  base-url: http://localhost:8080
