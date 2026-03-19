@@ -21,11 +21,20 @@ patches:
           spec:
             initContainers:
               - name: install-ksops
-                image: viaductoss/ksops:v4.4.0
+                image: alpine:3.21
                 command: ["/bin/sh", "-c"]
                 args:
-                  - mv ksops /custom-tools/;
-                    mv kustomize /custom-tools/;
+                  - |
+                    apk add --no-cache curl &&
+                    curl -fsSL -o /tmp/ksops.tar.gz \
+                      https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Linux_x86_64.tar.gz &&
+                    tar -xzf /tmp/ksops.tar.gz -C /custom-tools/ &&
+                    curl -fsSL -o /tmp/kustomize.tar.gz \
+                      https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.6.0/kustomize_v5.6.0_linux_amd64.tar.gz &&
+                    tar -xzf /tmp/kustomize.tar.gz -C /custom-tools/ &&
+                    chmod +x /custom-tools/ksops /custom-tools/kustomize &&
+                    mkdir -p /custom-tools/kustomize/plugin/viaduct.ai/v1/ksops &&
+                    cp /custom-tools/ksops /custom-tools/kustomize/plugin/viaduct.ai/v1/ksops/ksops
                 volumeMounts:
                   - mountPath: /custom-tools
                     name: custom-tools
@@ -34,6 +43,8 @@ patches:
                 env:
                   - name: SOPS_AGE_KEY_FILE
                     value: /sops-age/keys.txt
+                  - name: XDG_CONFIG_HOME
+                    value: /custom-tools
                 volumeMounts:
                   - mountPath: /usr/local/bin/kustomize
                     name: custom-tools
