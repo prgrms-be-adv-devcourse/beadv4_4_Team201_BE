@@ -33,18 +33,20 @@ patches:
                       https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.6.0/kustomize_v5.6.0_linux_amd64.tar.gz &&
                     tar -xzf /tmp/kustomize.tar.gz -C /custom-tools/ &&
                     chmod +x /custom-tools/ksops /custom-tools/kustomize &&
-                    mkdir -p /custom-tools/kustomize/plugin/viaduct.ai/v1/ksops &&
-                    cp /custom-tools/ksops /custom-tools/kustomize/plugin/viaduct.ai/v1/ksops/ksops
+                    mkdir -p /ksops-plugin/kustomize/plugin/viaduct.ai/v1/ksops &&
+                    cp /custom-tools/ksops /ksops-plugin/kustomize/plugin/viaduct.ai/v1/ksops/ksops
                 volumeMounts:
                   - mountPath: /custom-tools
                     name: custom-tools
+                  - mountPath: /ksops-plugin
+                    name: ksops-plugin
             containers:
               - name: argocd-repo-server
                 env:
                   - name: SOPS_AGE_KEY_FILE
                     value: /sops-age/keys.txt
                   - name: XDG_CONFIG_HOME
-                    value: /custom-tools
+                    value: /ksops-plugin
                 volumeMounts:
                   - mountPath: /usr/local/bin/kustomize
                     name: custom-tools
@@ -54,8 +56,12 @@ patches:
                     subPath: ksops
                   - mountPath: /sops-age
                     name: sops-age-key
+                  - mountPath: /ksops-plugin
+                    name: ksops-plugin
             volumes:
               - name: custom-tools
+                emptyDir: {}
+              - name: ksops-plugin
                 emptyDir: {}
               - name: sops-age-key
                 secret:
