@@ -34,8 +34,6 @@ patches:
                 env:
                   - name: SOPS_AGE_KEY_FILE
                     value: /sops-age/keys.txt
-                  - name: XDG_CONFIG_HOME
-                    value: /.config
                 volumeMounts:
                   - mountPath: /usr/local/bin/kustomize
                     name: custom-tools
@@ -53,22 +51,14 @@ patches:
                   secretName: sops-age-key
 
   # argocd-server: --insecure (Cloudflare Tunnel handles TLS)
+  # JSON patch: args 배열에 추가 (strategic merge는 배열을 전체 대체하므로 위험)
   - target:
       kind: Deployment
       name: argocd-server
     patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: argocd-server
-      spec:
-        template:
-          spec:
-            containers:
-              - name: argocd-server
-                args:
-                  - /usr/local/bin/argocd-server
-                  - --insecure
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --insecure
 
   # argocd-cm: enable ksops exec plugin
   - target:
