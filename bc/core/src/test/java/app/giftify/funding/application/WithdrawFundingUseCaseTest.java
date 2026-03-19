@@ -12,9 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
+import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberRepository;
+import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.shared.domain.vo.Money;
 

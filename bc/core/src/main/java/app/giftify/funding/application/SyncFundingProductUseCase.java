@@ -1,7 +1,7 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
+import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.type.FundingStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

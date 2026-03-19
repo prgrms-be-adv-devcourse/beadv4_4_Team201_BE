@@ -1,6 +1,6 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.type.FundingStatus;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
 
 public record MyFundingInfo(
         Funding funding,

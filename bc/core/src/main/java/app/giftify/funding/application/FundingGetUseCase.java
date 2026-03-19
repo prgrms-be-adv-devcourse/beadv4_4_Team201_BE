@@ -1,13 +1,13 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.dto.ContributeFundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.FundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.MyFundingResponseDto;
-import app.giftify.funding.adpater.inbound.dto.MyFundingSummaryDto;
-import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
-import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adapter.inbound.dto.ContributeFundingResponseDto;
+import app.giftify.funding.adapter.inbound.dto.FundingResponseDto;
+import app.giftify.funding.adapter.inbound.dto.MyFundingResponseDto;
+import app.giftify.funding.adapter.inbound.dto.MyFundingSummaryDto;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
+import app.giftify.funding.adapter.outbound.jpa.FundingParticipantMember;
+import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberRepository;
+import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.replica.MemberReplica;
