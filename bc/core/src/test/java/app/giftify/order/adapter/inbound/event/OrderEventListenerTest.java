@@ -9,7 +9,10 @@ import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
+import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
 import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
+import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
@@ -25,6 +28,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -80,6 +85,50 @@ class OrderEventListenerTest {
 
         // then: 실제로 재시도가 발생했는지 횟수 확인
         verify(orderService, atLeast(2)).completeCancel(any());
+    }
+
+    @Nested
+    @DisplayName("FundingCanceledEvent 처리 (on(FundingCanceledEvent))")
+    class OnFundingCanceledEvent {
+
+        private static final Long FUNDING_ID = 1L;
+        private static final Long WISHLIST_ITEM_ID = 10L;
+        private static final Integer CANCELED_AMOUNT = 50000;
+        private static final Long RECEIVER_ID = 100L;
+
+        @Test
+        @DisplayName("성공: 정상 처리 후 requestCancelFundingOrder가 호출된다")
+        void given_success_when_onFundingCanceledEvent_then_callRequestCancelFundingOrder() {
+            // given
+            FundingCanceledEvent event = new FundingCanceledEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, CANCELED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            verify(fundingOrderService).requestCancelFundingOrder(any(CancelFundingOrderCommand.class));
+        }
+
+        @Test
+        @DisplayName("성공: 커맨드에 이벤트의 fundingId와 canceledAmount가 올바르게 전달된다")
+        void given_event_when_onFundingCanceledEvent_then_commandHasCorrectData() {
+            // given
+            FundingCanceledEvent event = new FundingCanceledEvent(
+                    FUNDING_ID, WISHLIST_ITEM_ID, CANCELED_AMOUNT, RECEIVER_ID, List.of(101L, 102L)
+            );
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<CancelFundingOrderCommand> captor =
+                    ArgumentCaptor.forClass(CancelFundingOrderCommand.class);
+            verify(fundingOrderService).requestCancelFundingOrder(captor.capture());
+            assertThat(captor.getValue().fundingId()).isEqualTo(FUNDING_ID);
+            assertThat(captor.getValue().expiredAmount()).isEqualTo(Money.of(CANCELED_AMOUNT));
+        }
     }
 
     @Nested

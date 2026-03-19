@@ -17,6 +17,7 @@ import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
+import app.giftify.shared.domain.vo.SellerOrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -25,9 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
@@ -225,23 +224,37 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     }
 
     /**
-     * 펀딩에 의한 재고 감소
-     * 비관적 락 - 배타 잠금 적용
+     * 주문에 의한 재고 감소 (펀딩/일반 주문 통합)
+     * 데드락 방지를 위해 productId 오름차순으로 배타 잠금 획득
      */
     @Transactional
     @Override
-    public void decreaseStockByFunding(Long productId) {
-        Product product;
-        try {
-            product = productSupport.findByIdForUpdate(productId); // 배타 잠금
-        } catch (PessimisticLockingFailureException e) {
-            throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+    public List<SellerOrderItem> decreaseStockByOrder(Map<Long, Integer> productQuantityMap) {
+        var sorted = new TreeMap<>(productQuantityMap); // ProductId를 오름차순으로 정렬
+        List<SellerOrderItem> sellerOrderItems = new ArrayList<>(sorted.size());
+
+        for (var entry : sorted.entrySet()) {
+            Long productId = entry.getKey();
+            int quantity = entry.getValue();
+
+            Product product;
+            try {
+                product = productSupport.findByIdForUpdate(productId);
+            } catch (PessimisticLockingFailureException e) {
+                throw new InfraException(PRODUCT_STOCK_LOCK_TIMEOUT);
+            }
+
+            product.decreaseStock(quantity);
+            productRepositoryPort.saveAndFlush(product);
+
+            product.pullEvents().forEach(eventPublisher::publish);
+
+            sellerOrderItems.add(new SellerOrderItem(
+                    product.getSellerId(), product.getId(), product.getName(), quantity
+            ));
         }
 
-        product.decreaseStockByFunding();
-        productRepositoryPort.save(product);
-
-        product.pullEvents().forEach(eventPublisher::publish);
+        return sellerOrderItems;
     }
 
     // 도메인 -> ProductResult(애플리케이션 전용 dto/queryModel)

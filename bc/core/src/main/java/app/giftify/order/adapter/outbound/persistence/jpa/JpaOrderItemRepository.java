@@ -42,6 +42,6 @@ public interface JpaOrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE OrderItem oi SET oi.status = 'CONFIRMED' " +
-            "WHERE oi.id IN :ids AND oi.status = 'PENDING'")
+            "WHERE oi.id IN :ids AND oi.status = 'PAID'")
     int confirmOrderItems(@Param("ids") List<Long> ids);
 }

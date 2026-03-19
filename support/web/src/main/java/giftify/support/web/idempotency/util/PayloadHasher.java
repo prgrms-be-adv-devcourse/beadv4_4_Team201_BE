@@ -2,8 +2,8 @@ package giftify.support.web.idempotency.util;
 
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -35,7 +35,7 @@ public class PayloadHasher {
 
             return bytesToHex(encodedHash);
 
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("페이로드 직렬화 실패", e);
             throw new InfraException(InfraErrorCode.UNKNOWN_INFRA_ERROR);
         } catch (NoSuchAlgorithmException e) {

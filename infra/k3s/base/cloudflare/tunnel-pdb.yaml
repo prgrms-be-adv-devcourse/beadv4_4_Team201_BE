@@ -1,0 +1,11 @@
+# 노드 drain 시 cloudflared Pod 최소 1개 유지 보장.
+# replicas: 2 + minAvailable: 1 → 롤링 업데이트/drain 중에도 터널 연결 유지.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared

@@ -2,7 +2,7 @@ package app.giftify.payment.adapter.outbound.jpa;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;

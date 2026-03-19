@@ -27,11 +27,11 @@ class OrderCanceledEventListenerTest {
     private WithdrawFundingUseCase withdrawFundingUseCase;
 
     @InjectMocks
-    private OrderCanceledEventListener orderCanceledEventListener;
+    private FundingEventListener fundingEventListener;
 
     @Test
     @DisplayName("주문 취소 이벤트 발생 시 펀딩 상품인 경우 펀딩 기여 철회가 호출된다")
-    void handle_funding_item() {
+    void handle_OrderCanceled_funding_item() {
         // given
         Long orderId = 1L;
         Long orderItemId = 10L;
@@ -50,7 +50,7 @@ class OrderCanceledEventListenerTest {
         OrderCanceledEvent event = new OrderCanceledEvent(orderId, List.of(fundingItem));
 
         // when
-        orderCanceledEventListener.handle(event);
+        fundingEventListener.handleOrderCanceled(event);
 
         // then
         verify(withdrawFundingUseCase, times(1)).withdrawByWishlistItem(
@@ -62,7 +62,7 @@ class OrderCanceledEventListenerTest {
 
     @Test
     @DisplayName("주문 취소 이벤트 발생 시 일반 상품인 경우 펀딩 기여 철회가 호출되지 않는다")
-    void handle_general_item() {
+    void handle_OrderCanceled_general_item() {
         // given
         Long orderId = 2L;
         Long orderItemId = 20L;
@@ -74,14 +74,14 @@ class OrderCanceledEventListenerTest {
                 orderItemId,
                 buyerId,
                 targetId,
-                TargetType.GENERAL_PRODUCT,
+                TargetType.DIRECT_PURCHASE,
                 cancelAmount
         );
 
         OrderCanceledEvent event = new OrderCanceledEvent(orderId, List.of(generalItem));
 
         // when
-        orderCanceledEventListener.handle(event);
+        fundingEventListener.handleOrderCanceled(event);
 
         // then
         verify(withdrawFundingUseCase, never()).withdrawByWishlistItem(any(), any(), any());
@@ -89,7 +89,7 @@ class OrderCanceledEventListenerTest {
 
     @Test
     @DisplayName("주문 취소 이벤트 발생 시 펀딩 예정 상품인 경우 펀딩 기여 철회가 호출되지 않는다")
-    void handle_funding_pending_item() {
+    void handle_OrderCanceled_funding_pending_item() {
         // given
         Long orderId = 3L;
         Long orderItemId = 30L;
@@ -108,7 +108,7 @@ class OrderCanceledEventListenerTest {
         OrderCanceledEvent event = new OrderCanceledEvent(orderId, List.of(pendingItem));
 
         // when
-        orderCanceledEventListener.handle(event);
+        fundingEventListener.handleOrderCanceled(event);
 
         // then
         verify(withdrawFundingUseCase, never()).withdrawByWishlistItem(any(), any(), any());
@@ -116,7 +116,7 @@ class OrderCanceledEventListenerTest {
 
     @Test
     @DisplayName("주문 취소 이벤트 발생 시 펀딩 상품과 일반 상품이 섞여있는 경우 펀딩 상품만 처리된다")
-    void handle_mixed_items() {
+    void handle_OrderCanceled_mixed_items() {
         // given
         Long orderId = 4L;
         Long buyerId = 400L;
@@ -133,14 +133,14 @@ class OrderCanceledEventListenerTest {
                 42L,
                 buyerId,
                 81L,
-                TargetType.GENERAL_PRODUCT,
+                TargetType.DIRECT_PURCHASE,
                 Money.of(5000)
         );
 
         OrderCanceledEvent event = new OrderCanceledEvent(orderId, List.of(fundingItem, generalItem));
 
         // when
-        orderCanceledEventListener.handle(event);
+        fundingEventListener.handleOrderCanceled(event);
 
         // then
         verify(withdrawFundingUseCase, times(1)).withdrawByWishlistItem(

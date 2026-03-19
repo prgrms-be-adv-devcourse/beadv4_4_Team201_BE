@@ -7,9 +7,6 @@ spring:
 
   modulith: {}
 
-  jackson:
-    use-jackson2-defaults: true
-
   profiles:
     # active 프로파일을 여기서 고정 X
     #

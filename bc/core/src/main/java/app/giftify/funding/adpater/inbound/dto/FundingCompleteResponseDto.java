@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record FundingCompleteResponseDto(
         Long fundingId,
         Long wishlistItemId,
+        String productName,
         FundingStatus status,
         LocalDateTime closeAt
 ) {
@@ -17,6 +18,7 @@ public record FundingCompleteResponseDto(
        return new FundingCompleteResponseDto(
                funding.getId(),
                funding.getWishlistItemId(),
+               funding.getProductName(),
                funding.getStatus(),
                funding.getClosedAt()
        );

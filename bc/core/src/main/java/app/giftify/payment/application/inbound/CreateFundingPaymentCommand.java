@@ -2,8 +2,6 @@ package app.giftify.payment.application.inbound;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -56,7 +54,6 @@ public record CreateFundingPaymentCommand(
 	/**
 	 * 펀딩 결제의 PaymentType은 항상 FUNDING
 	 */
-	@JsonIgnore
 	public PaymentType getType() {
 		return PaymentType.FUNDING;
 	}

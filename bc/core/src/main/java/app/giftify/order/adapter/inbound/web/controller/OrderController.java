@@ -1,7 +1,8 @@
 package app.giftify.order.adapter.inbound.web.controller;
 
 import app.giftify.facade.CoreFacade;
-import app.giftify.facade.command.PlaceOrderCommand;
+import app.giftify.facade.command.ParticipateFundingCommand;
+import app.giftify.facade.command.ParticipateFundingItemCommand;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.order.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
 import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderRequest;
@@ -16,6 +17,7 @@ import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.domain.ResultCode;
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.shared.domain.vo.Money;
 import app.giftify.support.common.annotation.Idempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v2/orders")
 @RequiredArgsConstructor
-public class OrderController implements OrderControllerSpec {
+public class OrderController implements OrderV2ApiSpec {
 
     private final CoreFacade coreFacade;
     private final OrderService orderService;
@@ -44,9 +46,13 @@ public class OrderController implements OrderControllerSpec {
             @CurrentMemberId Long memberId,
             @Valid @RequestBody PlaceOrderRequest orderRequest
     ) {
-        PlaceOrderCommand command = PlaceOrderCommand.of(memberId, orderRequest);
+        ParticipateFundingCommand command = new ParticipateFundingCommand(
+                memberId,
+                orderRequest.method(),
+                getFundingItemCommands(orderRequest)
+        );
 
-        PlaceOrderResult response = coreFacade.placeOrder(command);
+        PlaceOrderResult response = coreFacade.participateFunding(command);
 
         return ResponseEntity.ok(RsData.success(response));
     }
@@ -105,6 +111,19 @@ public class OrderController implements OrderControllerSpec {
         OrderCancelResponse response = OrderCancelResponse.of(orderId, summary);
 
         return ResponseEntity.ok(RsData.success(response));
+    }
+
+    private static @NonNull List<ParticipateFundingItemCommand> getFundingItemCommands(PlaceOrderRequest orderRequest) {
+        return orderRequest.items().stream()
+                .map(rq -> new ParticipateFundingItemCommand(
+                        rq.productId(),
+                        rq.wishlistItemId(),
+                        rq.fundingId(),
+                        rq.receiverId(),
+                        Money.of(rq.amount()),
+                        rq.orderItemType()
+                ))
+                .toList();
     }
 
     private static @NonNull GetOrdersResponse createGetOrdersResponse(List<OrderSummary> content, Page<OrderSummary> page) {

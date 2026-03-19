@@ -8,8 +8,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import app.giftify.notification.application.CloudEventEnvelope;
 import app.giftify.notification.domain.Notification;
@@ -69,7 +69,7 @@ public class CloudEventMapper {
 	public String toJson(CloudEventEnvelope envelope) {
 		try {
 			return objectMapper.writeValueAsString(envelope);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new RuntimeException("Failed to serialize CloudEvent", e);
 		}
 	}
