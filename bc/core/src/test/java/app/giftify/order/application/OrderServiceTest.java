@@ -51,12 +51,18 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
-    @Mock private OrderRepository orderRepository;
-    @Mock private ProductPort productPort;
-    @Mock private FundingQueryPort fundingQueryPort;
-    @Mock private EventPublisher eventPublisher;
-    @Mock private TargetTypeResolver targetTypeResolver;
-    @Mock private TargetIdResolver targetIdResolver;
+    @Mock
+    private OrderRepository orderRepository;
+    @Mock
+    private ProductPort productPort;
+    @Mock
+    private FundingQueryPort fundingQueryPort;
+    @Mock
+    private EventPublisher eventPublisher;
+    @Mock
+    private TargetTypeResolver targetTypeResolver;
+    @Mock
+    private TargetIdResolver targetIdResolver;
 
     @InjectMocks
     private OrderService orderService;
@@ -68,7 +74,8 @@ class OrderServiceTest {
             new ProductSnapshot(
                     productId,
                     200000,
-                    200L
+                    200L,
+                    true
             )
     );
 
