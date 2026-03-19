@@ -1,8 +1,9 @@
 package giftify.support.web.util;
 
 import app.giftify.shared.api.exception.InfraException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import giftify.support.web.idempotency.util.PayloadHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,7 @@ class PayloadHasherTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
+        objectMapper = JsonMapper.builder().build();
         payloadHasher = new PayloadHasher(objectMapper);
     }
 
@@ -71,13 +72,13 @@ class PayloadHasherTest {
 
     @Test
     @DisplayName("실패: 직렬화 실패 시 InfraException이 발생한다")
-    void calculateHash_serialization_fail() throws JsonProcessingException {
+    void calculateHash_serialization_fail() throws JacksonException {
         // given: Mock ObjectMapper를 사용하여 예외 강제 발생
         ObjectMapper mockMapper = mock(ObjectMapper.class);
         PayloadHasher failHasher = new PayloadHasher(mockMapper);
 
         when(mockMapper.writeValueAsString(any()))
-                .thenThrow(new JsonProcessingException("Error") {});
+                .thenThrow(new JacksonException("Error") {});
 
         // when & then
         assertThatThrownBy(() -> failHasher.calculateHash(new Object()))

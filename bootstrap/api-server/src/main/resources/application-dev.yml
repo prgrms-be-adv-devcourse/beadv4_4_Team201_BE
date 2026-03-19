@@ -47,6 +47,7 @@ spring:
       hibernate:
         format_sql: true
         default_schema: g7app
+        generate_statistics: true
 
   flyway:
     enabled: true
