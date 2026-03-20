@@ -106,10 +106,10 @@ public class Funding extends BaseJpaEntity {
             );
         }
 
-        this.currentAmount += amount;
-
         // 달성 이벤트 중복 방지를 위한 달성 여부 검증
         boolean wasAchieved = this.isAchieved();
+
+        this.currentAmount += amount;
 
         // Integer 타입은 == 비교 시 캐싱 범위(-128~127) 밖에서는 false가 될 수 있음
         if (!wasAchieved && this.currentAmount.equals(this.targetAmount)) {

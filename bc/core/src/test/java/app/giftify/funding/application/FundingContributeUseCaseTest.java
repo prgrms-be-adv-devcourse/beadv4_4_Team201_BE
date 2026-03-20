@@ -132,7 +132,7 @@ class FundingContributeUseCaseTest {
         Funding funding = mock(Funding.class);
         given(funding.getId()).willReturn(fundingId);
         given(funding.getWishlistItemId()).willReturn(10L);
-        given(funding.isAchieved()).willReturn(true);
+        given(funding.contribute(amount)).willReturn(true);
 
         given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(participant.getNickname()).willReturn(nickname);
