@@ -31,13 +31,7 @@ public class FundingContributeUseCase {
     private final MemberReplicaRepository memberReplicaRepository;
     private final EventPublisher eventPublisher;
 
-    @Retryable(
-            value = {
-                    OptimisticLockException.class,
-                    ObjectOptimisticLockingFailureException.class},
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 50)
-    )
+
     public List<Funding> contribute(List<FundingContributeRequest> requests, Long participantId) {
 
         List<Funding> result = new ArrayList<>();
@@ -70,10 +64,10 @@ public class FundingContributeUseCase {
                 member.addAmount(request.amount());
             }
 
-            funding.contribute(request.amount());
+            boolean achievedNow = funding.contribute(request.amount());
 
             // 달성된 경우 이벤트 발행
-            if (funding.isAchieved()) {
+            if (achievedNow) {
                 // 이벤트 발행 시점 스냅샷
                 List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
 
