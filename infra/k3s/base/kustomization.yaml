@@ -6,6 +6,7 @@ namespace: giftify
 resources:
   - namespace.yaml
   # API Server
+  - apps/api-server/configmap.yaml
   - apps/api-server/deployment.yaml
   - apps/api-server/service.yaml
   - apps/api-server/ingress.yaml
@@ -31,11 +32,6 @@ resources:
   - apps/redpanda/console-deployment.yaml
   - apps/redpanda/console-service.yaml
   - apps/redpanda/ingress.yaml
-  # MinIO (S3 Compatible Object Storage)
-  - apps/minio/statefulset.yaml
-  - apps/minio/service.yaml
-  - apps/minio/init-job.yaml
-  - apps/minio/ingress.yaml
   # Elasticsearch
   - apps/elasticsearch/statefulset.yaml
   - apps/elasticsearch/service.yaml
@@ -43,8 +39,6 @@ resources:
   # Traefik
   - traefik/middleware/rate-limit.yaml
   - traefik/middleware/forwarded-proto.yaml
-  # Cloudflare
-  - cloudflare/tunnel-deployment.yaml
 
 configMapGenerator:
   - name: grafana-dashboards

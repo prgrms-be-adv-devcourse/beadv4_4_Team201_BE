@@ -1,0 +1,11 @@
+creation_rules:
+  # 평문 → 암호화 시 사용
+  - path_regex: 'infra/k3s/secrets-plain/.*\.yaml$' # 요 경로에 매칭되는 녀석들을 아래 actually-good-encryption 공개키로 암호화
+    age: >-
+      age1vxtgy82n4vprjft3pp34hnwcneu6ltf5fe2k0xwzxuddf3w8ksss8xw830,
+      age15guk5yt7drtwmfl7uu3x03snfmtd2zdkk7lnay9tng03kzce8gqq63hw6y
+  # 암호화 파일 편집/키 갱신 시 사용
+  - path_regex: 'infra/k3s/overlays/.*\.enc\.yaml$'
+    age: >-
+      age1vxtgy82n4vprjft3pp34hnwcneu6ltf5fe2k0xwzxuddf3w8ksss8xw830,
+      age15guk5yt7drtwmfl7uu3x03snfmtd2zdkk7lnay9tng03kzce8gqq63hw6y
