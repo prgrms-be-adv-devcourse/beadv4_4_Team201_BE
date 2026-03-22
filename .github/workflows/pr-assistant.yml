@@ -14,9 +14,31 @@ on:
         default: false
 
 jobs:
-  # 1. 빌드 및 테스트
+  # 0. 변경 파일 감지
+  # paths-ignore 대신 job-level if를 사용하는 이유:
+  # paths-ignore로 워크플로우 전체가 스킵되면 required status check가 "skipped" 처리되어 브랜치 보호 규칙에서 PR 머지가 차단될 수 있음
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            src:
+              - '!infra/**'
+              - '!docs/**'
+              - '!**/*.md'
+              - '!.github/workflows/pr-labeler.yml'
+
+  # 1. 빌드 및 테스트 (소스 코드 변경 시만)
   build:
     name: Build & Test
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
     uses: ./.github/workflows/_build.yml
     with:
       java-version: '25'
@@ -28,10 +50,11 @@ jobs:
       publish-build-scan: true
       verbose: ${{ inputs.verbose || false }}
 
-  # 2. 커버리지 리포트 PR 코멘트
+  # 2. 커버리지 리포트 PR 코멘트 (빌드 완료 시만)
   coverage-report:
     name: Coverage Report
     needs: [ build ]
+    if: needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
