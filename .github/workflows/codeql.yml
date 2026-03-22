@@ -67,6 +67,8 @@ jobs:
       - name: Build for CodeQL
         # assemble: annotation processor 생성 코드 포함 (classes 태스크 대비)
         # -x test: 테스트 실행 제외
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
         run: ./gradlew assemble --parallel -x test --no-daemon
 
       - name: Perform CodeQL Analysis
