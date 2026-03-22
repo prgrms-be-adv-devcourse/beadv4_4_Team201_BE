@@ -20,7 +20,7 @@ SELECT setval('cart_items_id_seq', 100, false);
 -- Loadtest carts (only in loadtest schema)
 DO $$
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     INSERT INTO carts (id, member_id, created_at, updated_at, created_by, updated_by)
     VALUES
            (1001, 1001, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),

@@ -22,6 +22,10 @@ patches:
         name: api-server-config
       data:
         SPRING_PROFILES_ACTIVE: "prod,loadtest"
+        INTERNAL_API_BASE_URL: "http://api-server:8080"
+        SPRING_THREADS_VIRTUAL_ENABLED: "true"
+        SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "30"
+        SPRING_FLYWAY_PLACEHOLDERS_IS_STAGING: "true"
 
   - target:
       kind: Service

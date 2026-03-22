@@ -6,6 +6,9 @@ spring:
     properties:
       hibernate:
         generate_statistics: true
+  flyway:
+    placeholders:
+      is_staging: "true"
 
 loadtest:
   mock-auth:

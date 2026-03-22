@@ -215,7 +215,7 @@ SELECT setval('products_id_seq', 200, false);
 -- Loadtest: Seller replicas for SELLER accounts (1101-1110)
 DO $$
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     INSERT INTO member_replicas (id, nickname)
     VALUES (1101, 'seller001'), (1102, 'seller002'), (1103, 'seller003'),
            (1104, 'seller004'), (1105, 'seller005'), (1106, 'seller006'),
