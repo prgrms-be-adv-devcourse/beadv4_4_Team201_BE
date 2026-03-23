@@ -61,14 +61,20 @@ export function setup() {
         return { tokens: [], mockAuth: true };
     }
 
+    const sellerAccounts = accounts.filter(a => a.role === 'SELLER');
+    if (sellerAccounts.length === 0) {
+        throw new Error('SELLER 계정이 test-accounts.json에 없습니다.');
+    }
+
     const tokens = getTokens(
-        accounts, AUTH0_DOMAIN, AUTH0_CLIENT_ID,
+        sellerAccounts, AUTH0_DOMAIN, AUTH0_CLIENT_ID,
         AUTH0_CLIENT_SECRET, AUTH0_AUDIENCE
     );
     if (tokens.length === 0) {
         throw new Error('토큰 발급 실패. Auth0 환경변수를 확인하세요.');
     }
 
+    console.log(`Phase 2: Auth0 JWT 모드 (SELLER). 토큰: ${tokens.length}개`);
     return { tokens, mockAuth: false };
 }
 
