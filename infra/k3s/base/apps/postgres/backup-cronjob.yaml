@@ -1,0 +1,109 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  labels:
+    app: postgres-backup
+spec:
+  schedule: "30 0 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: backup
+              image: google/cloud-sdk:alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  START_TIME=$(date +%s)
+
+                  apk add --no-cache --quiet postgresql16-client
+
+                  if [ -z "$POSTGRES_HOST" ] || [ -z "$POSTGRES_DB" ]; then
+                    echo "ERROR: Required environment variables not set"
+                    exit 1
+                  fi
+
+                  BACKUP_DATE=$(TZ=Asia/Seoul date +%Y-%m-%d_%H%M%S)
+                  BACKUP_FILE="giftify_db_${BACKUP_DATE}.dump"
+                  BACKUP_PATH="/tmp/${BACKUP_FILE}"
+                  GCS_PATH="gs://giftify-db-backups/${BACKUP_ENV}/${BACKUP_FILE}"
+
+                  echo "=== PostgreSQL Backup Start ==="
+                  echo "Timestamp: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+                  echo "Target: ${POSTGRES_HOST}:5432/${POSTGRES_DB}"
+                  echo "Environment: ${BACKUP_ENV}"
+
+                  pg_dump \
+                    -h "$POSTGRES_HOST" \
+                    -p 5432 \
+                    -U "$POSTGRES_USER" \
+                    -d "$POSTGRES_DB" \
+                    -Fc \
+                    --verbose \
+                    --file="$BACKUP_PATH" 2>&1
+
+                  if [ ! -f "$BACKUP_PATH" ]; then
+                    echo "ERROR: Backup file not created"
+                    exit 1
+                  fi
+
+                  BACKUP_SIZE=$(du -h "$BACKUP_PATH" | cut -f1)
+                  echo "Backup created: ${BACKUP_FILE} (${BACKUP_SIZE})"
+
+                  echo "Uploading to: ${GCS_PATH}"
+                  gsutil cp "$BACKUP_PATH" "$GCS_PATH"
+
+                  if gsutil ls "$GCS_PATH" > /dev/null 2>&1; then
+                    echo "Upload verified"
+                  else
+                    echo "ERROR: Upload verification failed"
+                    exit 1
+                  fi
+
+                  rm -f "$BACKUP_PATH"
+
+                  END_TIME=$(date +%s)
+                  echo "=== Backup Completed (${BACKUP_ENV}) ==="
+                  echo "GCS: ${GCS_PATH}"
+                  echo "Duration: $((END_TIME - START_TIME))s"
+              env:
+                - name: POSTGRES_HOST
+                  value: "postgres"
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secrets
+                      key: POSTGRES_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secrets
+                      key: POSTGRES_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secrets
+                      key: POSTGRES_PASSWORD
+                - name: BACKUP_ENV
+                  value: "prod"
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "300m"
