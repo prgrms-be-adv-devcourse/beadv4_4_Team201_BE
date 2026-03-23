@@ -9,6 +9,7 @@ resources:
   - apps/api-server/configmap.yaml
   - apps/api-server/deployment.yaml
   - apps/api-server/service.yaml
+  - apps/api-server/hpa.yaml
   - apps/api-server/ingress.yaml
   # PostgreSQL
   - apps/postgres/statefulset.yaml

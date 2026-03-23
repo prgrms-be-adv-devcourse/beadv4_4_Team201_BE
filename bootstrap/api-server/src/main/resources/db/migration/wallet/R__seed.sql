@@ -33,7 +33,7 @@ SELECT setval('wallet_histories_id_seq', 100, false);
 -- Loadtest wallets (only in loadtest schema)
 DO $$
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     INSERT INTO wallets (id, member_id, balance, version, created_at, updated_at, created_by, updated_by)
     VALUES
            (1001, 1001, 1000000.00, 0, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),

@@ -45,6 +45,7 @@ const errorRate = new Rate('error_rate');
 const TEST_FUNDING_ID = parseInt(__ENV.TEST_FUNDING_ID || '0');
 const TEST_WISHLIST_ITEM_ID = parseInt(__ENV.TEST_WISHLIST_ITEM_ID || '0');
 const TEST_RECEIVER_ID = parseInt(__ENV.TEST_RECEIVER_ID || '0');
+const TEST_PRODUCT_ID = parseInt(__ENV.TEST_PRODUCT_ID || '0');
 
 const accounts = new SharedArray('accounts', function () {
     return JSON.parse(open('../data/test-accounts.json'));
@@ -76,10 +77,10 @@ export const options = {
 };
 
 export function setup() {
-    if (TEST_FUNDING_ID === 0 || TEST_WISHLIST_ITEM_ID === 0 || TEST_RECEIVER_ID === 0) {
+    if (TEST_FUNDING_ID === 0 || TEST_WISHLIST_ITEM_ID === 0 || TEST_RECEIVER_ID === 0 || TEST_PRODUCT_ID === 0) {
         throw new Error(
             '필수 환경변수 누락. 다음을 모두 설정하세요:\n' +
-            '  TEST_FUNDING_ID, TEST_WISHLIST_ITEM_ID, TEST_RECEIVER_ID'
+            '  TEST_FUNDING_ID, TEST_WISHLIST_ITEM_ID, TEST_RECEIVER_ID, TEST_PRODUCT_ID'
         );
     }
 
@@ -117,6 +118,8 @@ export default function (data) {
     const body = JSON.stringify({
         items: [{
             wishlistItemId: TEST_WISHLIST_ITEM_ID,
+            productId: TEST_PRODUCT_ID,
+            fundingId: TEST_FUNDING_ID,
             receiverId: TEST_RECEIVER_ID,
             amount: 1000,
             orderItemType: 'FUNDING_GIFT',

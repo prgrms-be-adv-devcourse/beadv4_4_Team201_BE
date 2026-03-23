@@ -17,7 +17,7 @@ DECLARE
   _recv_id   bigint;
   _seq       bigint := 1001;
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     FOR _giver_id IN 1001..1050 LOOP
       FOR _recv_id IN 1051..1060 LOOP
         INSERT INTO friendships (id, requester_id, receiver_id, status, accepted_at,

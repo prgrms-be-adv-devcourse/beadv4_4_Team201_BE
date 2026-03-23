@@ -1,0 +1,72 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+generators:
+  - ./secret-generator.yaml
+
+images:
+  - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+    newTag: latest
+  - name: giftify-elasticsearch
+    newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
+    newTag: 9.2.4-custom-v2
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: api-server-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: api-server-config
+      data:
+        SPRING_PROFILES_ACTIVE: "prod,loadtest"
+        INTERNAL_API_BASE_URL: "http://api-server:8080"
+        SPRING_THREADS_VIRTUAL_ENABLED: "true"
+        SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "30"
+        SPRING_FLYWAY_PLACEHOLDERS_IS_STAGING: "true"
+
+  - target:
+      kind: Service
+      name: api-server
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30080
+
+  - target:
+      kind: Deployment
+      name: api-server
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: api-server
+      spec:
+        template:
+          spec:
+            containers:
+              - name: api-server
+                startupProbe:
+                  httpGet:
+                    path: /actuator/health
+                    port: 8080
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  failureThreshold: 90
+
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: ghcr-secret
