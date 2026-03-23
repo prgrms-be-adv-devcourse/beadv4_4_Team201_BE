@@ -4,6 +4,9 @@ kind: Kustomization
 resources:
   - ../../base
 
+generators:
+  - ./secret-generator.yaml
+
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
     newTag: latest
