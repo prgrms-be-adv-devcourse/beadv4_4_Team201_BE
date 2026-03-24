@@ -33,7 +33,7 @@ spec:
                   notify_failure() {
                     if [ -n "$DISCORD_WEBHOOK_URL" ]; then
                       TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-                      curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+                      curl -sf --max-time 10 -X POST "$DISCORD_WEBHOOK_URL" \
                         -H "Content-Type: application/json" \
                         -d "{\"embeds\":[{\"title\":\"PostgreSQL Backup Failed\",\"description\":\"**Env:** ${BACKUP_ENV:-unknown}\\n**Error:** Backup script exited with error\",\"color\":15158332,\"timestamp\":\"${TIMESTAMP}\"}]}" \
                         || true
@@ -72,6 +72,12 @@ spec:
                     exit 1
                   fi
 
+                  BACKUP_SIZE_BYTES=$(stat -c%s "$BACKUP_PATH" 2>/dev/null || stat -f%z "$BACKUP_PATH")
+                  if [ "$BACKUP_SIZE_BYTES" -lt 1024 ]; then
+                    echo "ERROR: Backup file suspiciously small (${BACKUP_SIZE_BYTES} bytes)"
+                    exit 1
+                  fi
+
                   BACKUP_SIZE=$(du -h "$BACKUP_PATH" | cut -f1)
                   echo "Backup created: ${BACKUP_FILE} (${BACKUP_SIZE})"
 
@@ -97,7 +103,7 @@ spec:
                   set +e
                   if [ -n "$DISCORD_WEBHOOK_URL" ]; then
                     TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-                    curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+                    curl -sf --max-time 10 -X POST "$DISCORD_WEBHOOK_URL" \
                       -H "Content-Type: application/json" \
                       -d "{\"embeds\":[{\"title\":\"PostgreSQL Backup Success\",\"description\":\"**Env:** ${BACKUP_ENV}\\n**File:** ${BACKUP_FILE}\\n**Size:** ${BACKUP_SIZE}\\n**Duration:** ${DURATION}s\\n**GCS:** ${GCS_PATH}\",\"color\":3066993,\"timestamp\":\"${TIMESTAMP}\"}]}" \
                       && echo "Discord notification sent" \
