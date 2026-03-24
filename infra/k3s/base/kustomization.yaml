@@ -38,6 +38,8 @@ resources:
   - apps/elasticsearch/statefulset.yaml
   - apps/elasticsearch/service.yaml
   - apps/elasticsearch/ingress.yaml
+  # Cloudflare Tunnel
+  - cloudflare/tunnel-deployment.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
   - traefik/middleware/forwarded-proto.yaml
