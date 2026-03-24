@@ -70,3 +70,11 @@ patches:
         path: /spec/template/spec/imagePullSecrets
         value:
           - name: ghcr-secret
+
+  - target:
+      kind: Deployment
+      name: cloudflared
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 0
