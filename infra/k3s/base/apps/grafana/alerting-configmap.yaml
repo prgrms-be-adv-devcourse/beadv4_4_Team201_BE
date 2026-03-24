@@ -76,6 +76,7 @@ data:
                         type: gt
                         params: [80]
                   refId: C
+            noDataState: OK
             for: 5m
             labels:
               severity: warning
@@ -95,7 +96,7 @@ data:
                 model:
                   expr: |
                     100 * sum(rate(http_server_requests_seconds_count{application="giftify-be", status=~"5.."}[5m]))
-                    / sum(rate(http_server_requests_seconds_count{application="giftify-be"}[5m]))
+                    / clamp_min(sum(rate(http_server_requests_seconds_count{application="giftify-be"}[5m])), 1e-10)
                   refId: A
               - refId: B
                 datasourceUid: __expr__
@@ -114,6 +115,7 @@ data:
                         type: gt
                         params: [5]
                   refId: C
+            noDataState: OK
             for: 2m
             labels:
               severity: critical
@@ -152,6 +154,7 @@ data:
                         type: gt
                         params: [90]
                   refId: C
+            noDataState: OK
             for: 5m
             labels:
               severity: warning
@@ -188,6 +191,7 @@ data:
                         type: gt
                         params: [10]
                   refId: C
+            noDataState: OK
             for: 2m
             labels:
               severity: warning
