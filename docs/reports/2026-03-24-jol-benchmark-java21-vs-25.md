@@ -117,7 +117,7 @@ Giftify에서 178개 record 클래스 중 측정 성공한 전수에서 16B → 
 ### JPA Entity: 9.5% 절약
 
 필드가 많아 alignment 재배치 여지가 큼.
-15/21 엔티티에서 -8B 절약 (71%).
+15/23 엔티티에서 -8B 절약 (65%).
 나머지 6개는 기존 alignment이 이미 최적이라 효과 없음.
 
 ### Exception: 0% 절약
@@ -203,7 +203,7 @@ Compact Headers는 opt-in이므로 명시적 활성화 없이는 차이 없음.
 
 ## Raw Data
 
-- `docs/reports/jol-benchmark-raw/jol-java21.txt` — Java 21 전수 측정 결과
+- `docs/reports/jol-benchmark-raw/jol-java21.txt` — Java 21 Object Header 기준 측정 (java.lang.Object only)
 - `docs/reports/jol-benchmark-raw/jol-java25-default.txt` — Java 25 기본 전수 측정 결과
 - `docs/reports/jol-benchmark-raw/jol-java25-compact.txt` — Java 25 Compact Headers 전수 측정 결과
 - Test class: `bootstrap/api-server/src/test/java/app/giftify/benchmark/JolBenchmarkTest.java` (벤치마크 전용 브랜치 `chore/jol-benchmark-java21-vs-25`에만 존재)
