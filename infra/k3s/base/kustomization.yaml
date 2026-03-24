@@ -40,6 +40,7 @@ resources:
   - apps/elasticsearch/ingress.yaml
   # Cloudflare Tunnel
   - cloudflare/tunnel-deployment.yaml
+  - cloudflare/tunnel-pdb.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
   - traefik/middleware/forwarded-proto.yaml
