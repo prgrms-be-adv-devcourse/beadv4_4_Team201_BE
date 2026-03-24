@@ -1,0 +1,196 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alerting
+data:
+  contactpoints.yaml: |
+    apiVersion: 1
+    contactPoints:
+      - orgId: 1
+        name: discord-alerts
+        receivers:
+          - uid: discord-webhook
+            type: discord
+            settings:
+              url: ${DISCORD_WEBHOOK_URL}
+              use_discord_username: true
+              avatar_url: https://grafana.com/static/assets/img/fav32.png
+            disableResolveMessage: false
+
+  policies.yaml: |
+    apiVersion: 1
+    policies:
+      - orgId: 1
+        receiver: discord-alerts
+        group_by:
+          - grafana_folder
+          - alertname
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        routes:
+          - receiver: discord-alerts
+            object_matchers:
+              - ["severity", "=", "critical"]
+            group_wait: 10s
+            repeat_interval: 1h
+          - receiver: discord-alerts
+            object_matchers:
+              - ["severity", "=", "warning"]
+            repeat_interval: 4h
+
+  rules.yaml: |
+    apiVersion: 1
+    groups:
+      - orgId: 1
+        name: giftify-infra
+        folder: Giftify Alerts
+        interval: 1m
+        rules:
+          - uid: cpu-high
+            title: "System CPU > 80%"
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  expr: system_cpu_usage{application="giftify-be"} * 100
+                  refId: A
+              - refId: B
+                datasourceUid: __expr__
+                model:
+                  type: reduce
+                  expression: A
+                  reducer: last
+                  refId: B
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  type: threshold
+                  expression: B
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params: [80]
+                  refId: C
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "System CPU 사용률 80% 초과"
+              description: "System CPU 사용률이 {{ $value }}%입니다. (Spring Boot actuator 기준)"
+
+          - uid: error-rate-high
+            title: "5xx Error Rate > 5%"
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  expr: |
+                    100 * sum(rate(http_server_requests_seconds_count{application="giftify-be", status=~"5.."}[5m]))
+                    / sum(rate(http_server_requests_seconds_count{application="giftify-be"}[5m]))
+                  refId: A
+              - refId: B
+                datasourceUid: __expr__
+                model:
+                  type: reduce
+                  expression: A
+                  reducer: last
+                  refId: B
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  type: threshold
+                  expression: B
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params: [5]
+                  refId: C
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "5xx 에러율 5% 초과"
+              description: "5xx 에러율이 {{ $value }}%입니다. 즉시 확인 필요."
+
+          - uid: heap-high
+            title: "JVM Heap > 90%"
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  expr: |
+                    100 * jvm_memory_used_bytes{application="giftify-be", area="heap"}
+                    / jvm_memory_max_bytes{application="giftify-be", area="heap"}
+                  refId: A
+              - refId: B
+                datasourceUid: __expr__
+                model:
+                  type: reduce
+                  expression: A
+                  reducer: last
+                  refId: B
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  type: threshold
+                  expression: B
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params: [90]
+                  refId: C
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "JVM Heap 사용률 90% 초과"
+              description: "Heap 사용률이 {{ $value }}%입니다. OOM 위험."
+
+          - uid: hikaricp-pending
+            title: "HikariCP Pending > 10"
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  expr: hikaricp_connections_pending{application="giftify-be"}
+                  refId: A
+              - refId: B
+                datasourceUid: __expr__
+                model:
+                  type: reduce
+                  expression: A
+                  reducer: last
+                  refId: B
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  type: threshold
+                  expression: B
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params: [10]
+                  refId: C
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "DB 커넥션 대기 10건 초과"
+              description: "HikariCP pending 커넥션이 {{ $value }}건입니다. 커넥션 풀 고갈 위험."

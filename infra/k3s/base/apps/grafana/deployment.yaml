@@ -38,6 +38,11 @@ spec:
                   key: GF_SECURITY_ADMIN_PASSWORD
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
+            - name: DISCORD_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: DISCORD_WEBHOOK_URL
           resources:
             requests:
               memory: "128Mi"
@@ -64,6 +69,8 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: dashboards-json
               mountPath: /etc/grafana/provisioning/dashboards/json
+            - name: provisioning-alerting
+              mountPath: /etc/grafana/provisioning/alerting
       volumes:
         - name: provisioning-datasources
           configMap:
@@ -80,3 +87,6 @@ spec:
         - name: dashboards-json
           configMap:
             name: grafana-dashboards
+        - name: provisioning-alerting
+          configMap:
+            name: grafana-alerting
