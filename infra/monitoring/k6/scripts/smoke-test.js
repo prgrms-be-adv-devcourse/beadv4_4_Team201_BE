@@ -4,18 +4,34 @@
  * 1 VU × 1 iteration으로 각 API를 한 번씩 호출.
  * 하나라도 실패하면 threshold 위반 → exit code 99.
  *
- * 사용법:
+ * 사용법 (Mock Auth):
  *   k6 run -e MOCK_AUTH=true -e BASE_URL=http://localhost:8080 \
+ *     ./scripts/smoke-test.js
+ *
+ * 사용법 (Real Auth):
+ *   k6 run -e BASE_URL=http://10.0.2.3:30080 \
+ *     -e AUTH0_DOMAIN=dev-qpuevxs5iduyblx4.us.auth0.com \
+ *     -e AUTH0_CLIENT_ID=<native-app-client-id> \
+ *     -e AUTH0_CLIENT_SECRET=<native-app-secret> \
+ *     -e AUTH0_AUDIENCE=https://api.giftify.app \
  *     ./scripts/smoke-test.js
  */
 import http from 'k6/http';
 import { check, group } from 'k6';
+import { SharedArray } from 'k6/data';
+import { getTokens } from '../modules/auth.js';
 import {
-    BASE_URL, authHeaders, mockAuthHeaders, MOCK_AUTH,
+    BASE_URL, MOCK_AUTH, mockAuthHeaders, authHeaders,
+    AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_AUDIENCE,
     RECEIVER_WISHLISTS,
 } from '../modules/config.js';
 
+const accounts = new SharedArray('accounts', function () {
+    return JSON.parse(open('../data/test-accounts.json'));
+});
+
 export const options = {
+    setupTimeout: '60s',
     vus: 1,
     iterations: 1,
     thresholds: {
@@ -23,12 +39,26 @@ export const options = {
     },
 };
 
-export default function () {
-    // Mock Auth: loadtest member ID 1001 사용 (loadtest 스키마에 존재)
-    // Real Auth: 환경변수로 토큰을 직접 전달
-    const opts = MOCK_AUTH
+export function setup() {
+    if (MOCK_AUTH) {
+        return { token: null, mockAuth: true };
+    }
+
+    const tokens = getTokens(
+        [accounts[0]], AUTH0_DOMAIN, AUTH0_CLIENT_ID,
+        AUTH0_CLIENT_SECRET, AUTH0_AUDIENCE
+    );
+    if (tokens.length === 0) {
+        throw new Error('토큰 발급 실패. AUTH0_* 환경변수를 확인하세요.');
+    }
+
+    return { token: tokens[0], mockAuth: false };
+}
+
+export default function (data) {
+    const opts = data.mockAuth
         ? mockAuthHeaders(1001)
-        : authHeaders(__ENV.SMOKE_TOKEN || '');
+        : authHeaders(data.token);
 
     // ── 1. Health Check ──
     group('health', function () {
