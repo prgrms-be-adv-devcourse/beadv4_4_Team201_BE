@@ -1,0 +1,926 @@
+Reusing configuration cache.
+> Task :bc:notification:processResources NO-SOURCE
+> Task :bc:core:processResources UP-TO-DATE
+> Task :bc:shared:processResources NO-SOURCE
+> Task :support:common:processResources NO-SOURCE
+> Task :bc:member:processResources UP-TO-DATE
+> Task :support:security:processResources UP-TO-DATE
+> Task :bootstrap:api-server:processTestResources UP-TO-DATE
+> Task :bc:settlement:processResources UP-TO-DATE
+> Task :bc:catalog:processResources UP-TO-DATE
+> Task :support:logging:processResources UP-TO-DATE
+> Task :bc:shared:compileJava UP-TO-DATE
+> Task :support:web:processResources NO-SOURCE
+> Task :bootstrap:api-server:processResources UP-TO-DATE
+> Task :support:jpa:processResources NO-SOURCE
+> Task :bc:shared:classes UP-TO-DATE
+> Task :support:common:compileJava UP-TO-DATE
+> Task :support:common:classes UP-TO-DATE
+> Task :bc:shared:jar UP-TO-DATE
+> Task :support:common:jar UP-TO-DATE
+> Task :support:logging:compileJava NO-SOURCE
+> Task :support:logging:classes UP-TO-DATE
+> Task :support:logging:jar UP-TO-DATE
+> Task :support:jpa:compileJava UP-TO-DATE
+> Task :support:security:compileJava UP-TO-DATE
+> Task :support:security:classes UP-TO-DATE
+> Task :support:jpa:classes UP-TO-DATE
+> Task :bootstrap:api-server:cleanTest
+> Task :support:security:jar UP-TO-DATE
+> Task :support:jpa:jar UP-TO-DATE
+> Task :support:web:compileJava UP-TO-DATE
+> Task :support:web:classes UP-TO-DATE
+> Task :bc:core:compileJava UP-TO-DATE
+> Task :bc:core:classes UP-TO-DATE
+> Task :support:web:jar UP-TO-DATE
+> Task :bc:catalog:compileJava UP-TO-DATE
+> Task :bc:catalog:classes UP-TO-DATE
+> Task :bc:core:jar UP-TO-DATE
+> Task :bc:settlement:compileJava UP-TO-DATE
+> Task :bc:member:compileJava UP-TO-DATE
+> Task :bc:settlement:classes UP-TO-DATE
+> Task :bc:notification:compileJava UP-TO-DATE
+> Task :bc:catalog:jar UP-TO-DATE
+> Task :bc:member:classes UP-TO-DATE
+> Task :bc:notification:classes UP-TO-DATE
+> Task :bc:settlement:jar UP-TO-DATE
+> Task :bc:member:jar UP-TO-DATE
+> Task :bc:notification:jar UP-TO-DATE
+> Task :bootstrap:api-server:compileJava UP-TO-DATE
+> Task :bootstrap:api-server:classes UP-TO-DATE
+> Task :bootstrap:api-server:compileTestJava UP-TO-DATE
+> Task :bootstrap:api-server:testClasses UP-TO-DATE
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::arrayBaseOffset has been called by org.openjdk.jol.vm.HotspotUnsafe (file:/Users/chan99/.gradle/caches/modules-2/files-2.1/org.openjdk.jol/jol-core/0.17/4c98e9e61b3f189241057cb21b4331d1093e5b85/jol-core-0.17.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jol.vm.HotspotUnsafe
+WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
+
+> Task :bootstrap:api-server:test
+
+JolBenchmarkTest > measureAllObjectLayouts() STANDARD_OUT
+    ================================================================================
+    JOL BENCHMARK
+    Java version : 25.0.2
+    VM           : OpenJDK 64-Bit Server VM 25.0.2+10-69
+    ================================================================================
+    # WARNING: Unable to get Instrumentation. Dynamic Attach failed. You may add this JAR as -javaagent manually, or supply -Djdk.attach.allowAttachSelf
+    # WARNING: Unable to attach Serviceability Agent. You can try again with escalated privileges. Two options: a) use -Djol.tryWithSudo=true to try with sudo; b) echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+    # VM mode: 64 bits
+    # Compressed references (oops): 3-bit shift
+    # Compressed class pointers: 3-bit shift
+    # WARNING | Compressed references base/shifts are guessed by the experiment!
+    # WARNING | Therefore, computed addresses are just guesses, and ARE NOT RELIABLE.
+    # WARNING | Make sure to attach Serviceability Agent to get the reliable addresses.
+    # Object alignment: 8 bytes
+    #                       ref, bool, byte, char, shrt,  int,  flt,  lng,  dbl
+    # Field sizes:            4,    1,    1,    2,    2,    4,    4,    8,    8
+    # Array element sizes:    4,    1,    1,    2,    2,    4,    4,    8,    8
+    # Array base offsets:    16,   16,   16,   16,   16,   16,   16,   16,   16
+
+    java.lang.Object object internals:
+    OFF  SZ   TYPE DESCRIPTION               VALUE
+      0   8        (object header: mark)     N/A
+      8   4        (object header: class)    N/A
+     12   4        (object alignment gap)    
+    Instance size: 16 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    java.lang.String object internals:
+    OFF  SZ      TYPE DESCRIPTION               VALUE
+      0   8           (object header: mark)     N/A
+      8   4           (object header: class)    N/A
+     12   4       int String.hash               N/A
+     16   1      byte String.coder              N/A
+     17   1   boolean String.hashIsZero         N/A
+     18   2           (alignment/padding gap)   
+     20   4    byte[] String.value              N/A
+    Instance size: 24 bytes
+    Space losses: 2 bytes internal + 0 bytes external = 2 bytes total
+
+    java.util.ArrayList object internals:
+    OFF  SZ                 TYPE DESCRIPTION               VALUE
+      0   8                      (object header: mark)     N/A
+      8   4                      (object header: class)    N/A
+     12   4                  int AbstractList.modCount     N/A
+     16   4                  int ArrayList.size            N/A
+     20   4   java.lang.Object[] ArrayList.elementData     N/A
+    Instance size: 24 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.order.domain.Order object internals:
+    OFF  SZ                                           TYPE DESCRIPTION                      VALUE
+      0   8                                                (object header: mark)            N/A
+      8   4                                                (object header: class)           N/A
+     12   4                                 java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                                 java.lang.Long Order.id                         N/A
+     20   4                               java.lang.String Order.orderNumber                N/A
+     24   4                                 java.lang.Long Order.buyerId                    N/A
+     28   4                                 java.lang.Long Order.quantity                   N/A
+     32   4             app.giftify.shared.domain.vo.Money Order.totalAmount                N/A
+     36   4           app.giftify.order.domain.OrderStatus Order.status                     N/A
+     40   4   app.giftify.shared.domain.type.PaymentMethod Order.paymentMethod              N/A
+     44   4                                 java.util.List Order.items                      N/A
+     48   4                                 java.lang.Long Order.paymentId                  N/A
+     52   4                               java.lang.String Order.originTransactionKey       N/A
+     56   4                        java.time.LocalDateTime Order.paidAt                     N/A
+     60   4                        java.time.LocalDateTime Order.cancelRequestedAt          N/A
+     64   4                        java.time.LocalDateTime Order.cancelledAt                N/A
+     68   4                        java.time.LocalDateTime Order.confirmedAt                N/A
+     72   4                        java.time.LocalDateTime Order.expiredAt                  N/A
+     76   4                        java.time.LocalDateTime Order.createdAt                  N/A
+     80   4                        java.time.LocalDateTime Order.updatedAt                  N/A
+     84   4                                                (object alignment gap)           
+    Instance size: 88 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.order.domain.OrderItem object internals:
+    OFF  SZ                                           TYPE DESCRIPTION                      VALUE
+      0   8                                                (object header: mark)            N/A
+      8   4                                                (object header: class)           N/A
+     12   4                                 java.lang.Long OrderItem.id                     N/A
+     16   4                 app.giftify.order.domain.Order OrderItem.order                  N/A
+     20   4                                 java.lang.Long OrderItem.targetId               N/A
+     24   4      app.giftify.shared.domain.type.TargetType OrderItem.targetType             N/A
+     28   4   app.giftify.shared.domain.type.OrderItemType OrderItem.orderItemType          N/A
+     32   4                                 java.lang.Long OrderItem.sellerId               N/A
+     36   4                                 java.lang.Long OrderItem.receiverId             N/A
+     40   4             app.giftify.shared.domain.vo.Money OrderItem.price                  N/A
+     44   4             app.giftify.shared.domain.vo.Money OrderItem.amount                 N/A
+     48   4       app.giftify.order.domain.OrderItemStatus OrderItem.status                 N/A
+     52   4                               java.lang.String OrderItem.originTransactionKey   N/A
+     56   4                        java.time.LocalDateTime OrderItem.cancelRequestedAt      N/A
+     60   4                        java.time.LocalDateTime OrderItem.cancelledAt            N/A
+     64   4                        java.time.LocalDateTime OrderItem.confirmedAt            N/A
+     68   4                        java.time.LocalDateTime OrderItem.createdAt              N/A
+     72   4                        java.time.LocalDateTime OrderItem.updatedAt              N/A
+     76   4                                                (object alignment gap)           
+    Instance size: 80 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment object internals:
+    OFF  SZ                                           TYPE DESCRIPTION                     VALUE
+      0   8                                                (object header: mark)           N/A
+      8   4                                                (object header: class)          N/A
+     12   4                                 java.lang.Long BaseJpaEntity.id                N/A
+     16   4                        java.time.LocalDateTime BaseJpaEntity.createdAt         N/A
+     20   4                        java.time.LocalDateTime BaseJpaEntity.updatedAt         N/A
+     24   4                               java.lang.String BaseJpaEntity.createdBy         N/A
+     28   4                               java.lang.String BaseJpaEntity.updatedBy         N/A
+     32   4     app.giftify.shared.domain.type.PaymentType JpaPayment.type                 N/A
+     36   4   app.giftify.shared.domain.type.PaymentMethod JpaPayment.method               N/A
+     40   4                                 java.lang.Long JpaPayment.orderId              N/A
+     44   4                               java.lang.String JpaPayment.orderNumber          N/A
+     48   4                                 java.lang.Long JpaPayment.memberId             N/A
+     52   4                           java.math.BigDecimal JpaPayment.originAmount         N/A
+     56   4                           java.math.BigDecimal JpaPayment.paidAmount           N/A
+     60   4                           java.math.BigDecimal JpaPayment.refundedAmount       N/A
+     64   4                               java.lang.String JpaPayment.orderItemsJson       N/A
+     68   4       app.giftify.payment.domain.PaymentStatus JpaPayment.status               N/A
+     72   4                               java.lang.String JpaPayment.paymentKey           N/A
+     76   4                               java.lang.String JpaPayment.lastTransactionKey   N/A
+     80   4                               java.lang.String JpaPayment.approveCode          N/A
+     84   4                        java.time.LocalDateTime JpaPayment.paidAt               N/A
+     88   4                                 java.lang.Long JpaPayment.version              N/A
+     92   4                                                (object alignment gap)          
+    Instance size: 96 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory object internals:
+    OFF  SZ                                          TYPE DESCRIPTION                    VALUE
+      0   8                                               (object header: mark)          N/A
+      8   4                                               (object header: class)         N/A
+     12   4                                java.lang.Long BaseJpaEntity.id               N/A
+     16   4                       java.time.LocalDateTime BaseJpaEntity.createdAt        N/A
+     20   4                       java.time.LocalDateTime BaseJpaEntity.updatedAt        N/A
+     24   4                              java.lang.String BaseJpaEntity.createdBy        N/A
+     28   4                              java.lang.String BaseJpaEntity.updatedBy        N/A
+     32   4                                java.lang.Long JpaPaymentHistory.paymentId    N/A
+     36   4                              java.lang.String JpaPaymentHistory.historyKey   N/A
+     40   4   app.giftify.payment.domain.PaymentEventType JpaPaymentHistory.eventType    N/A
+     44   4                       java.time.LocalDateTime JpaPaymentHistory.occurredAt   N/A
+     48   4                              java.lang.String JpaPaymentHistory.metadata     N/A
+     52   4                                               (object alignment gap)         
+    Instance size: 56 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.payment.adapter.outbound.jpa.entity.JpaCancel object internals:
+    OFF  SZ                      TYPE DESCRIPTION                VALUE
+      0   8                           (object header: mark)      N/A
+      8   4                           (object header: class)     N/A
+     12   4            java.lang.Long BaseJpaEntity.id           N/A
+     16   4   java.time.LocalDateTime BaseJpaEntity.createdAt    N/A
+     20   4   java.time.LocalDateTime BaseJpaEntity.updatedAt    N/A
+     24   4          java.lang.String BaseJpaEntity.createdBy    N/A
+     28   4          java.lang.String BaseJpaEntity.updatedBy    N/A
+     32   4            java.lang.Long JpaCancel.paymentId        N/A
+     36   4          java.lang.String JpaCancel.transactionKey   N/A
+     40   4      java.math.BigDecimal JpaCancel.cancelAmount     N/A
+     44   4          java.lang.String JpaCancel.cancelReason     N/A
+     48   4   java.time.LocalDateTime JpaCancel.canceledAt       N/A
+     52   4                           (object alignment gap)     
+    Instance size: 56 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.funding.adpater.outbound.jpa.Funding object internals:
+    OFF  SZ                                           TYPE DESCRIPTION                VALUE
+      0   8                                                (object header: mark)      N/A
+      8   4                                                (object header: class)     N/A
+     12   4                                 java.lang.Long BaseJpaEntity.id           N/A
+     16   4                        java.time.LocalDateTime BaseJpaEntity.createdAt    N/A
+     20   4                        java.time.LocalDateTime BaseJpaEntity.updatedAt    N/A
+     24   4                               java.lang.String BaseJpaEntity.createdBy    N/A
+     28   4                               java.lang.String BaseJpaEntity.updatedBy    N/A
+     32   4                                 java.lang.Long Funding.wishlistItemId     N/A
+     36   4                                 java.lang.Long Funding.productId          N/A
+     40   4                               java.lang.String Funding.productName        N/A
+     44   4                               java.lang.String Funding.imageKey           N/A
+     48   4                                 java.lang.Long Funding.receiverId         N/A
+     52   4                              java.lang.Integer Funding.targetAmount       N/A
+     56   4                              java.lang.Integer Funding.currentAmount      N/A
+     60   4   app.giftify.shared.domain.type.FundingStatus Funding.status             N/A
+     64   4                        java.time.LocalDateTime Funding.deadline           N/A
+     68   4                        java.time.LocalDateTime Funding.closedAt           N/A
+     72   4                        java.time.LocalDateTime Funding.achievedAt         N/A
+     76   4                        java.time.LocalDateTime Funding.acceptedFailedAt   N/A
+     80   8                                           long Funding.version            N/A
+    Instance size: 88 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember object internals:
+    OFF  SZ                                               TYPE DESCRIPTION                              VALUE
+      0   8                                                    (object header: mark)                    N/A
+      8   4                                                    (object header: class)                   N/A
+     12   4                                     java.lang.Long BaseJpaEntity.id                         N/A
+     16   4                            java.time.LocalDateTime BaseJpaEntity.createdAt                  N/A
+     20   4                            java.time.LocalDateTime BaseJpaEntity.updatedAt                  N/A
+     24   4                                   java.lang.String BaseJpaEntity.createdBy                  N/A
+     28   4                                   java.lang.String BaseJpaEntity.updatedBy                  N/A
+     32   4   app.giftify.funding.adpater.outbound.jpa.Funding FundingParticipantMember.funding         N/A
+     36   4                                     java.lang.Long FundingParticipantMember.participantId   N/A
+     40   4                                   java.lang.String FundingParticipantMember.nickName        N/A
+     44   4                                  java.lang.Integer FundingParticipantMember.amount          N/A
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.product.adapter.outbound.jpa.entity.ProductJpa object internals:
+    OFF  SZ                                         TYPE DESCRIPTION               VALUE
+      0   8                                              (object header: mark)     N/A
+      8   4                                              (object header: class)    N/A
+     12   4                               java.lang.Long BaseJpaEntity.id          N/A
+     16   4                      java.time.LocalDateTime BaseJpaEntity.createdAt   N/A
+     20   4                      java.time.LocalDateTime BaseJpaEntity.updatedAt   N/A
+     24   4                             java.lang.String BaseJpaEntity.createdBy   N/A
+     28   4                             java.lang.String BaseJpaEntity.updatedBy   N/A
+     32   4                               java.lang.Long ProductJpa.sellerId       N/A
+     36   4                             java.lang.String ProductJpa.name           N/A
+     40   4                             java.lang.String ProductJpa.description    N/A
+     44   4     app.giftify.product.domain.ProductStatus ProductJpa.status         N/A
+     48   4   app.giftify.product.domain.ProductCategory ProductJpa.category       N/A
+     52   4                             java.lang.String ProductJpa.imageKey       N/A
+     56   4                      java.time.LocalDateTime ProductJpa.deletedAt      N/A
+     60   4                                          int ProductJpa.price          N/A
+     64   4                                          int ProductJpa.stock          N/A
+     68   4                                              (object alignment gap)    
+    Instance size: 72 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.product.adapter.outbound.jpa.entity.ProductStockHistoryJpa object internals:
+    OFF  SZ                                         TYPE DESCRIPTION                          VALUE
+      0   8                                              (object header: mark)                N/A
+      8   4                                              (object header: class)               N/A
+     12   4                                          int ProductStockHistoryJpa.delta         N/A
+     16   4                                          int ProductStockHistoryJpa.beforeStock   N/A
+     20   4                                          int ProductStockHistoryJpa.afterStock    N/A
+     24   4                               java.lang.Long ProductStockHistoryJpa.id            N/A
+     28   4                               java.lang.Long ProductStockHistoryJpa.sellerId      N/A
+     32   4                               java.lang.Long ProductStockHistoryJpa.productId     N/A
+     36   4   app.giftify.product.domain.StockChangeType ProductStockHistoryJpa.changeType    N/A
+     40   4                      java.time.LocalDateTime ProductStockHistoryJpa.createdAt     N/A
+     44   4                                              (object alignment gap)               
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity object internals:
+    OFF  SZ                                            TYPE DESCRIPTION                VALUE
+      0   8                                                 (object header: mark)      N/A
+      8   4                                                 (object header: class)     N/A
+     12   4                                  java.lang.Long BaseJpaEntity.id           N/A
+     16   4                         java.time.LocalDateTime BaseJpaEntity.createdAt    N/A
+     20   4                         java.time.LocalDateTime BaseJpaEntity.updatedAt    N/A
+     24   4                                java.lang.String BaseJpaEntity.createdBy    N/A
+     28   4                                java.lang.String BaseJpaEntity.updatedBy    N/A
+     32   4                                java.lang.String MemberJpaEntity.email      N/A
+     36   4                                java.lang.String MemberJpaEntity.nickname   N/A
+     40   4                             java.time.LocalDate MemberJpaEntity.birthday   N/A
+     44   4       app.giftify.shared.domain.type.MemberRole MemberJpaEntity.role       N/A
+     48   4                                java.lang.String MemberJpaEntity.address    N/A
+     52   4                                java.lang.String MemberJpaEntity.phoneNum   N/A
+     56   4                                java.lang.String MemberJpaEntity.name       N/A
+     60   4   app.giftify.member.domain.member.MemberStatus MemberJpaEntity.status     N/A
+     64   4                                java.lang.String MemberJpaEntity.authSub    N/A
+     68   4                                                 (object alignment gap)     
+    Instance size: 72 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.notification.domain.Notification object internals:
+    OFF  SZ                                               TYPE DESCRIPTION                      VALUE
+      0   8                                                    (object header: mark)            N/A
+      8   4                                                    (object header: class)           N/A
+     12   4                                     java.lang.Long BaseJpaEntity.id                 N/A
+     16   4                            java.time.LocalDateTime BaseJpaEntity.createdAt          N/A
+     20   4                            java.time.LocalDateTime BaseJpaEntity.updatedAt          N/A
+     24   4                                   java.lang.String BaseJpaEntity.createdBy          N/A
+     28   4                                   java.lang.String BaseJpaEntity.updatedBy          N/A
+     32   4                                     java.lang.Long Notification.recipientId         N/A
+     36   4   app.giftify.notification.domain.NotificationType Notification.type                N/A
+     40   4                                   java.lang.String Notification.title               N/A
+     44   4                                   java.lang.String Notification.content             N/A
+     48   4                            java.time.LocalDateTime Notification.readAt              N/A
+     52   4                                   java.lang.String Notification.referenceId         N/A
+     56   4                                   java.lang.String Notification.referenceType       N/A
+     60   4                                   java.lang.String Notification.sourceEventId       N/A
+     64   4                                   java.lang.String Notification.sourceEventType     N/A
+     68   4                                   java.lang.String Notification.sourceEventSource   N/A
+     72   1                                            boolean Notification.isRead              N/A
+     73   7                                                    (object alignment gap)           
+    Instance size: 80 bytes
+    Space losses: 0 bytes internal + 7 bytes external = 7 bytes total
+
+    app.giftify.settlement.domain.model.SettlementItem object internals:
+    OFF  SZ                                                     TYPE DESCRIPTION                  VALUE
+      0   8                                                          (object header: mark)        N/A
+      8   4                                                          (object header: class)       N/A
+     12   4                                           java.lang.Long BaseJpaEntity.id             N/A
+     16   4                                  java.time.LocalDateTime BaseJpaEntity.createdAt      N/A
+     20   4                                  java.time.LocalDateTime BaseJpaEntity.updatedAt      N/A
+     24   4                                         java.lang.String BaseJpaEntity.createdBy      N/A
+     28   4                                         java.lang.String BaseJpaEntity.updatedBy      N/A
+     32   4                                           java.lang.Long SettlementItem.sellerId      N/A
+     36   4                                           java.lang.Long SettlementItem.orderId       N/A
+     40   4                                           java.lang.Long SettlementItem.orderItemId   N/A
+     44   4                                           java.lang.Long SettlementItem.paymentId     N/A
+     48   4                                           java.lang.Long SettlementItem.targetId      N/A
+     52   4                app.giftify.shared.domain.type.TargetType SettlementItem.targetType    N/A
+     56   4   app.giftify.settlement.domain.model.SettlementItemType SettlementItem.type          N/A
+     60   4       app.giftify.settlement.domain.model.SettlementCore SettlementItem.core          N/A
+     64   4       app.giftify.settlement.domain.model.ItemStatusInfo SettlementItem.statusInfo    N/A
+     68   4                                           java.lang.Long SettlementItem.historyId     N/A
+     72   4                                           java.lang.Long SettlementItem.originId      N/A
+     76   4                                  java.time.LocalDateTime SettlementItem.confirmedAt   N/A
+     80   4                                                      int SettlementItem.retryCount    N/A
+     84   4                                                          (object alignment gap)       
+    Instance size: 88 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.settlement.domain.model.SettlementHistory object internals:
+    OFF  SZ                                                           TYPE DESCRIPTION                            VALUE
+      0   8                                                                (object header: mark)                  N/A
+      8   4                                                                (object header: class)                 N/A
+     12   4                                                 java.lang.Long SettlementHistory.id                   N/A
+     16   4                                                 java.lang.Long SettlementHistory.sellerId             N/A
+     20   4    app.giftify.settlement.domain.model.SettlementAmountSummary SettlementHistory.amountSummary        N/A
+     24   4                                              java.lang.Integer SettlementHistory.itemCount            N/A
+     28   4   app.giftify.settlement.domain.status.SettlementHistoryStatus SettlementHistory.status               N/A
+     32   4                                                 java.lang.Long SettlementHistory.referenceHistoryId   N/A
+     36   4                                            java.time.LocalDate SettlementHistory.settlementDate       N/A
+     40   4                                        java.time.LocalDateTime SettlementHistory.settledAt            N/A
+     44   4                                                                (object alignment gap)                 
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.settlement.domain.model.SettlementQueue object internals:
+    OFF  SZ                                                         TYPE DESCRIPTION                 VALUE
+      0   8                                                              (object header: mark)       N/A
+      8   4                                                              (object header: class)      N/A
+     12   4                                               java.lang.Long SettlementQueue.id          N/A
+     16   4           app.giftify.settlement.domain.model.SettlementItem SettlementQueue.item        N/A
+     20   4   app.giftify.settlement.domain.status.SettlementQueueStatus SettlementQueue.status      N/A
+     24   4                                      java.time.LocalDateTime SettlementQueue.createdAt   N/A
+     28   4                                      java.time.LocalDateTime SettlementQueue.updatedAt   N/A
+    Instance size: 32 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.wallet.adapter.outbound.jpa.entity.JpaWallet object internals:
+    OFF  SZ                      TYPE DESCRIPTION               VALUE
+      0   8                           (object header: mark)     N/A
+      8   4                           (object header: class)    N/A
+     12   4            java.lang.Long BaseJpaEntity.id          N/A
+     16   4   java.time.LocalDateTime BaseJpaEntity.createdAt   N/A
+     20   4   java.time.LocalDateTime BaseJpaEntity.updatedAt   N/A
+     24   4          java.lang.String BaseJpaEntity.createdBy   N/A
+     28   4          java.lang.String BaseJpaEntity.updatedBy   N/A
+     32   4            java.lang.Long JpaWallet.memberId        N/A
+     36   4      java.math.BigDecimal JpaWallet.balance         N/A
+     40   4            java.lang.Long JpaWallet.version         N/A
+     44   4                           (object alignment gap)    
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.wallet.adapter.outbound.jpa.entity.JpaWalletHistory object internals:
+    OFF  SZ                      TYPE DESCRIPTION                        VALUE
+      0   8                           (object header: mark)              N/A
+      8   4                           (object header: class)             N/A
+     12   4            java.lang.Long BaseJpaEntity.id                   N/A
+     16   4   java.time.LocalDateTime BaseJpaEntity.createdAt            N/A
+     20   4   java.time.LocalDateTime BaseJpaEntity.updatedAt            N/A
+     24   4          java.lang.String BaseJpaEntity.createdBy            N/A
+     28   4          java.lang.String BaseJpaEntity.updatedBy            N/A
+     32   4            java.lang.Long JpaWalletHistory.walletId          N/A
+     36   4          java.lang.String JpaWalletHistory.transactionType   N/A
+     40   4      java.math.BigDecimal JpaWalletHistory.amount            N/A
+     44   4      java.math.BigDecimal JpaWalletHistory.balanceAfter      N/A
+     48   4          java.lang.String JpaWalletHistory.referenceType     N/A
+     52   4          java.lang.String JpaWalletHistory.referenceId       N/A
+     56   4   java.time.LocalDateTime JpaWalletHistory.occurredAt        N/A
+     60   4                           (object alignment gap)             
+    Instance size: 64 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.cart.adapter.outbound.jpa.JpaCart object internals:
+    OFF  SZ                      TYPE DESCRIPTION               VALUE
+      0   8                           (object header: mark)     N/A
+      8   4                           (object header: class)    N/A
+     12   4            java.lang.Long BaseJpaEntity.id          N/A
+     16   4   java.time.LocalDateTime BaseJpaEntity.createdAt   N/A
+     20   4   java.time.LocalDateTime BaseJpaEntity.updatedAt   N/A
+     24   4          java.lang.String BaseJpaEntity.createdBy   N/A
+     28   4          java.lang.String BaseJpaEntity.updatedBy   N/A
+     32   4            java.lang.Long JpaCart.memberId          N/A
+     36   4            java.util.List JpaCart.items             N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.cart.adapter.outbound.jpa.JpaCartItem object internals:
+    OFF  SZ                                                  TYPE DESCRIPTION                      VALUE
+      0   8                                                       (object header: mark)            N/A
+      8   4                                                       (object header: class)           N/A
+     12   4                                        java.lang.Long JpaCartItem.id                   N/A
+     16   4         app.giftify.cart.adapter.outbound.jpa.JpaCart JpaCartItem.cart                 N/A
+     20   4                                        java.lang.Long JpaCartItem.cartId               N/A
+     24   4                                        java.lang.Long JpaCartItem.wishlistItemId       N/A
+     28   4                                  java.math.BigDecimal JpaCartItem.amount               N/A
+     32   4   app.giftify.wishlist.core.domain.WishlistItemStatus JpaCartItem.wishlistItemStatus   N/A
+     36   4                                                       (object alignment gap)           
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.wishlist.adapter.out.jpa.entity.WishlistJpaEntity object internals:
+    OFF  SZ                                          TYPE DESCRIPTION                    VALUE
+      0   8                                               (object header: mark)          N/A
+      8   4                                               (object header: class)         N/A
+     12   4                                java.lang.Long BaseJpaEntity.id               N/A
+     16   4                       java.time.LocalDateTime BaseJpaEntity.createdAt        N/A
+     20   4                       java.time.LocalDateTime BaseJpaEntity.updatedAt        N/A
+     24   4                              java.lang.String BaseJpaEntity.createdBy        N/A
+     28   4                              java.lang.String BaseJpaEntity.updatedBy        N/A
+     32   4                                java.lang.Long WishlistJpaEntity.memberId     N/A
+     36   4   app.giftify.wishlist.core.domain.Visibility WishlistJpaEntity.visibility   N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.wishlist.adapter.out.jpa.entity.WishlistItemJpaEntity object internals:
+    OFF  SZ                                                  TYPE DESCRIPTION                                VALUE
+      0   8                                                       (object header: mark)                      N/A
+      8   4                                                       (object header: class)                     N/A
+     12   4                                        java.lang.Long BaseJpaEntity.id                           N/A
+     16   4                               java.time.LocalDateTime BaseJpaEntity.createdAt                    N/A
+     20   4                               java.time.LocalDateTime BaseJpaEntity.updatedAt                    N/A
+     24   4                                      java.lang.String BaseJpaEntity.createdBy                    N/A
+     28   4                                      java.lang.String BaseJpaEntity.updatedBy                    N/A
+     32   4                                        java.lang.Long WishlistItemJpaEntity.wishlistId           N/A
+     36   4                                        java.lang.Long WishlistItemJpaEntity.productId            N/A
+     40   4   app.giftify.wishlist.core.domain.WishlistItemStatus WishlistItemJpaEntity.wishlistItemStatus   N/A
+     44   4                               java.time.LocalDateTime WishlistItemJpaEntity.addedAt              N/A
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.friendship.adapter.out.jpa.entity.FriendshipJpaEntity object internals:
+    OFF  SZ                                             TYPE DESCRIPTION                       VALUE
+      0   8                                                  (object header: mark)             N/A
+      8   4                                                  (object header: class)            N/A
+     12   4                                   java.lang.Long BaseJpaEntity.id                  N/A
+     16   4                          java.time.LocalDateTime BaseJpaEntity.createdAt           N/A
+     20   4                          java.time.LocalDateTime BaseJpaEntity.updatedAt           N/A
+     24   4                                 java.lang.String BaseJpaEntity.createdBy           N/A
+     28   4                                 java.lang.String BaseJpaEntity.updatedBy           N/A
+     32   4                                   java.lang.Long FriendshipJpaEntity.requesterId   N/A
+     36   4                                   java.lang.Long FriendshipJpaEntity.receiverId    N/A
+     40   4   app.giftify.friendship.domain.FriendshipStatus FriendshipJpaEntity.status        N/A
+     44   4                          java.time.LocalDateTime FriendshipJpaEntity.acceptedAt    N/A
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.payment.domain.Payment object internals:
+    OFF  SZ                                           TYPE DESCRIPTION                      VALUE
+      0   8                                                (object header: mark)            N/A
+      8   4                                                (object header: class)           N/A
+     12   4                                 java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                                 java.lang.Long BaseDomainModel.id               N/A
+     20   4     app.giftify.shared.domain.type.PaymentType Payment.type                     N/A
+     24   4   app.giftify.shared.domain.type.PaymentMethod Payment.method                   N/A
+     28   4                                 java.lang.Long Payment.orderId                  N/A
+     32   4                               java.lang.String Payment.orderNumber              N/A
+     36   4                                 java.lang.Long Payment.memberId                 N/A
+     40   4             app.giftify.shared.domain.vo.Money Payment.originAmount             N/A
+     44   4             app.giftify.shared.domain.vo.Money Payment.paidAmount               N/A
+     48   4             app.giftify.shared.domain.vo.Money Payment.refundedAmount           N/A
+     52   4                                 java.util.List Payment.orderItems               N/A
+     56   4       app.giftify.payment.domain.PaymentStatus Payment.status                   N/A
+     60   4                               java.lang.String Payment.paymentKey               N/A
+     64   4                               java.lang.String Payment.lastTransactionKey       N/A
+     68   4                               java.lang.String Payment.approveCode              N/A
+     72   4                        java.time.LocalDateTime Payment.paidAt                   N/A
+     76   4                        java.time.LocalDateTime Payment.createdAt                N/A
+    Instance size: 80 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.payment.domain.PaymentHistory object internals:
+    OFF  SZ                                          TYPE DESCRIPTION                      VALUE
+      0   8                                               (object header: mark)            N/A
+      8   4                                               (object header: class)           N/A
+     12   4                                java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                                java.lang.Long BaseDomainModel.id               N/A
+     20   4                                java.lang.Long PaymentHistory.paymentId         N/A
+     24   4                              java.lang.String PaymentHistory.historyKey        N/A
+     28   4   app.giftify.payment.domain.PaymentEventType PaymentHistory.eventType         N/A
+     32   4                       java.time.LocalDateTime PaymentHistory.occurredAt        N/A
+     36   4                              java.lang.String PaymentHistory.metadata          N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.payment.domain.Cancel object internals:
+    OFF  SZ                                 TYPE DESCRIPTION                      VALUE
+      0   8                                      (object header: mark)            N/A
+      8   4                                      (object header: class)           N/A
+     12   4                       java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                       java.lang.Long BaseDomainModel.id               N/A
+     20   4                       java.lang.Long Cancel.paymentId                 N/A
+     24   4                     java.lang.String Cancel.transactionKey            N/A
+     28   4   app.giftify.shared.domain.vo.Money Cancel.cancelAmount              N/A
+     32   4                     java.lang.String Cancel.cancelReason              N/A
+     36   4              java.time.LocalDateTime Cancel.canceledAt                N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.member.domain.member.Member object internals:
+    OFF  SZ                                            TYPE DESCRIPTION                      VALUE
+      0   8                                                 (object header: mark)            N/A
+      8   4                                                 (object header: class)           N/A
+     12   4                                  java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                                  java.lang.Long BaseDomainModel.id               N/A
+     20   4                                java.lang.String Member.email                     N/A
+     24   4                                java.lang.String Member.nickname                  N/A
+     28   4                             java.time.LocalDate Member.birthday                  N/A
+     32   4       app.giftify.shared.domain.type.MemberRole Member.role                      N/A
+     36   4                                java.lang.String Member.address                   N/A
+     40   4                                java.lang.String Member.phoneNum                  N/A
+     44   4                                java.lang.String Member.name                      N/A
+     48   4   app.giftify.member.domain.member.MemberStatus Member.status                    N/A
+     52   4                                java.lang.String Member.authSub                   N/A
+    Instance size: 56 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.product.domain.Product object internals:
+    OFF  SZ                                         TYPE DESCRIPTION                      VALUE
+      0   8                                              (object header: mark)            N/A
+      8   4                                              (object header: class)           N/A
+     12   4                               java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                               java.lang.Long BaseDomainModel.id               N/A
+     20   4                               java.lang.Long Product.sellerId                 N/A
+     24   4                             java.lang.String Product.name                     N/A
+     28   4                             java.lang.String Product.description              N/A
+     32   4     app.giftify.product.domain.ProductStatus Product.status                   N/A
+     36   4   app.giftify.product.domain.ProductCategory Product.category                 N/A
+     40   4                             java.lang.String Product.imageKey                 N/A
+     44   4                      java.time.LocalDateTime Product.createdAt                N/A
+     48   4                      java.time.LocalDateTime Product.updatedAt                N/A
+     52   4                      java.time.LocalDateTime Product.deletedAt                N/A
+     56   4                                          int Product.price                    N/A
+     60   4                                          int Product.stock                    N/A
+    Instance size: 64 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.product.domain.ProductStockHistory object internals:
+    OFF  SZ                                         TYPE DESCRIPTION                       VALUE
+      0   8                                              (object header: mark)             N/A
+      8   4                                              (object header: class)            N/A
+     12   4                               java.util.List BaseAggregateRoot.domainEvents    N/A
+     16   4                               java.lang.Long BaseDomainModel.id                N/A
+     20   4                               java.lang.Long ProductStockHistory.sellerId      N/A
+     24   4                               java.lang.Long ProductStockHistory.productId     N/A
+     28   4   app.giftify.product.domain.StockChangeType ProductStockHistory.changeType    N/A
+     32   4                      java.time.LocalDateTime ProductStockHistory.createdAt     N/A
+     36   4                                          int ProductStockHistory.delta         N/A
+     40   4                                          int ProductStockHistory.beforeStock   N/A
+     44   4                                          int ProductStockHistory.afterStock    N/A
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.wishlist.core.domain.Wishlist object internals:
+    OFF  SZ                                          TYPE DESCRIPTION                      VALUE
+      0   8                                               (object header: mark)            N/A
+      8   4                                               (object header: class)           N/A
+     12   4                                java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                                java.lang.Long BaseDomainModel.id               N/A
+     20   4                                java.lang.Long Wishlist.memberId                N/A
+     24   4   app.giftify.wishlist.core.domain.Visibility Wishlist.visibility              N/A
+     28   4                       java.time.LocalDateTime Wishlist.createdAt               N/A
+    Instance size: 32 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.wishlist.core.domain.WishlistItem object internals:
+    OFF  SZ                                                  TYPE DESCRIPTION                       VALUE
+      0   8                                                       (object header: mark)             N/A
+      8   4                                                       (object header: class)            N/A
+     12   4                                        java.util.List BaseAggregateRoot.domainEvents    N/A
+     16   4                                        java.lang.Long BaseDomainModel.id                N/A
+     20   4                                        java.lang.Long WishlistItem.wishlistId           N/A
+     24   4                                        java.lang.Long WishlistItem.productId            N/A
+     28   4   app.giftify.wishlist.core.domain.WishlistItemStatus WishlistItem.wishlistItemStatus   N/A
+     32   4                               java.time.LocalDateTime WishlistItem.addedAt              N/A
+     36   4                                                       (object alignment gap)            
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.wallet.domain.Wallet object internals:
+    OFF  SZ                                 TYPE DESCRIPTION                      VALUE
+      0   8                                      (object header: mark)            N/A
+      8   4                                      (object header: class)           N/A
+     12   4                       java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                       java.lang.Long BaseDomainModel.id               N/A
+     20   4                       java.lang.Long Wallet.memberId                  N/A
+     24   4   app.giftify.shared.domain.vo.Money Wallet.balance                   N/A
+     28   4                                      (object alignment gap)           
+    Instance size: 32 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.wallet.domain.WalletHistory object internals:
+    OFF  SZ                                        TYPE DESCRIPTION                      VALUE
+      0   8                                             (object header: mark)            N/A
+      8   4                                             (object header: class)           N/A
+     12   4                              java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                              java.lang.Long BaseDomainModel.id               N/A
+     20   4                              java.lang.Long WalletHistory.walletId           N/A
+     24   4   app.giftify.wallet.domain.TransactionType WalletHistory.transactionType    N/A
+     28   4          app.giftify.shared.domain.vo.Money WalletHistory.amount             N/A
+     32   4          app.giftify.shared.domain.vo.Money WalletHistory.balanceAfter       N/A
+     36   4     app.giftify.wallet.domain.ReferenceType WalletHistory.referenceType      N/A
+     40   4                            java.lang.String WalletHistory.referenceId        N/A
+     44   4                     java.time.LocalDateTime WalletHistory.occurredAt         N/A
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.friendship.domain.Friendship object internals:
+    OFF  SZ                                             TYPE DESCRIPTION                      VALUE
+      0   8                                                  (object header: mark)            N/A
+      8   4                                                  (object header: class)           N/A
+     12   4                                   java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                                   java.lang.Long BaseDomainModel.id               N/A
+     20   4                                   java.lang.Long Friendship.requesterId           N/A
+     24   4                                   java.lang.Long Friendship.receiverId            N/A
+     28   4   app.giftify.friendship.domain.FriendshipStatus Friendship.status                N/A
+     32   4                          java.time.LocalDateTime Friendship.createdAt             N/A
+     36   4                          java.time.LocalDateTime Friendship.acceptedAt            N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.cart.core.domain.Cart object internals:
+    OFF  SZ             TYPE DESCRIPTION                      VALUE
+      0   8                  (object header: mark)            N/A
+      8   4                  (object header: class)           N/A
+     12   4   java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4   java.lang.Long BaseDomainModel.id               N/A
+     20   4   java.lang.Long Cart.memberId                    N/A
+     24   4    java.util.Map Cart.items                       N/A
+     28   4                  (object alignment gap)           
+    Instance size: 32 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.cart.core.domain.CartItem object internals:
+    OFF  SZ                                 TYPE DESCRIPTION                      VALUE
+      0   8                                      (object header: mark)            N/A
+      8   4                                      (object header: class)           N/A
+     12   4                       java.util.List BaseAggregateRoot.domainEvents   N/A
+     16   4                       java.lang.Long BaseDomainModel.id               N/A
+     20   4                       java.lang.Long CartItem.cartId                  N/A
+     24   4                       java.lang.Long CartItem.wishlistItemId          N/A
+     28   4   app.giftify.shared.domain.vo.Money CartItem.amount                  N/A
+    Instance size: 32 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+
+JolBenchmarkTest > measureAllObjectLayouts() STANDARD_ERROR
+    Failed to instantiate record Money: null
+    WARN: Failed to measure Money: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure ProductSnapshot: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure FundingSnapshot: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure FundingInfo: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure FundingDetail: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure MemberInfo: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure WishlistItemSnapshot: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure CanceledItemSnapshot: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure OrderSnapshot: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+    WARN: Failed to measure WalletSnapshot: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+
+JolBenchmarkTest > measureAllObjectLayouts() STANDARD_OUT
+    app.giftify.shared.domain.event.BaseDomainEvent object internals:
+    OFF  SZ                      TYPE DESCRIPTION                  VALUE
+      0   8                           (object header: mark)        N/A
+      8   4                           (object header: class)       N/A
+     12   4          java.lang.String BaseDomainEvent.eventId      N/A
+     16   4   java.time.LocalDateTime BaseDomainEvent.occurredAt   N/A
+     20   4                           (object alignment gap)       
+    Instance size: 24 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.shared.domain.event.order.OrderItemCreatedEvent object internals:
+    OFF  SZ                                           TYPE DESCRIPTION                           VALUE
+      0   8                                                (object header: mark)                 N/A
+      8   4                                                (object header: class)                N/A
+     12   4                               java.lang.String BaseDomainEvent.eventId               N/A
+     16   4                        java.time.LocalDateTime BaseDomainEvent.occurredAt            N/A
+     20   4                                 java.lang.Long OrderItemCreatedEvent.orderItemId     N/A
+     24   4                                 java.lang.Long OrderItemCreatedEvent.targetId        N/A
+     28   4      app.giftify.shared.domain.type.TargetType OrderItemCreatedEvent.targetType      N/A
+     32   4   app.giftify.shared.domain.type.OrderItemType OrderItemCreatedEvent.orderItemType   N/A
+     36   4                                 java.lang.Long OrderItemCreatedEvent.orderId         N/A
+     40   4                                 java.lang.Long OrderItemCreatedEvent.sellerId        N/A
+     44   4             app.giftify.shared.domain.vo.Money OrderItemCreatedEvent.price           N/A
+     48   4             app.giftify.shared.domain.vo.Money OrderItemCreatedEvent.amount          N/A
+     52   4                                                (object alignment gap)                
+    Instance size: 56 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+    app.giftify.shared.domain.event.funding.FundingCanceledEvent object internals:
+    OFF  SZ                      TYPE DESCRIPTION                           VALUE
+      0   8                           (object header: mark)                 N/A
+      8   4                           (object header: class)                N/A
+     12   4          java.lang.String BaseDomainEvent.eventId               N/A
+     16   4   java.time.LocalDateTime BaseDomainEvent.occurredAt            N/A
+     20   4            java.lang.Long FundingCanceledEvent.fundingId        N/A
+     24   4            java.lang.Long FundingCanceledEvent.wishlistItemId   N/A
+     28   4         java.lang.Integer FundingCanceledEvent.canceledAmount   N/A
+     32   4            java.lang.Long FundingCanceledEvent.receiverId       N/A
+     36   4            java.util.List FundingCanceledEvent.participantIds   N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.shared.domain.event.funding.FundingAcceptedEvent object internals:
+    OFF  SZ                      TYPE DESCRIPTION                           VALUE
+      0   8                           (object header: mark)                 N/A
+      8   4                           (object header: class)                N/A
+     12   4          java.lang.String BaseDomainEvent.eventId               N/A
+     16   4   java.time.LocalDateTime BaseDomainEvent.occurredAt            N/A
+     20   4            java.lang.Long FundingAcceptedEvent.fundingId        N/A
+     24   4            java.lang.Long FundingAcceptedEvent.wishlistItemId   N/A
+     28   4            java.lang.Long FundingAcceptedEvent.productId        N/A
+     32   4            java.lang.Long FundingAcceptedEvent.receiverId       N/A
+     36   4   java.time.LocalDateTime FundingAcceptedEvent.confirmedAt      N/A
+    Instance size: 40 bytes
+    Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+
+    app.giftify.wallet.domain.event.WalletChargedEvent object internals:
+    OFF  SZ                                 TYPE DESCRIPTION                        VALUE
+      0   8                                      (object header: mark)              N/A
+      8   4                                      (object header: class)             N/A
+     12   4                     java.lang.String BaseDomainEvent.eventId            N/A
+     16   4              java.time.LocalDateTime BaseDomainEvent.occurredAt         N/A
+     20   4                       java.lang.Long WalletChargedEvent.walletId        N/A
+     24   4                       java.lang.Long WalletChargedEvent.memberId        N/A
+     28   4                     java.lang.String WalletChargedEvent.chargeOrderId   N/A
+     32   4   app.giftify.shared.domain.vo.Money WalletChargedEvent.amount          N/A
+     36   4   app.giftify.shared.domain.vo.Money WalletChargedEvent.balanceAfter    N/A
+     40   4              java.time.LocalDateTime WalletChargedEvent.chargedAt       N/A
+     44   4                                      (object alignment gap)             
+    Instance size: 48 bytes
+    Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+
+JolBenchmarkTest > measureAllObjectLayouts() STANDARD_ERROR
+    WARN: Failed to measure PaymentSucceededEvent: Cannot get the field offset, try with -Djol.magicFieldOffset=true
+
+JolBenchmarkTest > measureAllObjectLayouts() STANDARD_OUT
+
+    ================================================================================
+    SUMMARY TABLE — Java 25.0.2
+    ================================================================================
+    Name                                            Size (B)   Fields
+    --------------------------------------------------------------------------------
+    [baseline] Object                                     16        0
+    [baseline] String                                     24       11
+    [baseline] ArrayList                                  24        7
+    [jpa] Order                                           88       18
+    [jpa] OrderItem                                       80       17
+    [jpa] JpaPayment                                      96       20
+    [jpa] JpaPaymentHistory                               56       10
+    [jpa] JpaCancel                                       56       10
+    [jpa] Funding                                         88       18
+    [jpa] FundingParticipantMember                        48        9
+    [jpa] ProductJpa                                      72       14
+    [jpa] ProductStockHistoryJpa                          48        8
+    [jpa] MemberJpaEntity                                 72       14
+    [jpa] Notification                                    80       16
+    [jpa] SettlementItem                                  88       18
+    [jpa] SettlementHistory                               48        8
+    [jpa] SettlementQueue                                 32        5
+    [jpa] JpaWallet                                       48        8
+    [jpa] JpaWalletHistory                                64       12
+    [jpa] JpaCart                                         40        7
+    [jpa] JpaCartItem                                     40        6
+    [jpa] WishlistJpaEntity                               40        7
+    [jpa] WishlistItemJpaEntity                           48        9
+    [jpa] FriendshipJpaEntity                             48        9
+    [domain] Payment                                      80       17
+    [domain] PaymentHistory                               40        7
+    [domain] Cancel                                       40        7
+    [domain] Member                                       56       11
+    [domain] Product                                      64       13
+    [domain] ProductStockHistory                          48        9
+    [domain] Wishlist                                     32        5
+    [domain] WishlistItem                                 40        6
+    [domain] Wallet                                       32        5
+    [domain] WalletHistory                                48        9
+    [domain] Friendship                                   40        7
+    [domain] Cart                                         32        4
+    [domain] CartItem                                     32        6
+    [vo] Money                                           ERR        1
+    [vo] ProductSnapshot                                 ERR        4
+    [vo] FundingSnapshot                                 ERR        2
+    [vo] FundingInfo                                     ERR        4
+    [vo] FundingDetail                                   ERR        4
+    [vo] MemberInfo                                      ERR        5
+    [vo] WishlistItemSnapshot                            ERR        7
+    [vo] CanceledItemSnapshot                            ERR        5
+    [vo] OrderSnapshot                                   ERR        8
+    [vo] WalletSnapshot                                  ERR        3
+    [event] BaseDomainEvent                               24        2
+    [event] OrderItemCreatedEvent                         56       10
+    [event] FundingCanceledEvent                          40        7
+    [event] FundingAcceptedEvent                          40        7
+    [event] WalletChargedEvent                            48        8
+    [event] PaymentSucceededEvent                        ERR        5
+    --------------------------------------------------------------------------------
+
+    ================================================================================
+    HEAP ESTIMATION (instance size x expected object count)
+    ================================================================================
+    Class                            Size (B)        Count   Total (KB)
+    ----------------------------------------------------------------------
+    Order                                  88        10000        859.4
+    OrderItem                              80        30000       2343.8
+    JpaPayment                             96        10000        937.5
+    Funding                                88         5000        429.7
+    ProductJpa                             72         1000         70.3
+    MemberJpaEntity                        72          500         35.2
+    Notification                           80        50000       3906.3
+    Payment                                96        10000        937.5
+    Member                                 48          500         23.4
+    ----------------------------------------------------------------------
+    TOTAL                                                        9543.0 KB (9.3 MB)
+
+    ================================================================================
+    GRAPH LAYOUT (object graph total size including references)
+    ================================================================================
+    [graph] Order (empty): 152 bytes
+    app.giftify.order.domain.Order@5ccb85d6d footprint:
+         COUNT       AVG       SUM   DESCRIPTION
+             1        16        16   [Ljava.lang.Object;
+             1        88        88   app.giftify.order.domain.Order
+             2        24        48   java.util.ArrayList
+             4                 152   (total)
+
+
+    [graph] Payment (empty): 80 bytes
+    app.giftify.payment.domain.Payment@1ba467c2d footprint:
+         COUNT       AVG       SUM   DESCRIPTION
+             1        80        80   app.giftify.payment.domain.Payment
+             1                  80   (total)
+
+
+    [graph] Member (empty): 56 bytes
+    app.giftify.member.domain.member.Member@115ca7ded footprint:
+         COUNT       AVG       SUM   DESCRIPTION
+             1        56        56   app.giftify.member.domain.member.Member
+             1                  56   (total)
+
+
+    [graph] Product (empty): 64 bytes
+    app.giftify.product.domain.Product@7f287b98d footprint:
+         COUNT       AVG       SUM   DESCRIPTION
+             1        64        64   app.giftify.product.domain.Product
+             1                  64   (total)
+
+
+    [graph] Funding (empty): 88 bytes
+    app.giftify.funding.adpater.outbound.jpa.Funding@6975fb1cd footprint:
+         COUNT       AVG       SUM   DESCRIPTION
+             1        88        88   app.giftify.funding.adpater.outbound.jpa.Funding
+             1                  88   (total)
+
+
+
+> Task :bootstrap:api-server:jacocoTestReport
+
+BUILD SUCCESSFUL in 2s
+34 actionable tasks: 3 executed, 31 up-to-date
+Configuration cache entry reused.

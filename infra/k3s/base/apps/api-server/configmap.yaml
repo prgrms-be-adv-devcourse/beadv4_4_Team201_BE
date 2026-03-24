@@ -17,3 +17,4 @@ data:
   S3_REGION: "us-east-1"
   ES_URIS: "http://elasticsearch:9200"
   SPRING_PROFILES_ACTIVE: "prod"
+  JAVA_TOOL_OPTIONS: "-XX:+UseCompactObjectHeaders"
