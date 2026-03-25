@@ -88,6 +88,20 @@ patches:
       spec:
         replicas: 0
 
+  # image-updater: disable
+  # ArgoCD Image Updater v1.1.1 — ArgoCD v3.3.4 Application.status.sourceType
+  # empty value bug. cd.yml workflow로 대체.
+  - target:
+      kind: Deployment
+      name: argocd-image-updater-controller
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-image-updater-controller
+      spec:
+        replicas: 0
+
   # argocd-server: --insecure (Cloudflare Tunnel handles TLS)
   # JSON patch: args 배열에 추가 (strategic merge는 배열을 전체 대체하므로 위험)
   - target:

@@ -112,3 +112,78 @@ jobs:
           cache-to: type=gha,mode=max
           # CI용 스테이지 사용 (호스트에서 JAR 직접 복사)
           target: runtime-ci
+
+  # 3. 릴리스 태그 시 자동 배포 (staging → prod)
+  # GitHub Web UI에서 릴리스 생성 → Git 태그(v0.0.22) 푸시 →
+  # Docker 이미지 태그(0.0.22)로 빌드+배포. 별도 커밋 없이 릴리스만으로 배포 완료.
+  #
+  # ArgoCD Image Updater v1.1.1이 ArgoCD v3.3.4의
+  # Application.status.sourceType 빈 값 문제로 동작하지 않아,
+  # WIF + IAP 터널을 통해 직접 배포하는 방식으로 전환.
+  deploy:
+    name: Deploy to Staging & Prod
+    needs: [docker]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      IMAGE: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Extract tag
+        id: tag
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Staging
+        run: |
+          gcloud compute ssh giftify-staging \
+            --zone=asia-northeast3-a \
+            --tunnel-through-iap \
+            --command="
+              argocd login localhost:8080 --username=admin \
+                --password='${{ secrets.ARGOCD_ADMIN_PASSWORD }}' --insecure
+              argocd app set giftify --kustomize-image \
+                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
+              argocd app sync giftify --prune
+              argocd app wait giftify --health --timeout 300
+            "
+
+      - name: Deploy to Prod
+        run: |
+          gcloud compute ssh giftify-app \
+            --zone=asia-northeast3-a \
+            --tunnel-through-iap \
+            --command="
+              argocd login localhost:8080 --username=admin \
+                --password='${{ secrets.ARGOCD_ADMIN_PASSWORD }}' --insecure
+              argocd app set giftify --kustomize-image \
+                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
+              argocd app sync giftify --prune
+              argocd app wait giftify --health --timeout 300
+            "
+
+      - name: Discord Notification
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            COLOR=3066993
+            TITLE="Deploy Success"
+            DESC="**v${{ steps.tag.outputs.version }}** deployed to staging+prod"
+          else
+            COLOR=15158332
+            TITLE="Deploy Failed"
+            DESC="**v${{ steps.tag.outputs.version }}** failed. [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          fi
+          curl -sf -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"$TITLE\",\"description\":\"$DESC\",\"color\":$COLOR}]}"
