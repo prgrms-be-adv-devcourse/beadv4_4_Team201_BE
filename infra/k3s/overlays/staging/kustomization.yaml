@@ -62,6 +62,17 @@ patches:
                   periodSeconds: 10
                   failureThreshold: 90
 
+  # --- Grafana: root_url for alert notification links ---
+  - target:
+      kind: Deployment
+      name: grafana
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: GF_SERVER_ROOT_URL
+          value: "https://giftify-grafana-staging.chan99k.dev"
+
   - target:
       kind: StatefulSet
       name: elasticsearch
