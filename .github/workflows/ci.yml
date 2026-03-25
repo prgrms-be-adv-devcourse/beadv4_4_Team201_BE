@@ -149,13 +149,14 @@ jobs:
             --zone=asia-northeast3-a \
             --tunnel-through-iap \
             --command="
-              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}')
+              set -e &&
+              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
+              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}') &&
               sudo kubectl exec -n argocd \$POD -- argocd login localhost:8080 \
-                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_STAGING }}' --insecure --plaintext
+                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_STAGING }}' --insecure --plaintext &&
               sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
-                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
-              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3
+                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }} &&
+              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3 &&
               sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
             "
 
@@ -165,13 +166,14 @@ jobs:
             --zone=asia-northeast3-a \
             --tunnel-through-iap \
             --command="
-              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}')
+              set -e &&
+              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
+              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}') &&
               sudo kubectl exec -n argocd \$POD -- argocd login localhost:8080 \
-                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_PROD }}' --insecure --plaintext
+                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_PROD }}' --insecure --plaintext &&
               sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
-                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
-              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3
+                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }} &&
+              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3 &&
               sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
             "
 
