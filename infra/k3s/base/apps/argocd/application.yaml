@@ -3,14 +3,12 @@ kind: Application
 metadata:
   name: giftify
   namespace: argocd
-  # Image Updater v1.x: annotation -> ImageUpdater CR (image-updater-cr.yaml)
 spec:
   project: default
   source:
     repoURL: https://github.com/prgrms-be-adv-devcourse/beadv4_4_team201_be.git
     targetRevision: develop
     path: infra/k3s/overlays/prod
-    kustomize: {}
   destination:
     server: https://kubernetes.default.svc
     namespace: giftify
