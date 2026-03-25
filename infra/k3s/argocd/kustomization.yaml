@@ -5,6 +5,8 @@ namespace: argocd
 
 resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  - image-updater-install.yaml
+  - image-updater-config.yaml
 
 patches:
   # repo-server: ksops plugin + age key mount
