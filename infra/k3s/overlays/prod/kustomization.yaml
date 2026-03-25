@@ -37,6 +37,17 @@ patches:
                 livenessProbe:
                   initialDelaySeconds: 10
 
+  # --- Grafana: root_url for alert notification links ---
+  - target:
+      kind: Deployment
+      name: grafana
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: GF_SERVER_ROOT_URL
+          value: "https://giftify-grafana.chan99k.dev"
+
   # --- Elasticsearch: GHCR 이미지 pull 인증 ---
   - target:
       kind: StatefulSet
