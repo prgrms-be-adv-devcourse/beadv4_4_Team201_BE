@@ -42,6 +42,13 @@ patches:
                     name: ksops-plugin
             containers:
               - name: argocd-repo-server
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
                 env:
                   - name: SOPS_AGE_KEY_FILE
                     value: /sops-age/keys.txt
@@ -66,6 +73,18 @@ patches:
               - name: sops-age-key
                 secret:
                   secretName: sops-age-key
+
+  # applicationset-controller: disable (not used, saves ~100Mi)
+  - target:
+      kind: Deployment
+      name: argocd-applicationset-controller
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-applicationset-controller
+      spec:
+        replicas: 0
 
   # argocd-server: --insecure (Cloudflare Tunnel handles TLS)
   # JSON patch: args 배열에 추가 (strategic merge는 배열을 전체 대체하므로 위험)
