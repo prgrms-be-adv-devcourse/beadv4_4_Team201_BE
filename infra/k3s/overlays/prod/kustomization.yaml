@@ -12,7 +12,7 @@ configMapGenerator:
     behavior: replace
     files:
       - spring-boot-19004.json=spring-boot-19004-prod.json
-      - token-blacklist-security.json=../../base/apps/grafana/dashboards/token-blacklist-security.json
+      - token-blacklist-security.json=token-blacklist-security.json
     options:
       disableNameSuffixHash: true
 
