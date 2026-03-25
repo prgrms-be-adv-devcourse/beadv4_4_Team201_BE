@@ -155,7 +155,7 @@ jobs:
                 --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_STAGING }}' --insecure --plaintext
               sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
                 ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
-              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune
+              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3
               sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
             "
 
@@ -171,7 +171,7 @@ jobs:
                 --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_PROD }}' --insecure --plaintext
               sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
                 ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
-              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune
+              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3
               sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
             "
 
