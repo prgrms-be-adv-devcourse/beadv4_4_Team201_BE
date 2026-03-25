@@ -149,12 +149,14 @@ jobs:
             --zone=asia-northeast3-a \
             --tunnel-through-iap \
             --command="
-              argocd login localhost:8080 --username=admin \
-                --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_STAGING }}' --insecure
-              argocd app set giftify --kustomize-image \
+              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}')
+              sudo kubectl exec -n argocd \$POD -- argocd login localhost:8080 \
+                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_STAGING }}' --insecure --plaintext
+              sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
                 ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
-              argocd app sync giftify --prune
-              argocd app wait giftify --health --timeout 300
+              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3
+              sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
             "
 
       - name: Deploy to Prod
@@ -163,12 +165,14 @@ jobs:
             --zone=asia-northeast3-a \
             --tunnel-through-iap \
             --command="
-              argocd login localhost:8080 --username=admin \
-                --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_PROD }}' --insecure
-              argocd app set giftify --kustomize-image \
+              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}')
+              sudo kubectl exec -n argocd \$POD -- argocd login localhost:8080 \
+                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_PROD }}' --insecure --plaintext
+              sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
                 ${{ env.IMAGE }}:${{ steps.tag.outputs.version }}
-              argocd app sync giftify --prune
-              argocd app wait giftify --health --timeout 300
+              sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune --retry-limit 3
+              sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
             "
 
       - name: Discord Notification
