@@ -7,6 +7,15 @@ resources:
 generators:
   - ./secret-generator.yaml  # "이 .enc.yaml 파일들을 복호화해줘" -> secret generator
 
+configMapGenerator:
+  - name: grafana-dashboards
+    behavior: replace
+    files:
+      - spring-boot-19004.json=spring-boot-19004-prod.json
+      - token-blacklist-security.json=../../base/apps/grafana/dashboards/token-blacklist-security.json
+    options:
+      disableNameSuffixHash: true
+
 images:
   - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
     newTag: latest
