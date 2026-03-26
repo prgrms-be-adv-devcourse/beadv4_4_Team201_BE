@@ -113,73 +113,49 @@ jobs:
           # CI용 스테이지 사용 (호스트에서 JAR 직접 복사)
           target: runtime-ci
 
-  # 3. 릴리스 태그 시 자동 배포 (staging → prod)
-  # GitHub Web UI에서 릴리스 생성 → Git 태그(v0.0.22) 푸시 →
-  # Docker 이미지 태그(0.0.22)로 빌드+배포. 별도 커밋 없이 릴리스만으로 배포 완료.
+  # 3. 릴리스 태그 시 release 브랜치에 이미지 태그 커밋 → ArgoCD 자동 배포
+  # GitHub Web UI에서 릴리스 생성 → Git 태그(v0.0.23) 푸시 →
+  # Docker 이미지 빌드 → release 브랜치 kustomization.yaml에 태그 커밋 →
+  # ArgoCD가 release 브랜치 변경 감지하여 자동 싱크.
   #
   # ArgoCD Image Updater v1.1.1이 ArgoCD v3.3.4의
   # Application.status.sourceType 빈 값 문제로 동작하지 않아,
-  # WIF + IAP 터널을 통해 직접 배포하는 방식으로 전환.
+  # release 브랜치 기반 GitOps 배포로 전환.
   deploy:
-    name: Deploy to Staging & Prod
+    name: Update release branch
     needs: [docker]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     permissions:
-      id-token: write
-      contents: read
-    env:
-      IMAGE: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+      contents: write
     steps:
-      - uses: google-github-actions/auth@v2
+      - uses: actions/checkout@v4
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-
-      - uses: google-github-actions/setup-gcloud@v2
+          ref: release
+          fetch-depth: 0
 
       - name: Extract tag
         id: tag
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Deploy to Staging
+      - name: Update image tag in overlays
         run: |
-          gcloud compute ssh giftify-staging \
-            --zone=asia-northeast3-a \
-            --tunnel-through-iap \
-            --command="
-              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
-              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}') &&
-              sudo kubectl exec -n argocd \$POD -- argocd login localhost:8080 \
-                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_STAGING }}' --insecure --plaintext &&
-              sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
-                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }} &&
-              for i in 1 2 3; do
-                sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune && break
-                echo \"Sync attempt \$i failed, retrying in 10s...\" && sleep 10
-              done &&
-              sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
-            "
+          IMAGE="ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server"
+          TAG="${{ steps.tag.outputs.version }}"
+          cd infra/k3s/overlays/prod
+          kustomize edit set image "${IMAGE}:${TAG}"
+          cd ../staging
+          kustomize edit set image "${IMAGE}:${TAG}"
 
-      - name: Deploy to Prod
+      - name: Commit and push to release
         run: |
-          gcloud compute ssh giftify-app \
-            --zone=asia-northeast3-a \
-            --tunnel-through-iap \
-            --command="
-              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
-              POD=\$(sudo kubectl get pod -n argocd -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}') &&
-              sudo kubectl exec -n argocd \$POD -- argocd login localhost:8080 \
-                --username=admin --password='${{ secrets.ARGOCD_ADMIN_PASSWORD_PROD }}' --insecure --plaintext &&
-              sudo kubectl exec -n argocd \$POD -- argocd app set giftify --kustomize-image \
-                ${{ env.IMAGE }}:${{ steps.tag.outputs.version }} &&
-              for i in 1 2 3; do
-                sudo kubectl exec -n argocd \$POD -- argocd app sync giftify --prune && break
-                echo \"Sync attempt \$i failed, retrying in 10s...\" && sleep 10
-              done &&
-              sudo kubectl exec -n argocd \$POD -- argocd app wait giftify --health --timeout 300
-            "
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "deploy: v${{ steps.tag.outputs.version }} [skip ci]"
+          git push origin release
 
       - name: Discord Notification
         if: always()
@@ -188,7 +164,7 @@ jobs:
           if [ "${{ job.status }}" = "success" ]; then
             COLOR=3066993
             TITLE="Deploy Success"
-            DESC="**v${{ steps.tag.outputs.version }}** deployed to staging+prod"
+            DESC="**v${{ steps.tag.outputs.version }}** → release branch updated. ArgoCD will sync automatically."
           else
             COLOR=15158332
             TITLE="Deploy Failed"
