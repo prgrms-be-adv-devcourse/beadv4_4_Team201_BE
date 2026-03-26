@@ -17,8 +17,6 @@ configMapGenerator:
       disableNameSuffixHash: true
 
 images:
-  - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
-    newTag: latest
   - name: giftify-elasticsearch
     newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
     newTag: 9.2.4-custom-v2
