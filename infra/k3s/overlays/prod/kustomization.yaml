@@ -2,123 +2,123 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+- ../../base
 
 generators:
-  - ./secret-generator.yaml  # "이 .enc.yaml 파일들을 복호화해줘" -> secret generator
+- ./secret-generator.yaml
 
 configMapGenerator:
-  - name: grafana-dashboards
-    behavior: replace
-    files:
-      - spring-boot-19004.json=spring-boot-19004-prod.json
-      - token-blacklist-security.json=token-blacklist-security.json
-    options:
-      disableNameSuffixHash: true
+- behavior: replace
+  files:
+  - spring-boot-19004.json=spring-boot-19004-prod.json
+  - token-blacklist-security.json=token-blacklist-security.json
+  name: grafana-dashboards
+  options:
+    disableNameSuffixHash: true
 
 images:
-  - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
-    newTag: "0.0.22"
-  - name: giftify-elasticsearch
-    newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
-    newTag: 9.2.4-custom-v2
+- name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
+  newTag: 0.0.23
+- name: giftify-elasticsearch
+  newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
+  newTag: 9.2.4-custom-v2
 
-patches:
-  - patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: api-server
-      spec:
-        template:
-          spec:
-            containers:
-              - name: api-server
-                startupProbe:
-                  httpGet:
-                    path: /actuator/health
-                    port: 8080
-                  initialDelaySeconds: 30
-                  periodSeconds: 10
-                  failureThreshold: 60
-                readinessProbe:
-                  initialDelaySeconds: 5
-                livenessProbe:
-                  initialDelaySeconds: 10
 
   # --- Grafana: root_url for alert notification links ---
-  - target:
-      kind: Deployment
-      name: grafana
-    patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/env/-
-        value:
-          name: GF_SERVER_ROOT_URL
-          value: "https://giftify-grafana.chan99k.dev"
 
   # --- Elasticsearch: GHCR 이미지 pull 인증 ---
-  - target:
-      kind: StatefulSet
-      name: elasticsearch
-    patch: |-
-      - op: add
-        path: /spec/template/spec/imagePullSecrets
-        value:
-          - name: ghcr-secret
 
   # --- IngressRoute: *.localhost → *.chan99k.dev ---
-  - target:
-      group: traefik.io
-      version: v1alpha1
-      kind: IngressRoute
-      name: api-ingress
-    patch: |-
-      - op: replace
-        path: /spec/routes/0/match
-        value: "Host(`giftify-api.chan99k.dev`)"
-  - target:
-      group: traefik.io
-      version: v1alpha1
-      kind: IngressRoute
-      name: grafana-ingress
-    patch: |-
-      - op: replace
-        path: /spec/routes/0/match
-        value: "Host(`giftify-grafana.chan99k.dev`)"
-  - target:
-      group: traefik.io
-      version: v1alpha1
-      kind: IngressRoute
-      name: prometheus-ingress
-    patch: |-
-      - op: replace
-        path: /spec/routes/0/match
-        value: "Host(`giftify-prometheus.chan99k.dev`)"
-  - target:
-      group: traefik.io
-      version: v1alpha1
-      kind: IngressRoute
-      name: redpanda-ingress
-    patch: |-
-      - op: replace
-        path: /spec/routes/0/match
-        value: "Host(`giftify-redpanda.chan99k.dev`)"
-  - target:
-      group: traefik.io
-      version: v1alpha1
-      kind: IngressRoute
-      name: redpanda-console-ingress
-    patch: |-
-      - op: replace
-        path: /spec/routes/0/match
-        value: "Host(`giftify-redpanda-console.chan99k.dev`)"
-  - target:
-      group: traefik.io
-      version: v1alpha1
-      kind: IngressRoute
-      name: elasticsearch-ingress
-    patch: |-
-      - op: replace
-        path: /spec/routes/0/match
-        value: "Host(`giftify-elasticsearch.chan99k.dev`)"
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: api-server
+    spec:
+      template:
+        spec:
+          containers:
+            - name: api-server
+              startupProbe:
+                httpGet:
+                  path: /actuator/health
+                  port: 8080
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                failureThreshold: 60
+              readinessProbe:
+                initialDelaySeconds: 5
+              livenessProbe:
+                initialDelaySeconds: 10
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: GF_SERVER_ROOT_URL
+        value: "https://giftify-grafana.chan99k.dev"
+  target:
+    kind: Deployment
+    name: grafana
+- patch: |-
+    - op: add
+      path: /spec/template/spec/imagePullSecrets
+      value:
+        - name: ghcr-secret
+  target:
+    kind: StatefulSet
+    name: elasticsearch
+- patch: |-
+    - op: replace
+      path: /spec/routes/0/match
+      value: "Host(`giftify-api.chan99k.dev`)"
+  target:
+    group: traefik.io
+    kind: IngressRoute
+    name: api-ingress
+    version: v1alpha1
+- patch: |-
+    - op: replace
+      path: /spec/routes/0/match
+      value: "Host(`giftify-grafana.chan99k.dev`)"
+  target:
+    group: traefik.io
+    kind: IngressRoute
+    name: grafana-ingress
+    version: v1alpha1
+- patch: |-
+    - op: replace
+      path: /spec/routes/0/match
+      value: "Host(`giftify-prometheus.chan99k.dev`)"
+  target:
+    group: traefik.io
+    kind: IngressRoute
+    name: prometheus-ingress
+    version: v1alpha1
+- patch: |-
+    - op: replace
+      path: /spec/routes/0/match
+      value: "Host(`giftify-redpanda.chan99k.dev`)"
+  target:
+    group: traefik.io
+    kind: IngressRoute
+    name: redpanda-ingress
+    version: v1alpha1
+- patch: |-
+    - op: replace
+      path: /spec/routes/0/match
+      value: "Host(`giftify-redpanda-console.chan99k.dev`)"
+  target:
+    group: traefik.io
+    kind: IngressRoute
+    name: redpanda-console-ingress
+    version: v1alpha1
+- patch: |-
+    - op: replace
+      path: /spec/routes/0/match
+      value: "Host(`giftify-elasticsearch.chan99k.dev`)"
+  target:
+    group: traefik.io
+    kind: IngressRoute
+    name: elasticsearch-ingress
+    version: v1alpha1
