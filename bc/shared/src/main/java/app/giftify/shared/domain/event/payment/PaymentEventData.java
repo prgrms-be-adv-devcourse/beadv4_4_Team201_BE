@@ -43,13 +43,13 @@ public record PaymentEventData(
     }
 
     public static PaymentEventData forCancel(
-            Long paymentId, Long orderId, Long memberId, String orderNumber, Money amount, Money walletDeductedAmount,
+            Long paymentId, Long orderId, Long memberId, String orderNumber, Money amount,
             PaymentMethod method, PaymentType type,
             CancelType cancelType, String reason,
             String transactionKey
     ) {
         return new PaymentEventData(
-                paymentId, orderId, memberId, orderNumber, amount, walletDeductedAmount,
+                paymentId, orderId, memberId, orderNumber, amount, Money.zero(),
                 method, type, cancelType, reason, null, transactionKey
         );
     }
