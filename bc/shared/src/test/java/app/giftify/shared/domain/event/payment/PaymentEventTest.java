@@ -36,7 +36,7 @@ class PaymentEventTest {
 	@DisplayName("PaymentFailedEvent")
 	void failedEvent() {
 		PaymentEventData data = PaymentEventData.forFailure(
-			1L, 100L, 10L, "ORD-001", Money.of(10000),
+			1L, 100L, 10L, "ORD-001", Money.of(10000), Money.zero(),
 			PaymentMethod.CARD, PaymentType.FUNDING
 		);
 

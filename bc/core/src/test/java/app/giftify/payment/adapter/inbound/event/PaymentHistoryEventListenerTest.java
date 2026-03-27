@@ -73,7 +73,7 @@ class PaymentHistoryEventListenerTest {
 		void savesHistory() {
 			PaymentFailedEvent event = PaymentFailedEvent.create(
 				PaymentEventData.forFailure(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
-					Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING));
+					Money.of(10000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING));
 
 			listener.onPaymentFailed(event);
 

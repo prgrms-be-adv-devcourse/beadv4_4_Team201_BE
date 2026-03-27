@@ -19,6 +19,8 @@ import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.application.inbound.RestoreWalletCommand;
 import app.giftify.wallet.application.inbound.RestoreWalletUseCase;
+import app.giftify.wallet.domain.ReferenceType;
+import app.giftify.wallet.domain.TransactionType;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentCanceledEventHandler 테스트")
@@ -52,7 +54,9 @@ class PaymentCanceledEventHandlerTest {
 		verify(restoreWalletUseCase).restore(new RestoreWalletCommand(
 			200L,
 			Money.of(5000),
-			"txKey-123"
+			"txKey-123",
+			TransactionType.CANCEL_REFUND,
+			ReferenceType.CANCEL
 		));
 	}
 
