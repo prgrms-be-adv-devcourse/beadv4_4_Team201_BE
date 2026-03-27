@@ -1,10 +1,5 @@
 package app.giftify.payment.application;
 
-import java.time.LocalDateTime;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
 import app.giftify.payment.application.inbound.ConfirmPaymentResult;
@@ -16,8 +11,11 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.event.EventPublisher;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 /**
  * 결제 승인 UseCase 구현체.
@@ -75,8 +73,15 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		);
 
 		if (!pgResult.success()) {
-			log.warn("[ConfirmPaymentService] PG 승인 실패. errorCode={}, errorMessage={}",
-				pgResult.errorCode(), pgResult.errorMessage());
+			log.warn("[ConfirmPaymentService] PG 승인 실패. paymentId={}, errorCode={}, errorMessage={}",
+					payment.getId(), pgResult.errorCode(), pgResult.errorMessage());
+
+			payment.markAsFailed(LocalDateTime.now());
+
+			var domainEvents = payment.pullEvents();
+			paymentRepository.save(payment);
+			domainEvents.forEach(eventPublisher::publish);
+
 			return ConfirmPaymentResult.failure(pgResult.errorCode(), pgResult.errorMessage());
 		}
 
