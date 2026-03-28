@@ -33,13 +33,14 @@ class PaymentCanceledEventHandlerTest {
 	PaymentCanceledEventHandler handler;
 
 	@Test
-	@DisplayName("Wallet 결제(DEPOSIT) 취소 시 Wallet 복원 호출")
-	void handleWalletPaymentCancel() {
+	@DisplayName("walletDeductedAmount > 0 취소 시 Wallet 복원 호출")
+	void handleWalletDeductedCancel() {
 		PaymentEventData data = PaymentEventData.forCancel(
 			1L,
 			100L,
 			200L,
 			"ORD-001",
+			Money.of(5000),
 			Money.of(5000),
 			PaymentMethod.DEPOSIT,
 			PaymentType.FUNDING,
@@ -61,14 +62,15 @@ class PaymentCanceledEventHandlerTest {
 	}
 
 	@Test
-	@DisplayName("비-Wallet 결제(CARD) 취소 시 Wallet 복원 호출 안 함")
-	void skipNonWalletPaymentCancel() {
+	@DisplayName("walletDeductedAmount == 0 취소 시 Wallet 복원 호출 안 함")
+	void skipZeroWalletDeductedCancel() {
 		PaymentEventData data = PaymentEventData.forCancel(
 			2L,
 			101L,
 			201L,
 			"ORD-002",
 			Money.of(10000),
+			Money.zero(),
 			PaymentMethod.CARD,
 			PaymentType.FUNDING,
 			CancelType.CANCEL,

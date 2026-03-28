@@ -135,7 +135,7 @@ class NotificationEventHandlerTest {
             Long memberId = 300L;
             PaymentCanceledEvent event = PaymentCanceledEvent.create(
                     PaymentEventData.forCancel(paymentId, 10L, memberId, "ORD-003",
-                            Money.of(3000), PaymentMethod.CARD, PaymentType.FUNDING,
+                            Money.of(3000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING,
                             CancelType.CANCEL, "사용자 요청", "txn-key-001"));
 
             CloudEventMeta meta = new CloudEventMeta(

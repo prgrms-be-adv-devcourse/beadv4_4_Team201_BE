@@ -1,6 +1,7 @@
 package app.giftify.wallet.adapter.inbound.event;
 
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
+import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.application.inbound.RestoreWalletCommand;
 import app.giftify.wallet.application.inbound.RestoreWalletUseCase;
 import app.giftify.wallet.domain.ReferenceType;
@@ -18,7 +19,7 @@ public class PaymentCanceledEventHandler {
 
     @ApplicationModuleListener
     public void handle(PaymentCanceledEvent event) {
-        if (!event.data().paymentMethod().isWalletPayment()) {
+        if (!event.data().walletDeductedAmount().isGreaterThan(Money.zero())) { //  walletDeductedAmount > 0이면 복원 (순수 CARD는 0이라 skip)
             return;
         }
 
@@ -27,7 +28,7 @@ public class PaymentCanceledEventHandler {
 
         restoreWalletUseCase.restore(new RestoreWalletCommand(
                 event.data().memberId(),
-                event.data().amount(),
+                event.data().walletDeductedAmount(),
                 event.data().transactionKey(),
                 TransactionType.CANCEL_REFUND,
                 ReferenceType.CANCEL

@@ -50,7 +50,7 @@ class PaymentEventTest {
 	@DisplayName("PaymentCanceledEvent - cancelType 포함")
 	void cancelSucceededEvent() {
 		PaymentEventData data = PaymentEventData.forCancel(
-			1L, 100L, 10L, "ORD-001", Money.of(10000),
+			1L, 100L, 10L, "ORD-001", Money.of(10000), Money.zero(),
 			PaymentMethod.CARD, PaymentType.FUNDING,
 			CancelType.REFUND, "고객 요청", "txn-key-001"
 		);
