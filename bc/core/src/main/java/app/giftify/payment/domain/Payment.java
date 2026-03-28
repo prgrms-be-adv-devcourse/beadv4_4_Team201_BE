@@ -46,7 +46,7 @@ public class Payment extends BaseDomainModel {
         this.originAmount = originAmount;
         this.paidAmount = paidAmount;
         this.refundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
-        this.walletDeductedAmount = walletDeductedAmount;
+        this.walletDeductedAmount = walletDeductedAmount != null ? walletDeductedAmount : Money.zero();
         this.orderItems = List.copyOf(orderItems);
         this.status = status;
         this.paymentKey = paymentKey;
@@ -103,7 +103,7 @@ public class Payment extends BaseDomainModel {
 
         registerEvent(PaymentCanceledEvent.create(
                 PaymentEventData.forCancel(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
+                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), this.walletDeductedAmount,
                         getMethod(), getType(), cancelType, reason, this.lastTransactionKey
                 )
         ));
@@ -126,7 +126,7 @@ public class Payment extends BaseDomainModel {
         registerEvent(PaymentCanceledEvent.create(
                 PaymentEventData.forCancel(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
-                        cancelAmount,
+                        cancelAmount, this.walletDeductedAmount,
                         getMethod(), getType(), cancelType, reason,
                         newTransactionKey
                 )
