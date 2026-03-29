@@ -76,7 +76,7 @@ public class Payment extends BaseDomainModel {
         this.paidAt = paidAt;
 
         registerEvent(PaymentSucceededEvent.create(
-                PaymentEventData.forSuccess(
+                new PaymentSuccessData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
                         getMethod(), getType(), paymentKey, lastTransactionKey
                 )
@@ -102,7 +102,7 @@ public class Payment extends BaseDomainModel {
         this.status = eventType.getResultStatus();
 
         registerEvent(PaymentCanceledEvent.create(
-                PaymentEventData.forCancel(
+                new PaymentCancelData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), this.walletDeductedAmount,
                         getMethod(), getType(), cancelType, reason, this.lastTransactionKey
                 )
@@ -124,7 +124,7 @@ public class Payment extends BaseDomainModel {
         this.lastTransactionKey = newTransactionKey;
 
         registerEvent(PaymentCanceledEvent.create(
-                PaymentEventData.forCancel(
+                new PaymentCancelData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
                         cancelAmount, this.walletDeductedAmount,
                         getMethod(), getType(), cancelType, reason,
@@ -158,7 +158,7 @@ public class Payment extends BaseDomainModel {
         this.status = PaymentEventType.FAILED.getResultStatus();
 
         registerEvent(PaymentFailedEvent.create(
-                PaymentEventData.forFailure(
+                new PaymentFailureData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), getWalletDeductedAmount(),
                         getMethod(), getType()
                 )
@@ -172,7 +172,7 @@ public class Payment extends BaseDomainModel {
         }
 
         registerEvent(PaymentCancelFailedEvent.create(
-                PaymentEventData.forCancelFailed(
+                new PaymentCancelFailedData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
                         getMethod(), getType(), errorMetadata
                 )

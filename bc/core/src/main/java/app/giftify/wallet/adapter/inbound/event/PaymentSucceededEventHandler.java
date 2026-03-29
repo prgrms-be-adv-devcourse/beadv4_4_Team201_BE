@@ -23,11 +23,11 @@ public class PaymentSucceededEventHandler {
 		}
 
 		log.info("[PaymentSucceededEventHandler] memberId={}, amount={}",
-			event.data().memberId(), event.data().amount());
+			event.data().memberId(), event.data().paidAmount());
 
 		chargeWalletUseCase.charge(new ChargeWalletCommand(
 			event.data().memberId(),
-			event.data().amount(),
+			event.data().paidAmount(),
 			event.data().orderNumber()
 		));
 	}

@@ -16,7 +16,7 @@ import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentCancelData;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ class OrderEventListenerTest {
     void recover_test_with_enum_retryable() {
         // given
         PaymentCanceledEvent event = PaymentCanceledEvent.create(
-                mock(PaymentEventData.class)
+                mock(PaymentCancelData.class)
         );
 
         // 1. 재시도가 가능한 Enum 값을 가진 실제 Exception 생성

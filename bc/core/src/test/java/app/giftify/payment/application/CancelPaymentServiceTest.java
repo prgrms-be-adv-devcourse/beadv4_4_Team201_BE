@@ -326,7 +326,7 @@ class CancelPaymentServiceTest {
 			assertThat(event.data().memberId()).isEqualTo(memberId);
 			assertThat(event.data().orderNumber()).isEqualTo(orderNumber);
 			assertThat(event.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
-			assertThat(event.data().amount()).isEqualTo(Money.of(10000));
+			assertThat(event.data().cancelAmount()).isEqualTo(Money.of(10000));
 			assertThat(event.data().reason()).isEqualTo(reason);
 			assertThat(event.time()).isNotNull();
 		}

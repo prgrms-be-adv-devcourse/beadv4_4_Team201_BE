@@ -102,7 +102,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			assertThat(events.get(0)).isInstanceOf(PaymentCanceledEvent.class);
 
 			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
-			assertThat(event.data().amount()).isEqualTo(cancelAmount);
+			assertThat(event.data().cancelAmount()).isEqualTo(cancelAmount);
 			assertThat(event.data().transactionKey()).isEqualTo(newTransactionKey);
 			assertThat(event.data().cancelType()).isEqualTo(CancelType.REFUND);
 			assertThat(event.data().reason()).isEqualTo(reason);
@@ -146,7 +146,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 			List<Object> events = payment.pullEvents();
 			assertThat(events).hasSize(1);
 			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
-			assertThat(event.data().amount()).isEqualTo(additionalCancelAmount);
+			assertThat(event.data().cancelAmount()).isEqualTo(additionalCancelAmount);
 		}
 
 		@Test
@@ -243,7 +243,7 @@ class PaymentMarkAsPartiallyCanceledTest {
 
 			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
 			assertThat(event.data().paymentId()).isEqualTo(1L);
-			assertThat(event.data().amount()).isEqualTo(cancelAmount);
+			assertThat(event.data().cancelAmount()).isEqualTo(cancelAmount);
 			assertThat(event.data().transactionKey()).isEqualTo(transactionKey);
 			assertThat(event.data().cancelType()).isEqualTo(CancelType.REFUND);
 			assertThat(event.data().reason()).isEqualTo(reason);

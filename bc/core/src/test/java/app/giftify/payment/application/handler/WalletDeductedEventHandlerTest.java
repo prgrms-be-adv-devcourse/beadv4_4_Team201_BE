@@ -99,7 +99,7 @@ class WalletDeductedEventHandlerTest {
 			assertThat(succeededEvent.data().memberId()).isEqualTo(memberId);
 			assertThat(succeededEvent.data().orderNumber()).isEqualTo(orderNumber);
 			assertThat(succeededEvent.data().paymentType()).isEqualTo(PaymentType.FUNDING);
-			assertThat(succeededEvent.data().amount()).isEqualTo(amount);
+			assertThat(succeededEvent.data().paidAmount()).isEqualTo(amount);
 		}
 
 		@Test
