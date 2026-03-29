@@ -38,7 +38,7 @@ public class WalletDeductedEventHandler {
 				"[WalletDeductedEventHandler] Payment를 찾을 수 없습니다. paymentId=" + event.getPaymentId()
 			));
 
-		Payment paid = payment.markAsPaid(null, null, null, event.getDeductedAt());
+		Payment paid = payment.complete(null, null, null, event.getDeductedAt());
 
 		var domainEvents = paid.pullEvents();
 		paymentRepository.save(paid);

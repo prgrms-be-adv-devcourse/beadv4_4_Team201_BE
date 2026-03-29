@@ -76,10 +76,10 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 			TossCancelResult pgResult = callPgCancel(payment, command.reason(), null);
 			if (pgResult == null) return;
 
-			canceled = payment.markAsCanceled(cancelType, command.reason());
+			canceled = payment.cancel(cancelType, command.reason());
 			saveCancelRecord(canceled, pgResult.lastTransactionKey(), canceled.getPaidAmount(), command.reason());
 		} else {
-			canceled = payment.markAsCanceled(cancelType, command.reason()); // PG 취소 불필요한 경우 (예: WALLET) 바로 상태 변경
+			canceled = payment.cancel(cancelType, command.reason()); // PG 취소 불필요한 경우 (예: WALLET) 바로 상태 변경
 		}
 
 		saveAndPublish(canceled);
@@ -95,7 +95,7 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		TossCancelResult pgResult = callPgCancel(payment, command.reason(), cancelAmount);
 		if (pgResult == null) return;
 
-		Payment partiallyCanceled = payment.markAsPartiallyCanceled(
+		Payment partiallyCanceled = payment.partialCancel(
 				pgResult.lastTransactionKey(), cancelAmount, CancelType.REFUND, command.reason()
 		);
 		saveCancelRecord(partiallyCanceled, pgResult.lastTransactionKey(), cancelAmount, command.reason());
@@ -108,7 +108,7 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		TossCancelResult pgResult = paymentGateway.cancel(decryptedPaymentKey, reason, cancelAmount);
 
 		if (!pgResult.success()) {
-			Payment cancelFailed = payment.recordCancelFailed(pgResult.errorMessage(), LocalDateTime.now());
+			Payment cancelFailed = payment.failCancel(pgResult.errorMessage(), LocalDateTime.now());
 			var failEvents = cancelFailed.pullEvents();
 			paymentRepository.save(cancelFailed);
 			failEvents.forEach(eventPublisher::publish);

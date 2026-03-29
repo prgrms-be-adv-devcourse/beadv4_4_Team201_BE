@@ -76,7 +76,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 			log.warn("[ConfirmPaymentService] PG 승인 실패. paymentId={}, errorCode={}, errorMessage={}",
 					payment.getId(), pgResult.errorCode(), pgResult.errorMessage());
 
-			Payment failed = payment.markAsFailed(LocalDateTime.now());
+			Payment failed = payment.fail(LocalDateTime.now());
 
 			var domainEvents = failed.pullEvents();
 			paymentRepository.save(failed);
@@ -90,7 +90,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 		LocalDateTime paidAt = LocalDateTime.now();
 
 		// 6. 상태 변경 (도메인 메서드 — 내부적으로 registerEvent 호출)
-		Payment paid = payment.markAsPaid(
+		Payment paid = payment.complete(
 				encryptedPaymentKey,
 				pgResult.approveNo(),
 				pgResult.lastTransactionKey(),

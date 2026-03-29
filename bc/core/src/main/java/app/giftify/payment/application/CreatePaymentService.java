@@ -13,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-
 @Slf4j
 @Service
 @Transactional
@@ -52,12 +50,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
                 PaymentMethod.CARD
         );
 
-        Payment payment = Payment.create(
-                context,
-                command.amount(),
-                command.amount(),
-                Collections.emptyList()
-        );
+        Payment payment = Payment.createForDepositCharge(context, command.amount());
 
         Payment savedPayment = paymentRepository.save(payment);
 
@@ -100,7 +93,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreateFunding
                 command.method()
         );
 
-        Payment payment = Payment.create(
+        Payment payment = Payment.createForFunding(
                 context,
                 command.expectedAmount(),
                 command.expectedAmount(),

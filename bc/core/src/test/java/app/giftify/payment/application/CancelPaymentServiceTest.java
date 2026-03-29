@@ -95,7 +95,7 @@ class CancelPaymentServiceTest {
 
 	private Payment createCanceledPayment(Long paymentId, Long memberId, String orderNumber) {
 		Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
-		Payment canceled = payment.markAsCanceled(CancelType.CANCEL, "이전 취소");
+		Payment canceled = payment.cancel(CancelType.CANCEL, "이전 취소");
 		canceled.pullEvents();
 		return canceled;
 	}
