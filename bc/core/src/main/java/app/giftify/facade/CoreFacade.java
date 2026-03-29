@@ -9,7 +9,7 @@ import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
-import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class CoreFacade {
     public PlaceOrderResult participateFunding(ParticipateFundingCommand command) {
         OrderSnapshot orderSnapshot = orderService.createOrder(PlaceOrderCommand.of(command));
 
-        CreateFundingPaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
+        CreatePaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
         PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);
 
         MarkOrderAsPaidCommand markOrderAsPaidCommand = new MarkOrderAsPaidCommand(
@@ -52,8 +52,8 @@ public class CoreFacade {
         return new PlaceOrderResult(orderSnapshot.orderId());
     }
 
-    private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
-        return CreateFundingPaymentCommand.of(
+    private static @NonNull CreatePaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
+        return CreatePaymentCommand.of(
                 orderSnapshot.buyerId(),
                 orderSnapshot.orderId(),
                 orderSnapshot.orderNumber(),

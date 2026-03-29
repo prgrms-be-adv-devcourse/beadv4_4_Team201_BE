@@ -15,11 +15,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.application.strategy.PaymentCreateStrategy;
+import app.giftify.payment.application.strategy.PgPaymentCreateStrategy;
+import app.giftify.payment.application.strategy.WalletPaymentCreateStrategy;
 import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
@@ -42,8 +46,11 @@ class CreatePaymentServiceTest {
 	@Mock
 	private DeductWalletUseCase deductWalletUseCase;
 
-	@InjectMocks
 	private CreatePaymentService createPaymentService;
+
+	private void setupWithStrategies(PaymentCreateStrategy... strategies) {
+		createPaymentService = new CreatePaymentService(paymentRepository, List.of(strategies));
+	}
 
 	@Nested
 	@DisplayName("create 메서드")
@@ -53,6 +60,8 @@ class CreatePaymentServiceTest {
 		@DisplayName("멱등성 키(orderId)가 일치하는 기존 결제가 있으면 해당 결제를 반환한다")
 		void create_ReturnsExistingPayment_WhenIdempotencyKeyMatches() {
 			// given
+			setupWithStrategies(new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
@@ -61,7 +70,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
@@ -95,13 +104,14 @@ class CreatePaymentServiceTest {
 			assertThat(result.createdAt()).isNull();
 
 			verify(paymentRepository, never()).save(any());
-			verify(deductWalletUseCase, never()).deductForPayment(any());
 		}
 
 		@Test
 		@DisplayName("CARD 결제를 정상적으로 생성한다")
 		void create_CreatesNewCardPayment_Successfully() {
 			// given
+			setupWithStrategies(new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
@@ -110,7 +120,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
@@ -148,7 +158,6 @@ class CreatePaymentServiceTest {
 			assertThat(result.createdAt()).isEqualTo(createdAt);
 
 			verify(paymentRepository).save(any(Payment.class));
-			verify(deductWalletUseCase, never()).deductForPayment(any());
 		}
 	}
 
@@ -160,6 +169,9 @@ class CreatePaymentServiceTest {
 		@DisplayName("DEPOSIT 결제를 정상적으로 생성하고 지갑 차감을 호출한다")
 		void create_CreatesNewWalletPayment_AndCallsWalletDeduction() {
 			// given
+			WalletPaymentCreateStrategy walletStrategy = new WalletPaymentCreateStrategy(deductWalletUseCase);
+			setupWithStrategies(walletStrategy, new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
@@ -168,7 +180,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				amount, orderItems
@@ -223,6 +235,9 @@ class CreatePaymentServiceTest {
 		@DisplayName("지갑 잔액이 부족하면 예외를 던진다")
 		void create_ThrowsException_WhenWalletBalanceInsufficient() {
 			// given
+			WalletPaymentCreateStrategy walletStrategy = new WalletPaymentCreateStrategy(deductWalletUseCase);
+			setupWithStrategies(walletStrategy, new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
@@ -232,7 +247,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
@@ -275,6 +290,9 @@ class CreatePaymentServiceTest {
 		@DisplayName("기존 DEPOSIT 결제가 있으면 해당 결제를 반환한다")
 		void create_ReturnsExistingWalletPayment() {
 			// given
+			WalletPaymentCreateStrategy walletStrategy = new WalletPaymentCreateStrategy(deductWalletUseCase);
+			setupWithStrategies(walletStrategy, new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
@@ -283,7 +301,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				amount, orderItems
@@ -329,6 +347,8 @@ class CreatePaymentServiceTest {
 		@DisplayName("Payment 저장 시 올바른 값이 전달된다")
 		void create_SavesPaymentWithCorrectValues() {
 			// given
+			setupWithStrategies(new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
@@ -337,7 +357,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems

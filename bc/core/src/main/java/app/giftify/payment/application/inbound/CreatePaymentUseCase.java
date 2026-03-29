@@ -5,6 +5,6 @@ package app.giftify.payment.application.inbound;
  *
  * <p>펀딩 참여를 위한 결제를 생성합니다.</p>
  */
-public interface CreateFundingPaymentUseCase {
-	PaymentCreatedResult create(CreateFundingPaymentCommand command);
+public interface CreatePaymentUseCase {
+	PaymentCreatedResult create(CreatePaymentCommand command);
 }

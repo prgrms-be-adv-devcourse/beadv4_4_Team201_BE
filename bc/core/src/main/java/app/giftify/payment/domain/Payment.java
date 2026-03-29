@@ -105,7 +105,7 @@ public class Payment extends BaseDomainModel {
                 .build();
     }
 
-    public static Payment createForFunding(
+    public static Payment create(
             PaymentCreateContext context,
             Money originAmount,
             Money paidAmount,

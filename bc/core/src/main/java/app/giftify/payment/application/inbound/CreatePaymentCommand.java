@@ -9,7 +9,7 @@ import app.giftify.shared.domain.vo.Money;
 
 import java.util.List;
 
-public record CreateFundingPaymentCommand(
+public record CreatePaymentCommand(
         Long memberId,
         Long orderId,
         String orderNumber,
@@ -18,7 +18,7 @@ public record CreateFundingPaymentCommand(
         Money walletDeductAmount,
         List<OrderItemSnapshot> orderItems
 ) {
-    public CreateFundingPaymentCommand {
+    public CreatePaymentCommand {
         if (memberId == null) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
                     "[CreateFundingPaymentCommand] memberId는 필수입니다.");
@@ -61,21 +61,21 @@ public record CreateFundingPaymentCommand(
         }
     }
 
-    public static CreateFundingPaymentCommand of(
+    public static CreatePaymentCommand of(
             Long memberId, Long orderId, String orderNumber,
             PaymentMethod method, Money expectedAmount, List<OrderItemSnapshot> orderItems
     ) {
-        return new CreateFundingPaymentCommand(
+        return new CreatePaymentCommand(
                 memberId, orderId, orderNumber, method, expectedAmount,
                 Money.zero(), orderItems);
     }
 
-    public static CreateFundingPaymentCommand withWalletDeduct(
+    public static CreatePaymentCommand withWalletDeduct(
             Long memberId, Long orderId, String orderNumber,
             PaymentMethod method, Money expectedAmount, Money walletDeductAmount,
             List<OrderItemSnapshot> orderItems
     ) {
-        return new CreateFundingPaymentCommand(
+        return new CreatePaymentCommand(
                 memberId, orderId, orderNumber, method, expectedAmount,
                 walletDeductAmount, orderItems);
     }

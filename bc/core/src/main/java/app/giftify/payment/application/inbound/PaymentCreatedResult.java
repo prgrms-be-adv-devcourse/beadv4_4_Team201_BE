@@ -1,8 +1,9 @@
 package app.giftify.payment.application.inbound;
 
-import java.time.LocalDateTime;
-
+import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
+
+import java.time.LocalDateTime;
 
 /**
  * 결제 생성 결과.
@@ -12,11 +13,22 @@ import app.giftify.payment.domain.PaymentStatus;
  * 예치금 결제 등 PG를 사용하지 않는 경우 null입니다.</p>
  */
 public record PaymentCreatedResult(
-	Long paymentId,
-	String orderNumber,
-	PaymentStatus status,
-	String paymentKey,
-	String lastTransactionKey,
-	LocalDateTime createdAt
+        Long paymentId,
+        String orderNumber,
+        PaymentStatus status,
+        String paymentKey,
+        String lastTransactionKey,
+        LocalDateTime createdAt
 ) {
+    public static PaymentCreatedResult from(Payment payment) {
+        return new PaymentCreatedResult(
+                payment.getId(),
+                payment.getOrderNumber(),
+                payment.getStatus(),
+                payment.getPaymentKey(),
+                payment.getLastTransactionKey(),
+                payment.getCreatedAt()
+        );
+    }
+
 }
