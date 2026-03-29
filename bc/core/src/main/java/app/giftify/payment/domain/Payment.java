@@ -22,7 +22,7 @@ public class Payment extends BaseDomainModel {
     private final Long orderId;
     private final String orderNumber;
     private final Long memberId;
-    private final Money originAmount; // FIXME :: 도메인 모델 개선 필요
+    private final Money originAmount; // FIXME :: originAmount 의미 재정의 + PaymentAmountInfo VO 도입
     private final Money paidAmount;
     private final Money refundedAmount;
     private final Money walletDeductedAmount;

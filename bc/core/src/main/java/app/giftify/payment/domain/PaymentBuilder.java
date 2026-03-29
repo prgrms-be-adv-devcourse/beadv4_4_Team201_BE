@@ -7,6 +7,7 @@ import app.giftify.shared.domain.vo.Money;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// FIXME :: orderPaymentDetail(OrderPaymentDetail) 직접 주입 방식으로 전환, 개별 setter 제거
 public class PaymentBuilder {
     private Long id;
     private Long orderId;
