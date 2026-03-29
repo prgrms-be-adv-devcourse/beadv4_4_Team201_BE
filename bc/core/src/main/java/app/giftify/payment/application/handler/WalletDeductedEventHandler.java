@@ -38,13 +38,13 @@ public class WalletDeductedEventHandler {
 				"[WalletDeductedEventHandler] Payment를 찾을 수 없습니다. paymentId=" + event.getPaymentId()
 			));
 
-		payment.markAsPaid(null, null, null, event.getDeductedAt());
+		Payment paid = payment.markAsPaid(null, null, null, event.getDeductedAt());
 
-		var domainEvents = payment.pullEvents();
-		paymentRepository.save(payment);
+		var domainEvents = paid.pullEvents();
+		paymentRepository.save(paid);
 		domainEvents.forEach(eventPublisher::publish);
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
-			payment.getId(), payment.getStatus());
+				paid.getId(), paid.getStatus());
 	}
 }

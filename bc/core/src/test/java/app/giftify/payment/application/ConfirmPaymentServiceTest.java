@@ -112,7 +112,7 @@ class ConfirmPaymentServiceTest {
 			given(paymentGateway.confirm(paymentKey, orderNumber, amount))
 				.willReturn(TossConfirmResult.success(paymentKey, "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn("encrypted-payment-key");
-			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
+			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
 			ConfirmPaymentResult result = confirmPaymentService.confirm(command);
@@ -120,12 +120,15 @@ class ConfirmPaymentServiceTest {
 			// then
 			assertThat(result.success()).isTrue();
 			assertThat(result.paymentId()).isEqualTo(paymentId);
-			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+
+			ArgumentCaptor<Payment> captor = ArgumentCaptor.forClass(Payment.class);
+			verify(paymentRepository).save(captor.capture());
+			Payment savedPayment = captor.getValue();
+			assertThat(savedPayment.getStatus()).isEqualTo(PaymentStatus.PAID);
 
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentGateway).confirm(paymentKey, orderNumber, amount);
 			verify(encryptor).encrypt(paymentKey);
-			verify(paymentRepository).save(payment);
 		}
 
 		@Test
@@ -328,14 +331,17 @@ class ConfirmPaymentServiceTest {
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 			given(paymentGateway.confirm(anyString(), anyString(), any())).willReturn(TossConfirmResult.success("test-payment-key", "txn-key-001", "12345678"));
 			given(encryptor.encrypt(paymentKey)).willReturn(encryptedPaymentKey);
-			given(paymentRepository.save(any(Payment.class))).willReturn(payment);
+			given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
 			confirmPaymentService.confirm(command);
 
 			// then
 			verify(encryptor).encrypt(paymentKey);
-			assertThat(payment.getPaymentKey()).isEqualTo(encryptedPaymentKey);
+
+			ArgumentCaptor<Payment> captor = ArgumentCaptor.forClass(Payment.class);
+			verify(paymentRepository).save(captor.capture());
+			assertThat(captor.getValue().getPaymentKey()).isEqualTo(encryptedPaymentKey);
 		}
 	}
 }

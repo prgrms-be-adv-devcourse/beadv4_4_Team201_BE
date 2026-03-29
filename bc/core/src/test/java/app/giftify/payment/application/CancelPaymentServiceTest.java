@@ -95,9 +95,9 @@ class CancelPaymentServiceTest {
 
 	private Payment createCanceledPayment(Long paymentId, Long memberId, String orderNumber) {
 		Payment payment = createPendingPayment(paymentId, memberId, orderNumber);
-		payment.markAsCanceled(CancelType.CANCEL, "이전 취소");
-		payment.pullEvents();  // 테스트에 불필요한 이벤트 비우기
-		return payment;
+		Payment canceled = payment.markAsCanceled(CancelType.CANCEL, "이전 취소");
+		canceled.pullEvents();
+		return canceled;
 	}
 
 	@Nested
@@ -380,7 +380,10 @@ class CancelPaymentServiceTest {
 
 			// then
 			verify(paymentGateway).cancel("raw-payment-key", "부분 환불", cancelAmount);
-			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
+
+			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
+			verify(paymentRepository).save(paymentCaptor.capture());
+			assertThat(paymentCaptor.getValue().getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
 
 			ArgumentCaptor<Cancel> cancelCaptor = ArgumentCaptor.forClass(Cancel.class);
 			verify(cancelRepository).save(cancelCaptor.capture());

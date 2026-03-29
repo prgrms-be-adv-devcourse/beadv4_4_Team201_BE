@@ -90,14 +90,14 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "부분 환불 요청";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, CancelType.REFUND, reason);
+			Payment result = payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, CancelType.REFUND, reason);
 
 			// then
-			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
-			assertThat(payment.getRefundedAmount()).isEqualTo(Money.of(3000));
-			assertThat(payment.getLastTransactionKey()).isEqualTo(newTransactionKey);
+			assertThat(result.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
+			assertThat(result.getRefundedAmount()).isEqualTo(Money.of(3000));
+			assertThat(result.getLastTransactionKey()).isEqualTo(newTransactionKey);
 
-			List<Object> events = payment.pullEvents();
+			List<Object> events = result.pullEvents();
 			assertThat(events).hasSize(1);
 			assertThat(events.get(0)).isInstanceOf(PaymentCanceledEvent.class);
 
@@ -118,12 +118,12 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "전액 환불";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, CancelType.REFUND, reason);
+			Payment result = payment.markAsPartiallyCanceled(newTransactionKey, cancelAmount, CancelType.REFUND, reason);
 
 			// then
-			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
-			assertThat(payment.getRefundedAmount()).isEqualTo(Money.of(10000));
-			assertThat(payment.getLastTransactionKey()).isEqualTo(newTransactionKey);
+			assertThat(result.getStatus()).isEqualTo(PaymentStatus.CANCELED);
+			assertThat(result.getRefundedAmount()).isEqualTo(Money.of(10000));
+			assertThat(result.getLastTransactionKey()).isEqualTo(newTransactionKey);
 		}
 
 		@Test
@@ -136,14 +136,14 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "추가 부분 환불";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, additionalCancelAmount, CancelType.REFUND, reason);
+			Payment result = payment.markAsPartiallyCanceled(newTransactionKey, additionalCancelAmount, CancelType.REFUND, reason);
 
 			// then
-			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
-			assertThat(payment.getRefundedAmount()).isEqualTo(Money.of(5000));
-			assertThat(payment.getLastTransactionKey()).isEqualTo(newTransactionKey);
+			assertThat(result.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_CANCELED);
+			assertThat(result.getRefundedAmount()).isEqualTo(Money.of(5000));
+			assertThat(result.getLastTransactionKey()).isEqualTo(newTransactionKey);
 
-			List<Object> events = payment.pullEvents();
+			List<Object> events = result.pullEvents();
 			assertThat(events).hasSize(1);
 			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
 			assertThat(event.data().cancelAmount()).isEqualTo(additionalCancelAmount);
@@ -159,12 +159,12 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "최종 취소";
 
 			// when
-			payment.markAsPartiallyCanceled(newTransactionKey, finalCancelAmount, CancelType.REFUND, reason);
+			Payment result = payment.markAsPartiallyCanceled(newTransactionKey, finalCancelAmount, CancelType.REFUND, reason);
 
 			// then
-			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
-			assertThat(payment.getRefundedAmount()).isEqualTo(Money.of(10000));
-			assertThat(payment.getLastTransactionKey()).isEqualTo(newTransactionKey);
+			assertThat(result.getStatus()).isEqualTo(PaymentStatus.CANCELED);
+			assertThat(result.getRefundedAmount()).isEqualTo(Money.of(10000));
+			assertThat(result.getLastTransactionKey()).isEqualTo(newTransactionKey);
 		}
 	}
 
@@ -235,10 +235,10 @@ class PaymentMarkAsPartiallyCanceledTest {
 			String reason = "환불 테스트";
 
 			// when
-			payment.markAsPartiallyCanceled(transactionKey, cancelAmount, CancelType.REFUND, reason);
+			Payment result = payment.markAsPartiallyCanceled(transactionKey, cancelAmount, CancelType.REFUND, reason);
 
 			// then
-			List<Object> events = payment.pullEvents();
+			List<Object> events = result.pullEvents();
 			assertThat(events).hasSize(1);
 
 			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);

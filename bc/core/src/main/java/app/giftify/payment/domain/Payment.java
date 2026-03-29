@@ -19,16 +19,16 @@ public class Payment extends BaseDomainModel {
     private final Long memberId;
     private final Money originAmount;
     private final Money paidAmount;
-    private Money refundedAmount;
+    private final Money refundedAmount;
     private final Money walletDeductedAmount;
     private final List<OrderItemSnapshot> orderItems;
 
-    private PaymentStatus status;
-    private String paymentKey;
-    private String lastTransactionKey;
-    private String approveCode;
+    private final PaymentStatus status;
+    private final String paymentKey;
+    private final String lastTransactionKey;
+    private final String approveCode;
     // 도메인이 스냅샷으로 들고 있되, 생성은 JPA에 위임
-    private LocalDateTime paidAt;
+    private final LocalDateTime paidAt;
     private final LocalDateTime createdAt;
 
     private Payment(Long id, PaymentType type, PaymentMethod method,
@@ -64,23 +64,30 @@ public class Payment extends BaseDomainModel {
 
     // ========== 상태 변경 메서드 ========== //
 
-    public void markAsPaid(String paymentKey, String approveCode, String lastTransactionKey, LocalDateTime paidAt) {
+    public Payment markAsPaid(String paymentKey, String approveCode, String lastTransactionKey, LocalDateTime paidAt) {
         if (!PaymentEventType.PAID.canApply(this.status)) {
             throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
                     "[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
         }
-        this.status = PaymentEventType.PAID.getResultStatus();
-        this.paymentKey = paymentKey;
-        this.approveCode = approveCode;
-        this.lastTransactionKey = lastTransactionKey;
-        this.paidAt = paidAt;
 
-        registerEvent(PaymentSucceededEvent.create(
+        Payment paid = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount, this.orderItems,
+                PaymentEventType.PAID.getResultStatus(),
+                paymentKey, lastTransactionKey, approveCode,
+                paidAt, this.createdAt
+        );
+
+        paid.registerEvent(PaymentSucceededEvent.create(
                 new PaymentSuccessData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
                         getMethod(), getType(), paymentKey, lastTransactionKey
                 )
         ));
+
+        return paid;
     }
 
     // charged (PAID, PARTIALLY_CANCELED) -> REFUND, uncharged (PENDING) -> CANCEL
@@ -90,7 +97,9 @@ public class Payment extends BaseDomainModel {
                 : CancelType.CANCEL;
     }
 
-    public void markAsCanceled(CancelType cancelType, String reason) {
+    public Payment markAsCanceled(CancelType cancelType, String reason) {
+        Objects.requireNonNull(cancelType, "cancelType must not be null");
+
         PaymentEventType eventType = (cancelType == CancelType.REFUND)
                 ? PaymentEventType.CANCEL_AFTER_PAID
                 : PaymentEventType.CANCELED;
@@ -99,17 +108,32 @@ public class Payment extends BaseDomainModel {
             throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
                     "[Payment] 취소 불가능한 상태입니다: " + this.status);
         }
-        this.status = eventType.getResultStatus();
 
-        registerEvent(PaymentCanceledEvent.create(
+        Payment canceled = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount, this.orderItems,
+                eventType.getResultStatus(),
+                this.paymentKey, this.lastTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
+
+        canceled.registerEvent(PaymentCanceledEvent.create(
                 new PaymentCancelData(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), this.walletDeductedAmount,
+                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
+                        this.walletDeductedAmount,
                         getMethod(), getType(), cancelType, reason, this.lastTransactionKey
                 )
         ));
+
+        return canceled;
     }
 
-    public void markAsPartiallyCanceled(String newTransactionKey, Money cancelAmount, CancelType cancelType, String reason) {
+    public Payment markAsPartiallyCanceled(String newTransactionKey, Money cancelAmount, CancelType cancelType, String
+            reason) {
+        Objects.requireNonNull(cancelAmount, "cancelAmount must not be null");
+
         Money newRefundedTotal = this.refundedAmount.plus(cancelAmount);
 
         PaymentEventType eventType = getCancelingEventType(newRefundedTotal);
@@ -119,11 +143,17 @@ public class Payment extends BaseDomainModel {
                     "[Payment] 취소 불가능한 상태입니다: " + this.status);
         }
 
-        this.status = eventType.getResultStatus();
-        this.refundedAmount = newRefundedTotal;
-        this.lastTransactionKey = newTransactionKey;
+        Payment partiallyCanceled = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, newRefundedTotal,
+                this.walletDeductedAmount, this.orderItems,
+                eventType.getResultStatus(),
+                this.paymentKey, newTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
 
-        registerEvent(PaymentCanceledEvent.create(
+        partiallyCanceled.registerEvent(PaymentCanceledEvent.create(
                 new PaymentCancelData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
                         cancelAmount, this.walletDeductedAmount,
@@ -131,6 +161,8 @@ public class Payment extends BaseDomainModel {
                         newTransactionKey
                 )
         ));
+
+        return partiallyCanceled;
     }
 
     private PaymentEventType getCancelingEventType(Money money) {
@@ -150,33 +182,57 @@ public class Payment extends BaseDomainModel {
         return eventType;
     }
 
-    public void markAsFailed(LocalDateTime occurredAt) {
+    public Payment markAsFailed(LocalDateTime occurredAt) {
         if (!PaymentEventType.FAILED.canApply(this.status)) {
             throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
                     "[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
         }
-        this.status = PaymentEventType.FAILED.getResultStatus();
 
-        registerEvent(PaymentFailedEvent.create(
+        Payment failed = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount, this.orderItems,
+                PaymentEventType.FAILED.getResultStatus(),
+                this.paymentKey, this.lastTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
+
+        failed.registerEvent(PaymentFailedEvent.create(
                 new PaymentFailureData(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), getWalletDeductedAmount(),
+                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
+                        getWalletDeductedAmount(),
                         getMethod(), getType()
                 )
         ));
+
+        return failed;
     }
 
-    public void recordCancelFailed(String errorMetadata, LocalDateTime occurredAt) {
+    public Payment recordCancelFailed(String errorMetadata, LocalDateTime occurredAt) {
         if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
             throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
                     "[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
         }
 
-        registerEvent(PaymentCancelFailedEvent.create(
+        Payment cancelFailed = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount, this.orderItems,
+                this.status,
+                this.paymentKey, this.lastTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
+
+        cancelFailed.registerEvent(PaymentCancelFailedEvent.create(
                 new PaymentCancelFailedData(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
                         getMethod(), getType(), errorMetadata
                 )
         ));
+
+        return cancelFailed;
     }
 
     // ========== 상태 조회 메서드 ========== //
