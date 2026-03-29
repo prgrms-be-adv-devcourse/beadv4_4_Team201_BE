@@ -108,7 +108,7 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		TossCancelResult pgResult = paymentGateway.cancel(decryptedPaymentKey, reason, cancelAmount);
 
 		if (!pgResult.success()) {
-			Payment cancelFailed = payment.failCancel(pgResult.errorMessage(), LocalDateTime.now());
+			Payment cancelFailed = payment.failCancel(pgResult.errorMessage());
 			var failEvents = cancelFailed.pullEvents();
 			paymentRepository.save(cancelFailed);
 			failEvents.forEach(eventPublisher::publish);

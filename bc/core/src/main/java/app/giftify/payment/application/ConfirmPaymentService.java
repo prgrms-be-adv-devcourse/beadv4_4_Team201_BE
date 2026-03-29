@@ -76,7 +76,7 @@ public class ConfirmPaymentService implements ConfirmPaymentUseCase {
 			log.warn("[ConfirmPaymentService] PG 승인 실패. paymentId={}, errorCode={}, errorMessage={}",
 					payment.getId(), pgResult.errorCode(), pgResult.errorMessage());
 
-			Payment failed = payment.fail(LocalDateTime.now());
+			Payment failed = payment.fail();
 
 			var domainEvents = failed.pullEvents();
 			paymentRepository.save(failed);

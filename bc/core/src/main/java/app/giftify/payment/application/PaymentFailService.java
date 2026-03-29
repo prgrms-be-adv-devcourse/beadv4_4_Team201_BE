@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class PaymentFailService implements FailPaymentUseCase {
 	@Override
 	@Transactional
 	public void fail(Payment payment) {
-		Payment failed = payment.fail(LocalDateTime.now());
+		Payment failed = payment.fail();
 		var domainEvents = failed.pullEvents();
 		paymentRepository.save(failed);
 		domainEvents.forEach(eventPublisher::publish);

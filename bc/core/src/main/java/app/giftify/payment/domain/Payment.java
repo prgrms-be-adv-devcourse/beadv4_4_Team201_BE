@@ -225,7 +225,7 @@ public class Payment extends BaseDomainModel {
     }
 
     @CheckReturnValue
-    public Payment fail(LocalDateTime occurredAt) {
+    public Payment fail() {
         if (!PaymentEventType.FAILED.canApply(this.status)) {
             throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
                     "[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
@@ -253,7 +253,7 @@ public class Payment extends BaseDomainModel {
     }
 
     @CheckReturnValue
-    public Payment failCancel(String errorMetadata, LocalDateTime occurredAt) {
+    public Payment failCancel(String errorMetadata) {
         if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
             throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
                     "[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
