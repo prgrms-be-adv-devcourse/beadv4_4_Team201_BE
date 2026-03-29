@@ -68,7 +68,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreatePayment
                 command.memberId(),
                 command.orderId(),
                 command.orderNumber(),
-                command.getType(),
+                command.paymentType(),
                 command.method()
         );
 

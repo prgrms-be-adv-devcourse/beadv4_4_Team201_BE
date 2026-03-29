@@ -72,7 +72,7 @@ class CreatePaymentServiceTest {
 
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.CARD,
+				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
 
@@ -122,7 +122,7 @@ class CreatePaymentServiceTest {
 
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.CARD,
+				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
 
@@ -182,7 +182,7 @@ class CreatePaymentServiceTest {
 
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.DEPOSIT,
+				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
@@ -249,7 +249,7 @@ class CreatePaymentServiceTest {
 
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.DEPOSIT,
+				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
 			);
 
@@ -303,7 +303,7 @@ class CreatePaymentServiceTest {
 
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.DEPOSIT,
+				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
 				amount, orderItems
 			);
 
@@ -359,7 +359,7 @@ class CreatePaymentServiceTest {
 
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.CARD,
+				PaymentType.FUNDING, PaymentMethod.CARD,
 				amount, orderItems
 			);
 

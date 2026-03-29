@@ -11,6 +11,7 @@ import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -52,11 +53,14 @@ public class CoreFacade {
         return new PlaceOrderResult(orderSnapshot.orderId());
     }
 
+    // FIXME: PaymentType을 OrderSnapshot의 주문 항목 타입(OrderItemType)으로부터 결정하도록 변경 필요
+    //        현재는 participateFunding() 전용이라 FUNDING 하드코딩. 일반 상품 구매 추가 시 수정.
     private static @NonNull CreatePaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
         return CreatePaymentCommand.of(
                 orderSnapshot.buyerId(),
                 orderSnapshot.orderId(),
                 orderSnapshot.orderNumber(),
+                PaymentType.FUNDING,
                 orderSnapshot.paymentMethod(),
                 orderSnapshot.totalAmount(),
                 OrderItemSnapshotMapper.fromOrderList(orderSnapshot.orderItemSnapshots())

@@ -13,6 +13,7 @@ public record CreatePaymentCommand(
         Long memberId,
         Long orderId,
         String orderNumber,
+        PaymentType paymentType,
         PaymentMethod method,
         Money expectedAmount,
         Money walletDeductAmount,
@@ -21,31 +22,35 @@ public record CreatePaymentCommand(
     public CreatePaymentCommand {
         if (memberId == null) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] memberId는 필수입니다.");
+                    "[CreatePaymentCommand] memberId는 필수입니다.");
         }
         if (orderNumber == null || orderNumber.isBlank()) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] orderNumber는 필수입니다.");
+                    "[CreatePaymentCommand] orderNumber는 필수입니다.");
+        }
+        if (paymentType == null) {
+            throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
+                    "[CreatePaymentCommand] paymentType는 필수입니다.");
         }
         if (method == null) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] method는 필수입니다.");
+                    "[CreatePaymentCommand] method는 필수입니다.");
         }
         if (orderItems == null || orderItems.isEmpty()) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] orderItems는 필수입니다.");
+                    "[CreatePaymentCommand] orderItems는 필수입니다.");
         }
         if (expectedAmount == null) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] expectedAmount는 필수입니다.");
+                    "[CreatePaymentCommand] expectedAmount는 필수입니다.");
         }
         if (walletDeductAmount == null) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] walletDeductAmount는 필수입니다.");
+                    "[CreatePaymentCommand] walletDeductAmount는 필수입니다.");
         }
         if (walletDeductAmount.isGreaterThan(expectedAmount)) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[CreateFundingPaymentCommand] walletDeductAmount는 expectedAmount를 초과할 수 없습니다.");
+                    "[CreatePaymentCommand] walletDeductAmount는 expectedAmount를 초과할 수 없습니다.");
         }
 
 
@@ -56,35 +61,30 @@ public record CreatePaymentCommand(
 
         if (!itemsTotal.equals(expectedAmount)) {
             throw new PaymentException(PaymentErrorCode.AMOUNT_MISMATCH,
-                    String.format("[CreateFundingPaymentCommand] 주문 금액이 변경되었습니다. " +
+                    String.format("[CreatePaymentCommand] 주문 금액이 변경되었습니다. " +
                             "기대 금액: %s, 현재 금액: %s", expectedAmount, itemsTotal));
         }
     }
 
     public static CreatePaymentCommand of(
             Long memberId, Long orderId, String orderNumber,
-            PaymentMethod method, Money expectedAmount, List<OrderItemSnapshot> orderItems
+            PaymentType paymentType, PaymentMethod method,
+            Money expectedAmount, List<OrderItemSnapshot> orderItems
     ) {
         return new CreatePaymentCommand(
-                memberId, orderId, orderNumber, method, expectedAmount,
+                memberId, orderId, orderNumber, paymentType, method, expectedAmount,
                 Money.zero(), orderItems);
     }
 
     public static CreatePaymentCommand withWalletDeduct(
             Long memberId, Long orderId, String orderNumber,
-            PaymentMethod method, Money expectedAmount, Money walletDeductAmount,
+            PaymentType paymentType, PaymentMethod method,
+            Money expectedAmount, Money walletDeductAmount,
             List<OrderItemSnapshot> orderItems
     ) {
         return new CreatePaymentCommand(
-                memberId, orderId, orderNumber, method, expectedAmount,
+                memberId, orderId, orderNumber, paymentType, method, expectedAmount,
                 walletDeductAmount, orderItems);
-    }
-
-    /**
-     * 펀딩 결제의 PaymentType은 항상 FUNDING
-     */
-    public PaymentType getType() {
-        return PaymentType.FUNDING;
     }
 
 }
