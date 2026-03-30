@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
+import app.giftify.payment.domain.event.PaymentDomainEvent;
 import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
@@ -96,13 +96,12 @@ class PaymentMarkAsPartiallyCanceledTest {
 
 			List<Object> events = result.pullEvents();
 			assertThat(events).hasSize(1);
-			assertThat(events.get(0)).isInstanceOf(PaymentCanceledEvent.class);
+			assertThat(events.get(0)).isInstanceOf(PaymentDomainEvent.PartialCanceled.class);
 
-			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
-			assertThat(event.data().cancelAmount()).isEqualTo(cancelAmount);
-			assertThat(event.data().transactionKey()).isEqualTo(newTransactionKey);
-			assertThat(event.data().cancelType()).isEqualTo(CancelType.REFUND);
-			assertThat(event.data().reason()).isEqualTo(reason);
+			PaymentDomainEvent.PartialCanceled event = (PaymentDomainEvent.PartialCanceled) events.get(0);
+			assertThat(event.cancelAmount()).isEqualTo(cancelAmount);
+			assertThat(event.lastTransactionKey()).isEqualTo(newTransactionKey);
+			assertThat(event.reason()).isEqualTo(reason);
 		}
 
 		@Test
@@ -142,8 +141,8 @@ class PaymentMarkAsPartiallyCanceledTest {
 
 			List<Object> events = result.pullEvents();
 			assertThat(events).hasSize(1);
-			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
-			assertThat(event.data().cancelAmount()).isEqualTo(additionalCancelAmount);
+			PaymentDomainEvent.PartialCanceled event = (PaymentDomainEvent.PartialCanceled) events.get(0);
+			assertThat(event.cancelAmount()).isEqualTo(additionalCancelAmount);
 		}
 
 		@Test
@@ -238,14 +237,13 @@ class PaymentMarkAsPartiallyCanceledTest {
 			List<Object> events = result.pullEvents();
 			assertThat(events).hasSize(1);
 
-			PaymentCanceledEvent event = (PaymentCanceledEvent) events.get(0);
-			assertThat(event.data().paymentId()).isEqualTo(1L);
-			assertThat(event.data().cancelAmount()).isEqualTo(cancelAmount);
-			assertThat(event.data().transactionKey()).isEqualTo(transactionKey);
-			assertThat(event.data().cancelType()).isEqualTo(CancelType.REFUND);
-			assertThat(event.data().reason()).isEqualTo(reason);
-			assertThat(event.data().paymentMethod()).isEqualTo(PaymentMethod.CARD);
-			assertThat(event.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
+			PaymentDomainEvent.PartialCanceled event = (PaymentDomainEvent.PartialCanceled) events.get(0);
+			assertThat(event.paymentId()).isEqualTo(1L);
+			assertThat(event.cancelAmount()).isEqualTo(cancelAmount);
+			assertThat(event.lastTransactionKey()).isEqualTo(transactionKey);
+			assertThat(event.reason()).isEqualTo(reason);
+			assertThat(event.method()).isEqualTo(PaymentMethod.CARD);
+			assertThat(event.type()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
 		}
 	}
 }

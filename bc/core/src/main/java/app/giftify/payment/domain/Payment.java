@@ -1,5 +1,6 @@
 package app.giftify.payment.domain;
 
+import app.giftify.payment.domain.event.PaymentDomainEvent;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.payment.*;
 import app.giftify.shared.domain.type.CancelType;
@@ -78,7 +79,7 @@ public class Payment extends BaseDomainModel {
                 id, type, method,
                 orderId, orderNumber, memberId,
                 originAmount, paidAmount, refundedAmount, walletDeductedAmount,
-                 status, paymentKey, lastTransactionKey, approveCode,
+                status, paymentKey, lastTransactionKey, approveCode,
                 paidAt, createdAt
         );
     }
@@ -137,11 +138,10 @@ public class Payment extends BaseDomainModel {
                 paidAt, this.createdAt
         );
 
-        paid.registerEvent(PaymentSucceededEvent.create(
-                new PaymentSuccessData(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
-                        getMethod(), getType(), paymentKey, lastTransactionKey
-                )
+        paid.registerEvent(new PaymentDomainEvent.Completed(
+                getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                paid.getPaidAmount(), getMethod(), getType(),
+                paid.getPaymentKey(), paid.getLastTransactionKey()
         ));
 
         return paid;
@@ -170,12 +170,10 @@ public class Payment extends BaseDomainModel {
                 this.paidAt, this.createdAt
         );
 
-        canceled.registerEvent(PaymentCanceledEvent.create(
-                new PaymentCancelData(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
-                        this.walletDeductedAmount,
-                        getMethod(), getType(), cancelType, reason, this.lastTransactionKey
-                )
+        canceled.registerEvent(new PaymentDomainEvent.Canceled(
+                getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                getPaidAmount(), getMethod(), getType(),
+                cancelType, reason, this.lastTransactionKey
         ));
 
         return canceled;
@@ -204,14 +202,11 @@ public class Payment extends BaseDomainModel {
                 this.paidAt, this.createdAt
         );
 
-        partiallyCanceled.registerEvent(PaymentCanceledEvent.create(
-                new PaymentCancelData(
+        partiallyCanceled.registerEvent(new PaymentDomainEvent.PartialCanceled(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
-                        cancelAmount, this.walletDeductedAmount,
-                        getMethod(), getType(), cancelType, reason,
-                        newTransactionKey
+                        cancelAmount, getMethod(), getType(), reason, newTransactionKey
                 )
-        ));
+        );
 
         return partiallyCanceled;
     }
@@ -233,13 +228,11 @@ public class Payment extends BaseDomainModel {
                 this.paidAt, this.createdAt
         );
 
-        failed.registerEvent(PaymentFailedEvent.create(
-                new PaymentFailureData(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
-                        getWalletDeductedAmount(),
-                        getMethod(), getType()
+        failed.registerEvent(new PaymentDomainEvent.Failed(
+                        getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                        getPaidAmount(), getMethod(), getType()
                 )
-        ));
+        );
 
         return failed;
     }
@@ -261,12 +254,11 @@ public class Payment extends BaseDomainModel {
                 this.paidAt, this.createdAt
         );
 
-        cancelFailed.registerEvent(PaymentCancelFailedEvent.create(
-                new PaymentCancelFailedData(
+        cancelFailed.registerEvent(new PaymentDomainEvent.CancelFailed(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
                         getMethod(), getType(), errorMetadata
                 )
-        ));
+        );
 
         return cancelFailed;
     }

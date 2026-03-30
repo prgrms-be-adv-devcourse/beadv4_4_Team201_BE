@@ -4,11 +4,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import app.giftify.payment.application.PaymentModuleEventPublisher;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.event.EventPublisher;
 
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WalletDeductedEventHandler {
 	private final PaymentRepository paymentRepository;
-	private final EventPublisher eventPublisher;
+	private final PaymentModuleEventPublisher moduleEventPublisher;
 
 	@EventListener
 	@Transactional
@@ -39,10 +39,8 @@ public class WalletDeductedEventHandler {
 			));
 
 		Payment paid = payment.complete(null, null, null, event.getDeductedAt());
-
-		var domainEvents = paid.pullEvents();
 		paymentRepository.save(paid);
-		domainEvents.forEach(eventPublisher::publish);
+		moduleEventPublisher.publishFrom(paid, payment);
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
 				paid.getId(), paid.getStatus());

@@ -3,7 +3,6 @@ package app.giftify.payment.application;
 import app.giftify.payment.application.inbound.FailPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
-import app.giftify.shared.domain.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,14 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaymentFailService implements FailPaymentUseCase {
 
 	private final PaymentRepository paymentRepository;
-	private final EventPublisher eventPublisher;
+	private final PaymentModuleEventPublisher moduleEventPublisher;
 
 	@Override
 	@Transactional
 	public void fail(Payment payment) {
 		Payment failed = payment.fail();
-		var domainEvents = failed.pullEvents();
 		paymentRepository.save(failed);
-		domainEvents.forEach(eventPublisher::publish);
+		moduleEventPublisher.publishFrom(failed, payment);
 	}
 }

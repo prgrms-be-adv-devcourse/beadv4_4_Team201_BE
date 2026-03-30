@@ -11,7 +11,6 @@ import app.giftify.payment.domain.Cancel;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.vo.Money;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +29,18 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 	private final PaymentRepository paymentRepository;
 	private final CancelRepository cancelRepository;
 	private final PaymentGateway paymentGateway;
-	private final EventPublisher eventPublisher;
+	private final PaymentModuleEventPublisher moduleEventPublisher;
 	private final PaymentFieldEncryptor encryptor;
 
 	public CancelPaymentService(
 		PaymentRepository paymentRepository, CancelRepository cancelRepository,
-		PaymentGateway paymentGateway, EventPublisher eventPublisher,
+		PaymentGateway paymentGateway, PaymentModuleEventPublisher moduleEventPublisher,
 		PaymentFieldEncryptor encryptor
 	) {
 		this.paymentRepository = paymentRepository;
 		this.cancelRepository = cancelRepository;
 		this.paymentGateway = paymentGateway;
-		this.eventPublisher = eventPublisher;
+		this.moduleEventPublisher = moduleEventPublisher;
 		this.encryptor = encryptor;
 	}
 
@@ -82,7 +81,8 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 			canceled = payment.cancel(cancelType, command.reason()); // PG 취소 불필요한 경우 (예: WALLET) 바로 상태 변경
 		}
 
-		saveAndPublish(canceled);
+		paymentRepository.save(canceled);
+		moduleEventPublisher.publishFrom(canceled, payment);
 	}
 
 	private void handlePartialCancel(Payment payment, CancelPaymentCommand command) {
@@ -100,7 +100,8 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		);
 		saveCancelRecord(partiallyCanceled, pgResult.lastTransactionKey(), cancelAmount, command.reason());
 
-		saveAndPublish(partiallyCanceled);
+		paymentRepository.save(partiallyCanceled);
+		moduleEventPublisher.publishFrom(partiallyCanceled, payment);
 	}
 
 	private TossCancelResult callPgCancel(Payment payment, String reason, Money cancelAmount) {
@@ -109,9 +110,8 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 
 		if (!pgResult.success()) {
 			Payment cancelFailed = payment.failCancel(pgResult.errorMessage());
-			var failEvents = cancelFailed.pullEvents();
 			paymentRepository.save(cancelFailed);
-			failEvents.forEach(eventPublisher::publish);
+			moduleEventPublisher.publishFrom(cancelFailed, payment);
 			return null;
 		}
 		return pgResult;
@@ -124,9 +124,4 @@ public class CancelPaymentService implements CancelPaymentUseCase {
 		cancelRepository.save(cancel);
 	}
 
-	private void saveAndPublish(Payment payment) {
-		var domainEvents = payment.pullEvents();
-		paymentRepository.save(payment);
-		domainEvents.forEach(eventPublisher::publish);
-	}
 }

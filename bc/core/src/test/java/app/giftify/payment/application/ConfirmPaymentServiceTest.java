@@ -31,9 +31,6 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.EventPublisher;
-
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
@@ -48,7 +45,7 @@ class ConfirmPaymentServiceTest {
 	private PaymentGateway paymentGateway;
 
 	@Mock
-	private EventPublisher eventPublisher;
+	private PaymentModuleEventPublisher moduleEventPublisher;
 
 	@Mock
 	private PaymentFieldEncryptor encryptor;
@@ -114,8 +111,8 @@ class ConfirmPaymentServiceTest {
 		}
 
 		@Test
-		@DisplayName("결제 승인 시 PaymentSucceededEvent 내부 이벤트를 발행한다")
-		void confirm_Payment_PublishesPaymentSucceededEvent() {
+		@DisplayName("결제 승인 시 모듈 이벤트를 발행한다")
+		void confirm_Payment_PublishesModuleEvent() {
 			// given
 			Long paymentId = 1L;
 			Long memberId = 100L;
@@ -138,13 +135,7 @@ class ConfirmPaymentServiceTest {
 			confirmPaymentService.confirm(command);
 
 			// then
-			ArgumentCaptor<PaymentSucceededEvent> eventCaptor = ArgumentCaptor.forClass(PaymentSucceededEvent.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-
-			PaymentSucceededEvent paidEvent = eventCaptor.getValue();
-			assertThat(paidEvent.data().paymentId()).isEqualTo(paymentId);
-			assertThat(paidEvent.data().memberId()).isEqualTo(memberId);
-			assertThat(paidEvent.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -174,7 +165,7 @@ class ConfirmPaymentServiceTest {
 			// then
 			assertThat(result.success()).isTrue();
 			assertThat(result.paymentId()).isEqualTo(paymentId);
-			verify(eventPublisher).publish(any(PaymentSucceededEvent.class));
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 	}
@@ -212,7 +203,7 @@ class ConfirmPaymentServiceTest {
 			assertThat(result.errorMessage()).isEqualTo("카드 정보가 유효하지 않습니다");
 
 			verify(paymentRepository).save(any());
-			verify(eventPublisher).publish(any());
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 	}
 

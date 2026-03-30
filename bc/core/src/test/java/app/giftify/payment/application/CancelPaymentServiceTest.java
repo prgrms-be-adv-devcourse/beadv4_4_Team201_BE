@@ -29,7 +29,6 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.type.CancelType;
@@ -48,7 +47,7 @@ class CancelPaymentServiceTest {
 	private CancelRepository cancelRepository;
 
 	@Mock
-	private EventPublisher eventPublisher;
+	private PaymentModuleEventPublisher moduleEventPublisher;
 
 	@Mock
 	private PaymentGateway paymentGateway;
@@ -122,7 +121,7 @@ class CancelPaymentServiceTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher).publish(any());
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -145,7 +144,7 @@ class CancelPaymentServiceTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher).publish(any());
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -169,7 +168,7 @@ class CancelPaymentServiceTest {
 			// then
 			verify(paymentGateway).cancel("raw-payment-key", "고객 변심", null);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher).publish(any(PaymentCanceledEvent.class));
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 
 			ArgumentCaptor<Cancel> cancelCaptor = ArgumentCaptor.forClass(Cancel.class);
 			verify(cancelRepository).save(cancelCaptor.capture());
@@ -264,10 +263,7 @@ class CancelPaymentServiceTest {
 			verify(paymentGateway).cancel("raw-payment-key", "고객 변심", null);
 			verify(paymentRepository).save(any(Payment.class));
 
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-			assertThat(eventCaptor.getValue()).isInstanceOf(PaymentCancelFailedEvent.class);
-
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 		}
 
@@ -289,12 +285,7 @@ class CancelPaymentServiceTest {
 
 			// then
 			verify(paymentRepository).save(any(Payment.class));
-
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-			PaymentCanceledEvent event = (PaymentCanceledEvent)eventCaptor.getValue();
-
-			assertThat(event.data().reason()).isNull();
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -316,17 +307,7 @@ class CancelPaymentServiceTest {
 			cancelPaymentService.cancel(command);
 
 			// then
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-			PaymentCanceledEvent event = (PaymentCanceledEvent)eventCaptor.getValue();
-
-			assertThat(event.data().paymentId()).isEqualTo(paymentId);
-			assertThat(event.data().memberId()).isEqualTo(memberId);
-			assertThat(event.data().orderNumber()).isEqualTo(orderNumber);
-			assertThat(event.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
-			assertThat(event.data().cancelAmount()).isEqualTo(Money.of(10000));
-			assertThat(event.data().reason()).isEqualTo(reason);
-			assertThat(event.time()).isNotNull();
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -348,7 +329,7 @@ class CancelPaymentServiceTest {
 			// then
 			verify(cancelRepository, never()).save(any(Cancel.class));
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher).publish(any(PaymentCanceledEvent.class));
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 	}
@@ -389,7 +370,7 @@ class CancelPaymentServiceTest {
 			assertThat(savedCancel.getCancelAmount()).isEqualTo(cancelAmount);
 			assertThat(savedCancel.getTransactionKey()).isEqualTo("txn-partial-123");
 
-			verify(eventPublisher).publish(any(PaymentCanceledEvent.class));
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -433,9 +414,7 @@ class CancelPaymentServiceTest {
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 			verify(cancelRepository, never()).save(any(Cancel.class));
 
-			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-			assertThat(eventCaptor.getValue()).isInstanceOf(PaymentCancelFailedEvent.class);
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 	}
