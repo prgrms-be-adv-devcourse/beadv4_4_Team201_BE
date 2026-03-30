@@ -73,7 +73,7 @@ class PaymentHistoryEventListenerTest {
 		void savesHistory() {
 			PaymentFailedEvent event = PaymentFailedEvent.create(
 				PaymentEventData.forFailure(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
-					Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING));
+					Money.of(10000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING));
 
 			listener.onPaymentFailed(event);
 
@@ -95,7 +95,7 @@ class PaymentHistoryEventListenerTest {
 		void savesHistory() {
 			PaymentCanceledEvent event = PaymentCanceledEvent.create(
 				PaymentEventData.forCancel(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
-					Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING,
+					Money.of(10000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING,
 					CancelType.CANCEL, "사용자 요청", "txn-cancel-001"));
 
 			listener.onPaymentCancelSucceeded(event);

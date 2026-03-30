@@ -61,7 +61,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
@@ -110,7 +110,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems
@@ -168,7 +168,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				amount, orderItems
@@ -232,7 +232,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				requiredAmount, orderItems
@@ -283,7 +283,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.DEPOSIT,
 				amount, orderItems
@@ -337,7 +337,7 @@ class CreatePaymentServiceTest {
 				new OrderItemSnapshot(1L, Money.of(10000), 100L)
 			);
 
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreateFundingPaymentCommand command = CreateFundingPaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentMethod.CARD,
 				amount, orderItems

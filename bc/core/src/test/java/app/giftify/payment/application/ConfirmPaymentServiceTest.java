@@ -226,8 +226,8 @@ class ConfirmPaymentServiceTest {
 			assertThat(result.errorCode()).isEqualTo("INVALID_CARD");
 			assertThat(result.errorMessage()).isEqualTo("카드 정보가 유효하지 않습니다");
 
-			verify(paymentRepository, never()).save(any());
-			verify(eventPublisher, never()).publish(any());
+			verify(paymentRepository).save(any());
+			verify(eventPublisher).publish(any());
 		}
 	}
 

@@ -53,7 +53,7 @@ public class CoreFacade {
     }
 
     private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
-        return new CreateFundingPaymentCommand(
+        return CreateFundingPaymentCommand.of(
                 orderSnapshot.buyerId(),
                 orderSnapshot.orderId(),
                 orderSnapshot.orderNumber(),

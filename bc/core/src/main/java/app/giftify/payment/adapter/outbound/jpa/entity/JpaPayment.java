@@ -61,6 +61,9 @@ public class JpaPayment extends BaseJpaEntity {
 	@Column(name = "refunded_amount", nullable = false, precision = 19, scale = 2)
 	private BigDecimal refundedAmount;
 
+	@Column(name = "wallet_deducted_amount", nullable = false, precision = 19, scale = 2)
+	private BigDecimal walletDeductedAmount;
+
 	@Column(name = "order_items_json", nullable = false, columnDefinition = "TEXT")
 	private String orderItemsJson;
 
@@ -92,6 +95,7 @@ public class JpaPayment extends BaseJpaEntity {
 		BigDecimal originAmount,
 		BigDecimal paidAmount,
 		BigDecimal refundedAmount,
+		BigDecimal walletDeductedAmount,
 		String orderItemsJson,
 		PaymentStatus status,
 		String paymentKey,
@@ -107,6 +111,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.originAmount = originAmount;
 		this.paidAmount = paidAmount;
 		this.refundedAmount = refundedAmount;
+		this.walletDeductedAmount = walletDeductedAmount;
 		this.orderItemsJson = orderItemsJson;
 		this.status = status;
 		this.paymentKey = paymentKey;
@@ -133,6 +138,7 @@ public class JpaPayment extends BaseJpaEntity {
 			payment.getOriginAmount().amount(),
 			payment.getPaidAmount().amount(),
 			payment.getRefundedAmount().amount(),
+			payment.getWalletDeductedAmount().amount(),
 			orderItemsJson,
 			payment.getStatus(),
 			payment.getPaymentKey(),
@@ -161,6 +167,7 @@ public class JpaPayment extends BaseJpaEntity {
 			.originAmount(Money.of(originAmount))
 			.paidAmount(Money.of(paidAmount))
 			.refundedAmount(Money.of(refundedAmount))
+			.walletDeductedAmount(Money.of(walletDeductedAmount))
 			.orderItems(java.util.Arrays.asList(orderItems))
 			.status(status)
 			.paymentKey(paymentKey)
@@ -178,6 +185,7 @@ public class JpaPayment extends BaseJpaEntity {
 		this.approveCode = payment.getApproveCode();
 		this.paidAt = payment.getPaidAt();
 		this.refundedAmount = payment.getRefundedAmount().amount();
+		this.walletDeductedAmount = payment.getWalletDeductedAmount().amount();
 		this.orderItemsJson = orderItemsJson;
 	}
 }
