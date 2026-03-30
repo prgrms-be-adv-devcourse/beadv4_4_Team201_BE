@@ -26,7 +26,6 @@ import app.giftify.payment.application.inbound.ConfirmPaymentResult;
 import app.giftify.payment.application.outbound.PaymentFieldEncryptor;
 import app.giftify.payment.application.outbound.PaymentGateway;
 import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -58,22 +57,6 @@ class ConfirmPaymentServiceTest {
 	private ConfirmPaymentService confirmPaymentService;
 
 	private Payment createPendingPayment(Long paymentId, Long memberId, String orderNumber, PaymentType type) {
-		if (type == PaymentType.FUNDING) {
-			return Payment.builder()
-				.id(paymentId)
-				.orderId(123L)
-				.orderNumber(orderNumber)
-				.memberId(memberId)
-				.type(type)
-				.method(PaymentMethod.CARD)
-				.originAmount(Money.of(10000))
-				.paidAmount(Money.of(10000))
-				.orderItems(List.of(
-					new OrderItemSnapshot(1L, Money.of(10000), 1L)
-				))
-				.status(PaymentStatus.PENDING)
-				.build();
-		}
 		return Payment.builder()
 			.id(paymentId)
 			.orderId(123L)
@@ -83,7 +66,6 @@ class ConfirmPaymentServiceTest {
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
-			.orderItems(List.of())
 			.status(PaymentStatus.PENDING)
 			.build();
 	}

@@ -71,7 +71,6 @@ class CancelPaymentServiceTest {
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
-			.orderItems(List.of())
 			.status(PaymentStatus.PENDING)
 			.build();
 	}
@@ -87,7 +86,6 @@ class CancelPaymentServiceTest {
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
-			.orderItems(List.of())
 			.status(PaymentStatus.PAID)
 			.paidAt(LocalDateTime.now())
 			.build();

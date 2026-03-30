@@ -22,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -67,10 +66,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(50000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -80,7 +75,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -117,10 +111,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(50000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -130,7 +120,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -178,8 +167,7 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(List.of())
-				.status(PaymentStatus.PENDING)
+					.status(PaymentStatus.PENDING)
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
@@ -222,8 +210,7 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(List.of())
-				.status(PaymentStatus.PENDING)
+					.status(PaymentStatus.PENDING)
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
@@ -290,10 +277,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -303,7 +286,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PAID)
 				.paidAt(LocalDateTime.of(2024, 1, 15, 9, 0, 0))
 				.build();
@@ -341,10 +323,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(40000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -354,7 +332,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 

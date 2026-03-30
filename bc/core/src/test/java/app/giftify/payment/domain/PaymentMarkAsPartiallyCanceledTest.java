@@ -29,7 +29,6 @@ class PaymentMarkAsPartiallyCanceledTest {
 			.originAmount(paidAmount)
 			.paidAmount(paidAmount)
 			.refundedAmount(Money.zero())
-			.orderItems(List.of())
 			.status(PaymentStatus.PAID)
 			.paymentKey("payment-key-123")
 			.lastTransactionKey("txn-001")
@@ -50,7 +49,6 @@ class PaymentMarkAsPartiallyCanceledTest {
 			.originAmount(paidAmount)
 			.paidAmount(paidAmount)
 			.refundedAmount(refundedAmount)
-			.orderItems(List.of())
 			.status(PaymentStatus.PARTIALLY_CANCELED)
 			.paymentKey("payment-key-123")
 			.lastTransactionKey("txn-cancel-001")
@@ -71,7 +69,6 @@ class PaymentMarkAsPartiallyCanceledTest {
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
 			.refundedAmount(Money.zero())
-			.orderItems(List.of())
 			.status(PaymentStatus.PENDING)
 			.build();
 	}

@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import app.giftify.payment.application.inbound.InternalPaymentResult;
 import app.giftify.payment.application.outbound.PaymentFieldEncryptor;
 import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -49,7 +48,6 @@ class InternalPaymentQueryServiceTest {
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
-			.orderItems(List.of(new OrderItemSnapshot(1L, Money.of(10000), 200L)))
 			.status(PaymentStatus.PAID)
 			.paymentKey(paymentKey)
 			.approveCode(approveCode)

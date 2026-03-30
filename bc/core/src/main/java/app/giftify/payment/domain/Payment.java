@@ -9,8 +9,6 @@ import app.giftify.shared.domain.vo.Money;
 import org.springframework.lang.CheckReturnValue;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public class Payment extends BaseDomainModel {
@@ -26,7 +24,6 @@ public class Payment extends BaseDomainModel {
     private final Money paidAmount;
     private final Money refundedAmount;
     private final Money walletDeductedAmount;
-    private final List<OrderItemSnapshot> orderItems;
 
     private final PaymentStatus status;
     private final String paymentKey;
@@ -42,7 +39,7 @@ public class Payment extends BaseDomainModel {
 
     private Payment(Long id, PaymentType type, PaymentMethod method,
                     Long orderId, String orderNumber, Long memberId,
-                    Money originAmount, Money paidAmount, Money refundedAmount, Money walletDeductedAmount, List<OrderItemSnapshot> orderItems,
+                    Money originAmount, Money paidAmount, Money refundedAmount, Money walletDeductedAmount,
                     PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
                     LocalDateTime paidAt, LocalDateTime createdAt
     ) {
@@ -56,7 +53,6 @@ public class Payment extends BaseDomainModel {
         this.paidAmount = paidAmount;
         this.refundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
         this.walletDeductedAmount = walletDeductedAmount != null ? walletDeductedAmount : Money.zero();
-        this.orderItems = List.copyOf(orderItems);
         this.status = status;
         this.paymentKey = paymentKey;
         this.lastTransactionKey = lastTransactionKey;
@@ -75,7 +71,6 @@ public class Payment extends BaseDomainModel {
             Long id, PaymentType type, PaymentMethod method,
             Long orderId, String orderNumber, Long memberId,
             Money originAmount, Money paidAmount, Money refundedAmount, Money walletDeductedAmount,
-            List<OrderItemSnapshot> orderItems,
             PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
             LocalDateTime paidAt, LocalDateTime createdAt
     ) {
@@ -83,7 +78,7 @@ public class Payment extends BaseDomainModel {
                 id, type, method,
                 orderId, orderNumber, memberId,
                 originAmount, paidAmount, refundedAmount, walletDeductedAmount,
-                orderItems, status, paymentKey, lastTransactionKey, approveCode,
+                 status, paymentKey, lastTransactionKey, approveCode,
                 paidAt, createdAt
         );
     }
@@ -100,7 +95,6 @@ public class Payment extends BaseDomainModel {
                 .method(context.method())
                 .originAmount(amount)
                 .paidAmount(amount)
-                .orderItems(Collections.emptyList())
                 .status(PaymentStatus.PENDING)
                 .build();
     }
@@ -109,8 +103,7 @@ public class Payment extends BaseDomainModel {
             PaymentCreateContext context,
             Money originAmount,
             Money paidAmount,
-            Money walletDeductedAmount,
-            List<OrderItemSnapshot> orderItems
+            Money walletDeductedAmount
     ) {
         return builder()
                 .orderId(context.orderId())
@@ -121,7 +114,6 @@ public class Payment extends BaseDomainModel {
                 .originAmount(originAmount)
                 .paidAmount(paidAmount)
                 .walletDeductedAmount(walletDeductedAmount)
-                .orderItems(orderItems)
                 .status(PaymentStatus.PENDING)
                 .build();
     }
@@ -139,7 +131,7 @@ public class Payment extends BaseDomainModel {
                 getId(), this.type, this.method,
                 this.orderId, this.orderNumber, this.memberId,
                 this.originAmount, this.paidAmount, this.refundedAmount,
-                this.walletDeductedAmount, this.orderItems,
+                this.walletDeductedAmount,
                 PaymentEventType.PAID.getResultStatus(),
                 paymentKey, lastTransactionKey, approveCode,
                 paidAt, this.createdAt
@@ -172,7 +164,7 @@ public class Payment extends BaseDomainModel {
                 getId(), this.type, this.method,
                 this.orderId, this.orderNumber, this.memberId,
                 this.originAmount, this.paidAmount, this.refundedAmount,
-                this.walletDeductedAmount, this.orderItems,
+                this.walletDeductedAmount,
                 eventType.getResultStatus(),
                 this.paymentKey, this.lastTransactionKey, this.approveCode,
                 this.paidAt, this.createdAt
@@ -206,7 +198,7 @@ public class Payment extends BaseDomainModel {
                 getId(), this.type, this.method,
                 this.orderId, this.orderNumber, this.memberId,
                 this.originAmount, this.paidAmount, newRefundedTotal,
-                this.walletDeductedAmount, this.orderItems,
+                this.walletDeductedAmount,
                 eventType.getResultStatus(),
                 this.paymentKey, newTransactionKey, this.approveCode,
                 this.paidAt, this.createdAt
@@ -235,7 +227,7 @@ public class Payment extends BaseDomainModel {
                 getId(), this.type, this.method,
                 this.orderId, this.orderNumber, this.memberId,
                 this.originAmount, this.paidAmount, this.refundedAmount,
-                this.walletDeductedAmount, this.orderItems,
+                this.walletDeductedAmount,
                 PaymentEventType.FAILED.getResultStatus(),
                 this.paymentKey, this.lastTransactionKey, this.approveCode,
                 this.paidAt, this.createdAt
@@ -263,7 +255,7 @@ public class Payment extends BaseDomainModel {
                 getId(), this.type, this.method,
                 this.orderId, this.orderNumber, this.memberId,
                 this.originAmount, this.paidAmount, this.refundedAmount,
-                this.walletDeductedAmount, this.orderItems,
+                this.walletDeductedAmount,
                 this.status,
                 this.paymentKey, this.lastTransactionKey, this.approveCode,
                 this.paidAt, this.createdAt
@@ -349,10 +341,6 @@ public class Payment extends BaseDomainModel {
 
     public Money getWalletDeductedAmount() {
         return walletDeductedAmount;
-    }
-
-    public List<OrderItemSnapshot> getOrderItems() {
-        return orderItems;
     }
 
     public PaymentStatus getStatus() {

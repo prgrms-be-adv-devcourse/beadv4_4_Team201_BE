@@ -76,8 +76,7 @@ public class CreatePaymentService implements ChargeDepositUseCase, CreatePayment
                 context,
                 command.expectedAmount(),
                 command.expectedAmount(),
-                command.walletDeductAmount(),
-                command.orderItems()
+                command.walletDeductAmount()
         );
 
         Payment savedPayment = paymentRepository.save(payment);

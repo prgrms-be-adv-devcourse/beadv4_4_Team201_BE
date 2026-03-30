@@ -13,9 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
@@ -24,7 +22,6 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.application.strategy.PaymentCreateStrategy;
 import app.giftify.payment.application.strategy.PgPaymentCreateStrategy;
 import app.giftify.payment.application.strategy.WalletPaymentCreateStrategy;
-import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -66,14 +63,10 @@ class CreatePaymentServiceTest {
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentType.FUNDING, PaymentMethod.CARD,
-				amount, orderItems
+				amount
 			);
 
 			Payment existingPayment = Payment.builder()
@@ -85,7 +78,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.CARD)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -116,14 +108,10 @@ class CreatePaymentServiceTest {
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentType.FUNDING, PaymentMethod.CARD,
-				amount, orderItems
+				amount
 			);
 
 			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
@@ -136,7 +124,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.CARD)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.createdAt(createdAt)
 				.build();
@@ -176,14 +163,10 @@ class CreatePaymentServiceTest {
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
-				amount, orderItems
+				amount
 			);
 
 			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
@@ -196,7 +179,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.createdAt(createdAt)
 				.build();
@@ -243,14 +225,10 @@ class CreatePaymentServiceTest {
 			String orderNumber = "order-123";
 			Money requiredAmount = Money.of(10000);
 			Money currentBalance = Money.of(3000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
-				requiredAmount, orderItems
+				requiredAmount
 			);
 
 			Payment savedPayment = Payment.builder()
@@ -262,7 +240,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(requiredAmount)
 				.paidAmount(requiredAmount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -297,14 +274,10 @@ class CreatePaymentServiceTest {
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
-				amount, orderItems
+				amount
 			);
 
 			Payment existingPayment = Payment.builder()
@@ -316,7 +289,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -353,14 +325,10 @@ class CreatePaymentServiceTest {
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
 				PaymentType.FUNDING, PaymentMethod.CARD,
-				amount, orderItems
+				amount
 			);
 
 			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
@@ -379,7 +347,6 @@ class CreatePaymentServiceTest {
 						.method(payment.getMethod())
 						.originAmount(payment.getOriginAmount())
 						.paidAmount(payment.getPaidAmount())
-						.orderItems(payment.getOrderItems())
 						.status(payment.getStatus())
 						.build();
 				});
@@ -397,7 +364,6 @@ class CreatePaymentServiceTest {
 			assertThat(capturedPayment.getOriginAmount()).isEqualTo(amount);
 			assertThat(capturedPayment.getPaidAmount()).isEqualTo(amount);
 			assertThat(capturedPayment.getStatus()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(capturedPayment.getOrderItems()).hasSize(1);
 		}
 	}
 }

@@ -5,7 +5,6 @@ import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 // FIXME :: orderPaymentDetail(OrderPaymentDetail) 직접 주입 방식으로 전환, 개별 setter 제거
 public class PaymentBuilder {
@@ -17,7 +16,6 @@ public class PaymentBuilder {
     private Money paidAmount;
     private Money refundedAmount;
     private Money walletDeductedAmount;
-    private List<OrderItemSnapshot> orderItems;
     private PaymentStatus status;
     private PaymentType type;
     private PaymentMethod method;
@@ -64,11 +62,6 @@ public class PaymentBuilder {
 
     public PaymentBuilder walletDeductedAmount(Money walletDeductedAmount) {
         this.walletDeductedAmount = walletDeductedAmount;
-        return this;
-    }
-
-    public PaymentBuilder orderItems(List<OrderItemSnapshot> orderItems) {
-        this.orderItems = orderItems;
         return this;
     }
 
@@ -119,7 +112,7 @@ public class PaymentBuilder {
                 type, method,
                 orderId, orderNumber, memberId,
                 originAmount, paidAmount, refundedAmount, walletDeductedAmount,
-                orderItems, status, paymentKey, lastTransactionKey, approveCode,
+                status, paymentKey, lastTransactionKey, approveCode,
                 paidAt, createdAt
         );
     }
@@ -127,7 +120,6 @@ public class PaymentBuilder {
     private void validate() {
         validateRequiredFields();
         validateAmountInvariant();
-        validateOrderItemsIfRequired();
     }
 
     private void validateRequiredFields() {
@@ -163,26 +155,6 @@ public class PaymentBuilder {
         if (effectiveRefundedAmount.isGreaterThan(paidAmount)) {
             throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
                     "[Payment] refundedAmount는 paidAmount를 초과할 수 없습니다.");
-        }
-    }
-
-    private void validateOrderItemsIfRequired() {
-        if (type == PaymentType.DEPOSIT_CHARGE) {
-            return;
-        }
-
-        if (orderItems == null || orderItems.isEmpty()) {
-            throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[Payment] orderItems는 필수입니다.");
-        }
-
-        Money itemsTotal = orderItems.stream()
-                .map(OrderItemSnapshot::amount)
-                .reduce(Money.zero(), Money::plus);
-
-        if (!itemsTotal.equals(originAmount)) {
-            throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                    "[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
         }
     }
 }
