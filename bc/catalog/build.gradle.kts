@@ -55,6 +55,9 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
 
+    // Mock Data Generator
+    testImplementation("net.datafaker:datafaker:2.1.0")
+
     // Retry
     implementation(libs.spring.retry)
     implementation(libs.spring.boot.starter.aspectj)
