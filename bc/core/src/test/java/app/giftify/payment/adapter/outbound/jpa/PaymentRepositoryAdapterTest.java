@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
-import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.api.paging.Page;
@@ -49,7 +48,6 @@ class PaymentRepositoryAdapterTest {
 			.method(PaymentMethod.CARD)
 			.originAmount(Money.of(10000))
 			.paidAmount(Money.of(10000))
-			.orderItems(List.of(new OrderItemSnapshot(1L, Money.of(10000), 200L)))
 			.status(PaymentStatus.PAID)
 			.build();
 	}
@@ -84,18 +82,14 @@ class PaymentRepositoryAdapterTest {
 			// given
 			Payment existingPayment = createTestPayment(1L);
 			JpaPayment existingJpa = mock(JpaPayment.class);
-			JpaPayment updatedJpa = mock(JpaPayment.class);
-			given(updatedJpa.getOrderItemsJson()).willReturn("[{\"targetId\":1}]");
-
 			given(jpaPaymentRepository.findById(1L)).willReturn(Optional.of(existingJpa));
-			given(paymentMapper.toEntity(existingPayment)).willReturn(updatedJpa);
 			given(paymentMapper.toDomain(existingJpa)).willReturn(existingPayment);
 
 			// when
 			Payment result = paymentRepositoryAdapter.save(existingPayment);
 
 			// then
-			then(existingJpa).should().updateFrom(eq(existingPayment), eq("[{\"targetId\":1}]"));
+			then(existingJpa).should().updateFrom(eq(existingPayment));
 			assertThat(result).isEqualTo(existingPayment);
 		}
 

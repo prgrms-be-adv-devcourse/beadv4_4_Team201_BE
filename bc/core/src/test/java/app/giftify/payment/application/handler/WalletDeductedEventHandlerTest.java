@@ -21,16 +21,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import app.giftify.payment.application.PaymentModuleEventPublisher;
 import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.OrderItemSnapshot;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.EventPublisher;
-
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
@@ -43,7 +40,7 @@ class WalletDeductedEventHandlerTest {
 	private PaymentRepository paymentRepository;
 
 	@Mock
-	private EventPublisher eventPublisher;
+	private PaymentModuleEventPublisher moduleEventPublisher;
 
 	@InjectMocks
 	private WalletDeductedEventHandler handler;
@@ -53,8 +50,8 @@ class WalletDeductedEventHandlerTest {
 	class FundingPaymentTests {
 
 		@Test
-		@DisplayName("FUNDING 결제가 완료되면 PaymentSucceededEvent를 발행한다")
-		void handle_PublishesPaymentSucceededEvent_WhenPaymentTypeIsFunding() {
+		@DisplayName("FUNDING 결제가 완료되면 모듈 이벤트를 발행한다")
+		void handle_PublishesModuleEvent_WhenPaymentTypeIsFunding() {
 			// given
 			Long paymentId = 1L;
 			Long walletId = 100L;
@@ -67,10 +64,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(50000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -80,7 +73,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -91,15 +83,7 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<PaymentSucceededEvent> eventCaptor = ArgumentCaptor.forClass(PaymentSucceededEvent.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-
-			PaymentSucceededEvent succeededEvent = eventCaptor.getValue();
-			assertThat(succeededEvent.data().paymentId()).isEqualTo(paymentId);
-			assertThat(succeededEvent.data().memberId()).isEqualTo(memberId);
-			assertThat(succeededEvent.data().orderNumber()).isEqualTo(orderNumber);
-			assertThat(succeededEvent.data().paymentType()).isEqualTo(PaymentType.FUNDING);
-			assertThat(succeededEvent.data().amount()).isEqualTo(amount);
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -117,10 +101,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(50000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -130,7 +110,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -155,8 +134,8 @@ class WalletDeductedEventHandlerTest {
 	class PointChargePaymentTests {
 
 		@Test
-		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 PaymentSucceededEvent를 발행한다")
-		void handle_PublishesPaymentSucceededEvent_WhenPaymentTypeIsPointCharge() {
+		@DisplayName("DEPOSIT_CHARGE(예치금 충전) 결제가 완료되면 모듈 이벤트를 발행한다")
+		void handle_PublishesModuleEvent_WhenPaymentTypeIsPointCharge() {
 			// given
 			Long paymentId = 2L;
 			Long walletId = 100L;
@@ -178,8 +157,7 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(List.of())
-				.status(PaymentStatus.PENDING)
+					.status(PaymentStatus.PENDING)
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
@@ -189,13 +167,7 @@ class WalletDeductedEventHandlerTest {
 			handler.handle(event);
 
 			// then
-			ArgumentCaptor<PaymentSucceededEvent> eventCaptor = ArgumentCaptor.forClass(PaymentSucceededEvent.class);
-			verify(eventPublisher).publish(eventCaptor.capture());
-
-			PaymentSucceededEvent paidEvent = eventCaptor.getValue();
-			assertThat(paidEvent.data().paymentId()).isEqualTo(paymentId);
-			assertThat(paidEvent.data().memberId()).isEqualTo(memberId);
-			assertThat(paidEvent.data().paymentType()).isEqualTo(PaymentType.DEPOSIT_CHARGE);
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -222,8 +194,7 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(List.of())
-				.status(PaymentStatus.PENDING)
+					.status(PaymentStatus.PENDING)
 				.build();
 
 			given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
@@ -272,7 +243,7 @@ class WalletDeductedEventHandlerTest {
 
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository, never()).save(any(Payment.class));
-			verify(eventPublisher, never()).publish(any());
+			verify(moduleEventPublisher, never()).publishFrom(any(Payment.class), any(Payment.class));
 		}
 
 		@Test
@@ -290,10 +261,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -303,7 +270,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PAID)
 				.paidAt(LocalDateTime.of(2024, 1, 15, 9, 0, 0))
 				.build();
@@ -318,7 +284,7 @@ class WalletDeductedEventHandlerTest {
 
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository, never()).save(any(Payment.class));
-			verify(eventPublisher, never()).publish(any());
+			verify(moduleEventPublisher, never()).publishFrom(any(Payment.class), any(Payment.class));
 		}
 	}
 
@@ -341,10 +307,6 @@ class WalletDeductedEventHandlerTest {
 				walletId, memberId, paymentId, orderNumber, amount, deductedAt
 			);
 
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(40000), 100L)
-			);
-
 			Payment payment = Payment.builder()
 				.id(paymentId)
 				.memberId(memberId)
@@ -354,7 +316,6 @@ class WalletDeductedEventHandlerTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -367,7 +328,7 @@ class WalletDeductedEventHandlerTest {
 			// then
 			verify(paymentRepository).findById(paymentId);
 			verify(paymentRepository).save(any(Payment.class));
-			verify(eventPublisher).publish(any());
+			verify(moduleEventPublisher).publishFrom(any(Payment.class), any(Payment.class));
 		}
 	}
 }

@@ -1,39 +1,46 @@
 package app.giftify.payment.domain;
 
+import app.giftify.payment.domain.event.PaymentDomainEvent;
 import app.giftify.shared.domain.base.BaseDomainModel;
 import app.giftify.shared.domain.event.payment.*;
 import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
+import org.springframework.lang.CheckReturnValue;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 public class Payment extends BaseDomainModel {
+
+    // ========== 필드 ========== //
+
     private final PaymentType type;
     private final PaymentMethod method;
     private final Long orderId;
     private final String orderNumber;
     private final Long memberId;
-    private final Money originAmount;
+    private final Money originAmount; // FIXME :: originAmount 의미 재정의 + PaymentAmountInfo VO 도입
     private final Money paidAmount;
-    private Money refundedAmount;
+    private final Money refundedAmount;
     private final Money walletDeductedAmount;
-    private final List<OrderItemSnapshot> orderItems;
 
-    private PaymentStatus status;
-    private String paymentKey;
-    private String lastTransactionKey;
-    private String approveCode;
-    // 도메인이 스냅샷으로 들고 있되, 생성은 JPA에 위임
-    private LocalDateTime paidAt;
+    private final PaymentStatus status;
+    private final String paymentKey;
+    private final String lastTransactionKey;
+    private final String approveCode;
+
+    // ========== 감사용 필드 - 도메인이 스냅샷으로 들고 있되, 생성은 JPA에 위임 ========== //
+
+    private final LocalDateTime paidAt;
     private final LocalDateTime createdAt;
+
+    // ========== 생성자 ========== //
 
     private Payment(Long id, PaymentType type, PaymentMethod method,
                     Long orderId, String orderNumber, Long memberId,
-                    Money originAmount, Money paidAmount, Money refundedAmount, Money walletDeductedAmount, List<OrderItemSnapshot> orderItems,
+                    Money originAmount, Money paidAmount, Money refundedAmount, Money walletDeductedAmount,
                     PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
                     LocalDateTime paidAt, LocalDateTime createdAt
     ) {
@@ -47,7 +54,6 @@ public class Payment extends BaseDomainModel {
         this.paidAmount = paidAmount;
         this.refundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
         this.walletDeductedAmount = walletDeductedAmount != null ? walletDeductedAmount : Money.zero();
-        this.orderItems = List.copyOf(orderItems);
         this.status = status;
         this.paymentKey = paymentKey;
         this.lastTransactionKey = lastTransactionKey;
@@ -56,41 +62,95 @@ public class Payment extends BaseDomainModel {
         this.createdAt = createdAt;
     }
 
-    // ========== 정적 팩토리 메서드 ========== //
+    // ========== static 팩토리 메서드 ========== //
 
-    public static Builder builder() {
-        return new Builder();
+    public static PaymentBuilder builder() {
+        return new PaymentBuilder();
     }
 
-    // ========== 상태 변경 메서드 ========== //
+    static Payment fromBuilder(
+            Long id, PaymentType type, PaymentMethod method,
+            Long orderId, String orderNumber, Long memberId,
+            Money originAmount, Money paidAmount, Money refundedAmount, Money walletDeductedAmount,
+            PaymentStatus status, String paymentKey, String lastTransactionKey, String approveCode,
+            LocalDateTime paidAt, LocalDateTime createdAt
+    ) {
+        return new Payment(
+                id, type, method,
+                orderId, orderNumber, memberId,
+                originAmount, paidAmount, refundedAmount, walletDeductedAmount,
+                status, paymentKey, lastTransactionKey, approveCode,
+                paidAt, createdAt
+        );
+    }
 
-    public void markAsPaid(String paymentKey, String approveCode, String lastTransactionKey, LocalDateTime paidAt) {
+    public static Payment createForDepositCharge(
+            PaymentCreateContext context,
+            Money amount
+    ) {
+        return builder()
+                .orderId(context.orderId())
+                .orderNumber(context.orderNumber())
+                .memberId(context.memberId())
+                .type(context.type())
+                .method(context.method())
+                .originAmount(amount)
+                .paidAmount(amount)
+                .status(PaymentStatus.PENDING)
+                .build();
+    }
+
+    public static Payment create(
+            PaymentCreateContext context,
+            Money originAmount,
+            Money paidAmount,
+            Money walletDeductedAmount
+    ) {
+        return builder()
+                .orderId(context.orderId())
+                .orderNumber(context.orderNumber())
+                .memberId(context.memberId())
+                .type(context.type())
+                .method(context.method())
+                .originAmount(originAmount)
+                .paidAmount(paidAmount)
+                .walletDeductedAmount(walletDeductedAmount)
+                .status(PaymentStatus.PENDING)
+                .build();
+    }
+
+    // ========== 상태 전이 메서드 ========== //
+
+    @CheckReturnValue
+    public Payment complete(String paymentKey, String approveCode, String lastTransactionKey, LocalDateTime paidAt) {
         if (!PaymentEventType.PAID.canApply(this.status)) {
             throw new PaymentException(PaymentErrorCode.NOT_PAYABLE,
                     "[Payment] 결제 완료 불가능한 상태입니다: " + this.status);
         }
-        this.status = PaymentEventType.PAID.getResultStatus();
-        this.paymentKey = paymentKey;
-        this.approveCode = approveCode;
-        this.lastTransactionKey = lastTransactionKey;
-        this.paidAt = paidAt;
 
-        registerEvent(PaymentSucceededEvent.create(
-                PaymentEventData.forSuccess(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(),
-                        getMethod(), getType(), paymentKey, lastTransactionKey
-                )
+        Payment paid = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount,
+                PaymentEventType.PAID.getResultStatus(),
+                paymentKey, lastTransactionKey, approveCode,
+                paidAt, this.createdAt
+        );
+
+        paid.registerEvent(new PaymentDomainEvent.Completed(
+                getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                paid.getPaidAmount(), getMethod(), getType(),
+                paid.getPaymentKey(), paid.getLastTransactionKey()
         ));
+
+        return paid;
     }
 
-    // charged (PAID, PARTIALLY_CANCELED) -> REFUND, uncharged (PENDING) -> CANCEL
-    public CancelType resolveCancelType() {
-        return (this.status == PaymentStatus.PAID || this.status == PaymentStatus.PARTIALLY_CANCELED)
-                ? CancelType.REFUND
-                : CancelType.CANCEL;
-    }
+    @CheckReturnValue
+    public Payment cancel(CancelType cancelType, String reason) {
+        Objects.requireNonNull(cancelType, "cancelType must not be null");
 
-    public void markAsCanceled(CancelType cancelType, String reason) {
         PaymentEventType eventType = (cancelType == CancelType.REFUND)
                 ? PaymentEventType.CANCEL_AFTER_PAID
                 : PaymentEventType.CANCELED;
@@ -99,17 +159,30 @@ public class Payment extends BaseDomainModel {
             throw new PaymentException(PaymentErrorCode.NOT_CANCELABLE,
                     "[Payment] 취소 불가능한 상태입니다: " + this.status);
         }
-        this.status = eventType.getResultStatus();
 
-        registerEvent(PaymentCanceledEvent.create(
-                PaymentEventData.forCancel(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), this.walletDeductedAmount,
-                        getMethod(), getType(), cancelType, reason, this.lastTransactionKey
-                )
+        Payment canceled = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount,
+                eventType.getResultStatus(),
+                this.paymentKey, this.lastTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
+
+        canceled.registerEvent(new PaymentDomainEvent.Canceled(
+                getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                getPaidAmount(), getMethod(), getType(),
+                cancelType, reason, this.lastTransactionKey
         ));
+
+        return canceled;
     }
 
-    public void markAsPartiallyCanceled(String newTransactionKey, Money cancelAmount, CancelType cancelType, String reason) {
+    @CheckReturnValue
+    public Payment partialCancel(String newTransactionKey, Money cancelAmount, CancelType cancelType, String reason) {
+        Objects.requireNonNull(cancelAmount, "cancelAmount must not be null");
+
         Money newRefundedTotal = this.refundedAmount.plus(cancelAmount);
 
         PaymentEventType eventType = getCancelingEventType(newRefundedTotal);
@@ -119,19 +192,101 @@ public class Payment extends BaseDomainModel {
                     "[Payment] 취소 불가능한 상태입니다: " + this.status);
         }
 
-        this.status = eventType.getResultStatus();
-        this.refundedAmount = newRefundedTotal;
-        this.lastTransactionKey = newTransactionKey;
+        Payment partiallyCanceled = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, newRefundedTotal,
+                this.walletDeductedAmount,
+                eventType.getResultStatus(),
+                this.paymentKey, newTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
 
-        registerEvent(PaymentCanceledEvent.create(
-                PaymentEventData.forCancel(
+        partiallyCanceled.registerEvent(new PaymentDomainEvent.PartialCanceled(
                         getId(), getOrderId(), getMemberId(), getOrderNumber(),
-                        cancelAmount, this.walletDeductedAmount,
-                        getMethod(), getType(), cancelType, reason,
-                        newTransactionKey
+                        cancelAmount, getMethod(), getType(), reason, newTransactionKey
                 )
-        ));
+        );
+
+        return partiallyCanceled;
     }
+
+    @CheckReturnValue
+    public Payment fail() {
+        if (!PaymentEventType.FAILED.canApply(this.status)) {
+            throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
+                    "[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
+        }
+
+        Payment failed = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount,
+                PaymentEventType.FAILED.getResultStatus(),
+                this.paymentKey, this.lastTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
+
+        failed.registerEvent(new PaymentDomainEvent.Failed(
+                        getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                        getPaidAmount(), getMethod(), getType()
+                )
+        );
+
+        return failed;
+    }
+
+    @CheckReturnValue
+    public Payment failCancel(String errorMetadata) {
+        if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
+            throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
+                    "[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
+        }
+
+        Payment cancelFailed = new Payment(
+                getId(), this.type, this.method,
+                this.orderId, this.orderNumber, this.memberId,
+                this.originAmount, this.paidAmount, this.refundedAmount,
+                this.walletDeductedAmount,
+                this.status,
+                this.paymentKey, this.lastTransactionKey, this.approveCode,
+                this.paidAt, this.createdAt
+        );
+
+        cancelFailed.registerEvent(new PaymentDomainEvent.CancelFailed(
+                        getId(), getOrderId(), getMemberId(), getOrderNumber(),
+                        getMethod(), getType(), errorMetadata
+                )
+        );
+
+        return cancelFailed;
+    }
+
+    // ========== 상태 조회 메서드 ========== //
+
+    // charged (PAID, PARTIALLY_CANCELED) -> REFUND, uncharged (PENDING) -> CANCEL
+    public CancelType resolveCancelType() {
+        return (this.status == PaymentStatus.PAID || this.status == PaymentStatus.PARTIALLY_CANCELED)
+                ? CancelType.REFUND
+                : CancelType.CANCEL;
+    }
+
+    public boolean isCancelable() {
+        return PaymentEventType.CANCELED.canApply(this.status);
+    }
+
+    /**
+     * 해당 회원이 이 결제의 소유자인지 확인합니다.
+     *
+     * @param requesterId 요청자 회원 ID
+     * @return 소유자이면 true
+     */
+    public boolean isOwnedBy(Long requesterId) {
+        return this.memberId != null && this.memberId.equals(requesterId);
+    }
+
+    // ========== private 헬퍼 ========== //
 
     private PaymentEventType getCancelingEventType(Money money) {
         PaymentEventType eventType;
@@ -148,51 +303,6 @@ public class Payment extends BaseDomainModel {
                     "[Payment] 취소 금액이 결제 금액을 초과합니다.");
         }
         return eventType;
-    }
-
-    public void markAsFailed(LocalDateTime occurredAt) {
-        if (!PaymentEventType.FAILED.canApply(this.status)) {
-            throw new PaymentException(PaymentErrorCode.NOT_FAILABLE,
-                    "[Payment] 대기 중인 결제만 실패 처리할 수 있습니다. 현재 상태: " + this.status);
-        }
-        this.status = PaymentEventType.FAILED.getResultStatus();
-
-        registerEvent(PaymentFailedEvent.create(
-                PaymentEventData.forFailure(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(), getPaidAmount(), getWalletDeductedAmount(),
-                        getMethod(), getType()
-                )
-        ));
-    }
-
-    public void recordCancelFailed(String errorMetadata, LocalDateTime occurredAt) {
-        if (!PaymentEventType.CANCEL_FAILED.canApply(this.status)) {
-            throw new PaymentException(PaymentErrorCode.INVALID_PAYMENT_STATUS,
-                    "[Payment] 취소 실패 기록은 PAID 상태에서만 가능합니다. 현재 상태: " + this.status);
-        }
-
-        registerEvent(PaymentCancelFailedEvent.create(
-                PaymentEventData.forCancelFailed(
-                        getId(), getOrderId(), getMemberId(), getOrderNumber(),
-                        getMethod(), getType(), errorMetadata
-                )
-        ));
-    }
-
-    // ========== 상태 조회 메서드 ========== //
-
-    public boolean isCancelable() {
-        return PaymentEventType.CANCELED.canApply(this.status);
-    }
-
-    /**
-     * 해당 회원이 이 결제의 소유자인지 확인합니다.
-     *
-     * @param requesterId 요청자 회원 ID
-     * @return 소유자이면 true
-     */
-    public boolean isOwnedBy(Long requesterId) {
-        return this.memberId != null && this.memberId.equals(requesterId);
     }
 
     // ========== Getter ========== //
@@ -223,10 +333,6 @@ public class Payment extends BaseDomainModel {
 
     public Money getWalletDeductedAmount() {
         return walletDeductedAmount;
-    }
-
-    public List<OrderItemSnapshot> getOrderItems() {
-        return orderItems;
     }
 
     public PaymentStatus getStatus() {
@@ -282,229 +388,4 @@ public class Payment extends BaseDomainModel {
         }
         return Objects.hash(orderNumber);
     }
-
-    // ========== Builder ========== //
-
-    public static class Builder {
-        private Long id;
-        private Long orderId;
-        private String orderNumber;
-        private Long memberId;
-        private Money originAmount;
-        private Money paidAmount;
-        private Money refundedAmount;
-        private Money walletDeductedAmount;
-        private List<OrderItemSnapshot> orderItems;
-        private PaymentStatus status;
-        private PaymentType type;
-        private PaymentMethod method;
-        private String paymentKey;
-        private String lastTransactionKey;
-        private String approveCode;
-        private LocalDateTime paidAt;
-        private LocalDateTime createdAt;
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder orderId(Long orderId) {
-            this.orderId = orderId;
-            return this;
-        }
-
-        public Builder orderNumber(String orderNumber) {
-            this.orderNumber = orderNumber;
-            return this;
-        }
-
-        public Builder memberId(Long memberId) {
-            this.memberId = memberId;
-            return this;
-        }
-
-        public Builder originAmount(Money originAmount) {
-            this.originAmount = originAmount;
-            return this;
-        }
-
-        public Builder paidAmount(Money paidAmount) {
-            this.paidAmount = paidAmount;
-            return this;
-        }
-
-        public Builder refundedAmount(Money refundedAmount) {
-            this.refundedAmount = refundedAmount;
-            return this;
-        }
-
-        public Builder walletDeductedAmount(Money walletDeductedAmount) {
-            this.walletDeductedAmount = walletDeductedAmount;
-            return this;
-        }
-
-
-        public Builder orderItems(List<OrderItemSnapshot> orderItems) {
-            this.orderItems = orderItems;
-            return this;
-        }
-
-        public Builder status(PaymentStatus status) {
-            this.status = status;
-            return this;
-        }
-
-        public Builder type(PaymentType type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder method(PaymentMethod method) {
-            this.method = method;
-            return this;
-        }
-
-        public Builder paymentKey(String paymentKey) {
-            this.paymentKey = paymentKey;
-            return this;
-        }
-
-        public Builder lastTransactionKey(String lastTransactionKey) {
-            this.lastTransactionKey = lastTransactionKey;
-            return this;
-        }
-
-        public Builder approveCode(String approveCode) {
-            this.approveCode = approveCode;
-            return this;
-        }
-
-        public Builder paidAt(LocalDateTime paidAt) {
-            this.paidAt = paidAt;
-            return this;
-        }
-
-        public Builder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        public Payment build() {
-            validate();
-            return new Payment(
-                    id,
-                    type, method,
-                    orderId, orderNumber, memberId,
-                    originAmount, paidAmount, refundedAmount, walletDeductedAmount,
-                    orderItems, status, paymentKey, lastTransactionKey, approveCode,
-                    paidAt, createdAt
-            );
-        }
-
-        private void validate() {
-            validateRequiredFields();
-            validateAmountInvariant();
-            validateOrderItemsIfRequired();
-        }
-
-        private void validateRequiredFields() {
-            requireNonBlank(orderNumber, "orderNumber");
-            requireNonNull(memberId, "memberId");
-            requireNonNull(type, "type");
-            requireNonNull(method, "method");
-            requireNonNull(originAmount, "originAmount");
-            requireNonNull(paidAmount, "paidAmount");
-            requireNonNull(status, "status");
-        }
-
-        private void requireNonBlank(String value, String fieldName) {
-            if (value == null || value.isBlank()) {
-                throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                        "[Payment] " + fieldName + "는 필수입니다.");
-            }
-        }
-
-        private void requireNonNull(Object value, String fieldName) {
-            if (value == null) {
-                throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                        "[Payment] " + fieldName + "는 필수입니다.");
-            }
-        }
-
-        private void validateAmountInvariant() {
-            if (paidAmount.isGreaterThan(originAmount)) {
-                throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                        "[Payment] paidAmount는 originAmount를 초과할 수 없습니다.");
-            }
-            Money effectiveRefundedAmount = refundedAmount != null ? refundedAmount : Money.zero();
-            if (effectiveRefundedAmount.isGreaterThan(paidAmount)) {
-                throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                        "[Payment] refundedAmount는 paidAmount를 초과할 수 없습니다.");
-            }
-        }
-
-        private void validateOrderItemsIfRequired() {
-            if (type == PaymentType.DEPOSIT_CHARGE) {
-                return;
-            }
-
-            if (orderItems == null || orderItems.isEmpty()) {
-                throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                        "[Payment] orderItems는 필수입니다.");
-            }
-
-            Money itemsTotal = orderItems.stream()
-                    .map(OrderItemSnapshot::amount)
-                    .reduce(Money.zero(), Money::plus);
-
-            if (!itemsTotal.equals(originAmount)) {
-                throw new PaymentException(PaymentErrorCode.INVALID_INPUT_VALUE,
-                        "[Payment] orderItems 합계와 originAmount가 일치하지 않습니다.");
-            }
-        }
-    }
-
-    // ========== 정적 팩토리 메서드  ========== //
-
-    public static Payment create(
-            PaymentCreateContext context,
-            Money originAmount,
-            Money paidAmount,
-            List<OrderItemSnapshot> orderItems
-    ) {
-        return builder()
-                .orderId(context.orderId())
-                .orderNumber(context.orderNumber())
-                .memberId(context.memberId())
-                .type(context.type())
-                .method(context.method())
-                .originAmount(originAmount)
-                .paidAmount(paidAmount)
-                .orderItems(orderItems)
-                .status(PaymentStatus.PENDING)
-                .build();
-    }
-
-    public static Payment create(
-            PaymentCreateContext context,
-            Money originAmount,
-            Money paidAmount,
-            Money walletDeductedAmount,
-            List<OrderItemSnapshot> orderItems
-    ) {
-        return builder()
-                .orderId(context.orderId())
-                .orderNumber(context.orderNumber())
-                .memberId(context.memberId())
-                .type(context.type())
-                .method(context.method())
-                .originAmount(originAmount)
-                .paidAmount(paidAmount)
-                .walletDeductedAmount(walletDeductedAmount)
-                .orderItems(orderItems)
-                .status(PaymentStatus.PENDING)
-                .build();
-    }
-
 }

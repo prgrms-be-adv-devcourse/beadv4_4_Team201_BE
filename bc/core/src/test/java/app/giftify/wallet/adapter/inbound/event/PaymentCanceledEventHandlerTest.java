@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentCancelData;
 import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
@@ -35,7 +35,7 @@ class PaymentCanceledEventHandlerTest {
 	@Test
 	@DisplayName("walletDeductedAmount > 0 취소 시 Wallet 복원 호출")
 	void handleWalletDeductedCancel() {
-		PaymentEventData data = PaymentEventData.forCancel(
+		PaymentCancelData data = new PaymentCancelData(
 			1L,
 			100L,
 			200L,
@@ -64,7 +64,7 @@ class PaymentCanceledEventHandlerTest {
 	@Test
 	@DisplayName("walletDeductedAmount == 0 취소 시 Wallet 복원 호출 안 함")
 	void skipZeroWalletDeductedCancel() {
-		PaymentEventData data = PaymentEventData.forCancel(
+		PaymentCancelData data = new PaymentCancelData(
 			2L,
 			101L,
 			201L,

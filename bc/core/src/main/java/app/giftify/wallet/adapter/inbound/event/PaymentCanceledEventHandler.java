@@ -24,7 +24,7 @@ public class PaymentCanceledEventHandler {
         }
 
         log.info("[PaymentCanceledEventHandler] Wallet 결제 취소 → 잔액 복원. memberId={}, cancelAmount={}",
-                event.data().memberId(), event.data().amount());
+                event.data().memberId(), event.data().cancelAmount());
 
         restoreWalletUseCase.restore(new RestoreWalletCommand(
                 event.data().memberId(),

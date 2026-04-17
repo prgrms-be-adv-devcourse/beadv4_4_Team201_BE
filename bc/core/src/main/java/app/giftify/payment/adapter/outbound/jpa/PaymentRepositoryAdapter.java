@@ -1,9 +1,10 @@
 package app.giftify.payment.adapter.outbound.jpa;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
+import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
+import app.giftify.payment.application.outbound.PaymentRepository;
+import app.giftify.payment.domain.Payment;
+import app.giftify.payment.domain.PaymentStatus;
+import app.giftify.shared.api.paging.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -11,11 +12,9 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
-import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.Payment;
-import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.api.paging.Page;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Repository("paymentBcPaymentRepositoryAdapter")
 public class PaymentRepositoryAdapter implements PaymentRepository {
@@ -43,8 +42,7 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 			jpaPayment = jpaPaymentRepository.findById(payment.getId())
 				.orElseThrow(() -> new IllegalArgumentException(
 					"[PaymentRepositoryAdapter] 존재하지 않는 Payment: " + payment.getId()));
-			JpaPayment updatedEntity = paymentMapper.toEntity(payment);
-			jpaPayment.updateFrom(payment, updatedEntity.getOrderItemsJson());
+			jpaPayment.updateFrom(payment);
 		}
 
 		return paymentMapper.toDomain(jpaPayment);

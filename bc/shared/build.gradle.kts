@@ -6,8 +6,8 @@ plugins {
 
 dependencies {
     implementation(libs.spring.modulith.events.api)
+    implementation(libs.jmolecules.events)
     implementation("com.fasterxml.jackson.core:jackson-annotations")
-
     // Test
     testImplementation(libs.spring.boot.starter.test)
 }

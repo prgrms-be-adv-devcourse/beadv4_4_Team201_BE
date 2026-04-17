@@ -1,16 +1,16 @@
 package app.giftify.facade;
 
 import app.giftify.facade.command.ParticipateFundingCommand;
-import app.giftify.facade.mapper.OrderItemSnapshotMapper;
 import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.funding.application.FundingFacade;
 import app.giftify.order.application.OrderService;
-import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
+import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
-import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
+import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.FundingSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -36,7 +36,7 @@ public class CoreFacade {
     public PlaceOrderResult participateFunding(ParticipateFundingCommand command) {
         OrderSnapshot orderSnapshot = orderService.createOrder(PlaceOrderCommand.of(command));
 
-        CreateFundingPaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
+        CreatePaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot);
         PaymentCreatedResult paymentResult = createPaymentService.create(paymentCommand);
 
         MarkOrderAsPaidCommand markOrderAsPaidCommand = new MarkOrderAsPaidCommand(
@@ -52,14 +52,16 @@ public class CoreFacade {
         return new PlaceOrderResult(orderSnapshot.orderId());
     }
 
-    private static @NonNull CreateFundingPaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
-        return CreateFundingPaymentCommand.of(
+    // FIXME: PaymentType을 OrderSnapshot의 주문 항목 타입(OrderItemType)으로부터 결정하도록 변경 필요
+    //        현재는 participateFunding() 전용이라 FUNDING 하드코딩. 일반 상품 구매 추가 시 수정.
+    private static @NonNull CreatePaymentCommand generatePaymentCommand(OrderSnapshot orderSnapshot) {
+        return CreatePaymentCommand.of(
                 orderSnapshot.buyerId(),
                 orderSnapshot.orderId(),
                 orderSnapshot.orderNumber(),
+                PaymentType.FUNDING,
                 orderSnapshot.paymentMethod(),
-                orderSnapshot.totalAmount(),
-                OrderItemSnapshotMapper.fromOrderList(orderSnapshot.orderItemSnapshots())
+                orderSnapshot.totalAmount()
         );
     }
 
