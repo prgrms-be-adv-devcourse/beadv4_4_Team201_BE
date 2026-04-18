@@ -49,6 +49,7 @@ public class OrderController implements OrderV2ApiSpec {
         ParticipateFundingCommand command = new ParticipateFundingCommand(
                 memberId,
                 orderRequest.method(),
+                orderRequest.walletDeductAmount(),
                 getFundingItemCommands(orderRequest)
         );
 
