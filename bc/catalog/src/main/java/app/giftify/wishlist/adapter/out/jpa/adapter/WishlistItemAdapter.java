@@ -1,11 +1,14 @@
 package app.giftify.wishlist.adapter.out.jpa.adapter;
 
+import app.giftify.shared.api.paging.Page;
+import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.wishlist.adapter.out.jpa.entity.WishlistItemJpaEntity;
 import app.giftify.wishlist.adapter.out.jpa.mapper.WishlistItemMapper;
 import app.giftify.wishlist.adapter.out.jpa.repository.WishlistItemJpaRepository;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -35,6 +38,18 @@ public class WishlistItemAdapter implements WishlistItemRepositoryPort {
                 .stream()
                 .map(WishlistItemMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Page<WishlistItem> findByWishlistId(Long wishlistId, PageRequest pageRequest) {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                pageRequest.page(), pageRequest.size());
+        org.springframework.data.domain.Page<WishlistItemJpaEntity> jpaPage =
+                wishlistItemRepository.findByWishlistId(wishlistId, pageable);
+        List<WishlistItem> items = jpaPage.getContent().stream()
+                .map(WishlistItemMapper::toDomain)
+                .toList();
+        return Page.of(items, jpaPage.getTotalElements());
     }
 
     @Override
