@@ -60,7 +60,7 @@ class CoreFacadeTest {
 			ParticipateFundingItemCommand itemCommand = new ParticipateFundingItemCommand(
 				1L, 10L, null,  200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
-				100L, PaymentMethod.CARD, List.of(itemCommand));
+				100L, PaymentMethod.CARD, Money.zero(), List.of(itemCommand));
 
 			OrderItemSnapshot orderItemSnapshot = OrderItemSnapshot.builder()
 				.orderItemId(1L).orderId(1L).targetId(10L)
@@ -106,7 +106,7 @@ class CoreFacadeTest {
 			ParticipateFundingItemCommand itemRequest = new ParticipateFundingItemCommand(
 					1L, 10L, null, 200L, Money.of(10000), OrderItemType.FUNDING_GIFT);
 			ParticipateFundingCommand command = new ParticipateFundingCommand(
-				100L, PaymentMethod.CARD, List.of(itemRequest));
+				100L, PaymentMethod.CARD, Money.zero(), List.of(itemRequest));
 
 			OrderItemSnapshot orderItemSnapshot = OrderItemSnapshot.builder()
 				.orderItemId(1L).orderId(42L).targetId(10L)
