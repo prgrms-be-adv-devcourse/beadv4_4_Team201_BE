@@ -1,4 +1,4 @@
-package app.giftify.funding.application.outbound;
+package app.giftify.shared.domain.port;
 
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
 
