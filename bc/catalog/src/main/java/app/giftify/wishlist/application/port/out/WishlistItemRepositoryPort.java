@@ -1,5 +1,7 @@
 package app.giftify.wishlist.application.port.out;
 
+import app.giftify.shared.api.paging.Page;
+import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.wishlist.core.domain.WishlistItem;
 
 import java.time.LocalDateTime;
@@ -14,6 +16,9 @@ public interface WishlistItemRepositoryPort {
 
     // 특정 위시리스트의 모든 상품 조회
     List<WishlistItem> findByWishlistId(Long wishlistId);
+
+    // 특정 위시리스트의 상품 페이지네이션 조회
+    Page<WishlistItem> findByWishlistId(Long wishlistId, PageRequest pageRequest);
 
     // List<Long> 위시리스트아이템 id 로 위시리스트아이템 리스트 조회
     List<WishlistItem> findAllById(List<Long> wishlistItemIds);
