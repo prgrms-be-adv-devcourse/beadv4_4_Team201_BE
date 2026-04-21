@@ -11,7 +11,7 @@ import app.giftify.order.application.inbound.vo.OrderItemDetail;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderItemRepository;
 import app.giftify.order.application.outbound.port.OrderRepository;
-import app.giftify.order.application.outbound.port.ProductPort;
+import app.giftify.shared.domain.port.ProductSnapshotPort;
 import app.giftify.order.domain.*;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.*;
@@ -49,7 +49,7 @@ public class OrderService {
     private final EventPublisher eventPublisher;
     private final OrderCancelProcessor orderCancelProcessor;
     private final FundingQueryPort fundingPort;
-    private final ProductPort productPort;
+    private final ProductSnapshotPort productPort;
     private final TargetTypeResolver targetTypeResolver;
     private final TargetIdResolver targetIdResolver;
 

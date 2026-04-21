@@ -11,6 +11,10 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
 
+    // Apache HttpClient 5 (HC5) - RestClient connection pooling
+    implementation("org.apache.httpcomponents.client5:httpclient5")
+    implementation("org.springframework.boot:spring-boot-restclient")
+
     // Retry
     implementation(libs.spring.retry)
     implementation("org.springframework.boot:spring-boot-starter-aspectj")

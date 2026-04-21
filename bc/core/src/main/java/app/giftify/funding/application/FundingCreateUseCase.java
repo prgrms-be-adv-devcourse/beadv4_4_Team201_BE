@@ -3,7 +3,7 @@ package app.giftify.funding.application;
 import app.giftify.funding.adpater.inbound.FundingCreateResult;
 import app.giftify.funding.adpater.outbound.jpa.Funding;
 import app.giftify.funding.adpater.outbound.repository.FundingRepository;
-import app.giftify.funding.application.outbound.WishlistItemSnapshotPort;
+import app.giftify.shared.domain.port.WishlistItemSnapshotPort;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.order.domain.OrderItemSnapshot;
