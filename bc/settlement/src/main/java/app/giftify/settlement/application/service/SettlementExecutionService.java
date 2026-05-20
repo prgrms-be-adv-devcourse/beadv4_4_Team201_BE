@@ -1,6 +1,8 @@
 
 package app.giftify.settlement.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.settlement.adapter.outbound.batch.execution.ExecutionResult;
 import app.giftify.settlement.application.outbound.port.SettlementHistoryRepository;
 import app.giftify.settlement.application.outbound.port.SettlementQueueRepository;
@@ -10,7 +12,6 @@ import app.giftify.settlement.domain.model.SettlementQueue;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SettlementExecutionService {
+	private static final Logger log = LoggerFactory.getLogger(SettlementExecutionService.class);
+
 
     private final SettlementHistoryRepository settlementHistoryRepository;
     private final SettlementQueueRepository settlementQueueRepository;

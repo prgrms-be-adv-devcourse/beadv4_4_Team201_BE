@@ -1,14 +1,16 @@
 package app.giftify.settlement.adapter.outbound.batch.validation;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 public class ValidationJobListener implements JobExecutionListener {
+	private static final Logger log = LoggerFactory.getLogger(ValidationJobListener.class);
+
     @Override
     public void beforeJob(JobExecution jobExecution) {
         log.info("Validation batch started: {}", jobExecution.getJobInstance().getJobName());

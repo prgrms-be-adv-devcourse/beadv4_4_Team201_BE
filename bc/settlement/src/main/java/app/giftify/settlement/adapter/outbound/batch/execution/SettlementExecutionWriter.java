@@ -1,16 +1,18 @@
 package app.giftify.settlement.adapter.outbound.batch.execution;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.settlement.application.service.SettlementExecutionService;
 import app.giftify.shared.api.exception.InfraErrorCode;
 import app.giftify.shared.api.exception.InfraException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.infrastructure.item.Chunk;
 import org.springframework.batch.infrastructure.item.ItemWriter;
 
-@Slf4j
 @RequiredArgsConstructor
 public class SettlementExecutionWriter implements ItemWriter<ExecutionResult> {
+	private static final Logger log = LoggerFactory.getLogger(SettlementExecutionWriter.class);
+
 
     private final SettlementExecutionService settlementExecutionService;
 

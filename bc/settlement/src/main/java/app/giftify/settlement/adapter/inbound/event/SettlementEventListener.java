@@ -10,13 +10,11 @@ import app.giftify.shared.domain.event.order.OrderItemConfirmedEvent;
 import app.giftify.shared.domain.vo.CanceledItemSnapshot;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SettlementEventListener {

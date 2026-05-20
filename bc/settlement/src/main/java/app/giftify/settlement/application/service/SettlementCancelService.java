@@ -1,10 +1,11 @@
 package app.giftify.settlement.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.settlement.application.inbound.CancelSettlementCommand;
 import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.InfraException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -12,8 +13,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SettlementCancelService {
+	private static final Logger log = LoggerFactory.getLogger(SettlementCancelService.class);
+
 
     private final SettlementItemService settlementItemService;
 

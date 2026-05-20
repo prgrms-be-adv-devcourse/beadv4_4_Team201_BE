@@ -1,5 +1,7 @@
 package app.giftify.settlement.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.settlement.application.inbound.CancelSettlementCommand;
 import app.giftify.settlement.application.inbound.CreateSettlementCommand;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
@@ -14,7 +16,6 @@ import app.giftify.shared.api.AmountSummaryProjection;
 import app.giftify.shared.domain.vo.Money;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SettlementItemService {
+	private static final Logger log = LoggerFactory.getLogger(SettlementItemService.class);
+
 
     private final SettlementItemRepository settlementItemRepository;
     private final FeePolicyService feePolicyService;
