@@ -1,5 +1,7 @@
 package app.giftify.product.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.application.port.in.StockHistoryCreateUseCase;
 import app.giftify.product.application.port.in.StockHistorySearchCommand;
 import app.giftify.product.application.port.in.StockHistorySearchUseCase;
@@ -7,7 +9,6 @@ import app.giftify.product.application.port.out.ProductStockHistoryRepositoryPor
 import app.giftify.product.domain.ProductStockHistory;
 import app.giftify.product.domain.StockChangeResult;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.dao.TransientDataAccessException;
@@ -18,11 +19,12 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductStockHistoryService implements StockHistoryCreateUseCase, StockHistorySearchUseCase {
+	private static final Logger log = LoggerFactory.getLogger(ProductStockHistoryService.class);
+
 
     private final ProductStockHistoryRepositoryPort stockHistoryRepositoryPort;
 

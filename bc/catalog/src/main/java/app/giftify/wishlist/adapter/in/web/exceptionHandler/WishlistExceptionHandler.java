@@ -1,17 +1,19 @@
 package app.giftify.wishlist.adapter.in.web.exceptionHandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.wishlist.core.domain.exception.WishlistDomainException;
 import app.giftify.wishlist.core.domain.exception.WishlistErrorCode;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
-@Slf4j
 @RestControllerAdvice
 public class WishlistExceptionHandler {
+	private static final Logger log = LoggerFactory.getLogger(WishlistExceptionHandler.class);
+
 
     /**
      * // 응답 예시

@@ -1,5 +1,7 @@
 package app.giftify.product.adapter.inbound.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
@@ -10,14 +12,14 @@ import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
 import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 @RequiredArgsConstructor
 public class ProductEsEventListener {
+	private static final Logger log = LoggerFactory.getLogger(ProductEsEventListener.class);
+
 
     private final ProductSupport productSupport;
     private final ProductEsPort productEsPort;

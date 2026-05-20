@@ -1,5 +1,7 @@
 package app.giftify.wishlist.adapter.in.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.shared.domain.event.funding.*;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.vo.FundingDetail;
@@ -10,16 +12,16 @@ import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import app.giftify.wishlist.core.domain.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WishlistEventListener {
+	private static final Logger log = LoggerFactory.getLogger(WishlistEventListener.class);
+
 
     private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
     private final WishlistRepositoryPort wishlistRepositoryPort;

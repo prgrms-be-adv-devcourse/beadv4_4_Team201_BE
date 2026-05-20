@@ -1,5 +1,7 @@
 package app.giftify.product.adapter.outbound.elasticsearch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.adapter.outbound.jpa.ProductMapper;
 import app.giftify.product.adapter.outbound.jpa.entity.ProductJpa;
 import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
@@ -7,7 +9,6 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -23,8 +24,9 @@ import java.util.List;
 @Profile({"local", "init"})
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class ProductEsDataInitializer implements ApplicationRunner {
+	private static final Logger log = LoggerFactory.getLogger(ProductEsDataInitializer.class);
+
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;

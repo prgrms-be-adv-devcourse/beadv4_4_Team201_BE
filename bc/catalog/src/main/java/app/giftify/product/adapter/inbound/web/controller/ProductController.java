@@ -1,5 +1,7 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.adapter.inbound.web.requestDto.*;
 import app.giftify.product.adapter.inbound.web.responseDto.MyProductDto;
 import app.giftify.product.adapter.inbound.web.responseDto.ProductDto;
@@ -13,7 +15,6 @@ import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.api.response.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,8 +29,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/products")
-@Slf4j
 public class ProductController implements ProductV2ApiSpec {
+	private static final Logger log = LoggerFactory.getLogger(ProductController.class);
+
     private final ProductCreateUseCase productCreateUseCase;
     private final ProductGetUseCase productGetUseCase;
     private final ProductSearchUseCase productSearchUseCase;

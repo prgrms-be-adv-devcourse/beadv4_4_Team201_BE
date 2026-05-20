@@ -8,7 +8,6 @@ import app.giftify.wishlist.adapter.in.web.responseDto.MemberWishlistSummaryResp
 import app.giftify.wishlist.application.port.in.GetPublicWishlistUseCase;
 import app.giftify.wishlist.core.domain.Wishlist;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/v2/wishlists")
 @RequiredArgsConstructor

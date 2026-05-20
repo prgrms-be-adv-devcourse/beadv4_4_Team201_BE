@@ -13,10 +13,7 @@ import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;
 import app.giftify.wishlist.core.domain.WishlistItem;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PublicWishlistService implements GetPublicWishlistUseCase {

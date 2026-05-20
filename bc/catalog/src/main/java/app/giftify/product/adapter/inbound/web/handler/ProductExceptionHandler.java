@@ -2,14 +2,12 @@ package app.giftify.product.adapter.inbound.web.handler;
 
 import app.giftify.product.domain.exception.ProductErrorCode;
 import app.giftify.product.domain.exception.ProductException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
-@Slf4j
 @RestControllerAdvice
 public class ProductExceptionHandler {
 

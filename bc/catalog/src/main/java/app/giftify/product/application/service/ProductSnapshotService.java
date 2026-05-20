@@ -1,12 +1,13 @@
 package app.giftify.product.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.application.port.in.GetProductSnapshotUseCase;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.shared.domain.vo.ProductSnapshot;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductSnapshotService implements GetProductSnapshotUseCase {
+	private static final Logger log = LoggerFactory.getLogger(ProductSnapshotService.class);
+
 
     private final ProductSupport productSupport;
 

@@ -1,5 +1,7 @@
 package app.giftify.product.adapter.outbound.elasticsearch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.adapter.outbound.elasticsearch.document.ProductDocument;
 import app.giftify.product.adapter.outbound.elasticsearch.repository.ProductEsRepository;
 import app.giftify.product.adapter.outbound.jpa.ProductMapper;
@@ -17,7 +19,6 @@ import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.BulkFailureException;
@@ -34,9 +35,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@Slf4j
 @RequiredArgsConstructor
 public class ProductEsAdapter implements ProductEsPort {
+	private static final Logger log = LoggerFactory.getLogger(ProductEsAdapter.class);
+
 
     private final ProductEsRepository productEsRepository;
     private final ProductRepository productRepository;

@@ -1,5 +1,7 @@
 package app.giftify.product.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.adapter.inbound.web.requestDto.MyProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductSearchDto;
 import app.giftify.product.adapter.inbound.web.requestDto.ProductUpdateRequestDto;
@@ -19,7 +21,6 @@ import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import app.giftify.shared.domain.vo.SellerOrderItem;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -32,10 +33,11 @@ import java.util.stream.Collectors;
 import static app.giftify.product.domain.ProductStatus.ACTIVE;
 import static app.giftify.product.domain.exception.ProductErrorCode.*;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService implements ProductCreateUseCase, ProductGetUseCase, ProductSearchUseCase, ProductApproveUseCase, ProductRejectUseCase, ProductUpdateUseCase, DecreaseProductStockUseCase, ProductDeleteUseCase, HardDeleteExpiredProductUseCase {
+	private static final Logger log = LoggerFactory.getLogger(ProductService.class);
+
     private final ProductRepositoryPort productRepositoryPort;
     private final ProductStockHistoryRepositoryPort productStockHistoryRepositoryPort;
     private final MemberRepository memberRepository;

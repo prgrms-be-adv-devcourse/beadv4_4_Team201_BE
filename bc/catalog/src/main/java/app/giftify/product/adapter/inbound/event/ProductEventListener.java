@@ -1,5 +1,7 @@
 package app.giftify.product.adapter.inbound.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.product.application.port.in.DecreaseProductStockUseCase;
 import app.giftify.product.application.port.in.StockHistoryCreateUseCase;
 import app.giftify.product.domain.event.ProductStockUpdatedEvent;
@@ -9,7 +11,6 @@ import app.giftify.shared.domain.event.product.ProductSellerOrderReceivedEvent;
 import app.giftify.shared.domain.vo.ConfirmItem;
 import app.giftify.shared.domain.vo.SellerOrderItem;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -18,10 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ProductEventListener {
+	private static final Logger log = LoggerFactory.getLogger(ProductEventListener.class);
+
     private final DecreaseProductStockUseCase decreaseProductStockUseCase;
     private final StockHistoryCreateUseCase stockHistoryCreateUseCase;
     private final EventPublisher eventPublisher;
