@@ -36,6 +36,9 @@ dependencies {
     // ElasticSearch
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
+    // Object Storage (AWS SDK v2 — MinIO 호환)
+    implementation(libs.awssdk.s3)
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
