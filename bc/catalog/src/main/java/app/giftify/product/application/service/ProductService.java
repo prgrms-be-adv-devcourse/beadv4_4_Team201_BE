@@ -21,6 +21,8 @@ import app.giftify.shared.domain.event.product.ProductDeletedEvent;
 import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import app.giftify.shared.domain.vo.SellerOrderItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -70,6 +72,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 상품 단건 조회
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "product-detail", key = "#productId")
     public ProductResult getProduct(Long productId) {
         Product product = productSupport.findById(productId);
 
@@ -138,6 +141,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 상품 등록 승인 (관리자)
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "product-detail", key = "#productId")
     public void approveProduct(Long productId) {
         Product product = productSupport.findById(productId);
 
@@ -150,6 +154,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     // 상품 등록 거절 (관리자)
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "product-detail", key = "#productId")
     public void rejectProduct(Long productId) {
         Product product = productSupport.findById(productId);
 
@@ -163,6 +168,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
      */
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "product-detail", key = "#productId")
     public ProductUpdateResult updateProduct(Long productId, Long sellerId, ProductUpdateRequestDto requestDto) {
         Product product;
 
@@ -303,6 +309,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "product-detail", key = "#productId")
     public void deleteProduct(Long productId, Long sellerId) {
         Product product = productSupport.findByIdAndSellerId(productId, sellerId);
         product.delete();
