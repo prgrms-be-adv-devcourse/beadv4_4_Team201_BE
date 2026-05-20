@@ -28,6 +28,10 @@ public class JpaCartItem {
     @Enumerated(EnumType.STRING)
     private WishlistItemStatus wishlistItemStatus;
 
+    // amount 변경 시 동시성 충돌 차단용 낙관적 락
+    @Version
+    private long version;
+
     public static JpaCartItem from(
             Long id,
             Long wishlistItemId,

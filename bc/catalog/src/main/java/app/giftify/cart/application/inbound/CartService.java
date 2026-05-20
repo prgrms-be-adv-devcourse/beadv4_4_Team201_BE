@@ -23,6 +23,9 @@ import app.giftify.wishlist.core.domain.WishlistItem;
 import app.giftify.wishlist.core.domain.WishlistItemStatus;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +59,11 @@ public class CartService
 	}
 
 	@Override
+	@Retryable(
+		retryFor = ObjectOptimisticLockingFailureException.class,
+		maxAttempts = 3,
+		backoff = @Backoff(delay = 50, multiplier = 2.0)
+	)
 	public CartItemAddResult upsertCartItem(Long memberId, AddCartItemCommand command) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND));

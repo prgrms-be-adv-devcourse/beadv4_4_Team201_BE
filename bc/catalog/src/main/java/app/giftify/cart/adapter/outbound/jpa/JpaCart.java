@@ -21,6 +21,10 @@ public class JpaCart extends BaseJpaEntity {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JpaCartItem> items = new ArrayList<>();
 
+    // 동일 memberId 동시 cart_add 요청의 row lock 직렬화 회피용 낙관적 락
+    @Version
+    private long version;
+
     private JpaCart(Long memberId) {
         this.memberId = memberId;
     }
