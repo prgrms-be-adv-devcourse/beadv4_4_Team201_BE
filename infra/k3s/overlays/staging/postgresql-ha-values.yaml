@@ -1,0 +1,97 @@
+# bitnami/postgresql Helm Chart — Primary/Replica HA values
+# 적용: helm upgrade --install postgres-ha bitnami/postgresql \
+#         --namespace giftify --create-namespace \
+#         -f infra/k3s/overlays/staging/postgresql-ha-values.yaml
+#
+# 의사결정 doc: docs/specs/2026-05-21-postgresql-ha-decision.md
+
+architecture: replication
+
+global:
+  postgresql:
+    auth:
+      database: giftify_db
+      username: giftify
+      existingSecret: postgres-secrets
+      secretKeys:
+        adminPasswordKey: POSTGRES_PASSWORD
+        userPasswordKey: POSTGRES_PASSWORD
+        replicationPasswordKey: POSTGRES_REPLICATION_PASSWORD
+
+primary:
+  persistence:
+    enabled: true
+    size: 20Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  readReplicas:
+    replicaCount: 1
+  initdb:
+    scripts:
+      00-create-schema.sql: |
+        CREATE SCHEMA IF NOT EXISTS g7app AUTHORIZATION giftify;
+        GRANT ALL ON SCHEMA g7app TO giftify;
+  pgHbaConfiguration: |
+    host replication replicator 0.0.0.0/0 md5
+    host all all 0.0.0.0/0 md5
+
+readReplicas:
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 20Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+replication:
+  synchronousCommit: "on"
+  numSynchronousReplicas: 1
+  applicationName: giftify
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: giftify
+    labels:
+      release: prometheus
+  prometheusRule:
+    enabled: true
+    namespace: giftify
+    labels:
+      release: prometheus
+    rules:
+      - alert: PostgresReplicationLagHigh
+        expr: pg_replication_lag_seconds > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL replication lag exceeds 10s for 2 minutes"
+          description: "Replica lag = {{ $value }}s on {{ $labels.instance }}"
+      - alert: PostgresReplicationDown
+        expr: pg_up{job="postgresql-read"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL Replica is down"
+
+volumePermissions:
+  enabled: true
+
+networkPolicy:
+  enabled: false
+
+backup:
+  enabled: false
