@@ -26,7 +26,6 @@ public class CacheConfig {
 		policies.put("products", Duration.ofMinutes(5));
 		policies.put("product-detail", Duration.ofMinutes(5));
 		policies.put("wishlist", Duration.ofMinutes(1));
-		policies.put("jwks", Duration.ofMinutes(5));
 		return policies;
 	}
 

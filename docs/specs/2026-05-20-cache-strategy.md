@@ -30,16 +30,29 @@
 - **쓰기**: 도메인 mutation 시 명시적 `@CacheEvict` 또는 TTL 만료에 의존.
 - **기본 정책**: *TTL-based eventual consistency*. 즉시 일관성이 필요한
   엔드포인트(주문/결제/잔액)는 캐시 미적용.
+- **Proxy 모드**: ProductService 등 use-case 인터페이스를 다중 구현하는
+  Service 는 JDK Dynamic Proxy 가 인터페이스 타입만 노출하므로, 슬라이스
+  테스트에서는 `@EnableCaching(proxyTargetClass = true)` 로 CGLIB 강제.
+  Production 은 controller 가 인터페이스 타입 주입이라 영향 없음.
 
 ### 1.2 적용 도메인
 
 | 도메인 | 캐시 이름 | TTL | 일관성 허용 | 비고 |
 |---|---|---|---|---|
-| 상품 목록 (검색/카테고리) | `products` | 5 min | eventual | 변경 빈도 낮음 |
-| 상품 상세 | `product-detail` | 5 min | eventual | 변경 빈도 낮음 |
-| 위시리스트 (개인) | `wishlist` | 1 min | near-real-time | 사용자 mutation 잦음 |
-| JWT JWKS | `jwks` | 5 min | eventual | Auth0 rotation 주기 ≫ 5분 |
+| 상품 목록 (검색/카테고리) | `products` | 5 min | eventual | 변경 빈도 낮음. Cycle 2 이후 적용 |
+| 상품 상세 | `product-detail` | 5 min | eventual | Cycle 1 적용 완료 |
+| 위시리스트 (개인) | `wishlist` | 1 min | near-real-time | 사용자 mutation 잦음. Cycle 2 이후 |
 | (기본값) | * | 10 min | eventual | 명시 안 한 캐시 fallback |
+
+### 1.2.1 적용 제외 — JWT JWKS
+
+Auth0 JWKS 는 application-level 캐시 불필요. 이유는 Nimbus 의 `JwtDecoders.
+fromIssuerLocation` 가 *내장 JWK Set Source 캐시* 를 제공하기 때문. 추가
+`@Cacheable` 을 적용하면 *이중 TTL* 로 stale window 가 최대 2배가 되어
+Auth0 key rotation 시 401 응답이 예측 불가능하게 길어진다.
+
+향후 application-level 토큰 클레임 캐싱 (사용자 fetch 결과 등) 이 필요해
+지면 `auth-claims` 같은 별도 캐시 이름으로 도입.
 
 ### 1.3 캐시하지 않는 영역
 
@@ -155,5 +168,8 @@ public void addToWishlist(Long memberId, Long productId) { ... }
 
 ## 7. Cycle 변경 이력
 
-- 2026-05-20 — 본 문서 초안 + 4개 캐시 (products / product-detail /
-  wishlist / jwks). Cycle 1 Before 측정 예정.
+- 2026-05-20 — 본 문서 초안. CacheConfig 등록 캐시 3개 (products /
+  product-detail / wishlist). product-detail 캐시는 ProductService.
+  getProduct 에 적용 (Cycle 1 Before/After 측정 예정).
+- 2026-05-20 — JWKS 캐시 제외 결정. Nimbus 내장 캐시와 이중 TTL 충돌
+  회피.

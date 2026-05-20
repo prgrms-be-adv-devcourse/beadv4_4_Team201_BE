@@ -34,10 +34,10 @@ class CacheConfigTest {
 	class PreconfiguredCaches {
 
 		@Test
-		@DisplayName("products, product-detail, wishlist, jwks 캐시가 사전 등록된다")
+		@DisplayName("products, product-detail, wishlist 캐시가 사전 등록된다")
 		void domain_caches_are_preconfigured() {
 			Set<String> names = (Set<String>) cacheManager.getCacheNames();
-			assertThat(names).contains("products", "product-detail", "wishlist", "jwks");
+			assertThat(names).contains("products", "product-detail", "wishlist");
 		}
 	}
 
@@ -61,12 +61,6 @@ class CacheConfigTest {
 		@DisplayName("wishlist 캐시 TTL 은 1분")
 		void wishlist_ttl_is_1_minute() {
 			assertThat(ttlOf("wishlist")).isEqualTo(Duration.ofMinutes(1));
-		}
-
-		@Test
-		@DisplayName("jwks 캐시 TTL 은 5분")
-		void jwks_ttl_is_5_minutes() {
-			assertThat(ttlOf("jwks")).isEqualTo(Duration.ofMinutes(5));
 		}
 	}
 
@@ -102,14 +96,13 @@ class CacheConfigTest {
 	class TtlMap {
 
 		@Test
-		@DisplayName("ttlPolicies() 가 4개 도메인 매핑을 반환한다")
-		void ttl_policies_map_has_four_entries() {
+		@DisplayName("ttlPolicies() 가 3개 도메인 매핑을 반환한다")
+		void ttl_policies_map_has_three_entries() {
 			Map<String, Duration> policies = config.ttlPolicies();
-			assertThat(policies).hasSize(4)
+			assertThat(policies).hasSize(3)
 				.containsEntry("products", Duration.ofMinutes(5))
 				.containsEntry("product-detail", Duration.ofMinutes(5))
-				.containsEntry("wishlist", Duration.ofMinutes(1))
-				.containsEntry("jwks", Duration.ofMinutes(5));
+				.containsEntry("wishlist", Duration.ofMinutes(1));
 		}
 	}
 
