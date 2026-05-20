@@ -1,29 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Console Appender -->
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%-40.40logger{39}) : %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Profiles -->
+    <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>memberId</includeMdcKeyName>
+            <includeMdcKeyName>requestId</includeMdcKeyName>
+            <customFields>{"app":"giftify-be"}</customFields>
+            <fieldNames>
+                <timestamp>@timestamp</timestamp>
+                <message>message</message>
+                <thread>thread</thread>
+                <logger>logger</logger>
+                <level>level</level>
+            </fieldNames>
+        </encoder>
+    </appender>
+
     <springProfile name="local,dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
         </root>
-        <!-- Application specific logging -->
-        <logger name="giftify" level="DEBUG" />
-    </springProfile>
-
-    <springProfile name="prod">
-        <root level="INFO">
+        <logger name="app.giftify" level="DEBUG" />
+        <logger name="org.hibernate.SQL_SLOW" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE" />
-        </root>
-        <logger name="giftify" level="INFO" />
+        </logger>
     </springProfile>
 
-    <!-- Default (if no profile active) -->
+    <springProfile name="prod,staging,loadtest">
+        <root level="INFO">
+            <appender-ref ref="JSON_STDOUT" />
+        </root>
+        <logger name="app.giftify" level="INFO" />
+        <logger name="org.hibernate.SQL_SLOW" level="INFO" additivity="false">
+            <appender-ref ref="JSON_STDOUT" />
+        </logger>
+    </springProfile>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
     </root>
