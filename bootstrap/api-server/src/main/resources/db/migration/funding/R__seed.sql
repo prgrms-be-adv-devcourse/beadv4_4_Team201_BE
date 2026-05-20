@@ -40,7 +40,7 @@ SELECT setval('funding_participant_members_id_seq', 100, false);
 -- Loadtest: Active funding for concurrency test
 DO $$
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     INSERT INTO fundings (id, version, wishlist_item_id, product_id, product_name, image_key,
                           receiver_id, target_amount, current_amount, status, deadline,
                           created_at, updated_at, created_by, updated_by)

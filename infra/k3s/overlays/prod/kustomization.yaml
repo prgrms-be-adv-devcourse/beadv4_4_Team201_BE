@@ -4,28 +4,24 @@ kind: Kustomization
 resources:
   - ../../base
 
+generators:
+  - ./secret-generator.yaml  # "이 .enc.yaml 파일들을 복호화해줘" -> secret generator
+
+configMapGenerator:
+  - name: grafana-dashboards
+    behavior: replace
+    files:
+      - spring-boot-19004.json=spring-boot-19004-prod.json
+      - token-blacklist-security.json=token-blacklist-security.json
+    options:
+      disableNameSuffixHash: true
+
 images:
-  - name: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server
-    newTag: latest
   - name: giftify-elasticsearch
     newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
     newTag: 9.2.4-custom-v2
 
 patches:
-  - target:
-      kind: StatefulSet
-      name: minio
-    patch: |-
-      - op: replace
-        path: /spec/replicas
-        value: 0
-  - target:
-      kind: Job
-      name: minio-init
-    patch: |-
-      - op: add
-        path: /spec/suspend
-        value: true
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -47,6 +43,17 @@ patches:
                   initialDelaySeconds: 5
                 livenessProbe:
                   initialDelaySeconds: 10
+
+  # --- Grafana: root_url for alert notification links ---
+  - target:
+      kind: Deployment
+      name: grafana
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: GF_SERVER_ROOT_URL
+          value: "https://giftify-grafana.chan99k.dev"
 
   # --- Elasticsearch: GHCR 이미지 pull 인증 ---
   - target:
@@ -113,4 +120,3 @@ patches:
       - op: replace
         path: /spec/routes/0/match
         value: "Host(`giftify-elasticsearch.chan99k.dev`)"
-

@@ -1,0 +1,143 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  labels:
+    app: postgres-backup
+spec:
+  schedule: "30 0 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: backup
+              image: google/cloud-sdk:alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  START_TIME=$(date +%s)
+
+                  notify_failure() {
+                    if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+                      TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+                      curl -sf --max-time 10 -X POST "$DISCORD_WEBHOOK_URL" \
+                        -H "Content-Type: application/json" \
+                        -d "{\"embeds\":[{\"title\":\"PostgreSQL Backup Failed\",\"description\":\"**Env:** ${BACKUP_ENV:-unknown}\\n**Error:** Backup script exited with error\",\"color\":15158332,\"timestamp\":\"${TIMESTAMP}\"}]}" \
+                        || true
+                    fi
+                  }
+                  trap notify_failure ERR
+
+                  apk add --no-cache --quiet postgresql16-client
+
+                  if [ -z "$POSTGRES_HOST" ] || [ -z "$POSTGRES_DB" ]; then
+                    echo "ERROR: Required environment variables not set"
+                    exit 1
+                  fi
+
+                  BACKUP_DATE=$(TZ=Asia/Seoul date +%Y-%m-%d_%H%M%S)
+                  BACKUP_FILE="giftify_db_${BACKUP_DATE}.dump"
+                  BACKUP_PATH="/tmp/${BACKUP_FILE}"
+                  GCS_PATH="gs://giftify-db-backups/${BACKUP_ENV}/${BACKUP_FILE}"
+
+                  echo "=== PostgreSQL Backup Start ==="
+                  echo "Timestamp: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+                  echo "Target: ${POSTGRES_HOST}:5432/${POSTGRES_DB}"
+                  echo "Environment: ${BACKUP_ENV}"
+
+                  pg_dump \
+                    -h "$POSTGRES_HOST" \
+                    -p 5432 \
+                    -U "$POSTGRES_USER" \
+                    -d "$POSTGRES_DB" \
+                    -Fc \
+                    --verbose \
+                    --file="$BACKUP_PATH" 2>&1
+
+                  if [ ! -f "$BACKUP_PATH" ]; then
+                    echo "ERROR: Backup file not created"
+                    exit 1
+                  fi
+
+                  BACKUP_SIZE_BYTES=$(stat -c%s "$BACKUP_PATH" 2>/dev/null || stat -f%z "$BACKUP_PATH")
+                  if [ "$BACKUP_SIZE_BYTES" -lt 1024 ]; then
+                    echo "ERROR: Backup file suspiciously small (${BACKUP_SIZE_BYTES} bytes)"
+                    exit 1
+                  fi
+
+                  BACKUP_SIZE=$(du -h "$BACKUP_PATH" | cut -f1)
+                  echo "Backup created: ${BACKUP_FILE} (${BACKUP_SIZE})"
+
+                  echo "Uploading to: ${GCS_PATH}"
+                  gsutil cp "$BACKUP_PATH" "$GCS_PATH"
+
+                  if gsutil ls "$GCS_PATH" > /dev/null 2>&1; then
+                    echo "Upload verified"
+                  else
+                    echo "ERROR: Upload verification failed"
+                    exit 1
+                  fi
+
+                  rm -f "$BACKUP_PATH"
+
+                  END_TIME=$(date +%s)
+                  DURATION=$((END_TIME - START_TIME))
+                  echo "=== Backup Completed (${BACKUP_ENV}) ==="
+                  echo "GCS: ${GCS_PATH}"
+                  echo "Duration: ${DURATION}s"
+
+                  # Discord notification (non-blocking: curl failure must not fail the Job)
+                  set +e
+                  if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+                    TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+                    curl -sf --max-time 10 -X POST "$DISCORD_WEBHOOK_URL" \
+                      -H "Content-Type: application/json" \
+                      -d "{\"embeds\":[{\"title\":\"PostgreSQL Backup Success\",\"description\":\"**Env:** ${BACKUP_ENV}\\n**File:** ${BACKUP_FILE}\\n**Size:** ${BACKUP_SIZE}\\n**Duration:** ${DURATION}s\\n**GCS:** ${GCS_PATH}\",\"color\":3066993,\"timestamp\":\"${TIMESTAMP}\"}]}" \
+                      && echo "Discord notification sent" \
+                      || echo "WARN: Discord notification failed (backup itself succeeded)"
+                  fi
+              env:
+                - name: POSTGRES_HOST
+                  value: "postgres"
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secrets
+                      key: POSTGRES_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secrets
+                      key: POSTGRES_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secrets
+                      key: POSTGRES_PASSWORD
+                - name: BACKUP_ENV
+                  value: "prod"
+                - name: DISCORD_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-secrets
+                      key: DISCORD_WEBHOOK_URL
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "300m"

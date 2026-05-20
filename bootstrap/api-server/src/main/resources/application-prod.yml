@@ -29,6 +29,8 @@ spring:
     schemas: g7app
     default-schema: g7app
     create-schemas: true
+    placeholders:
+      is_staging: "false"
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}

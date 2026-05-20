@@ -5,7 +5,7 @@ import app.giftify.order.application.inbound.command.PlaceOrderCommand;
 import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.order.application.inbound.vo.OrderSummary;
 import app.giftify.order.application.outbound.port.OrderRepository;
-import app.giftify.order.application.outbound.port.ProductPort;
+import app.giftify.shared.domain.port.ProductSnapshotPort;
 import app.giftify.order.domain.*;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.order.domain.fixture.OrderFixture;
@@ -54,7 +54,7 @@ class OrderServiceTest {
     @Mock
     private OrderRepository orderRepository;
     @Mock
-    private ProductPort productPort;
+    private ProductSnapshotPort productPort;
     @Mock
     private FundingQueryPort fundingQueryPort;
     @Mock

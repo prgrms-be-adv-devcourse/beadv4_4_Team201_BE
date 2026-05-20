@@ -1,0 +1,125 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  - image-updater-install.yaml
+  - image-updater-config.yaml
+
+patches:
+  # repo-server: ksops plugin + age key mount
+  - target:
+      kind: Deployment
+      name: argocd-repo-server
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-repo-server
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: install-ksops
+                image: alpine:3.21
+                command: ["/bin/sh", "-c"]
+                args:
+                  - |
+                    apk add --no-cache curl &&
+                    curl -fsSL -o /tmp/ksops.tar.gz \
+                      https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Linux_x86_64.tar.gz &&
+                    tar -xzf /tmp/ksops.tar.gz -C /custom-tools/ &&
+                    curl -fsSL -o /tmp/kustomize.tar.gz \
+                      https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.6.0/kustomize_v5.6.0_linux_amd64.tar.gz &&
+                    tar -xzf /tmp/kustomize.tar.gz -C /custom-tools/ &&
+                    chmod +x /custom-tools/ksops /custom-tools/kustomize &&
+                    mkdir -p /ksops-plugin/kustomize/plugin/viaduct.ai/v1/ksops &&
+                    cp /custom-tools/ksops /ksops-plugin/kustomize/plugin/viaduct.ai/v1/ksops/ksops
+                volumeMounts:
+                  - mountPath: /custom-tools
+                    name: custom-tools
+                  - mountPath: /ksops-plugin
+                    name: ksops-plugin
+            containers:
+              - name: argocd-repo-server
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
+                env:
+                  - name: SOPS_AGE_KEY_FILE
+                    value: /sops-age/keys.txt
+                  - name: XDG_CONFIG_HOME
+                    value: /ksops-plugin
+                volumeMounts:
+                  - mountPath: /usr/local/bin/kustomize
+                    name: custom-tools
+                    subPath: kustomize
+                  - mountPath: /usr/local/bin/ksops
+                    name: custom-tools
+                    subPath: ksops
+                  - mountPath: /sops-age
+                    name: sops-age-key
+                  - mountPath: /ksops-plugin
+                    name: ksops-plugin
+            volumes:
+              - name: custom-tools
+                emptyDir: {}
+              - name: ksops-plugin
+                emptyDir: {}
+              - name: sops-age-key
+                secret:
+                  secretName: sops-age-key
+
+  # applicationset-controller: disable (not used, saves ~100Mi)
+  - target:
+      kind: Deployment
+      name: argocd-applicationset-controller
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-applicationset-controller
+      spec:
+        replicas: 0
+
+  # image-updater: disable
+  # ArgoCD Image Updater v1.1.1 — ArgoCD v3.3.4 Application.status.sourceType
+  # empty value bug. cd.yml workflow로 대체.
+  - target:
+      kind: Deployment
+      name: argocd-image-updater-controller
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: argocd-image-updater-controller
+      spec:
+        replicas: 0
+
+  # argocd-server: --insecure (Cloudflare Tunnel handles TLS)
+  # JSON patch: args 배열에 추가 (strategic merge는 배열을 전체 대체하므로 위험)
+  - target:
+      kind: Deployment
+      name: argocd-server
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --insecure
+
+  # argocd-cm: enable ksops exec plugin
+  - target:
+      kind: ConfigMap
+      name: argocd-cm
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-cm
+      data:
+        kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"

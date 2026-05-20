@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-server-config
+data:
+  DB_URL: "jdbc:postgresql://postgres:5432/giftify_db"
+  DB_USERNAME: "giftify"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: "redpanda:9092"
+  AUTH0_DOMAIN: "dev-qpuevxs5iduyblx4.us.auth0.com"
+  AUTH0_AUDIENCE: "https://api.giftify.app"
+  TOSSPAYMENTS_API_BASE_URL: "https://api.tosspayments.com"
+  S3_ENDPOINT: "http://minio:9000"
+  S3_IMAGE_BUCKET: "giftify-images"
+  S3_LOG_BUCKET: "giftify-logs"
+  S3_REGION: "us-east-1"
+  ES_URIS: "http://elasticsearch:9200"
+  SPRING_PROFILES_ACTIVE: "prod"
+  JAVA_TOOL_OPTIONS: "-XX:+UseCompactObjectHeaders"

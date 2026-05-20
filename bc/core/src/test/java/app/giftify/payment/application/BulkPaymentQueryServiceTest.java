@@ -98,6 +98,6 @@ class BulkPaymentQueryServiceTest {
 			.memberId(1L).type(PaymentType.DEPOSIT_CHARGE).method(PaymentMethod.DEPOSIT)
 			.originAmount(paidAmount).paidAmount(paidAmount)
 			.refundedAmount(refundedAmount).status(status)
-			.orderItems(List.of()).build();
+			.build();
 	}
 }

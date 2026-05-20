@@ -112,3 +112,64 @@ jobs:
           cache-to: type=gha,mode=max
           # CI용 스테이지 사용 (호스트에서 JAR 직접 복사)
           target: runtime-ci
+
+  # 3. 릴리스 태그 시 release 브랜치에 이미지 태그 커밋 → ArgoCD 자동 배포
+  # GitHub Web UI에서 릴리스 생성 → Git 태그(v0.0.23) 푸시 →
+  # Docker 이미지 빌드 → release 브랜치 kustomization.yaml에 태그 커밋 →
+  # ArgoCD가 release 브랜치 변경 감지하여 자동 싱크.
+  #
+  # ArgoCD Image Updater v1.1.1이 ArgoCD v3.3.4의
+  # Application.status.sourceType 빈 값 문제로 동작하지 않아,
+  # release 브랜치 기반 GitOps 배포로 전환.
+  deploy:
+    name: Update release branch
+    needs: [docker]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release
+          fetch-depth: 0
+
+      - name: Extract tag
+        id: tag
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update image tag in overlays
+        run: |
+          IMAGE="ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/api-server"
+          TAG="${{ steps.tag.outputs.version }}"
+          cd infra/k3s/overlays/prod
+          kustomize edit set image "${IMAGE}:${TAG}"
+          cd ../staging
+          kustomize edit set image "${IMAGE}:${TAG}"
+
+      - name: Commit and push to release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "deploy: v${{ steps.tag.outputs.version }} [skip ci]"
+          git push origin release
+
+      - name: Discord Notification
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            COLOR=3066993
+            TITLE="Deploy Success"
+            DESC="**v${{ steps.tag.outputs.version }}** → release branch updated. ArgoCD will sync automatically."
+          else
+            COLOR=15158332
+            TITLE="Deploy Failed"
+            DESC="**v${{ steps.tag.outputs.version }}** failed. [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          fi
+          curl -sf -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"$TITLE\",\"description\":\"$DESC\",\"color\":$COLOR}]}"

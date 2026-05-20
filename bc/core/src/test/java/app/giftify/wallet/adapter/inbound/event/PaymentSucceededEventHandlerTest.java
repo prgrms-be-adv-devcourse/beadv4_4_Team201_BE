@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentSuccessData;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
@@ -42,7 +42,7 @@ class PaymentSucceededEventHandlerTest {
 		@Test
 		@DisplayName("DEPOSIT_CHARGE 타입 결제이면 예치금을 충전한다")
 		void handle_DepositChargePayment_ChargesWallet() {
-			PaymentEventData data = PaymentEventData.forSuccess(
+			PaymentSuccessData data = new PaymentSuccessData(
 				1L, 100L, 10L, "order-123", Money.of(10000),
 				PaymentMethod.CARD, PaymentType.DEPOSIT_CHARGE, "pk_test", "txn_test"
 			);
@@ -65,7 +65,7 @@ class PaymentSucceededEventHandlerTest {
 		@Test
 		@DisplayName("FUNDING 타입 결제이면 무시한다")
 		void handle_FundingPayment_Ignores() {
-			PaymentEventData data = PaymentEventData.forSuccess(
+			PaymentSuccessData data = new PaymentSuccessData(
 				1L, 100L, 10L, "order-123", Money.of(10000),
 				PaymentMethod.CARD, PaymentType.FUNDING, "pk_test", "txn_test"
 			);

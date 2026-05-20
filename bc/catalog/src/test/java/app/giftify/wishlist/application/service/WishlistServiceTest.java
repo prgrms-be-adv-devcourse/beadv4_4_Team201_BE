@@ -5,6 +5,7 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.replica.member.Member;
 import app.giftify.replica.member.MemberRepository;
+import app.giftify.shared.api.paging.Page;
 import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.wishlist.application.port.in.UpdateWishlistSettingsUseCase;
@@ -155,7 +156,7 @@ class WishlistServiceTest {
 
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
             given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
-            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(item));
+            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(List.of(item), 1));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
             given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
 
@@ -185,7 +186,7 @@ class WishlistServiceTest {
 
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
             given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
-            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(Collections.emptyList());
+            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(Collections.emptyList(), 0));
 
             // when
             WishlistOverview result = wishlistService.getMyWishlistOverview(MEMBER_ID, DEFAULT_PAGE_REQUEST);
@@ -229,7 +230,7 @@ class WishlistServiceTest {
 
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
             given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
-            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(existingItem, deletedItem));
+            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(List.of(existingItem, deletedItem), 2));
             // deletedProductId에 해당하는 상품은 반환하지 않음 (삭제됨)
             given(productSupport.findAllById(List.of(PRODUCT_ID, deletedProductId))).willReturn(List.of(product));
             given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
@@ -272,7 +273,7 @@ class WishlistServiceTest {
                     .status(ProductStatus.ACTIVE)
                     .imageKey("img.jpg")
                     .build();
-            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID)).willReturn(List.of(item));
+            given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(List.of(item), 1));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
             given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
         }

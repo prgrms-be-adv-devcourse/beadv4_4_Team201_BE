@@ -44,7 +44,7 @@ SELECT setval('wishlist_items_id_seq', 100, false);
 -- Loadtest wishlists (only in loadtest schema)
 DO $$
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     INSERT INTO wishlists (id, member_id, visibility, created_at, updated_at, created_by, updated_by)
     VALUES
            (1001, 1001, 'PUBLIC', NOW(), NOW(), 'SYSTEM', 'SYSTEM'),

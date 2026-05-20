@@ -4,11 +4,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import app.giftify.payment.application.PaymentModuleEventPublisher;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.event.EventPublisher;
 
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WalletDeductedEventHandler {
 	private final PaymentRepository paymentRepository;
-	private final EventPublisher eventPublisher;
+	private final PaymentModuleEventPublisher moduleEventPublisher;
 
 	@EventListener
 	@Transactional
@@ -38,13 +38,11 @@ public class WalletDeductedEventHandler {
 				"[WalletDeductedEventHandler] Payment를 찾을 수 없습니다. paymentId=" + event.getPaymentId()
 			));
 
-		payment.markAsPaid(null, null, null, event.getDeductedAt());
-
-		var domainEvents = payment.pullEvents();
-		paymentRepository.save(payment);
-		domainEvents.forEach(eventPublisher::publish);
+		Payment paid = payment.complete(null, null, null, event.getDeductedAt());
+		paymentRepository.save(paid);
+		moduleEventPublisher.publishFrom(paid, payment);
 
 		log.info("[WalletDeductedEventHandler] Payment 결제 완료 처리. paymentId={}, status={}",
-			payment.getId(), payment.getStatus());
+				paid.getId(), paid.getStatus());
 	}
 }

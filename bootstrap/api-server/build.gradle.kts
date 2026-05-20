@@ -39,6 +39,7 @@ dependencies {
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)
     runtimeOnly(libs.micrometer.prometheus)
+    implementation(libs.hibernate.micrometer)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.rest.assured)

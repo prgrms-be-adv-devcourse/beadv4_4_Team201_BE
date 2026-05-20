@@ -9,7 +9,8 @@ public enum ReferenceType {
 	WITHDRAWAL("출금"),
 	PAYMENT("결제"),
 	SETTLEMENT("정산"),
-	CANCEL("취소");
+	CANCEL("취소"),
+	PAYMENT_COMPENSATION("결제 보상");
 
 	private final String description;
 

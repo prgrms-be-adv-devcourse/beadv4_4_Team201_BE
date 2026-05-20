@@ -5,20 +5,21 @@ package app.giftify.wallet.domain;
  * 지갑에 무슨 일이 일어났나
  */
 public enum TransactionType {
-	CHARGE("캐시 충전"),
-	WITHDRAW("출금"),
-	ORDER_DEDUCT("주문 차감"),
-	SETTLEMENT_PAYOUT("정산 입금"),
-	SETTLEMENT_CLAWBACK("정산 환수"),
-	CANCEL_REFUND("취소 환불");
+    CHARGE("캐시 충전"),
+    WITHDRAW("출금"),
+    ORDER_DEDUCT("주문 차감"),
+    SETTLEMENT_PAYOUT("정산 입금"),
+    SETTLEMENT_CLAWBACK("정산 환수"),
+    CANCEL_REFUND("취소 환불"),
+    PAYMENT_DEDUCT_COMPENSATION("결제 차감 보상");
 
-	private final String description;
+    private final String description;
 
-	TransactionType(String description) {
-		this.description = description;
-	}
+    TransactionType(String description) {
+        this.description = description;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 }

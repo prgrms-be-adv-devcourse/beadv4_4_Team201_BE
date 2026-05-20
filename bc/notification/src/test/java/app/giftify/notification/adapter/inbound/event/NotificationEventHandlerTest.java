@@ -64,7 +64,7 @@ class NotificationEventHandlerTest {
             Long paymentId = 1L;
             Long memberId = 100L;
             PaymentSucceededEvent event = PaymentSucceededEvent.create(
-                    PaymentEventData.forSuccess(paymentId, 10L, memberId, "ORD-001",
+                    new PaymentSuccessData(paymentId, 10L, memberId, "ORD-001",
                             Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING, "pk", "txn"));
 
             CloudEventMeta meta = new CloudEventMeta(
@@ -99,8 +99,8 @@ class NotificationEventHandlerTest {
             Long paymentId = 2L;
             Long memberId = 200L;
             PaymentFailedEvent event = PaymentFailedEvent.create(
-                    PaymentEventData.forFailure(paymentId, 10L, memberId, "ORD-002",
-                            Money.of(5000), PaymentMethod.CARD, PaymentType.FUNDING));
+                    new PaymentFailureData(paymentId, 10L, memberId, "ORD-002",
+                            Money.of(5000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING));
 
             CloudEventMeta meta = new CloudEventMeta(
                     "app.giftify.payment.failed", java.net.URI.create("/giftify/payment"),
@@ -134,8 +134,8 @@ class NotificationEventHandlerTest {
             Long paymentId = 3L;
             Long memberId = 300L;
             PaymentCanceledEvent event = PaymentCanceledEvent.create(
-                    PaymentEventData.forCancel(paymentId, 10L, memberId, "ORD-003",
-                            Money.of(3000), PaymentMethod.CARD, PaymentType.FUNDING,
+                    new PaymentCancelData(paymentId, 10L, memberId, "ORD-003",
+                            Money.of(3000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING,
                             CancelType.CANCEL, "사용자 요청", "txn-key-001"));
 
             CloudEventMeta meta = new CloudEventMeta(
@@ -170,7 +170,7 @@ class NotificationEventHandlerTest {
             Long paymentId = 4L;
             Long memberId = 400L;
             PaymentCancelFailedEvent event = PaymentCancelFailedEvent.create(
-                    PaymentEventData.forCancelFailed(paymentId, 10L, memberId, "ORD-004",
+                    new PaymentCancelFailedData(paymentId, 10L, memberId, "ORD-004",
                             PaymentMethod.CARD, PaymentType.FUNDING, "{\"code\":\"PG_ERROR\"}"));
 
             CloudEventMeta meta = new CloudEventMeta(

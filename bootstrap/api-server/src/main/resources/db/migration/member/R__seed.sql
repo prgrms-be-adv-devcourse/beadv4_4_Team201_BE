@@ -21,7 +21,7 @@ SELECT setval('members_id_seq', 100, false);
 -- Loadtest accounts (only in loadtest schema)
 DO $$
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     INSERT INTO members (id, email, nickname, birthday, role, address, phone_num, name, status, auth_sub,
                          created_at, updated_at, created_by, updated_by)
     VALUES

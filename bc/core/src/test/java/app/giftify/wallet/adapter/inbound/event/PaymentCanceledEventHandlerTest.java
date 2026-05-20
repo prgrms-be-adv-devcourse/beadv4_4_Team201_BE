@@ -12,13 +12,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentCancelData;
 import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.type.PaymentType;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.application.inbound.RestoreWalletCommand;
 import app.giftify.wallet.application.inbound.RestoreWalletUseCase;
+import app.giftify.wallet.domain.ReferenceType;
+import app.giftify.wallet.domain.TransactionType;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentCanceledEventHandler 테스트")
@@ -31,13 +33,14 @@ class PaymentCanceledEventHandlerTest {
 	PaymentCanceledEventHandler handler;
 
 	@Test
-	@DisplayName("Wallet 결제(DEPOSIT) 취소 시 Wallet 복원 호출")
-	void handleWalletPaymentCancel() {
-		PaymentEventData data = PaymentEventData.forCancel(
+	@DisplayName("walletDeductedAmount > 0 취소 시 Wallet 복원 호출")
+	void handleWalletDeductedCancel() {
+		PaymentCancelData data = new PaymentCancelData(
 			1L,
 			100L,
 			200L,
 			"ORD-001",
+			Money.of(5000),
 			Money.of(5000),
 			PaymentMethod.DEPOSIT,
 			PaymentType.FUNDING,
@@ -52,19 +55,22 @@ class PaymentCanceledEventHandlerTest {
 		verify(restoreWalletUseCase).restore(new RestoreWalletCommand(
 			200L,
 			Money.of(5000),
-			"txKey-123"
+			"txKey-123",
+			TransactionType.CANCEL_REFUND,
+			ReferenceType.CANCEL
 		));
 	}
 
 	@Test
-	@DisplayName("비-Wallet 결제(CARD) 취소 시 Wallet 복원 호출 안 함")
-	void skipNonWalletPaymentCancel() {
-		PaymentEventData data = PaymentEventData.forCancel(
+	@DisplayName("walletDeductedAmount == 0 취소 시 Wallet 복원 호출 안 함")
+	void skipZeroWalletDeductedCancel() {
+		PaymentCancelData data = new PaymentCancelData(
 			2L,
 			101L,
 			201L,
 			"ORD-002",
 			Money.of(10000),
+			Money.zero(),
 			PaymentMethod.CARD,
 			PaymentType.FUNDING,
 			CancelType.CANCEL,

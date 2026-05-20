@@ -1,0 +1,77 @@
+# CodeQL Security Analysis
+# GitHub Default Setup를 대체하는 커스텀 CodeQL 워크플로우
+# Default Setup(깃헙 웹에서 버튼 딸깍으로 활성화 시킨거)은 워크플로우 파일 생성 시 자동으로 비활성화됨
+name: CodeQL
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - 'infra/**'
+      - 'docs/**'
+      - '**/*.md'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - 'infra/**'
+      - 'docs/**'
+      - '**/*.md'
+  schedule:
+    # 매주 월요일 02:00 UTC (한국 시간 11:00) — schedule은 paths-ignore 미적용 (의도된 동작)
+    - cron: '0 2 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    # 첫 실행 후 실제 소요 시간 확인 뒤 조정 권장 (Actions 탭 → analyze job 소요 시간)
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'java-kotlin' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # autobuild 방지, 명시적 빌드 제어
+          build-mode: manual
+          # 기본 쿼리 + 확장 보안 쿼리로 더 넓은 취약점 탐지
+          queries: +security-extended
+
+      # KT-77518: Kotlin 컴파일러가 Java 25 소스 파싱 불가
+      # Gradle은 JDK 21로 실행, 컴파일 toolchain만 JDK 25 사용
+      - name: Set up JDK 21 (Gradle runtime)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up JDK 25 (compilation toolchain)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Build for CodeQL
+        # assemble: annotation processor 생성 코드 포함 (classes 태스크 대비)
+        # -x test: 테스트 실행 제외
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
+        run: ./gradlew assemble --parallel -x test --no-daemon
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

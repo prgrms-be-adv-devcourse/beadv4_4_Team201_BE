@@ -17,7 +17,10 @@ import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;
 import app.giftify.payment.domain.PaymentEventType;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentEventData;
+import app.giftify.shared.domain.event.payment.PaymentCancelData;
+import app.giftify.shared.domain.event.payment.PaymentCancelFailedData;
+import app.giftify.shared.domain.event.payment.PaymentFailureData;
+import app.giftify.shared.domain.event.payment.PaymentSuccessData;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.type.CancelType;
@@ -46,7 +49,7 @@ class PaymentHistoryEventListenerTest {
 		@DisplayName("PaymentSucceededEvent를 받으면 PAID 히스토리를 저장한다")
 		void savesHistory() {
 			PaymentSucceededEvent event = PaymentSucceededEvent.create(
-				PaymentEventData.forSuccess(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
+				new PaymentSuccessData(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
 					Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING, "pk", "txn"));
 
 			listener.onPaymentSucceeded(event);
@@ -72,8 +75,8 @@ class PaymentHistoryEventListenerTest {
 		@DisplayName("PaymentFailedEvent를 받으면 FAILED 히스토리를 저장한다")
 		void savesHistory() {
 			PaymentFailedEvent event = PaymentFailedEvent.create(
-				PaymentEventData.forFailure(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
-					Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING));
+				new PaymentFailureData(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
+					Money.of(10000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING));
 
 			listener.onPaymentFailed(event);
 
@@ -94,8 +97,8 @@ class PaymentHistoryEventListenerTest {
 		@DisplayName("PaymentCanceledEvent를 받으면 CANCELED 히스토리를 저장한다")
 		void savesHistory() {
 			PaymentCanceledEvent event = PaymentCanceledEvent.create(
-				PaymentEventData.forCancel(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
-					Money.of(10000), PaymentMethod.CARD, PaymentType.FUNDING,
+				new PaymentCancelData(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
+					Money.of(10000), Money.zero(), PaymentMethod.CARD, PaymentType.FUNDING,
 					CancelType.CANCEL, "사용자 요청", "txn-cancel-001"));
 
 			listener.onPaymentCancelSucceeded(event);
@@ -119,7 +122,7 @@ class PaymentHistoryEventListenerTest {
 		void savesHistoryWithMetadata() {
 			String errorMetadata = "{\"code\":\"PG_ERROR\"}";
 			PaymentCancelFailedEvent event = PaymentCancelFailedEvent.create(
-				PaymentEventData.forCancelFailed(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
+				new PaymentCancelFailedData(PAYMENT_ID, 100L, 10L, ORDER_NUMBER,
 					PaymentMethod.CARD, PaymentType.FUNDING, errorMetadata));
 
 			listener.onPaymentCancelFailed(event);

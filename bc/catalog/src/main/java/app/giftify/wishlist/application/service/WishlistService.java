@@ -98,9 +98,9 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     @Transactional(readOnly = true)
     public Page<WishlistItemDetail> getWishlistItemDetails(Long wishlistId, PageRequest pageRequest) {
 
-        List<WishlistItem> items = wishlistItemRepositoryPort.findByWishlistId(wishlistId);
-        List<WishlistItemDetail> allDetails = toItemDetails(items);
-        return toPage(allDetails, pageRequest);
+        Page<WishlistItem> itemPage = wishlistItemRepositoryPort.findByWishlistId(wishlistId, pageRequest);
+        List<WishlistItemDetail> details = toItemDetails(itemPage.content());
+        return Page.of(details, itemPage.totalElements());
     }
 
     // 위시리스트 공개 범위 설정
@@ -114,17 +114,6 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
         Wishlist updatedWishlist = wishlistRepositoryPort.save(wishlist);
 
         return updatedWishlist;
-    }
-
-    private <T> Page<T> toPage(List<T> allItems, PageRequest pageRequest) {
-        int start = (int) pageRequest.getOffset();
-        int end = Math.min(start + pageRequest.size(), allItems.size());
-
-        if (start > allItems.size()) {
-            return Page.of(Collections.emptyList(), allItems.size());
-        }
-
-        return Page.of(allItems.subList(start, end), allItems.size());
     }
 
     private List<WishlistItemDetail> toItemDetails(List<WishlistItem> items) {

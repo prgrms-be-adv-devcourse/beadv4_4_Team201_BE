@@ -16,7 +16,7 @@ class PaymentEventTest {
 	@Test
 	@DisplayName("PaymentSucceededEvent - CloudEvents 메타데이터 포함")
 	void succeededEvent() {
-		PaymentEventData data = PaymentEventData.forSuccess(
+		PaymentSuccessData data = new PaymentSuccessData(
 			1L, 100L, 10L, "ORD-001", Money.of(10000),
 			PaymentMethod.CARD, PaymentType.FUNDING, "pk_test", "txn_test"
 		);
@@ -35,8 +35,8 @@ class PaymentEventTest {
 	@Test
 	@DisplayName("PaymentFailedEvent")
 	void failedEvent() {
-		PaymentEventData data = PaymentEventData.forFailure(
-			1L, 100L, 10L, "ORD-001", Money.of(10000),
+		PaymentFailureData data = new PaymentFailureData(
+			1L, 100L, 10L, "ORD-001", Money.of(10000), Money.zero(),
 			PaymentMethod.CARD, PaymentType.FUNDING
 		);
 
@@ -49,8 +49,8 @@ class PaymentEventTest {
 	@Test
 	@DisplayName("PaymentCanceledEvent - cancelType 포함")
 	void cancelSucceededEvent() {
-		PaymentEventData data = PaymentEventData.forCancel(
-			1L, 100L, 10L, "ORD-001", Money.of(10000),
+		PaymentCancelData data = new PaymentCancelData(
+			1L, 100L, 10L, "ORD-001", Money.of(10000), Money.zero(),
 			PaymentMethod.CARD, PaymentType.FUNDING,
 			CancelType.REFUND, "고객 요청", "txn-key-001"
 		);
@@ -65,7 +65,7 @@ class PaymentEventTest {
 	@Test
 	@DisplayName("PaymentCancelFailedEvent")
 	void cancelFailedEvent() {
-		PaymentEventData data = PaymentEventData.forCancelFailed(
+		PaymentCancelFailedData data = new PaymentCancelFailedData(
 			1L, 100L, 10L, "ORD-001",
 			PaymentMethod.CARD, PaymentType.FUNDING, "{\"code\":\"PG_ERROR\"}"
 		);

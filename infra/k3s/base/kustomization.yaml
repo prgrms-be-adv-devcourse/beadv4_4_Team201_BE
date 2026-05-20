@@ -6,12 +6,15 @@ namespace: giftify
 resources:
   - namespace.yaml
   # API Server
+  - apps/api-server/configmap.yaml
   - apps/api-server/deployment.yaml
   - apps/api-server/service.yaml
+  - apps/api-server/hpa.yaml
   - apps/api-server/ingress.yaml
   # PostgreSQL
   - apps/postgres/statefulset.yaml
   - apps/postgres/service.yaml
+  - apps/postgres/backup-cronjob.yaml
   # Redis
   - apps/redis/deployment.yaml
   - apps/redis/service.yaml
@@ -22,6 +25,7 @@ resources:
   - apps/prometheus/ingress.yaml
   # Grafana
   - apps/grafana/configmap.yaml
+  - apps/grafana/alerting-configmap.yaml
   - apps/grafana/deployment.yaml
   - apps/grafana/service.yaml
   - apps/grafana/ingress.yaml
@@ -31,20 +35,16 @@ resources:
   - apps/redpanda/console-deployment.yaml
   - apps/redpanda/console-service.yaml
   - apps/redpanda/ingress.yaml
-  # MinIO (S3 Compatible Object Storage)
-  - apps/minio/statefulset.yaml
-  - apps/minio/service.yaml
-  - apps/minio/init-job.yaml
-  - apps/minio/ingress.yaml
   # Elasticsearch
   - apps/elasticsearch/statefulset.yaml
   - apps/elasticsearch/service.yaml
   - apps/elasticsearch/ingress.yaml
+  # Cloudflare Tunnel
+  - cloudflare/tunnel-deployment.yaml
+  - cloudflare/tunnel-pdb.yaml
   # Traefik
   - traefik/middleware/rate-limit.yaml
   - traefik/middleware/forwarded-proto.yaml
-  # Cloudflare
-  - cloudflare/tunnel-deployment.yaml
 
 configMapGenerator:
   - name: grafana-dashboards

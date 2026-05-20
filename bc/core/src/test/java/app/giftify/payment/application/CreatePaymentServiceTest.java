@@ -13,14 +13,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.payment.application.inbound.CreateFundingPaymentCommand;
+import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.outbound.PaymentRepository;
-import app.giftify.payment.domain.OrderItemSnapshot;
+import app.giftify.payment.application.strategy.PaymentCreateStrategy;
+import app.giftify.payment.application.strategy.PgPaymentCreateStrategy;
+import app.giftify.payment.application.strategy.WalletPaymentCreateStrategy;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
@@ -42,8 +43,11 @@ class CreatePaymentServiceTest {
 	@Mock
 	private DeductWalletUseCase deductWalletUseCase;
 
-	@InjectMocks
 	private CreatePaymentService createPaymentService;
+
+	private void setupWithStrategies(PaymentCreateStrategy... strategies) {
+		createPaymentService = new CreatePaymentService(paymentRepository, List.of(strategies));
+	}
 
 	@Nested
 	@DisplayName("create 메서드")
@@ -53,18 +57,16 @@ class CreatePaymentServiceTest {
 		@DisplayName("멱등성 키(orderId)가 일치하는 기존 결제가 있으면 해당 결제를 반환한다")
 		void create_ReturnsExistingPayment_WhenIdempotencyKeyMatches() {
 			// given
+			setupWithStrategies(new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.CARD,
-				amount, orderItems
+				PaymentType.FUNDING, PaymentMethod.CARD,
+				amount
 			);
 
 			Payment existingPayment = Payment.builder()
@@ -76,7 +78,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.CARD)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -95,25 +96,22 @@ class CreatePaymentServiceTest {
 			assertThat(result.createdAt()).isNull();
 
 			verify(paymentRepository, never()).save(any());
-			verify(deductWalletUseCase, never()).deductForPayment(any());
 		}
 
 		@Test
 		@DisplayName("CARD 결제를 정상적으로 생성한다")
 		void create_CreatesNewCardPayment_Successfully() {
 			// given
+			setupWithStrategies(new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.CARD,
-				amount, orderItems
+				PaymentType.FUNDING, PaymentMethod.CARD,
+				amount
 			);
 
 			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
@@ -126,7 +124,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.CARD)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.createdAt(createdAt)
 				.build();
@@ -148,7 +145,6 @@ class CreatePaymentServiceTest {
 			assertThat(result.createdAt()).isEqualTo(createdAt);
 
 			verify(paymentRepository).save(any(Payment.class));
-			verify(deductWalletUseCase, never()).deductForPayment(any());
 		}
 	}
 
@@ -160,18 +156,17 @@ class CreatePaymentServiceTest {
 		@DisplayName("DEPOSIT 결제를 정상적으로 생성하고 지갑 차감을 호출한다")
 		void create_CreatesNewWalletPayment_AndCallsWalletDeduction() {
 			// given
+			WalletPaymentCreateStrategy walletStrategy = new WalletPaymentCreateStrategy(deductWalletUseCase);
+			setupWithStrategies(walletStrategy, new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.DEPOSIT,
-				amount, orderItems
+				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				amount
 			);
 
 			LocalDateTime createdAt = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
@@ -184,7 +179,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.createdAt(createdAt)
 				.build();
@@ -223,19 +217,18 @@ class CreatePaymentServiceTest {
 		@DisplayName("지갑 잔액이 부족하면 예외를 던진다")
 		void create_ThrowsException_WhenWalletBalanceInsufficient() {
 			// given
+			WalletPaymentCreateStrategy walletStrategy = new WalletPaymentCreateStrategy(deductWalletUseCase);
+			setupWithStrategies(walletStrategy, new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money requiredAmount = Money.of(10000);
 			Money currentBalance = Money.of(3000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.DEPOSIT,
-				requiredAmount, orderItems
+				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				requiredAmount
 			);
 
 			Payment savedPayment = Payment.builder()
@@ -247,7 +240,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(requiredAmount)
 				.paidAmount(requiredAmount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -275,18 +267,17 @@ class CreatePaymentServiceTest {
 		@DisplayName("기존 DEPOSIT 결제가 있으면 해당 결제를 반환한다")
 		void create_ReturnsExistingWalletPayment() {
 			// given
+			WalletPaymentCreateStrategy walletStrategy = new WalletPaymentCreateStrategy(deductWalletUseCase);
+			setupWithStrategies(walletStrategy, new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.DEPOSIT,
-				amount, orderItems
+				PaymentType.FUNDING, PaymentMethod.DEPOSIT,
+				amount
 			);
 
 			Payment existingPayment = Payment.builder()
@@ -298,7 +289,6 @@ class CreatePaymentServiceTest {
 				.method(PaymentMethod.DEPOSIT)
 				.originAmount(amount)
 				.paidAmount(amount)
-				.orderItems(orderItems)
 				.status(PaymentStatus.PENDING)
 				.build();
 
@@ -329,18 +319,16 @@ class CreatePaymentServiceTest {
 		@DisplayName("Payment 저장 시 올바른 값이 전달된다")
 		void create_SavesPaymentWithCorrectValues() {
 			// given
+			setupWithStrategies(new PgPaymentCreateStrategy());
+
 			Long memberId = 1L;
 			Long orderId = 123L;
 			String orderNumber = "order-123";
 			Money amount = Money.of(10000);
-			List<OrderItemSnapshot> orderItems = List.of(
-				new OrderItemSnapshot(1L, Money.of(10000), 100L)
-			);
-
-			CreateFundingPaymentCommand command = new CreateFundingPaymentCommand(
+			CreatePaymentCommand command = CreatePaymentCommand.of(
 				memberId, orderId, orderNumber,
-				PaymentMethod.CARD,
-				amount, orderItems
+				PaymentType.FUNDING, PaymentMethod.CARD,
+				amount
 			);
 
 			ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
@@ -359,7 +347,6 @@ class CreatePaymentServiceTest {
 						.method(payment.getMethod())
 						.originAmount(payment.getOriginAmount())
 						.paidAmount(payment.getPaidAmount())
-						.orderItems(payment.getOrderItems())
 						.status(payment.getStatus())
 						.build();
 				});
@@ -377,7 +364,6 @@ class CreatePaymentServiceTest {
 			assertThat(capturedPayment.getOriginAmount()).isEqualTo(amount);
 			assertThat(capturedPayment.getPaidAmount()).isEqualTo(amount);
 			assertThat(capturedPayment.getStatus()).isEqualTo(PaymentStatus.PENDING);
-			assertThat(capturedPayment.getOrderItems()).hasSize(1);
 		}
 	}
 }

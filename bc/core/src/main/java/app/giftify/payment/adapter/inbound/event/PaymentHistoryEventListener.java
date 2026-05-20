@@ -1,12 +1,5 @@
 package app.giftify.payment.adapter.inbound.event;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-
-import org.springframework.modulith.events.ApplicationModuleListener;
-import org.springframework.stereotype.Component;
-
 import app.giftify.payment.adapter.outbound.jpa.JpaPaymentHistoryRepository;
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;
 import app.giftify.payment.domain.PaymentEventType;
@@ -18,6 +11,12 @@ import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.modulith.events.ApplicationModuleListener;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Component
@@ -48,7 +47,7 @@ public class PaymentHistoryEventListener {
 	public void onPaymentCancelFailed(PaymentCancelFailedEvent event) {
 		saveHistory(event.data().paymentId(), event.data().orderNumber(),
 			PaymentEventType.CANCEL_FAILED, event.id(), toLocalDateTime(event.time()),
-			event.data().reason());
+			event.data().errorMetadata());
 	}
 
 	private void saveHistory(Long paymentId, String orderNumber, PaymentEventType eventType,

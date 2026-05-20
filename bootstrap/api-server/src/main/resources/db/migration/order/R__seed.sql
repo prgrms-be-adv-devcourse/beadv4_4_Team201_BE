@@ -62,7 +62,7 @@ DO $$
 DECLARE
   _id bigint;
 BEGIN
-  IF current_schema() = 'loadtest' THEN
+  IF '${is_staging}' = 'true' THEN
     -- Givers (1001-1050)
     FOR _id IN 1001..1050 LOOP
       INSERT INTO core_member_replicas (id, nickname)

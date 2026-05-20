@@ -1,6 +1,8 @@
 package app.giftify.wishlist.adapter.out.jpa.repository;
 
 import app.giftify.wishlist.adapter.out.jpa.entity.WishlistItemJpaEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +18,8 @@ public interface WishlistItemJpaRepository extends JpaRepository<WishlistItemJpa
     void deleteByWishlistIdAndProductId(Long wishlistId, Long productId);
 
     List<WishlistItemJpaEntity> findByWishlistId(Long wishlistId);
+
+    Page<WishlistItemJpaEntity> findByWishlistId(Long wishlistId, Pageable pageable);
 
     Optional<WishlistItemJpaEntity> findByWishlistIdAndProductId(Long wishlistId, Long productId);
 

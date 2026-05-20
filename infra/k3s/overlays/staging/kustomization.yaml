@@ -1,0 +1,89 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+generators:
+  - ./secret-generator.yaml
+
+images:
+  - name: giftify-elasticsearch
+    newName: ghcr.io/prgrms-be-adv-devcourse/beadv4_4_team201_be/elasticsearch
+    newTag: 9.2.4-custom-v2
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: api-server-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: api-server-config
+      data:
+        SPRING_PROFILES_ACTIVE: "prod,loadtest"
+        INTERNAL_API_BASE_URL: "http://api-server:8080"
+        SPRING_THREADS_VIRTUAL_ENABLED: "true"
+        SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "20"
+        SPRING_FLYWAY_PLACEHOLDERS_IS_STAGING: "true"
+
+  - target:
+      kind: Service
+      name: api-server
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30080
+
+  - target:
+      kind: Deployment
+      name: api-server
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: api-server
+      spec:
+        template:
+          spec:
+            containers:
+              - name: api-server
+                startupProbe:
+                  httpGet:
+                    path: /actuator/health
+                    port: 8080
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  failureThreshold: 90
+
+  # --- Grafana: root_url for alert notification links ---
+  - target:
+      kind: Deployment
+      name: grafana
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: GF_SERVER_ROOT_URL
+          value: "https://giftify-grafana-staging.chan99k.dev"
+
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: ghcr-secret
+
+  - target:
+      kind: Deployment
+      name: cloudflared
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
