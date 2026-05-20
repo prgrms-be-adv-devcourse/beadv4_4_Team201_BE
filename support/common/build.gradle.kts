@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.cache)
     implementation(libs.spring.boot.jackson2)
+    implementation(libs.awssdk.s3)
 
     testImplementation(libs.archunit)
     testImplementation(libs.spring.boot.starter.test)
