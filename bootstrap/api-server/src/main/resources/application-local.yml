@@ -1,10 +1,22 @@
 spring:
 
   datasource:
-    url: jdbc:h2:mem:giftify;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    primary:
+      url: jdbc:h2:mem:giftify;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 2
+    replica:
+      url: jdbc:h2:mem:giftify;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 2
 
   jpa:
     hibernate:

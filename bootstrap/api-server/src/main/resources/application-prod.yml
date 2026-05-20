@@ -4,12 +4,24 @@ spring:
       flyway-enabled: true
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      connection-init-sql: SET search_path TO g7app, public
+    primary:
+      url: ${DB_URL}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        connection-init-sql: SET search_path TO g7app, public
+        maximum-pool-size: ${DB_PRIMARY_POOL_SIZE:20}
+        minimum-idle: 5
+    replica:
+      url: ${DB_REPLICA_URL:${DB_URL}}
+      username: ${DB_REPLICA_USERNAME:${DB_USERNAME}}
+      password: ${DB_REPLICA_PASSWORD:${DB_PASSWORD}}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        connection-init-sql: SET search_path TO g7app, public
+        maximum-pool-size: ${DB_REPLICA_POOL_SIZE:20}
+        minimum-idle: 5
 
   h2:
     console:

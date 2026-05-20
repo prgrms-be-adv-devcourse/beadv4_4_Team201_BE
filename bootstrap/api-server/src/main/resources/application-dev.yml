@@ -6,12 +6,24 @@ spring:
       flyway-enabled: true
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/giftify_db}
-    username: ${DB_USERNAME:giftify}
-    password: ${DB_PASSWORD:secret}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      connection-init-sql: SET search_path TO g7app, public
+    primary:
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/giftify_db}
+      username: ${DB_USERNAME:giftify}
+      password: ${DB_PASSWORD:secret}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        connection-init-sql: SET search_path TO g7app, public
+        maximum-pool-size: 10
+        minimum-idle: 2
+    replica:
+      url: ${DB_REPLICA_URL:${DB_URL:jdbc:postgresql://localhost:5432/giftify_db}}
+      username: ${DB_USERNAME:giftify}
+      password: ${DB_PASSWORD:secret}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        connection-init-sql: SET search_path TO g7app, public
+        maximum-pool-size: 10
+        minimum-idle: 2
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:redpanda:9092}
