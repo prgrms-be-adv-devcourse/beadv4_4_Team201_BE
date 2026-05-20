@@ -9,6 +9,8 @@ dependencies {
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.redis)
+    implementation(libs.spring.boot.starter.cache)
+    implementation(libs.spring.boot.jackson2)
 
     testImplementation(libs.archunit)
     testImplementation(libs.spring.boot.starter.test)
