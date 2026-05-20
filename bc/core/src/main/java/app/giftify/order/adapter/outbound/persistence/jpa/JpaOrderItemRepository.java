@@ -24,7 +24,7 @@ public interface JpaOrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Query("SELECT oi.order.id as orderId, oi.id as itemId FROM OrderItem oi " +
             "WHERE oi.targetId = :targetId AND oi.targetType = :targetType")
-    List<OrderIdMapping> findRawMappings(@Param("fundingId") Long fundingId,
+    List<OrderIdMapping> findRawMappings(@Param("targetId") Long fundingId,
                                          @Param("targetType") TargetType targetType);
 
     default Map<Long, List<Long>> findItemIdMapByFundingId(Long fundingId, TargetType targetType) {
