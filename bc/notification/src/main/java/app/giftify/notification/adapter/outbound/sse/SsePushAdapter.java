@@ -1,5 +1,7 @@
 package app.giftify.notification.adapter.outbound.sse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -8,12 +10,12 @@ import app.giftify.notification.application.outbound.NotificationPushPort;
 import app.giftify.notification.application.support.CloudEventMapper;
 import app.giftify.notification.domain.Notification;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SsePushAdapter implements NotificationPushPort {
+
+	private static final Logger log = LoggerFactory.getLogger(SsePushAdapter.class);
 
 	private final SseEmitterRegistry registry;
 	private final CloudEventMapper cloudEventMapper;

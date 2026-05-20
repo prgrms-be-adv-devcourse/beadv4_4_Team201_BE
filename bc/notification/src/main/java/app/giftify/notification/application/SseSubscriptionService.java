@@ -1,17 +1,19 @@
 package app.giftify.notification.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import app.giftify.notification.adapter.outbound.sse.SseEmitterRegistry;
 import app.giftify.notification.application.inbound.SseSubscribeUseCase;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SseSubscriptionService implements SseSubscribeUseCase {
+
+	private static final Logger log = LoggerFactory.getLogger(SseSubscriptionService.class);
 
 	private final SseEmitterRegistry registry;
 

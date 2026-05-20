@@ -13,9 +13,7 @@ import app.giftify.notification.domain.NotificationErrorCode;
 import app.giftify.notification.domain.NotificationException;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

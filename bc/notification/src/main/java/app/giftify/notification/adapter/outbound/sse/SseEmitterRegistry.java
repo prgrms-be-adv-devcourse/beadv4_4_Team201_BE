@@ -3,14 +3,15 @@ package app.giftify.notification.adapter.outbound.sse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class SseEmitterRegistry {
+
+	private static final Logger log = LoggerFactory.getLogger(SseEmitterRegistry.class);
 
 	private static final long TIMEOUT = 30 * 60 * 1000L;
 
