@@ -1,20 +1,21 @@
 package app.giftify.payment.adapter.support;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Component;
 
 import app.giftify.payment.application.outbound.PaymentFieldEncryptor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Spring Security 기반 결제 필드 암호화 구현체.
  * AES-256-GCM 알고리즘을 사용합니다.
  */
-@Slf4j
 @Component
 public class SpringSecurityPaymentFieldEncryptor implements PaymentFieldEncryptor {
+	private static final Logger log = LoggerFactory.getLogger(SpringSecurityPaymentFieldEncryptor.class);
+
 	private final TextEncryptor encryptor;
 
 	public SpringSecurityPaymentFieldEncryptor(

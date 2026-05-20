@@ -1,5 +1,7 @@
 package app.giftify.payment.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +16,12 @@ import app.giftify.payment.domain.PaymentStatus;
 import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BulkPaymentQueryService implements BulkPaymentAmountUseCase {
+	private static final Logger log = LoggerFactory.getLogger(BulkPaymentQueryService.class);
+
 
 	private static final List<PaymentStatus> SETTLED_STATUSES = List.of(
 		PaymentStatus.PAID, PaymentStatus.CANCELED

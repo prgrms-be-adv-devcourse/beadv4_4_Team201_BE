@@ -1,6 +1,7 @@
 package app.giftify.order.adapter.outbound.batch;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.batch.core.step.StepExecution;
@@ -10,8 +11,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Component
-@Slf4j
 public class ExpirationJobListener implements JobExecutionListener {
+	private static final Logger log = LoggerFactory.getLogger(ExpirationJobListener.class);
+
 
     @Override
     public void beforeJob(JobExecution jobExecution) {

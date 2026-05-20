@@ -1,5 +1,7 @@
 package app.giftify.payment.application.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,16 +15,15 @@ import app.giftify.payment.domain.PaymentException;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Wallet 결제 차감 완료 이벤트 핸들러.
  * WalletDeductedEvent를 수신하여 Payment 상태를 PAID로 변경합니다.
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WalletDeductedEventHandler {
+	private static final Logger log = LoggerFactory.getLogger(WalletDeductedEventHandler.class);
+
 	private final PaymentRepository paymentRepository;
 	private final PaymentModuleEventPublisher moduleEventPublisher;
 

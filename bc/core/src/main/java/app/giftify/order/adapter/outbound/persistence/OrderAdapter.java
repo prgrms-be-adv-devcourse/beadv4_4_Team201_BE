@@ -8,7 +8,6 @@ import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.DomainException;
 import app.giftify.shared.api.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -18,7 +17,6 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class OrderAdapter implements OrderRepository {
 
     private final JpaOrderRepository jpaOrderRepository;

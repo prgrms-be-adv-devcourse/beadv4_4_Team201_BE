@@ -1,10 +1,11 @@
 package app.giftify.order.adapter.outbound.batch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.outbound.port.OrderRepository;
 import app.giftify.order.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -22,8 +23,9 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-@Slf4j
 public class ExpirationStepConfig {
+	private static final Logger log = LoggerFactory.getLogger(ExpirationStepConfig.class);
+
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;

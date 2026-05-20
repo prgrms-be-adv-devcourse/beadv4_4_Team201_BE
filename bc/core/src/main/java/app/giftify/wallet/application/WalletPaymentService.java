@@ -1,5 +1,7 @@
 package app.giftify.wallet.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.wallet.application.inbound.DeductWalletCommand;
 import app.giftify.wallet.application.inbound.DeductWalletResult;
 import app.giftify.wallet.application.inbound.DeductWalletUseCase;
@@ -13,7 +15,6 @@ import app.giftify.wallet.domain.WalletException;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 import app.giftify.shared.domain.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +22,9 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class WalletPaymentService implements DeductWalletUseCase {
+	private static final Logger log = LoggerFactory.getLogger(WalletPaymentService.class);
+
 
 	private final WalletRepository walletRepository;
 	private final WalletHistoryRepository historyRepository;

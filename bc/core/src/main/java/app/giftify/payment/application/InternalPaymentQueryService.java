@@ -1,5 +1,7 @@
 package app.giftify.payment.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -12,12 +14,11 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class InternalPaymentQueryService implements InternalPaymentQueryUseCase {
+	private static final Logger log = LoggerFactory.getLogger(InternalPaymentQueryService.class);
+
 
 	private final PaymentRepository paymentRepository;
 	private final PaymentFieldEncryptor encryptor;

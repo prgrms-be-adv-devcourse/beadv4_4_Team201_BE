@@ -1,5 +1,7 @@
 package app.giftify.payment.application.strategy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.domain.Payment;
@@ -9,15 +11,15 @@ import app.giftify.wallet.application.inbound.DeductWalletCommand;
 import app.giftify.wallet.application.inbound.DeductWalletResult;
 import app.giftify.wallet.application.inbound.DeductWalletUseCase;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @Order(1)
 @RequiredArgsConstructor
 public class WalletPaymentCreateStrategy implements PaymentCreateStrategy {
+	private static final Logger log = LoggerFactory.getLogger(WalletPaymentCreateStrategy.class);
+
 
     private final DeductWalletUseCase deductWalletUseCase;
 

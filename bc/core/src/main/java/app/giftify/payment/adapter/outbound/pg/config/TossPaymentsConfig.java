@@ -16,12 +16,9 @@ import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 import app.giftify.payment.adapter.outbound.pg.TossPaymentsApi;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Toss Payments API 관련 설정.
  */
-@Slf4j
 @Configuration
 public class TossPaymentsConfig {
 

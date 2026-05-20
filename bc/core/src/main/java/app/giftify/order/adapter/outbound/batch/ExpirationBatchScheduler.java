@@ -1,7 +1,8 @@
 package app.giftify.order.adapter.outbound.batch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
@@ -14,8 +15,9 @@ import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Component
-@Slf4j
 public class ExpirationBatchScheduler {
+	private static final Logger log = LoggerFactory.getLogger(ExpirationBatchScheduler.class);
+
 
     private final JobLauncher jobLauncher;
     private final Job expirationJob;

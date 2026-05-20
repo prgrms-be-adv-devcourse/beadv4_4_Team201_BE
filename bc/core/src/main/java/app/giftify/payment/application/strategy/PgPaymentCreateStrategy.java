@@ -1,17 +1,19 @@
 package app.giftify.payment.application.strategy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.domain.Payment;
 import app.giftify.shared.domain.vo.Money;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Order(3)
 @Component
 public class PgPaymentCreateStrategy implements PaymentCreateStrategy {
+	private static final Logger log = LoggerFactory.getLogger(PgPaymentCreateStrategy.class);
+
 
     @Override
     public boolean canHandle(CreatePaymentCommand command) {

@@ -1,5 +1,7 @@
 package app.giftify.funding.adapter.inbound;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.funding.application.FundingAcceptUseCase;
 import app.giftify.funding.application.FundingFailAcceptUseCase;
 import app.giftify.funding.application.SyncFundingProductUseCase;
@@ -11,15 +13,15 @@ import app.giftify.shared.domain.event.product.ProductUpdatedEvent;
 import app.giftify.shared.domain.type.TargetType;
 import app.giftify.support.common.annotation.EventIdempotent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FundingEventListener {
+	private static final Logger log = LoggerFactory.getLogger(FundingEventListener.class);
+
 	private final WithdrawFundingUseCase withdrawFundingUseCase;
     private final FundingAcceptUseCase fundingAcceptUseCase;
     private final SyncFundingProductUseCase syncFundingProductUseCase;

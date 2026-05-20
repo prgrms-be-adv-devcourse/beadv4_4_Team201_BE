@@ -1,19 +1,21 @@
 package app.giftify.funding.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.type.FundingStatus;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SyncFundingProductUseCase {
+	private static final Logger log = LoggerFactory.getLogger(SyncFundingProductUseCase.class);
+
     private final FundingRepository fundingRepository;
 
     @Transactional

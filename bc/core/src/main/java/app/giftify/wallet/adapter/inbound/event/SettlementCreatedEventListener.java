@@ -1,5 +1,7 @@
 package app.giftify.wallet.adapter.inbound.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -11,12 +13,11 @@ import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
 import app.giftify.wallet.application.inbound.SettlementPayoutUseCase;
 import app.giftify.wallet.domain.WalletException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SettlementCreatedEventListener {
+	private static final Logger log = LoggerFactory.getLogger(SettlementCreatedEventListener.class);
+
 	private final SettlementPayoutUseCase settlementPayoutUseCase;
 	private final EventPublisher eventPublisher;
 

@@ -1,5 +1,7 @@
 package app.giftify.wallet.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wallet.application.inbound.*;
@@ -8,7 +10,6 @@ import app.giftify.wallet.application.outbound.WalletRepository;
 import app.giftify.wallet.domain.*;
 import app.giftify.wallet.domain.event.WalletChargedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +20,11 @@ import java.time.LocalDateTime;
  * 지갑 서비스.
  * 지갑 충전, 출금, 조회 기능을 제공합니다.
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WalletService implements ChargeWalletUseCase, WithdrawWalletUseCase, QueryWalletUseCase, QueryWalletHistoryUseCase, CreateWalletUseCase, RestoreWalletUseCase {
+	private static final Logger log = LoggerFactory.getLogger(WalletService.class);
+
 
     private final WalletRepository walletRepository;
     private final WalletHistoryRepository historyRepository;

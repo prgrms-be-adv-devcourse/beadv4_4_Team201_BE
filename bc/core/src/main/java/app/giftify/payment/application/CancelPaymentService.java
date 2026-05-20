@@ -13,7 +13,6 @@ import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.shared.domain.type.CancelType;
 import app.giftify.shared.domain.vo.Money;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +21,6 @@ import java.util.Objects;
 
 import static app.giftify.payment.domain.SystemConstants.SYSTEM_REQUESTER_ID;
 
-@Slf4j
 @Service
 @Transactional
 public class CancelPaymentService implements CancelPaymentUseCase {

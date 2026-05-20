@@ -1,5 +1,7 @@
 package app.giftify.payment.adapter.inbound.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,13 +24,12 @@ import app.giftify.shared.api.response.RsData;
 import app.giftify.shared.domain.vo.Money;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @RestController
 @RequestMapping("/api/v2/payments")
 @RequiredArgsConstructor
 public class PaymentController implements PaymentV2ApiSpec {
+	private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
+
 	private final ChargeDepositUseCase chargeDepositUseCase;
 	private final ConfirmPaymentUseCase confirmPaymentUseCase;
 	private final QueryPaymentUseCase queryPaymentUseCase;

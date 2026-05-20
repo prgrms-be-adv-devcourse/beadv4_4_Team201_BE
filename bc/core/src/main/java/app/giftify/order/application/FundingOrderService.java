@@ -1,5 +1,7 @@
 package app.giftify.order.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
 import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
@@ -14,7 +16,6 @@ import app.giftify.shared.domain.event.order.OrderConfirmPendingEvent;
 import app.giftify.shared.domain.vo.ConfirmItem;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class FundingOrderService {
+	private static final Logger log = LoggerFactory.getLogger(FundingOrderService.class);
+
     private final OrderItemRepository orderItemRepository;
     private final OrderService orderService;
     private final EventPublisher eventPublisher;

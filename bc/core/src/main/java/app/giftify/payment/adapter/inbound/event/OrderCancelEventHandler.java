@@ -1,5 +1,7 @@
 package app.giftify.payment.adapter.inbound.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static app.giftify.payment.domain.SystemConstants.*;
 
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -9,12 +11,11 @@ import app.giftify.payment.application.inbound.CancelPaymentCommand;
 import app.giftify.payment.application.inbound.CancelPaymentUseCase;
 import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrderCancelEventHandler {
+	private static final Logger log = LoggerFactory.getLogger(OrderCancelEventHandler.class);
+
 
 	private final CancelPaymentUseCase cancelPaymentUseCase;
 

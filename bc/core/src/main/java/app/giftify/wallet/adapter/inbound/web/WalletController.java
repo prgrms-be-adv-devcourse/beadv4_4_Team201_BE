@@ -1,5 +1,7 @@
 package app.giftify.wallet.adapter.inbound.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,14 +30,13 @@ import app.giftify.wallet.application.inbound.WithdrawWalletResult;
 import app.giftify.wallet.application.inbound.WithdrawWalletUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @RestController
 @RequestMapping("/api/v2/wallet")
 @RequiredArgsConstructor
 @Validated
 public class WalletController implements WalletV2ApiSpec {
+	private static final Logger log = LoggerFactory.getLogger(WalletController.class);
+
 	private final WithdrawWalletUseCase withdrawWalletUseCase;
 	private final QueryWalletUseCase queryWalletUseCase;
 	private final QueryWalletHistoryUseCase queryWalletHistoryUseCase;

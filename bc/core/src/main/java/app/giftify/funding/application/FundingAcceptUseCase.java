@@ -1,5 +1,7 @@
 package app.giftify.funding.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.funding.adapter.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
@@ -8,13 +10,13 @@ import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FundingAcceptUseCase {
+	private static final Logger log = LoggerFactory.getLogger(FundingAcceptUseCase.class);
+
     private final FundingRepository fundingRepository;
     private final EventPublisher eventPublisher;
 

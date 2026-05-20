@@ -1,5 +1,7 @@
 package app.giftify.order.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.order.application.dto.OrderCancelProcessingResult;
 import app.giftify.order.application.dto.OrderCancelSummary;
 import app.giftify.order.application.inbound.command.CancelOrderItemsCommand;
@@ -28,7 +30,6 @@ import app.giftify.shared.domain.vo.Money;
 import app.giftify.shared.domain.vo.ProductSnapshot;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +42,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class OrderService {
+	private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;

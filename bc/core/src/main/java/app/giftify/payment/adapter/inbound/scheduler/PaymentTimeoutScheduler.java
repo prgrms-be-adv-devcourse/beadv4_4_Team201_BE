@@ -1,5 +1,7 @@
 package app.giftify.payment.adapter.inbound.scheduler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.payment.application.inbound.CancelPaymentCommand;
 import app.giftify.payment.application.inbound.CancelPaymentUseCase;
 import app.giftify.payment.application.inbound.FailPaymentUseCase;
@@ -7,7 +9,6 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -18,10 +19,11 @@ import java.time.LocalDateTime;
 
 import static app.giftify.payment.domain.SystemConstants.SYSTEM_REQUESTER_ID;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PaymentTimeoutScheduler {
+	private static final Logger log = LoggerFactory.getLogger(PaymentTimeoutScheduler.class);
+
 
     private static final String TIMEOUT_REASON = "TIMEOUT";
     private static final int BATCH_SIZE = 100;

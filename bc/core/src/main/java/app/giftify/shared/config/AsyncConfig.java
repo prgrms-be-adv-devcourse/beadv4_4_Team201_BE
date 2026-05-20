@@ -1,6 +1,7 @@
 package app.giftify.shared.config;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +17,11 @@ import java.util.concurrent.ThreadPoolExecutor;
  * 같은 JVM이니까 bootstrap에서 등록한 TaskExecutor 빈을 자동으로 사용합니다.
  * 만약 모듈별로 다른 스레드풀이 필요하다면, 빈 이름을 다르게 해서 @Async("catalogExecutor") 식으로 지정하면 됩니다.
  */
-@Slf4j
 @Configuration
 @EnableAsync // NOTE 문제가 있음. api-server 하나로 돌리면 다른 모듈에 동일 설정이 생기는 순간 서로 충돌 남
 public class AsyncConfig implements AsyncConfigurer {
+	private static final Logger log = LoggerFactory.getLogger(AsyncConfig.class);
+
 
     @Override
     public Executor getAsyncExecutor() {

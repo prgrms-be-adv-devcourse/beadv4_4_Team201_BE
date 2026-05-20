@@ -1,5 +1,7 @@
 package app.giftify.order.adapter.inbound.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
@@ -18,7 +20,6 @@ import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentEvent;
 import app.giftify.shared.domain.vo.Money;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -27,8 +28,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class OrderEventListener {
+	private static final Logger log = LoggerFactory.getLogger(OrderEventListener.class);
+
 
     private final OrderService orderService;
     private final FundingOrderService fundingOrderService;

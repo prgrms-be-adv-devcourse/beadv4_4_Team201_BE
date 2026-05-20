@@ -1,5 +1,7 @@
 package app.giftify.payment.adapter.inbound.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +24,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * 내부 서비스 간 통신을 위한 Payment API.
  *
@@ -38,13 +38,14 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @see InternalApiOnly
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/internal/payments")
 @RequiredArgsConstructor
 @InternalApiOnly
 @Validated
 public class InternalPaymentController {
+	private static final Logger log = LoggerFactory.getLogger(InternalPaymentController.class);
+
 
 	private final InternalPaymentQueryUseCase internalPaymentQueryUseCase;
 	private final BulkPaymentAmountUseCase bulkPaymentAmountUseCase;

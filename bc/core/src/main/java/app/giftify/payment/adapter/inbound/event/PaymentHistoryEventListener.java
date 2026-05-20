@@ -1,5 +1,7 @@
 package app.giftify.payment.adapter.inbound.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.payment.adapter.outbound.jpa.JpaPaymentHistoryRepository;
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;
 import app.giftify.payment.domain.PaymentEventType;
@@ -10,7 +12,6 @@ import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +19,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PaymentHistoryEventListener {
+	private static final Logger log = LoggerFactory.getLogger(PaymentHistoryEventListener.class);
+
 
 	private final JpaPaymentHistoryRepository historyRepository;
 

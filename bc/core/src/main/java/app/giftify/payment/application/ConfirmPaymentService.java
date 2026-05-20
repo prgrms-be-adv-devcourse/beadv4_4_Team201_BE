@@ -1,5 +1,7 @@
 package app.giftify.payment.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
 import app.giftify.payment.application.inbound.ConfirmPaymentCommand;
 import app.giftify.payment.application.inbound.ConfirmPaymentResult;
@@ -11,7 +13,6 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +22,12 @@ import java.time.LocalDateTime;
  * 결제 승인 UseCase 구현체.
  * PG사 결제 완료 후 Payment 상태를 PAID로 변경합니다.
  */
-@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ConfirmPaymentService implements ConfirmPaymentUseCase {
+	private static final Logger log = LoggerFactory.getLogger(ConfirmPaymentService.class);
+
     private final PaymentRepository paymentRepository;
     private final PaymentGateway paymentGateway;
     private final PaymentFieldEncryptor encryptor;
