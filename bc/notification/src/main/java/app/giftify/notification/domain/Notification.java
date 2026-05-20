@@ -2,15 +2,10 @@ package app.giftify.notification.domain;
 
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseJpaEntity {
 
 	@Column(name = "recipient_id", nullable = false)
@@ -47,6 +42,9 @@ public class Notification extends BaseJpaEntity {
 	@Column(name = "source_event_source", nullable = false, length = 100)
 	private String sourceEventSource;
 
+	protected Notification() {
+	}
+
 	public Notification(
 		Long recipientId, NotificationType type,
 		String title, String content,
@@ -72,5 +70,49 @@ public class Notification extends BaseJpaEntity {
 
 	public boolean isOwnedBy(Long memberId) {
 		return this.recipientId.equals(memberId);
+	}
+
+	public Long getRecipientId() {
+		return recipientId;
+	}
+
+	public NotificationType getType() {
+		return type;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public boolean isRead() {
+		return isRead;
+	}
+
+	public LocalDateTime getReadAt() {
+		return readAt;
+	}
+
+	public String getReferenceId() {
+		return referenceId;
+	}
+
+	public String getReferenceType() {
+		return referenceType;
+	}
+
+	public String getSourceEventId() {
+		return sourceEventId;
+	}
+
+	public String getSourceEventType() {
+		return sourceEventType;
+	}
+
+	public String getSourceEventSource() {
+		return sourceEventSource;
 	}
 }
