@@ -14,6 +14,7 @@ include(
     "bc:shared",
     "bc:member",
     "bc:catalog",
+    "bc:cart",
     "bc:core",
     "bc:settlement",
     "bc:notification",
