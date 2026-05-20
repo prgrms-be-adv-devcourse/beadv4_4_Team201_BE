@@ -1,0 +1,43 @@
+# staging 환경 — prod 위에 덮어쓰는 오버레이
+# 활성화: SPRING_PROFILES_ACTIVE=prod,staging
+# Auth0 staging tenant 사용 + Replica DataSource HA 활성화
+
+spring:
+  datasource:
+    primary:
+      url: ${STAGING_DB_URL:${DB_URL}}
+      username: ${STAGING_DB_USERNAME:${DB_USERNAME}}
+      password: ${STAGING_DB_PASSWORD:${DB_PASSWORD}}
+      hikari:
+        connection-init-sql: SET search_path TO g7app, public
+        maximum-pool-size: ${DB_PRIMARY_POOL_SIZE:10}
+        minimum-idle: 2
+    replica:
+      url: ${STAGING_DB_REPLICA_URL:${STAGING_DB_URL:${DB_URL}}}
+      username: ${STAGING_DB_USERNAME:${DB_USERNAME}}
+      password: ${STAGING_DB_PASSWORD:${DB_PASSWORD}}
+      hikari:
+        connection-init-sql: SET search_path TO g7app, public
+        maximum-pool-size: ${DB_REPLICA_POOL_SIZE:10}
+        minimum-idle: 2
+
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true
+
+  flyway:
+    placeholders:
+      is_staging: "true"
+
+logging:
+  level:
+    root: INFO
+    app.giftify: INFO
+    org.springframework.jdbc.datasource.lookup: DEBUG
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name:giftify}
+      env: staging

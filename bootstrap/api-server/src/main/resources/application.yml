@@ -50,6 +50,8 @@ spring:
         - funding-prod
         - order-prod
         - settlement-prod
+      staging:
+        - auth-staging
 
 server:
   port: 8080

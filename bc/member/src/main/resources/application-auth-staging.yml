@@ -1,0 +1,27 @@
+# staging Auth0 — 별도 Auth0 application + audience 사용
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${STAGING_AUTH0_DOMAIN:${AUTH0_DOMAIN}}/
+          jwk-set-uri: https://${STAGING_AUTH0_DOMAIN:${AUTH0_DOMAIN}}/.well-known/jwks.json
+      client:
+        registration:
+          auth0:
+            client-id: ${STAGING_AUTH0_CLIENT_ID:${AUTH0_CLIENT_ID}}
+            client-secret: ${STAGING_AUTH0_CLIENT_SECRET:${AUTH0_CLIENT_SECRET}}
+            scope:
+              - openid
+              - profile
+              - email
+              - offline_access
+        provider:
+          auth0:
+            issuer-uri: https://${STAGING_AUTH0_DOMAIN:${AUTH0_DOMAIN}}/
+auth0:
+  audience: ${STAGING_AUTH0_AUDIENCE:${AUTH0_AUDIENCE}}
+
+logging:
+  level:
+    org.springframework.security: INFO
