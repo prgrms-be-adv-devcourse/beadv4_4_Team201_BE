@@ -69,3 +69,12 @@ logging:
   level:
     root: INFO
     app.giftify: DEBUG
+
+giftify:
+  storage:
+    s3:
+      endpoint: ${S3_ENDPOINT:http://localhost:9000}
+      region: ${S3_REGION:us-east-1}
+      access-key: ${S3_ACCESS_KEY:minioadmin}
+      secret-key: ${S3_SECRET_KEY:minioadmin}
+      image-bucket: ${S3_IMAGE_BUCKET:giftify-images}
