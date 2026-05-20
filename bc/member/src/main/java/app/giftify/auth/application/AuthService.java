@@ -1,6 +1,7 @@
 package app.giftify.auth.application;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -10,9 +11,10 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 // 핵심 비즈니스 로직 (인증 프로세스 처리, 토큰 유효성 검증)
-@Slf4j
 @Service
 public class AuthService {
+	private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
 
     private final JwtDecoder jwtDecoder;
     private final JwtDecoder idTokenDecoder;

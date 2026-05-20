@@ -1,5 +1,7 @@
 package app.giftify.member.adapter.in.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,17 +32,16 @@ import app.giftify.shared.api.response.RsData;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Member API v2.
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/v2/members")
 @RequiredArgsConstructor
 @Validated
 public class MemberV2Controller implements MemberV2ApiSpec {
+	private static final Logger log = LoggerFactory.getLogger(MemberV2Controller.class);
+
 
     private final GetMemberUseCase getMemberUseCase;
     private final RegisterMemberUseCase registerMemberUseCase;

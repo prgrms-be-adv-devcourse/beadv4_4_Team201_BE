@@ -1,18 +1,20 @@
 package app.giftify.member.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.domain.member.NicknameGenerator;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Random;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RandomNicknameGenerator implements NicknameGenerator {
+	private static final Logger log = LoggerFactory.getLogger(RandomNicknameGenerator.class);
+
     private static final List<String> adjectives = List.of("행복한", "똑똑한", "친절한", "나태한", "과감한", "수줍은", "지루한");
     private static final List<String> animals = List.of("강아지", "고양이", "앵무새", "돼지", "코요테", "코끼리", "호랑이");
     private static final int RANDOM_DIGITS = 4;

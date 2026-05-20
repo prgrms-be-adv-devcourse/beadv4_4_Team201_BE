@@ -1,5 +1,7 @@
 package app.giftify.auth.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -10,12 +12,11 @@ import app.giftify.auth.adapter.outbound.client.WalletApiClient;
 import app.giftify.auth.application.inbound.LoginUseCase;
 import app.giftify.shared.domain.vo.MemberInfo;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginService implements LoginUseCase {
+	private static final Logger log = LoggerFactory.getLogger(LoginService.class);
+
     private final AuthService authService;
     private final MemberApiClient memberApiClient;
     private final WalletApiClient walletApiClient;

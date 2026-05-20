@@ -1,5 +1,7 @@
 package app.giftify.member.adapter.in.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -9,11 +11,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import app.giftify.member.domain.exception.MemberDomainException;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @RestControllerAdvice(assignableTypes = MemberV2Controller.class)
 public class MemberExceptionHandler {
+	private static final Logger log = LoggerFactory.getLogger(MemberExceptionHandler.class);
+
 
 	@ExceptionHandler(MemberDomainException.class)
 	public ResponseEntity<?> handleMemberDomainException(MemberDomainException e) {

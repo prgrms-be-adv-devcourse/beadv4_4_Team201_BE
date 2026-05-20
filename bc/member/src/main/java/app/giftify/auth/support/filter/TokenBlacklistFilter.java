@@ -1,5 +1,7 @@
 package app.giftify.auth.support.filter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
@@ -19,17 +21,16 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * <li> Filter 순서: BearerTokenAuthenticationFilter → TokenBlacklistFilter → MemberPrincipalFilter
  * <li> Early Return: 무효화된 토큰이면 즉시 401 응답, filterChain.doFilter() 호출하지 않음
  * <li> ObjectMapper 재사용: Spring이 관리하는 Bean을 주입받아 성능 최적화
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenBlacklistFilter extends OncePerRequestFilter {
+	private static final Logger log = LoggerFactory.getLogger(TokenBlacklistFilter.class);
+
 
 	private final TokenBlacklistService blacklistService;
 	private final ObjectMapper objectMapper;

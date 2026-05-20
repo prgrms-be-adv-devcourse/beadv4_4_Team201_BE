@@ -1,5 +1,7 @@
 package app.giftify.auth.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -10,12 +12,11 @@ import org.springframework.stereotype.Service;
 import app.giftify.auth.adapter.outbound.client.Auth0RevokeClient;
 import app.giftify.auth.application.inbound.LogoutUseCase;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutUseCase {
+	private static final Logger log = LoggerFactory.getLogger(LogoutService.class);
+
 
 	private final JwtDecoder jwtDecoder;
 	private final TokenBlacklistService tokenBlacklistService;

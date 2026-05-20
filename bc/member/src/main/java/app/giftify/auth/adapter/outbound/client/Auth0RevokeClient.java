@@ -1,15 +1,16 @@
 package app.giftify.auth.adapter.outbound.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class Auth0RevokeClient {
+	private static final Logger log = LoggerFactory.getLogger(Auth0RevokeClient.class);
+
 
 	private final Auth0ApiClient auth0ApiClient;
 	private final String clientId;

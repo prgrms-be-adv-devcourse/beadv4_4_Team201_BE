@@ -1,5 +1,7 @@
 package app.giftify.auth.application;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -10,11 +12,10 @@ import org.springframework.stereotype.Service;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 public class TokenBlacklistService {
+	private static final Logger log = LoggerFactory.getLogger(TokenBlacklistService.class);
+
 
 	private final StringRedisTemplate redisTemplate;
 

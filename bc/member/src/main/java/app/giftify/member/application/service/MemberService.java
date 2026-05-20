@@ -1,5 +1,7 @@
 package app.giftify.member.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import app.giftify.auth.application.TokenBlacklistService;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.member.application.port.in.GetMemberUseCase;
@@ -15,18 +17,18 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.member.MemberSignedEvent;
 import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class MemberService
         implements GetMemberUseCase, RegisterMemberUseCase, UpdateMemberUseCase, WithdrawMemberUseCase {
+	private static final Logger log = LoggerFactory.getLogger(MemberService.class);
+
 
     private final MemberRepositoryPort memberRepositoryPort;
     private final EventPublisher eventPublisher;

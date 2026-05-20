@@ -1,5 +1,7 @@
 package app.giftify.friendship.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,9 +20,6 @@ import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.friendship.FriendshipAcceptedEvent;
 import app.giftify.shared.domain.event.friendship.FriendshipRequestSentEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -31,6 +30,8 @@ public class FriendshipService implements
         RemoveFriendUseCase,
         GetFriendListUseCase,
         GetFriendRequestsUseCase {
+	private static final Logger log = LoggerFactory.getLogger(FriendshipService.class);
+
 
     private final FriendshipRepositoryPort friendshipRepository;
     // 개발 속도를 위해 같은 모듈 내 직접 참조. 별도 모듈로 분리 시 이벤트 or 내부 API로 전환 필요
