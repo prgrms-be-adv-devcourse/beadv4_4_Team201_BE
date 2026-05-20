@@ -36,11 +36,13 @@ public class MemberService
     private final TokenBlacklistService tokenBlacklistService;
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Member> getMemberByAuthSub(String authSub) {
         return memberRepositoryPort.findByAuthSub(authSub);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Member> getMemberById(Long id) {
         return memberRepositoryPort.findById(id);
     }
@@ -151,11 +153,13 @@ public class MemberService
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return memberRepositoryPort.findByEmail(email).isPresent();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isNicknameDuplicated(String nickname) {
         return memberRepositoryPort.findByNickname(nickname).isPresent();
     }

@@ -127,6 +127,7 @@ public class CartService
 
 	// 카트 조회(아이템 목록)
 	@Override
+	@Transactional(readOnly = true)
 	public CartResponse getCart(Long cartId, Long memberId) {
 		Cart cart = cartRepositoryPort.findById(cartId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND, cartId));
@@ -139,6 +140,7 @@ public class CartService
 	}
 
 	// 내 카트 조회(아이템 목록)
+	@Transactional(readOnly = true)
 	public CartResponse getMyCart(Long memberId) {
 		Cart cart = cartRepositoryPort.findByMemberId(memberId)
 			.orElseThrow(() -> new CartException(CartErrorCode.CART_NOT_FOUND , memberId));
