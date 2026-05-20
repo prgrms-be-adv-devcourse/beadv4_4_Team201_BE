@@ -17,6 +17,7 @@ include(
     "bc:cart",
     "bc:product",
     "bc:wishlist",
+    "bc:image",
     "bc:core",
     "bc:settlement",
     "bc:notification",
