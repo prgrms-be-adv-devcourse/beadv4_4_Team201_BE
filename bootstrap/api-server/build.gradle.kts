@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":bc:member"))
     implementation(project(":bc:catalog"))
     implementation(project(":bc:cart"))
+    implementation(project(":bc:wishlist"))
     implementation(project(":bc:core"))
     implementation(project(":bc:settlement"))
     implementation(project(":bc:notification"))

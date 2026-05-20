@@ -12,7 +12,6 @@ repositories {
 dependencies {
     implementation(project(":bc:shared"))
     implementation(project(":bc:catalog"))
-    implementation(project(":bc:wishlist"))
     implementation(project(":support:common"))
     implementation(project(":support:jpa"))
     implementation(project(":support:security"))
@@ -20,6 +19,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework:spring-tx")
 
     implementation(libs.spring.modulith.core)
@@ -29,8 +29,11 @@ dependencies {
     annotationProcessor(libs.lombok)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.modulith.test)
     testImplementation(libs.spring.security.test)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.h2)
 }
 
