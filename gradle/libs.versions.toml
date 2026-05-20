@@ -84,6 +84,7 @@ spring-modulith-test = { module = "org.springframework.modulith:spring-modulith-
 spring-modulith-events-api = { module = "org.springframework.modulith:spring-modulith-events-api", version.ref = "springModulith" }
 spring-modulith-kafka = { module = "org.springframework.modulith:spring-modulith-events-kafka", version.ref = "springModulith" }
 spring-modulith-runtime = { module = "org.springframework.modulith:spring-modulith-runtime", version.ref = "springModulith" }
+spring-modulith-docs = { module = "org.springframework.modulith:spring-modulith-docs", version.ref = "springModulith" }
 jmolecules-events = { module = "org.jmolecules:jmolecules-events", version.ref = "jmolecules" }
 
 # =============================================================================
