@@ -1,5 +1,11 @@
 package app.giftify.shared.domain.event;
 
 public interface EventPublisher {
-    void publish(Object event);
+
+	@Deprecated(since = "MS4 W10")
+	void publish(Object event);
+
+	default void publishDomainEvent(DomainEvent event) {
+		publish(event);
+	}
 }
