@@ -1,8 +1,8 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.FundingCreateResult;
-import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
-import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adapter.inbound.FundingCreateResult;
+import app.giftify.funding.adapter.inbound.dto.FundingContributeRequest;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.order.domain.OrderItemSnapshot;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.shared.domain.type.TargetType;

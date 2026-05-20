@@ -1,14 +1,14 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
-import app.giftify.funding.adpater.outbound.jpa.Funding;
+import app.giftify.funding.adapter.inbound.dto.FundingContributeRequest;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.replica.MemberReplica;
-import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
+import app.giftify.funding.adapter.outbound.jpa.FundingParticipantMember;
 import app.giftify.replica.MemberReplicaRepository;
-import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
+import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,9 @@ public class FundingContributeUseCase {
     private final MemberReplicaRepository memberReplicaRepository;
     private final EventPublisher eventPublisher;
 
+
     public List<Funding> contribute(List<FundingContributeRequest> requests, Long participantId) {
+
         List<Funding> result = new ArrayList<>();
 
         List<Long> fundingIds = requests.stream()
@@ -58,10 +60,10 @@ public class FundingContributeUseCase {
                 member.addAmount(request.amount());
             }
 
-            funding.contribute(request.amount());
+            boolean achievedNow = funding.contribute(request.amount());
 
             // 달성된 경우 이벤트 발행
-            if (funding.isAchieved()) {
+            if (achievedNow) {
                 // 이벤트 발행 시점 스냅샷
                 List<Long> participantIds = fundingParticipantMemberRepository.findIdsByFundingId((funding.getId()));
 

@@ -1,10 +1,10 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.dto.FundingContributeRequest;
-import app.giftify.funding.adpater.outbound.jpa.Funding;
-import app.giftify.funding.adpater.outbound.jpa.FundingParticipantMember;
-import app.giftify.funding.adpater.outbound.repository.FundingParticipantMemberRepository;
-import app.giftify.funding.adpater.outbound.repository.FundingRepository;
+import app.giftify.funding.adapter.inbound.dto.FundingContributeRequest;
+import app.giftify.funding.adapter.outbound.jpa.Funding;
+import app.giftify.funding.adapter.outbound.jpa.FundingParticipantMember;
+import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberRepository;
+import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.replica.MemberReplica;
@@ -132,7 +132,7 @@ class FundingContributeUseCaseTest {
         Funding funding = mock(Funding.class);
         given(funding.getId()).willReturn(fundingId);
         given(funding.getWishlistItemId()).willReturn(10L);
-        given(funding.isAchieved()).willReturn(true);
+        given(funding.contribute(amount)).willReturn(true);
 
         given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(participant.getNickname()).willReturn(nickname);

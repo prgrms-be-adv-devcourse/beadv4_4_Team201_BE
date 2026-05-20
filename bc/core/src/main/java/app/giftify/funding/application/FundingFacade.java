@@ -1,7 +1,7 @@
 package app.giftify.funding.application;
 
-import app.giftify.funding.adpater.inbound.FundingCreateResult;
-import app.giftify.funding.adpater.inbound.dto.*;
+import app.giftify.funding.adapter.inbound.FundingCreateResult;
+import app.giftify.funding.adapter.inbound.dto.*;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.type.FundingStatus;
