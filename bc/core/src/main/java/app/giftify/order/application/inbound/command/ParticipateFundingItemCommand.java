@@ -1,4 +1,4 @@
-package app.giftify.facade.command;
+package app.giftify.order.application.inbound.command;
 
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.vo.Money;

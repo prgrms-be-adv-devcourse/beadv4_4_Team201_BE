@@ -1,6 +1,5 @@
-package app.giftify.facade.command;
+package app.giftify.order.application.inbound.command;
 
-import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.shared.domain.type.PaymentMethod;
 import app.giftify.shared.domain.vo.Money;
 

@@ -1,6 +1,5 @@
 package app.giftify.order.application.inbound.command;
 
-import app.giftify.facade.command.ParticipateFundingCommand;
 import app.giftify.shared.domain.type.OrderItemType;
 import app.giftify.shared.domain.type.PaymentMethod;
 

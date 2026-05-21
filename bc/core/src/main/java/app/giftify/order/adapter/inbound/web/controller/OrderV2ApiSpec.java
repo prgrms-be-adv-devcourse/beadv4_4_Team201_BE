@@ -1,7 +1,7 @@
 package app.giftify.order.adapter.inbound.web.controller;
 
-import app.giftify.facade.vo.PlaceOrderResult;
 import app.giftify.order.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
+import app.giftify.order.application.inbound.vo.PlaceOrderResult;
 import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.order.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.order.adapter.inbound.web.dto.response.GetOrdersResponse;
