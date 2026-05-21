@@ -13,6 +13,8 @@ dependencies {
     implementation(project(":bc:product"))
     implementation(project(":bc:wishlist"))
     implementation(project(":bc:image"))
+    implementation(project(":bc:wallet"))
+    implementation(project(":bc:order"))
     implementation(project(":bc:core"))
     implementation(project(":bc:settlement"))
     implementation(project(":bc:notification"))

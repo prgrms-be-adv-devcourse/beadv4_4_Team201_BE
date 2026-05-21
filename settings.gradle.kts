@@ -19,6 +19,7 @@ include(
     "bc:wishlist",
     "bc:image",
     "bc:wallet",
+    "bc:order",
     "bc:core",
     "bc:settlement",
     "bc:notification",
