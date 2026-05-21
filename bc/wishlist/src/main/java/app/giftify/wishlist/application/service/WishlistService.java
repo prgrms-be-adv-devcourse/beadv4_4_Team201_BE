@@ -3,8 +3,8 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.wishlist.readmodel.MemberView;
+import app.giftify.wishlist.readmodel.MemberViewRepository;
 import app.giftify.shared.api.paging.Page;
 import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
@@ -39,7 +39,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
     private final FriendshipVerificationPort friendshipVerificationPort;
     private final ProductSupport productSupport;
     private final WishlistSupport wishlistSupport;
-    private final MemberRepository memberRepository;
+    private final MemberViewRepository memberRepository;
 
     @Override
     @Transactional
@@ -128,7 +128,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
                 .distinct()
                 .toList();
         Map<Long, String> sellerNicknameMap = memberRepository.findAllById(sellerIds).stream()
-                .collect(Collectors.toMap(Member::getId, Member::getNickname));
+                .collect(Collectors.toMap(MemberView::getId, MemberView::getNickname));
 
         // 삭제된 상품은 목록에서 제외
         return items.stream()
@@ -152,7 +152,7 @@ public class WishlistService implements GetWishlistUseCase, UpdateWishlistSettin
 
     private String findNickname(Long memberId) {
         return memberRepository.findById(memberId)
-                .map(Member::getNickname)
+                .map(MemberView::getNickname)
                 .orElse(null);
     }
 }

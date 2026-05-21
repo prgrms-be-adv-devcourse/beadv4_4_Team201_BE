@@ -1,9 +1,9 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.product.application.support.ProductSupport;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.api.response.RsData;
+import app.giftify.wishlist.readmodel.MemberView;
+import app.giftify.wishlist.readmodel.MemberViewRepository;
 import app.giftify.wishlist.adapter.in.web.responseDto.MemberWishlistSummaryResponse;
 import app.giftify.wishlist.application.port.in.GetPublicWishlistUseCase;
 import app.giftify.wishlist.core.domain.Wishlist;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PublicWishlistController implements PublicWishlistV2ApiSpec {
     private final GetPublicWishlistUseCase getPublicWishlistUseCase;
-    private final MemberRepository memberRepository;
+    private final MemberViewRepository memberRepository;
     private final ProductSupport productSupport;
 
     // TODO 코드 제거 or 쓸거면 WishlistController 로 옮기기
@@ -38,7 +38,7 @@ public class PublicWishlistController implements PublicWishlistV2ApiSpec {
                 : memberRepository.findByNicknameContainingIgnoreCase(nickname);
 
         // memberIds 추출 → PUBLIC 위시리스트 보유자 필터
-        var memberIds = members.stream().map(Member::getId).toList();
+        var memberIds = members.stream().map(MemberView::getId).toList();
         var publicWishlists = getPublicWishlistUseCase.findPublicWishlists(memberIds);
         var publicMemberIds = publicWishlists.stream().map(Wishlist::getMemberId).collect(Collectors.toSet());
 

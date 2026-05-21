@@ -5,7 +5,6 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductNotActiveException;
 import app.giftify.product.domain.exception.ProductOutOfStockException;
-import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.wishlist.WishlistItemRemovedEvent;
 import app.giftify.shared.domain.vo.WishlistItemSnapshot;
@@ -56,9 +55,6 @@ class WishlistItemServiceTest {
 
     @Mock
     private WishlistSupport wishlistSupport;
-
-    @Mock
-    private MemberRepository memberRepository;
 
     @Mock
     EventPublisher eventPublisher;

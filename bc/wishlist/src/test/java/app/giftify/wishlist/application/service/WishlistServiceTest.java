@@ -3,8 +3,8 @@ package app.giftify.wishlist.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.wishlist.readmodel.MemberView;
+import app.giftify.wishlist.readmodel.MemberViewRepository;
 import app.giftify.shared.api.paging.Page;
 import app.giftify.shared.api.paging.PageRequest;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
@@ -57,7 +57,7 @@ class WishlistServiceTest {
     private WishlistSupport wishlistSupport;
 
     @Mock
-    private MemberRepository memberRepository;
+    private MemberViewRepository memberRepository;
 
     @InjectMocks
     private WishlistService wishlistService;
@@ -155,10 +155,10 @@ class WishlistServiceTest {
                     .build();
 
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
+            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new MemberView(MEMBER_ID, "나")));
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(List.of(item), 1));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
-            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new MemberView(99L, "테스트판매자")));
 
             // when
             WishlistOverview result = wishlistService.getMyWishlistOverview(MEMBER_ID, DEFAULT_PAGE_REQUEST);
@@ -185,7 +185,7 @@ class WishlistServiceTest {
                     .build();
 
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
+            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new MemberView(MEMBER_ID, "나")));
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(Collections.emptyList(), 0));
 
             // when
@@ -229,11 +229,11 @@ class WishlistServiceTest {
                     .build();
 
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
+            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new MemberView(MEMBER_ID, "나")));
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(List.of(existingItem, deletedItem), 2));
             // deletedProductId에 해당하는 상품은 반환하지 않음 (삭제됨)
             given(productSupport.findAllById(List.of(PRODUCT_ID, deletedProductId))).willReturn(List.of(product));
-            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new MemberView(99L, "테스트판매자")));
 
             // when
             WishlistOverview result = wishlistService.getMyWishlistOverview(MEMBER_ID, DEFAULT_PAGE_REQUEST);
@@ -275,7 +275,7 @@ class WishlistServiceTest {
                     .build();
             given(wishlistItemRepositoryPort.findByWishlistId(WISHLIST_ID, DEFAULT_PAGE_REQUEST)).willReturn(Page.of(List.of(item), 1));
             given(productSupport.findAllById(List.of(PRODUCT_ID))).willReturn(List.of(product));
-            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new Member(99L, "테스트판매자")));
+            given(memberRepository.findAllById(List.of(99L))).willReturn(List.of(new MemberView(99L, "테스트판매자")));
         }
 
         @Test
@@ -285,7 +285,7 @@ class WishlistServiceTest {
             Wishlist wishlist = createWishlist(MEMBER_ID, Visibility.PRIVATE);
             given(wishlistSupport.getWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
             given(wishlistSupport.getOrCreateWishlistByMemberId(MEMBER_ID)).willReturn(wishlist);
-            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new Member(MEMBER_ID, "나")));
+            given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(new MemberView(MEMBER_ID, "나")));
             stubItemsAndProducts();
 
             // when
@@ -301,7 +301,7 @@ class WishlistServiceTest {
             // given
             Wishlist wishlist = createWishlist(TARGET_MEMBER_ID, Visibility.PUBLIC);
             given(wishlistSupport.getWishlistByMemberId(TARGET_MEMBER_ID)).willReturn(wishlist);
-            given(memberRepository.findById(TARGET_MEMBER_ID)).willReturn(Optional.of(new Member(TARGET_MEMBER_ID, "타겟유저")));
+            given(memberRepository.findById(TARGET_MEMBER_ID)).willReturn(Optional.of(new MemberView(TARGET_MEMBER_ID, "타겟유저")));
             stubItemsAndProducts();
 
             // when
@@ -342,7 +342,7 @@ class WishlistServiceTest {
             Wishlist wishlist = createWishlist(TARGET_MEMBER_ID, Visibility.FRIENDS_ONLY);
             given(wishlistSupport.getWishlistByMemberId(TARGET_MEMBER_ID)).willReturn(wishlist);
             given(friendshipVerificationPort.areFriends(MEMBER_ID, TARGET_MEMBER_ID)).willReturn(true);
-            given(memberRepository.findById(TARGET_MEMBER_ID)).willReturn(Optional.of(new Member(TARGET_MEMBER_ID, "타겟유저")));
+            given(memberRepository.findById(TARGET_MEMBER_ID)).willReturn(Optional.of(new MemberView(TARGET_MEMBER_ID, "타겟유저")));
             stubItemsAndProducts();
 
             // when
@@ -359,7 +359,7 @@ class WishlistServiceTest {
             Wishlist wishlist = createWishlist(TARGET_MEMBER_ID, Visibility.PUBLIC);
             given(wishlistSupport.getWishlistByMemberId(TARGET_MEMBER_ID)).willReturn(wishlist);
             given(friendshipVerificationPort.areFriends(MEMBER_ID, TARGET_MEMBER_ID)).willReturn(true);
-            given(memberRepository.findById(TARGET_MEMBER_ID)).willReturn(Optional.of(new Member(TARGET_MEMBER_ID, "타겟유저")));
+            given(memberRepository.findById(TARGET_MEMBER_ID)).willReturn(Optional.of(new MemberView(TARGET_MEMBER_ID, "타겟유저")));
             stubItemsAndProducts();
 
             // when
