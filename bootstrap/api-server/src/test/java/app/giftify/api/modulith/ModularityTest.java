@@ -13,7 +13,7 @@ class ModularityTest {
 	static final ApplicationModules MODULES = ApplicationModules.of(GiftifyApplication.class);
 
 	@Test
-	@Disabled("MS4 T10.5 — 위반 점진 수정 중. 수정 완료 후 @Disabled 제거.")
+	@Disabled("후속 task: 17개 모듈 NamedInterface 일괄 도입 후 활성화. docs/reports/2026-05-21-modulith-verify-violations.md 참조.")
 	@DisplayName("Modulith 모듈 경계 위반이 없어야 한다")
 	void verifyModuleBoundaries() {
 		MODULES.verify();
