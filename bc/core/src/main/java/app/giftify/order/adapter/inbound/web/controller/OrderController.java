@@ -1,7 +1,7 @@
 package app.giftify.order.adapter.inbound.web.controller;
 
-import app.giftify.facade.CoreFacade;
 import app.giftify.order.adapter.inbound.web.dto.request.OrderCancelItemsRequest;
+import app.giftify.order.application.inbound.ParticipateFundingUseCase;
 import app.giftify.order.application.inbound.command.ParticipateFundingCommand;
 import app.giftify.order.application.inbound.command.ParticipateFundingItemCommand;
 import app.giftify.order.application.inbound.vo.PlaceOrderResult;
@@ -34,7 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController implements OrderV2ApiSpec {
 
-    private final CoreFacade coreFacade;
+    private final ParticipateFundingUseCase participateFundingUseCase;
     private final OrderService orderService;
 
     private static final String PREFIX = "ORDER";
@@ -53,7 +53,7 @@ public class OrderController implements OrderV2ApiSpec {
                 getFundingItemCommands(orderRequest)
         );
 
-        PlaceOrderResult response = coreFacade.participateFunding(command);
+        PlaceOrderResult response = participateFundingUseCase.participateFunding(command);
 
         return ResponseEntity.ok(RsData.success(response));
     }
