@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,8 +99,8 @@ class CoreFacadeTest {
 			InOrder inOrder = inOrder(fundingFacade, orderService, createPaymentService);
 			inOrder.verify(orderService).createOrder(any());
 			inOrder.verify(createPaymentService).create(any());
-			inOrder.verify(orderService).markOrderAsPaid(any());
 			inOrder.verify(fundingFacade).processFundingActions(orderSnapshot);
+			verify(orderService, never()).markOrderAsPaid(any());
 		}
 
 		@Test

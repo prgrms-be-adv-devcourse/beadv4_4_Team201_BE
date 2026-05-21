@@ -3,6 +3,7 @@ package app.giftify.order.adapter.inbound.event;
 import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
+import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
 import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.DomainException;
@@ -17,6 +18,10 @@ import app.giftify.shared.domain.event.order.OrderConfirmFailedEvent;
 import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentCancelData;
+import app.giftify.shared.domain.event.payment.PaymentSuccessData;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
+import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.shared.domain.type.PaymentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -219,6 +224,60 @@ class OrderEventListenerTest {
             verify(eventPublisher).publish(captor.capture());
             assertThat(captor.getValue().getFundingId()).isEqualTo(FUNDING_ID);
             assertThat(captor.getValue().getReason()).isEqualTo("예기치 못한 오류 발생");
+        }
+    }
+
+    @Nested
+    @DisplayName("PaymentSucceededEvent 처리 (on(PaymentSucceededEvent))")
+    class OnPaymentSucceededEvent {
+
+        private static final Long PAYMENT_ID = 42L;
+        private static final Long ORDER_ID = 100L;
+        private static final Long MEMBER_ID = 1L;
+        private static final String ORDER_NUMBER = "ORD-100";
+        private static final String TRANSACTION_KEY = "tk-1";
+        private static final String PAYMENT_KEY = "pk-1";
+
+        private PaymentSucceededEvent eventOf(String orderNumber, Long paymentId, String transactionKey) {
+            PaymentSuccessData data = new PaymentSuccessData(
+                    paymentId, ORDER_ID, MEMBER_ID, orderNumber,
+                    Money.of(10000L),
+                    PaymentMethod.CARD, PaymentType.FUNDING,
+                    PAYMENT_KEY, transactionKey
+            );
+            return PaymentSucceededEvent.create(data);
+        }
+
+        @Test
+        @DisplayName("성공: PaymentSucceededEvent 수신 시 markOrderAsPaid 가 호출된다")
+        void on_PaymentSucceededEvent_calls_markOrderAsPaid() {
+            // given
+            PaymentSucceededEvent event = eventOf(ORDER_NUMBER, PAYMENT_ID, TRANSACTION_KEY);
+
+            // when
+            orderEventListener.on(event);
+
+            // then
+            ArgumentCaptor<MarkOrderAsPaidCommand> captor = ArgumentCaptor.forClass(MarkOrderAsPaidCommand.class);
+            verify(orderService).markOrderAsPaid(captor.capture());
+            MarkOrderAsPaidCommand cmd = captor.getValue();
+            assertThat(cmd.orderNumber()).isEqualTo(ORDER_NUMBER);
+            assertThat(cmd.paymentId()).isEqualTo(PAYMENT_ID);
+            assertThat(cmd.lastTransactionKey()).isEqualTo(TRANSACTION_KEY);
+        }
+
+        @Test
+        @DisplayName("재시도: 재시도 가능한 InfraException 발생 시 markOrderAsPaid 가 재호출된다")
+        void on_PaymentSucceededEvent_retries_on_retryable_infra_exception() {
+            // given
+            PaymentSucceededEvent event = eventOf(ORDER_NUMBER, PAYMENT_ID, TRANSACTION_KEY);
+            InfraException retryable = new InfraException(InfraErrorCode.DB_LOCK_TIMEOUT);
+            willThrow(retryable).given(orderService).markOrderAsPaid(any());
+
+            // when & then
+            assertThatThrownBy(() -> orderEventListener.on(event))
+                    .isInstanceOf(InfraException.class);
+            verify(orderService, atLeast(2)).markOrderAsPaid(any());
         }
     }
 }

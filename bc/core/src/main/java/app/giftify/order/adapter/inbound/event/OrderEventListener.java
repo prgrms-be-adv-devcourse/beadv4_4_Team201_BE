@@ -6,6 +6,7 @@ import app.giftify.order.application.FundingOrderService;
 import app.giftify.order.application.OrderService;
 import app.giftify.order.application.inbound.command.CancelFundingOrderCommand;
 import app.giftify.order.application.inbound.command.ConfirmFundingOrderCommand;
+import app.giftify.order.application.inbound.command.MarkOrderAsPaidCommand;
 import app.giftify.shared.api.exception.BusinessException;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.domain.event.EventPublisher;
@@ -18,7 +19,11 @@ import app.giftify.shared.domain.event.order.OrderConfirmedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
 import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
 import app.giftify.shared.domain.event.payment.PaymentEvent;
+import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
 import app.giftify.shared.domain.vo.Money;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.retry.annotation.Backoff;
@@ -35,6 +40,23 @@ public class OrderEventListener {
     private final OrderService orderService;
     private final FundingOrderService fundingOrderService;
 	private final EventPublisher eventPublisher;
+
+	@Retryable(
+			retryFor = InfraException.class,
+			exceptionExpression = "#root.errorCode.isRetryable",
+			backoff = @Backoff(delay = 100, multiplier = 2.0, random = true)
+	)
+	@ApplicationModuleListener
+	public void on(PaymentSucceededEvent event) {
+		log.info("[이벤트 수신] 결제 성공 -> 주문 PAID 전이 시작. OrderId: {}", event.data().orderId());
+		MarkOrderAsPaidCommand command = new MarkOrderAsPaidCommand(
+				event.data().orderNumber(),
+				event.data().paymentId(),
+				event.data().transactionKey(),
+				LocalDateTime.ofInstant(event.time(), ZoneId.systemDefault())
+		);
+		orderService.markOrderAsPaid(command);
+	}
 
 	@Retryable(
 			retryFor = InfraException.class,
@@ -116,6 +138,12 @@ public class OrderEventListener {
 	/**
 	 * 모든 재시도 실패 시 실행되는 공통 복구 로직
 	 */
+	@Recover
+	public void recover(InfraException e, PaymentSucceededEvent event) {
+		log(e, event);
+		throw e;
+	}
+
 	@Recover
 	public void recover(InfraException e, PaymentCanceledEvent event) {
 		log(e, event);
