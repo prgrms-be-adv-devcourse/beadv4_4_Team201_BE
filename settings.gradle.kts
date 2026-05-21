@@ -20,6 +20,7 @@ include(
     "bc:image",
     "bc:wallet",
     "bc:order",
+    "bc:payment",
     "bc:core",
     "bc:settlement",
     "bc:notification",
