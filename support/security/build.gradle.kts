@@ -1,6 +1,8 @@
 // Support Security - 보안 유틸리티
 
 dependencies {
+    compileOnly("org.springframework.modulith:spring-modulith-api:${libs.versions.springModulith.get()}")
+
     implementation(project(":support:common"))
     implementation(project(":bc:shared"))
     implementation(libs.spring.boot.starter.web)

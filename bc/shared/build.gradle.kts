@@ -5,6 +5,8 @@ plugins {
 }
 
 dependencies {
+    compileOnly("org.springframework.modulith:spring-modulith-api:${libs.versions.springModulith.get()}")
+
     implementation(libs.spring.modulith.events.api)
     implementation(libs.jmolecules.events)
     implementation("com.fasterxml.jackson.core:jackson-annotations")

@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    compileOnly("org.springframework.modulith:spring-modulith-api:${libs.versions.springModulith.get()}")
+
     implementation(project(":bc:shared"))
     // Minimal Spring
     implementation(libs.spring.boot.starter)
