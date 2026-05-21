@@ -7,8 +7,8 @@ import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberR
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.replica.MemberReplica;
-import app.giftify.replica.MemberReplicaRepository;
+import app.giftify.funding.readmodel.MemberView;
+import app.giftify.funding.readmodel.MemberViewRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,17 +44,17 @@ class FundingContributeUseCaseTest {
     private FundingParticipantMemberRepository fundingParticipantMemberRepository;
 
     @Mock
-    private MemberReplicaRepository memberReplicaRepository;
+    private MemberViewRepository memberViewRepository;
 
     @Mock
     private EventPublisher eventPublisher;
 
-    private MemberReplica participant;
+    private MemberView participant;
     private String nickname = "testUser";
 
     @BeforeEach
     void setUp() {
-        participant = mock(MemberReplica.class);
+        participant = mock(MemberView.class);
         // note: participant.getNickname()은 필요한 테스트에서만 given을 설정하도록 변경
     }
 
@@ -73,7 +73,7 @@ class FundingContributeUseCaseTest {
         given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         
         given(participant.getNickname()).willReturn(nickname);
-        given(memberReplicaRepository.findById(participantId)).willReturn(Optional.of(participant));
+        given(memberViewRepository.findById(participantId)).willReturn(Optional.of(participant));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(null);
 
         // when
@@ -106,7 +106,7 @@ class FundingContributeUseCaseTest {
         FundingParticipantMember member = mock(FundingParticipantMember.class);
 
         given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
-        given(memberReplicaRepository.findById(participantId)).willReturn(Optional.of(participant));
+        given(memberViewRepository.findById(participantId)).willReturn(Optional.of(participant));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(member);
 
         // when
@@ -136,7 +136,7 @@ class FundingContributeUseCaseTest {
 
         given(fundingRepository.findAllById(anyList())).willReturn(List.of(funding));
         given(participant.getNickname()).willReturn(nickname);
-        given(memberReplicaRepository.findById(participantId)).willReturn(Optional.of(participant));
+        given(memberViewRepository.findById(participantId)).willReturn(Optional.of(participant));
         given(fundingParticipantMemberRepository.findByFundingAndParticipantId(funding, participantId)).willReturn(null);
 
         // when
@@ -157,8 +157,8 @@ class FundingContributeUseCaseTest {
         List<FundingContributeRequest> requests = List.of(request);
 
         given(fundingRepository.findAllById(anyList())).willReturn(Collections.emptyList());
-        // memberReplicaRepository.findById()는 예외 발생 전에 호출되므로 모킹이 필요합니다.
-        given(memberReplicaRepository.findById(participantId)).willReturn(Optional.of(participant));
+        // memberViewRepository.findById()는 예외 발생 전에 호출되므로 모킹이 필요합니다.
+        given(memberViewRepository.findById(participantId)).willReturn(Optional.of(participant));
 
         // when & then
         assertThatThrownBy(() -> fundingContributeUseCase.contribute(requests, participantId))

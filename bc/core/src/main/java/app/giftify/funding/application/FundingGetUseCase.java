@@ -10,8 +10,8 @@ import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberR
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.replica.MemberReplica;
-import app.giftify.replica.MemberReplicaRepository;
+import app.giftify.funding.readmodel.MemberView;
+import app.giftify.funding.readmodel.MemberViewRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.port.FriendshipVerificationPort;
 import app.giftify.shared.domain.type.FundingStatus;
@@ -32,7 +32,7 @@ public class FundingGetUseCase {
 
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository participantMemberRepository;
-    private final MemberReplicaRepository memberReplicaRepository;
+    private final MemberViewRepository memberViewRepository;
     private final FriendshipVerificationPort friendshipVerificationPort;
 
     /**
@@ -42,7 +42,7 @@ public class FundingGetUseCase {
         Funding funding = fundingRepository.findById(id).orElseThrow(() ->
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, id));
 
-        MemberReplica receiver = memberReplicaRepository.findById(funding.getReceiverId()).orElseThrow(()->
+        MemberView receiver = memberViewRepository.findById(funding.getReceiverId()).orElseThrow(()->
                 new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
 
         // 진행 중이거나 목표 달성한 펀딩만 조회 가능
@@ -69,13 +69,13 @@ public class FundingGetUseCase {
                 .map(Funding::getReceiverId)
                 .collect(Collectors.toSet());
 
-        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
-                .collect(Collectors.toMap(MemberReplica::getId, r -> r));
+        Map<Long, MemberView> receivers = memberViewRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberView::getId, r -> r));
 
         List<FundingResponseDto> content = fundings.stream()
             .map(funding -> {
                 String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
-                        .map(MemberReplica::getNickname)
+                        .map(MemberView::getNickname)
                         .orElse("알 수 없음");
                 return FundingResponseDto.fromEntity(funding, receiverNickname);
             })
@@ -92,7 +92,7 @@ public class FundingGetUseCase {
                 new FundingException(FundingErrorCode.FUNDING_NOT_FOUND, + fundingId)
         );
 
-        MemberReplica receiver = memberReplicaRepository.findById(funding.getReceiverId()).orElseThrow(()->
+        MemberView receiver = memberViewRepository.findById(funding.getReceiverId()).orElseThrow(()->
                 new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
 
         // 참여 여부 확인
@@ -119,15 +119,15 @@ public class FundingGetUseCase {
                 .map(info -> info.funding().getReceiverId())
                 .collect(Collectors.toSet());
 
-        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
-                .collect(Collectors.toMap(MemberReplica::getId, r-> r));
+        Map<Long, MemberView> receivers = memberViewRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberView::getId, r-> r));
 
         List<ContributeFundingResponseDto> contents =
                 myFundingInfos.stream()
                         .map(info -> {
                             Funding funding = info.funding();
                             String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
-                                    .map(MemberReplica::getNickname)
+                                    .map(MemberView::getNickname)
                                     .orElse("알 수 없음");
 
                             return ContributeFundingResponseDto.fromEntity(funding, info.myContribution(), receiverNickname);
@@ -189,7 +189,7 @@ public class FundingGetUseCase {
         Page<Funding> fundingPage = fundingRepository.findAllByReceiverIdAndStatusIn(friendId, List.of(FundingStatus.IN_PROGRESS), pageable);
         List<Funding> fundings = fundingPage.getContent();
 
-        MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(() ->
+        MemberView friend = memberViewRepository.findById(friendId).orElseThrow(() ->
                 new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
 
         List<FundingResponseDto> content = fundings.stream()
@@ -210,7 +210,7 @@ public class FundingGetUseCase {
         Funding funding = fundingRepository.findByIdAndReceiverIdAndStatus(id, friendId, FundingStatus.IN_PROGRESS)
                 .orElseThrow(()-> new FundingException(FundingErrorCode.FUNDING_NOT_FOUND));
 
-        MemberReplica friend = memberReplicaRepository.findById(friendId).orElseThrow(()->
+        MemberView friend = memberViewRepository.findById(friendId).orElseThrow(()->
                 new FundingException(FundingErrorCode.RECEIVER_NOT_FOUND));
 
         return FundingResponseDto.fromEntity(funding, friend.getNickname());
@@ -233,13 +233,13 @@ public class FundingGetUseCase {
                 .map(Funding::getReceiverId)
                 .collect(Collectors.toSet());
 
-        Map<Long, MemberReplica> receivers = memberReplicaRepository.findAllById(receiverIds).stream()
-                .collect(Collectors.toMap(MemberReplica::getId, r -> r));
+        Map<Long, MemberView> receivers = memberViewRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberView::getId, r -> r));
 
         List<FundingResponseDto> content = fundings.stream()
                 .map(funding -> {
                     String receiverNickname = Optional.ofNullable(receivers.get(funding.getReceiverId()))
-                            .map(MemberReplica::getNickname)
+                            .map(MemberView::getNickname)
                             .orElse("알 수 없음");
                     return FundingResponseDto.fromEntity(funding, receiverNickname);
                 })

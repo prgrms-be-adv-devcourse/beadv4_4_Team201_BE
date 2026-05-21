@@ -2,9 +2,9 @@ package app.giftify.funding.application;
 
 import app.giftify.funding.adapter.inbound.dto.FundingContributeRequest;
 import app.giftify.funding.adapter.outbound.jpa.Funding;
-import app.giftify.replica.MemberReplica;
 import app.giftify.funding.adapter.outbound.jpa.FundingParticipantMember;
-import app.giftify.replica.MemberReplicaRepository;
+import app.giftify.funding.readmodel.MemberView;
+import app.giftify.funding.readmodel.MemberViewRepository;
 import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class FundingContributeUseCase {
     private final FundingRepository fundingRepository;
     private final FundingParticipantMemberRepository fundingParticipantMemberRepository;
-    private final MemberReplicaRepository memberReplicaRepository;
+    private final MemberViewRepository memberViewRepository;
     private final EventPublisher eventPublisher;
 
 
@@ -40,8 +40,8 @@ public class FundingContributeUseCase {
                 .collect(Collectors.toMap(Funding::getId, funding -> funding));
 
         // 닉네임 조회
-        String nickName = memberReplicaRepository.findById(participantId)
-                .map(MemberReplica::getNickname)
+        String nickName = memberViewRepository.findById(participantId)
+                .map(MemberView::getNickname)
                 .orElse("Unknown");
 
         for (FundingContributeRequest request : requests) {
