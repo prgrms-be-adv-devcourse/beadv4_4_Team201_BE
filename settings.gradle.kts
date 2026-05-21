@@ -13,7 +13,6 @@ include(
     "bc",
     "bc:shared",
     "bc:member",
-    "bc:catalog",
     "bc:cart",
     "bc:product",
     "bc:wishlist",
@@ -22,7 +21,6 @@ include(
     "bc:order",
     "bc:payment",
     "bc:funding",
-    "bc:core",
     "bc:settlement",
     "bc:notification",
 )

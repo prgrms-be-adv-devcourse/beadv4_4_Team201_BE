@@ -8,7 +8,6 @@ plugins {
 dependencies {
     implementation(project(":bc:shared"))
     implementation(project(":bc:member"))
-    implementation(project(":bc:catalog"))
     implementation(project(":bc:cart"))
     implementation(project(":bc:product"))
     implementation(project(":bc:wishlist"))
@@ -17,7 +16,6 @@ dependencies {
     implementation(project(":bc:order"))
     implementation(project(":bc:payment"))
     implementation(project(":bc:funding"))
-    implementation(project(":bc:core"))
     implementation(project(":bc:settlement"))
     implementation(project(":bc:notification"))
     implementation(project(":support:common"))
