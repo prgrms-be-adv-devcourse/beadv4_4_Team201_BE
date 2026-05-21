@@ -48,15 +48,42 @@ val jacocoExclusions = listOf(
     "**/entity/**",
     "**/*Entity.class",
     "**/*JpaEntity.class",
+    "**/readmodel/MemberView.class",
+    "**/readmodel/MemberView$*.class",
 
     // 예외 및 에러코드
     "**/exception/**",
     "**/*Exception.class",
     "**/*ErrorCode.class",
 
+    // 도메인 데이터 캐리어 (Behavior 없음 -- VO / Enum / Event 객체)
+    "**/domain/vo/**",
+    "**/domain/type/**",
+    "**/domain/event/**",
+    "**/domain/port/**",
+    "**/event/**",
+    "**/*Event.class",
+    "**/*Event$*.class",
+    "**/*EventData.class",
+    "**/*Snapshot.class",
+    "**/*Snapshot$*.class",
+
+    // Spring Boot 진입점
+    "**/GiftifyApplication.class",
+
+    // 인프라 어댑터 (외부 시스템 호출 -- integration test 영역)
+    "**/scheduler/**",                  // 스케줄러 어댑터
+    "**/batch/**",                      // Spring Batch writer/partitioner/listener
+    "**/adapter/outbound/elasticsearch/**",  // ES 어댑터 (ProductDocument 등)
+    "**/adapter/outbound/pg/**",        // PG 어댑터 (Toss 등)
+    "**/*RepositoryImpl.class",         // JPA Repository 구현체
+    "**/*ApiSpec.class",                // OpenAPI 인터페이스 spec
+    "**/*ApiSpec$*.class",
+
     // 기타
     "**/*Mapper.class",
-    "**/*DataInitializer.class"
+    "**/*DataInitializer.class",
+    "**/Q*.class"                       // QueryDSL 생성 클래스
 )
 
 // =============================================================================
@@ -149,11 +176,16 @@ subprojects {
 // =============================================================================
 // Jacoco 집계 리포트 설정
 // =============================================================================
+// aggregated 측정에서 면제 -- 데이터 전용/부트스트랩 모듈 (Behavior 거의 없음)
+val aggregatedExcludedModules = setOf("shared", "api-server")
+
 tasks.register<JacocoReport>("jacocoAggregatedReport") {
     group = "verification"
     description = "Generates aggregated Jacoco coverage report for all subprojects"
 
-    val jacocoSubprojects = subprojects.filter { it.name !in containerModules }
+    val jacocoSubprojects = subprojects.filter {
+        it.name !in containerModules && it.name !in aggregatedExcludedModules
+    }
 
     dependsOn(jacocoSubprojects.map { it.tasks.matching { task -> task.name == "test" } })
 
