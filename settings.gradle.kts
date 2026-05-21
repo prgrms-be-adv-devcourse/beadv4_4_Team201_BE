@@ -21,6 +21,7 @@ include(
     "bc:wallet",
     "bc:order",
     "bc:payment",
+    "bc:funding",
     "bc:core",
     "bc:settlement",
     "bc:notification",

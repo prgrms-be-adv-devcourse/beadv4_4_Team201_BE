@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":bc:wallet"))
     implementation(project(":bc:order"))
     implementation(project(":bc:payment"))
+    implementation(project(":bc:funding"))
     implementation(project(":bc:core"))
     implementation(project(":bc:settlement"))
     implementation(project(":bc:notification"))
