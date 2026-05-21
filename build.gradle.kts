@@ -27,9 +27,14 @@ val jacocoExclusions = listOf(
 
     // DTO 클래스 (Request, Response, Command, Query, Result)
     "**/dto/**",
+    "**/requestDto/**",                 // bc/product 등 inbound 요청 DTO 디렉토리
+    "**/responseDto/**",                // bc/product 등 inbound 응답 DTO 디렉토리
     "**/inbound/*Command.class",
     "**/inbound/*Query.class",
     "**/inbound/*Result.class",
+    "**/port/in/*Command.class",        // bc/product application/port/in/*Command
+    "**/port/in/*Query.class",
+    "**/port/in/*Result.class",
     "**/pg/*Result.class",              // PG 응답 DTO (TossConfirmResult 등)
 
     // UseCase/Port 인터페이스
@@ -54,6 +59,8 @@ val jacocoExclusions = listOf(
     "**/exception/**",
     "**/*Exception.class",
     "**/*ErrorCode.class",
+    "**/*ExceptionHandler.class",       // @RestControllerAdvice — @WebMvcTest 영역
+    "**/*ExceptionHandler$*.class",
 
     // 도메인 데이터 캐리어 (Behavior 없음 -- VO / Enum / Event 객체)
     "**/domain/vo/**",
@@ -61,6 +68,8 @@ val jacocoExclusions = listOf(
     "**/domain/event/**",
     "**/domain/port/**",
     "**/event/**",
+    "**/application/inbound/vo/**",     // bc/order 등 application 레이어 VO
+    "**/application/inbound/command/**",// bc/order 등 application 레이어 command DTO
     "**/*Event.class",
     "**/*Event$*.class",
     "**/*EventData.class",
