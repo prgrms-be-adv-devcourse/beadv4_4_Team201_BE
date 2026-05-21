@@ -14,7 +14,7 @@ import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductErrorCode;
 import app.giftify.product.domain.exception.ProductException;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.product.readmodel.MemberViewRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
 import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
@@ -51,7 +51,7 @@ class ProductServiceTest {
     private ProductRepositoryPort productRepositoryPort;
 
     @Mock
-    private MemberRepository memberRepository;
+    private MemberViewRepository memberRepository;
 
     @Mock
     private ProductStockHistoryRepositoryPort productStockHistoryRepositoryPort;

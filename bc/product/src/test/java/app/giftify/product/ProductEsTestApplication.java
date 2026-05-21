@@ -23,7 +23,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(
         basePackages = {
                 "app.giftify.product",
-                "app.giftify.replica",
                 "app.giftify.support.jpa"
         },
         excludeFilters = {
@@ -36,13 +35,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = {
         "app.giftify.product",
-        "app.giftify.replica",
         "app.giftify.support.jpa"
 })
 @EnableElasticsearchRepositories(basePackages = "app.giftify.product")
 @EntityScan(basePackages = {
         "app.giftify.product",
-        "app.giftify.replica",
         "app.giftify.support.jpa"
 })
 public class ProductEsTestApplication {

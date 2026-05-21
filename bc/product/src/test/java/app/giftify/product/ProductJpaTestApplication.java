@@ -33,7 +33,6 @@ import java.util.List;
 @ComponentScan(
         basePackages = {
                 "app.giftify.product",
-                "app.giftify.replica",
                 "app.giftify.support.jpa"
         },
         excludeFilters = {
@@ -50,12 +49,10 @@ import java.util.List;
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = {
         "app.giftify.product",
-        "app.giftify.replica",
         "app.giftify.support.jpa"
 })
 @EntityScan(basePackages = {
         "app.giftify.product",
-        "app.giftify.replica",
         "app.giftify.support.jpa"
 })
 public class ProductJpaTestApplication {

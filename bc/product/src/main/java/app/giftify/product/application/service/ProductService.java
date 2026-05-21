@@ -12,8 +12,8 @@ import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductPolicy;
 import app.giftify.product.domain.event.ProductAcceptedEvent;
 import app.giftify.product.domain.exception.ProductException;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.product.readmodel.MemberView;
+import app.giftify.product.readmodel.MemberViewRepository;
 import app.giftify.shared.api.exception.InfraException;
 import app.giftify.shared.api.paging.PageResponse;
 import app.giftify.shared.domain.event.EventPublisher;
@@ -42,7 +42,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
     private final ProductRepositoryPort productRepositoryPort;
     private final ProductStockHistoryRepositoryPort productStockHistoryRepositoryPort;
-    private final MemberRepository memberRepository;
+    private final MemberViewRepository memberRepository;
     private final EventPublisher eventPublisher;
     private final ProductSupport productSupport;
     private final FundingClientPort fundingClientPort;
@@ -51,7 +51,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     @Override
     @Transactional
     public ProductResult createProduct(Long sellerId, ProductCreateCommand command) {
-        Member seller = memberRepository.findById(sellerId)
+        MemberView seller = memberRepository.findById(sellerId)
                 .orElseThrow(() -> new ProductException(SELLER_NOT_FOUND));
 
         Product product = Product.builder()
@@ -76,7 +76,7 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
     public ProductResult getProduct(Long productId) {
         Product product = productSupport.findById(productId);
 
-        Member seller = memberRepository.findById(product.getSellerId())
+        MemberView seller = memberRepository.findById(product.getSellerId())
                 .orElseThrow(() -> new ProductException(SELLER_NOT_FOUND));
 
         if (!product.getStatus().equals(ACTIVE)) {
@@ -290,8 +290,8 @@ public class ProductService implements ProductCreateUseCase, ProductGetUseCase, 
 
         return memberRepository.findAllById(sellerIds).stream()
                 .collect(Collectors.toMap(
-                        Member::getId,
-                        Member::getNickname
+                        MemberView::getId,
+                        MemberView::getNickname
                 ));
     }
 

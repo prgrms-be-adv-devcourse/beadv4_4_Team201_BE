@@ -14,8 +14,8 @@ import app.giftify.product.domain.ProductSearchSortType;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductErrorCode;
 import app.giftify.product.domain.exception.ProductException;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.product.readmodel.MemberView;
+import app.giftify.product.readmodel.MemberViewRepository;
 import app.giftify.shared.api.paging.PageResponse;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
@@ -43,14 +43,14 @@ public class ProductEsAdapter implements ProductEsPort {
     private final ProductEsRepository productEsRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final MemberRepository memberRepository;
+    private final MemberViewRepository memberRepository;
     private final ElasticsearchOperations elasticsearchOperations;
     private final ProductSearchQueryBuilder queryBuilder;
 
     @Override
     public void save(Product product) {
         String sellerNickname = memberRepository.findById(product.getSellerId())
-                .map(Member::getNickname)
+                .map(MemberView::getNickname)
                 .orElse("UNKNOWN");
         ProductDocument document = ProductEsMapper.toDocument(product, sellerNickname);
 
@@ -65,7 +65,7 @@ public class ProductEsAdapter implements ProductEsPort {
                 .toList();
 
         Map<Long, String> sellerNicknameMap = memberRepository.findAll().stream()
-                .collect(Collectors.toMap(Member::getId, Member::getNickname));
+                .collect(Collectors.toMap(MemberView::getId, MemberView::getNickname));
 
         List<ProductDocument> documents = products.stream().map(
                 product -> {

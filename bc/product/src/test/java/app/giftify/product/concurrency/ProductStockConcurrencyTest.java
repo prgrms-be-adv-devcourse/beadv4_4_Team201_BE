@@ -7,8 +7,8 @@ import app.giftify.product.adapter.outbound.jpa.repository.ProductRepository;
 import app.giftify.product.application.service.ProductService;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductException;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.product.readmodel.MemberView;
+import app.giftify.product.readmodel.MemberViewRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class ProductStockConcurrencyTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
+    private MemberViewRepository memberRepository;
 
     // 동시 차감 시 Lost Update가 발생하지 않는다
     @Test
@@ -203,7 +203,7 @@ class ProductStockConcurrencyTest {
         // given
         int initialStock = 100;
 
-        Member seller = memberRepository.saveAndFlush(new Member(9991L, "테스트판매자"));
+        MemberView seller = memberRepository.saveAndFlush(new MemberView(9991L, "테스트판매자"));
 
         ProductJpa product = productRepository.saveAndFlush(
                 ProductJpa.builder()
@@ -358,7 +358,7 @@ class ProductStockConcurrencyTest {
         // given
         int initialStock = 100;
 
-        Member seller = memberRepository.saveAndFlush(new Member(9992L, "테스트판매자2"));
+        MemberView seller = memberRepository.saveAndFlush(new MemberView(9992L, "테스트판매자2"));
 
         ProductJpa product = productRepository.saveAndFlush(
                 ProductJpa.builder()

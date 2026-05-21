@@ -31,8 +31,8 @@ import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.product.readmodel.MemberView;
+import app.giftify.product.readmodel.MemberViewRepository;
 import app.giftify.shared.domain.event.EventPublisher;
 
 @SpringJUnitConfig(ProductServiceCacheSliceTest.SliceConfig.class)
@@ -57,7 +57,7 @@ class ProductServiceCacheSliceTest {
 	@MockitoBean
 	private ProductStockHistoryRepositoryPort productStockHistoryRepositoryPort;
 	@MockitoBean
-	private MemberRepository memberRepository;
+	private MemberViewRepository memberRepository;
 	@MockitoBean
 	private EventPublisher eventPublisher;
 	@MockitoBean
@@ -71,7 +71,7 @@ class ProductServiceCacheSliceTest {
 	private CacheManager cacheManager;
 
 	private Product activeProduct;
-	private Member seller;
+	private MemberView seller;
 
 	@BeforeEach
 	void setUp() {
@@ -200,7 +200,7 @@ class ProductServiceCacheSliceTest {
 		}
 	}
 
-	private Member mockSeller(Long id, String nickname) {
-		return new Member(id, nickname);
+	private MemberView mockSeller(Long id, String nickname) {
+		return new MemberView(id, nickname);
 	}
 }

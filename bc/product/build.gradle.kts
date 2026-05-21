@@ -11,7 +11,6 @@ repositories {
 
 dependencies {
     implementation(project(":bc:shared"))
-    implementation(project(":bc:catalog"))
     implementation(project(":support:common"))
     implementation(project(":support:jpa"))
     implementation(project(":support:security"))
