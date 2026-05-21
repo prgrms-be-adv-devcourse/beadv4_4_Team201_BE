@@ -18,6 +18,7 @@ include(
     "bc:product",
     "bc:wishlist",
     "bc:image",
+    "bc:wallet",
     "bc:core",
     "bc:settlement",
     "bc:notification",
