@@ -9,8 +9,8 @@ import app.giftify.cart.core.domain.exception.CartException;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
+import app.giftify.cart.readmodel.MemberView;
+import app.giftify.cart.readmodel.MemberViewRepository;
 import app.giftify.shared.domain.port.FundingQueryPort;
 import app.giftify.shared.domain.vo.Money;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -53,7 +53,7 @@ class CartServiceTest {
     private WishlistRepositoryPort wishlistRepositoryPort;
 
     @Mock
-    private MemberRepository memberRepository;
+    private MemberViewRepository memberRepository;
 
     @Mock
     private FundingQueryPort fundingQueryPort;
@@ -269,7 +269,7 @@ class CartServiceTest {
         given(wishlistRepositoryPort.findAllById(List.of(wishlistId)))
                 .willReturn(List.of(wishlist));
 
-        Member receiver = mock(Member.class);
+        MemberView receiver = mock(MemberView.class);
         given(receiver.getId()).willReturn(receiverId);
         given(receiver.getNickname()).willReturn("test-receiver");
         given(memberRepository.findAllById(anySet())).willReturn(List.of(receiver));

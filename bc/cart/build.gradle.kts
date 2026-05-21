@@ -11,7 +11,6 @@ repositories {
 
 dependencies {
     implementation(project(":bc:shared"))
-    implementation(project(":bc:catalog"))
     implementation(project(":bc:product"))
     implementation(project(":bc:wishlist"))
     implementation(project(":support:common"))

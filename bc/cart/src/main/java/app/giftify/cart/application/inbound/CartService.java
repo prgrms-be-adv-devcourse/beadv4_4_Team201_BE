@@ -9,11 +9,11 @@ import app.giftify.cart.core.domain.CartItem;
 import app.giftify.cart.core.domain.CartItemAddResult;
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
+import app.giftify.cart.readmodel.MemberView;
+import app.giftify.cart.readmodel.MemberViewRepository;
 import app.giftify.product.application.port.out.ProductRepositoryPort;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.replica.member.Member;
-import app.giftify.replica.member.MemberRepository;
 import app.giftify.shared.domain.port.FundingQueryPort;
 import app.giftify.shared.domain.vo.FundingInfo;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
@@ -46,7 +46,7 @@ public class CartService
 	private final ProductRepositoryPort productRepositoryPort;
 	private final WishlistItemRepositoryPort wishlistItemRepositoryPort;
 	private final WishlistRepositoryPort wishlistRepositoryPort;
-	private final MemberRepository memberRepository;
+	private final MemberViewRepository memberRepository;
     private final FundingQueryPort fundingQueryPort;
 
     @Override
@@ -174,8 +174,8 @@ public class CartService
 		Set<Long> receiverIds = wishlistMap.values().stream()
 				.map(Wishlist::getMemberId)
 				.collect(Collectors.toSet());
-        Map<Long, Member> memberMap = memberRepository.findAllById(receiverIds).stream()
-                .collect(Collectors.toMap(Member::getId, Function.identity()));
+        Map<Long, MemberView> memberMap = memberRepository.findAllById(receiverIds).stream()
+                .collect(Collectors.toMap(MemberView::getId, Function.identity()));
 
 		// 4. 유효한 WishlistItem만 필터링
 		Set<Long> fundingEndedIds = wishlistItemIds.stream()
