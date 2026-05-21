@@ -1,8 +1,26 @@
 -- Product seed data (dev/staging)
 TRUNCATE TABLE products CASCADE;
-TRUNCATE TABLE member_replicas CASCADE;
+TRUNCATE TABLE product_member_views CASCADE;
+TRUNCATE TABLE cart_member_views CASCADE;
+TRUNCATE TABLE wishlist_member_views CASCADE;
 
-INSERT INTO member_replicas (id, nickname)
+INSERT INTO product_member_views (id, nickname)
+VALUES (1, '멍청한돼지0009'),
+       (2, '나른한고양이0013'),
+       (3, '멍청한고양이2013'),
+       (4, '관리자'),
+       (5, '졸린토끼0042'),
+       (6, '배고픈강아지0007');
+
+INSERT INTO cart_member_views (id, nickname)
+VALUES (1, '멍청한돼지0009'),
+       (2, '나른한고양이0013'),
+       (3, '멍청한고양이2013'),
+       (4, '관리자'),
+       (5, '졸린토끼0042'),
+       (6, '배고픈강아지0007');
+
+INSERT INTO wishlist_member_views (id, nickname)
 VALUES (1, '멍청한돼지0009'),
        (2, '나른한고양이0013'),
        (3, '멍청한고양이2013'),
@@ -212,11 +230,25 @@ VALUES
 
 SELECT setval('products_id_seq', 200, false);
 
--- Loadtest: Seller replicas for SELLER accounts (1101-1110)
+-- Loadtest: Seller views for SELLER accounts (1101-1110)
 DO $$
 BEGIN
   IF '${is_staging}' = 'true' THEN
-    INSERT INTO member_replicas (id, nickname)
+    INSERT INTO product_member_views (id, nickname)
+    VALUES (1101, 'seller001'), (1102, 'seller002'), (1103, 'seller003'),
+           (1104, 'seller004'), (1105, 'seller005'), (1106, 'seller006'),
+           (1107, 'seller007'), (1108, 'seller008'), (1109, 'seller009'),
+           (1110, 'seller010')
+    ON CONFLICT (id) DO NOTHING;
+
+    INSERT INTO cart_member_views (id, nickname)
+    VALUES (1101, 'seller001'), (1102, 'seller002'), (1103, 'seller003'),
+           (1104, 'seller004'), (1105, 'seller005'), (1106, 'seller006'),
+           (1107, 'seller007'), (1108, 'seller008'), (1109, 'seller009'),
+           (1110, 'seller010')
+    ON CONFLICT (id) DO NOTHING;
+
+    INSERT INTO wishlist_member_views (id, nickname)
     VALUES (1101, 'seller001'), (1102, 'seller002'), (1103, 'seller003'),
            (1104, 'seller004'), (1105, 'seller005'), (1106, 'seller006'),
            (1107, 'seller007'), (1108, 'seller008'), (1109, 'seller009'),

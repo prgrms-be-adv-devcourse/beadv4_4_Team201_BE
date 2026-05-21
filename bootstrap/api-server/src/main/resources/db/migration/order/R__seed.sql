@@ -1,9 +1,9 @@
 -- Order seed data (dev/staging)
 TRUNCATE TABLE order_items CASCADE;
 TRUNCATE TABLE orders CASCADE;
-TRUNCATE TABLE core_member_replicas CASCADE;
+TRUNCATE TABLE funding_member_views CASCADE;
 
-INSERT INTO core_member_replicas (id, nickname)
+INSERT INTO funding_member_views (id, nickname)
 VALUES (1, '멍청한돼지0009'),
        (2, '나른한고양이0013'),
        (3, '멍청한고양이2013'),
@@ -57,7 +57,7 @@ VALUES (1, 1, 1, 'DIRECT_PURCHASE', 'NORMAL_ORDER', 3, 2,
 
 SELECT setval('order_items_id_seq', 100, false);
 
--- Loadtest: core_member_replicas for BUYER + SELLER accounts
+-- Loadtest: funding_member_views for BUYER + SELLER accounts
 DO $$
 DECLARE
   _id bigint;
@@ -65,21 +65,21 @@ BEGIN
   IF '${is_staging}' = 'true' THEN
     -- Givers (1001-1050)
     FOR _id IN 1001..1050 LOOP
-      INSERT INTO core_member_replicas (id, nickname)
+      INSERT INTO funding_member_views (id, nickname)
       VALUES (_id, 'loadtester' || LPAD((_id - 1000)::text, 3, '0'))
       ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     -- Receivers (1051-1060)
     FOR _id IN 1051..1060 LOOP
-      INSERT INTO core_member_replicas (id, nickname)
+      INSERT INTO funding_member_views (id, nickname)
       VALUES (_id, 'loadtester' || LPAD((_id - 1000)::text, 3, '0'))
       ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     -- Sellers (1101-1110)
     FOR _id IN 1101..1110 LOOP
-      INSERT INTO core_member_replicas (id, nickname)
+      INSERT INTO funding_member_views (id, nickname)
       VALUES (_id, 'seller' || LPAD((_id - 1100)::text, 3, '0'))
       ON CONFLICT (id) DO NOTHING;
     END LOOP;
