@@ -38,8 +38,6 @@ public class CoreFacade {
         CreatePaymentCommand paymentCommand = generatePaymentCommand(orderSnapshot, command.walletDeductAmount());
         createPaymentService.create(paymentCommand);
 
-        fundingFacade.processFundingActions(orderSnapshot);
-
         return new PlaceOrderResult(orderSnapshot.orderId());
     }
 

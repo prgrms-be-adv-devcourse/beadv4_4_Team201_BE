@@ -113,6 +113,11 @@ public class OrderService {
         order.paid(command.paymentId(), command.lastTransactionKey());
     }
 
+    @Transactional(readOnly = true)
+    public OrderSnapshot getSnapshotByOrderNumber(String orderNumber) {
+        return orderRepository.getByOrderNumber(orderNumber).toSnapshot();
+    }
+
     @Transactional
     public ResultCode requestCancelOrder(Long memberId, Long orderId) {
         Order order = orderRepository.getByIdWithItemsAndLock(orderId);

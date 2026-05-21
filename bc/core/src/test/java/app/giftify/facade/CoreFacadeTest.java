@@ -96,11 +96,11 @@ class CoreFacadeTest {
 			PlaceOrderResult result = coreFacade.participateFunding(command);
 
 			// then
-			InOrder inOrder = inOrder(fundingFacade, orderService, createPaymentService);
+			InOrder inOrder = inOrder(orderService, createPaymentService);
 			inOrder.verify(orderService).createOrder(any());
 			inOrder.verify(createPaymentService).create(any());
-			inOrder.verify(fundingFacade).processFundingActions(orderSnapshot);
 			verify(orderService, never()).markOrderAsPaid(any());
+			verify(fundingFacade, never()).processFundingActions(any());
 		}
 
 		@Test
