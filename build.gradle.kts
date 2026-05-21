@@ -39,7 +39,6 @@ val jacocoExclusions = listOf(
     "**/outbound/*Reader.class",        // Port 인터페이스 (Reader 패턴)
     "**/outbound/*Gateway.class",       // Port 인터페이스 (Gateway 패턴)
     "**/outbound/*Encryptor.class",     // Port 인터페이스 (Encryptor 패턴)
-    "**/application/*UseCase.class",    // funding 모듈 UseCase (application 직하 위치)
     "**/port/in/*UseCase.class",        // member 모듈 UseCase (port/in 구조)
     "**/port/in/*UseCase$*.class",      // member 모듈 UseCase 내부 클래스
     "**/port/out/*Port.class",          // member 모듈 Port (port/out 구조)
