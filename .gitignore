@@ -124,6 +124,9 @@ build
 # Personal backlog (local only)
 backlog/
 
+# graphify - auto-generated knowledge graph
+graphify-out/
+
 # K8s secrets
 infra/k3s/base/secrets.yaml
 infra/k3s/secrets-plain/

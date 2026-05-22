@@ -22,8 +22,8 @@ include(
     "bc:payment",
     "bc:funding",
     "bc:settlement",
-    "bc:notification",
 )
+
 
 // =============================================================================
 // Support Modules (공통 인프라 지원)
