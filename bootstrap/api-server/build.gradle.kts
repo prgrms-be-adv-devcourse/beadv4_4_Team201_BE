@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":bc:cart"))
     implementation(project(":bc:product"))
     implementation(project(":bc:wishlist"))
-    implementation(project(":bc:image"))
+
     implementation(project(":bc:wallet"))
     implementation(project(":bc:order"))
     implementation(project(":bc:payment"))
@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.spring.retry)
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
+    implementation(libs.awssdk.s3)
     implementation(libs.spring.modulith.kafka)
     implementation(libs.spring.modulith.jpa)
     implementation(libs.spring.modulith.runtime)
