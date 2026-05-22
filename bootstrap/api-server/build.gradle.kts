@@ -7,7 +7,6 @@ plugins {
 
 dependencies {
     implementation(project(":bc:shared"))
-    implementation(project(":bc:cart"))
     implementation(project(":bc:product"))
     implementation(project(":bc:wishlist"))
 

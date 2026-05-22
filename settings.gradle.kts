@@ -13,7 +13,6 @@ include(
     "bc",
     "bc:shared",
 
-    "bc:cart",
     "bc:product",
     "bc:wishlist",
 
