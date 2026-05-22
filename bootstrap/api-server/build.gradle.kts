@@ -7,11 +7,6 @@ plugins {
 
 dependencies {
     implementation(project(":bc:shared"))
-    implementation(project(":bc:product"))
-
-    implementation(project(":bc:wallet"))
-    implementation(project(":bc:payment"))
-
     implementation(project(":support:common"))
     implementation(project(":support:logging"))
     implementation(project(":support:security"))
@@ -29,6 +24,7 @@ dependencies {
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.spring.retry)
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
+    implementation(libs.commons.lang3)
     implementation(libs.awssdk.s3)
     implementation(libs.spring.boot.starter.batch.jdbc)
     implementation(libs.spring.modulith.kafka)
@@ -50,6 +46,12 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
+    // QueryDSL
+    implementation("com.querydsl:querydsl-jpa:${libs.versions.querydsl.get()}:jakarta")
+    annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.rest.assured)
     testImplementation("org.springframework.kafka:spring-kafka-test")
@@ -60,7 +62,9 @@ dependencies {
     testImplementation(libs.archunit)
     testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.security.test)
-    testImplementation(libs.testcontainers.junit)
-    testImplementation(libs.testcontainers.redis)
+    testImplementation(libs.testcontainers.elasticsearch)
+    testImplementation(libs.spring.boot.testcontainers)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
     testImplementation(testFixtures(project(":support:common")))
 }

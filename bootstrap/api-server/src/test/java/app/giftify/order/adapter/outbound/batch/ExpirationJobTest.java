@@ -43,7 +43,8 @@ class ExpirationJobTest {
             "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration",
             "org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration",
             "org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration",
-            "app.giftify.security.common.config.SharedSecurityAutoConfiguration"
+            "app.giftify.security.common.config.SharedSecurityAutoConfiguration",
+            "org.springframework.modulith.runtime.autoconfigure.SpringModulithRuntimeAutoConfiguration"
     })
     static class BatchAutoConfig {
     }

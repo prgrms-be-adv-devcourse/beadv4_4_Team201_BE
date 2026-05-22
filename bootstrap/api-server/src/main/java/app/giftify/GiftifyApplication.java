@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.resilience.annotation.EnableResilientMethods;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -18,11 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @ComponentScan(basePackages = {
         "app.giftify",
-        "giftify.support.web",
-        "domain",
-        "payment",
-        "wallet",
-        "walletHistory"
+        "giftify.support.web"
 })
 @EnableJpaRepositories(basePackages = {
         "app.giftify",
@@ -33,6 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "org.springframework.modulith.events.jpa"
 })
 @EnableElasticsearchRepositories(basePackages = "app.giftify")
+@EnableCaching
 @EnableRetry
 @EnableResilientMethods
 @EnableAsync

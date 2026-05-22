@@ -13,10 +13,8 @@ include(
     "bc",
     "bc:shared",
 
-    "bc:product",
-    "bc:wallet",
-    "bc:payment",
 )
+
 
 
 
