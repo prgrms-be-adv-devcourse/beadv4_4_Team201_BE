@@ -14,8 +14,6 @@ include(
     "bc:shared",
 
     "bc:product",
-    "bc:wishlist",
-
     "bc:wallet",
     "bc:order",
     "bc:payment",
