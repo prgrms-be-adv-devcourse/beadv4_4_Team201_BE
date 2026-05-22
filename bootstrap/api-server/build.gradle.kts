@@ -10,7 +10,6 @@ dependencies {
     implementation(project(":bc:product"))
 
     implementation(project(":bc:wallet"))
-    implementation(project(":bc:order"))
     implementation(project(":bc:payment"))
 
     implementation(project(":support:common"))

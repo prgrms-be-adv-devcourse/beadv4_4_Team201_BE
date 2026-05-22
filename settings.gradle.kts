@@ -15,7 +15,6 @@ include(
 
     "bc:product",
     "bc:wallet",
-    "bc:order",
     "bc:payment",
 )
 
