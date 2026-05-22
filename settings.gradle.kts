@@ -20,8 +20,8 @@ include(
     "bc:wallet",
     "bc:order",
     "bc:payment",
-    "bc:funding",
 )
+
 
 
 
