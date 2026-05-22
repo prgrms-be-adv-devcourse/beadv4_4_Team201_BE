@@ -12,7 +12,7 @@ rootProject.name = "giftify-be"
 include(
     "bc",
     "bc:shared",
-    "bc:member",
+
     "bc:cart",
     "bc:product",
     "bc:wishlist",

@@ -7,7 +7,6 @@ plugins {
 
 dependencies {
     implementation(project(":bc:shared"))
-    implementation(project(":bc:member"))
     implementation(project(":bc:cart"))
     implementation(project(":bc:product"))
     implementation(project(":bc:wishlist"))
@@ -46,6 +45,13 @@ dependencies {
     runtimeOnly(libs.flyway.postgresql)
     runtimeOnly(libs.micrometer.prometheus)
     implementation(libs.hibernate.micrometer)
+    implementation(libs.java.jwt)
+    implementation(libs.micrometer.core)
+    implementation(libs.spring.boot.starter.data.redis)
+    implementation(libs.spring.boot.starter.oauth2.client)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.rest.assured)
@@ -53,4 +59,10 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation(libs.spring.modulith.test)
     testImplementation(libs.spring.modulith.docs)
+    testImplementation(libs.archunit)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.security.test)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.testcontainers.redis)
+    testImplementation(testFixtures(project(":support:common")))
 }
