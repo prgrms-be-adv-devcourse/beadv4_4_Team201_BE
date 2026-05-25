@@ -19,11 +19,11 @@ import org.springframework.data.domain.PageImpl;
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.api.paging.Page;
-import app.giftify.shared.api.paging.PageRequest;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.paging.Page;
+import app.giftify.support.common.api.paging.PageRequest;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentRepositoryAdapter 테스트")

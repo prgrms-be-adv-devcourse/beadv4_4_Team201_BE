@@ -2,8 +2,8 @@ package app.giftify.wallet.adapter.inbound.event;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.event.PaymentFailedEvent;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.RestoreWalletCommand;
 import app.giftify.wallet.application.inbound.RestoreWalletUseCase;
 import app.giftify.wallet.domain.ReferenceType;

@@ -1,7 +1,7 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import app.giftify.wishlist.application.port.in.AddWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.GetWishlistItemUseCase;
 import app.giftify.wishlist.application.port.in.RemoveWishlistItemUseCase;

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.response.RsData;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;

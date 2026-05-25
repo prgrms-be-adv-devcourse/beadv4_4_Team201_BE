@@ -1,6 +1,6 @@
 package app.giftify.order.application.dto;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 import java.util.List;
 

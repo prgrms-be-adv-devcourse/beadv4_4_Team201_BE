@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import app.giftify.notification.domain.NotificationException;
-import app.giftify.shared.api.response.ErrorResponse;
+import app.giftify.support.common.api.response.ErrorResponse;
 
 @RestControllerAdvice(basePackages = "app.giftify.notification")
 public class NotificationExceptionHandler {

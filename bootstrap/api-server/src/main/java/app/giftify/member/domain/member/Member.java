@@ -3,8 +3,8 @@ package app.giftify.member.domain.member;
 import java.time.LocalDate;
 
 import app.giftify.member.domain.exception.MemberStatusException;
-import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.type.MemberRole;
+import app.giftify.support.common.base.BaseDomainModel;
+import app.giftify.support.common.security.MemberRole;
 
 public class Member extends BaseDomainModel {
 	private final String email;

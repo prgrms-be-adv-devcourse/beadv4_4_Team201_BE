@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import app.giftify.auth.adapter.outbound.client.MemberApiClient;
 import app.giftify.auth.adapter.outbound.client.WalletApiClient;
 import app.giftify.auth.application.inbound.LoginUseCase;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberInfo;
 import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor

@@ -6,7 +6,9 @@ plugins {
 dependencies {
     compileOnly("org.springframework.modulith:spring-modulith-api:${libs.versions.springModulith.get()}")
 
-    implementation(project(":bc:shared"))
+    // jMolecules Event interface (DomainEvent tagging)
+    implementation(libs.jmolecules.events)
+
     // Minimal Spring
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.validation)

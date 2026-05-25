@@ -1,6 +1,6 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.wishlist.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -17,7 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
 import app.giftify.wallet.application.outbound.WalletHistoryRepository;
 import app.giftify.wallet.application.outbound.WalletRepository;

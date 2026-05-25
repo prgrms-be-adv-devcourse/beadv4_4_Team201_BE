@@ -1,8 +1,8 @@
 package app.giftify.order.domain;
 
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.support.common.money.Money;
 import lombok.Builder;
 
 @Builder

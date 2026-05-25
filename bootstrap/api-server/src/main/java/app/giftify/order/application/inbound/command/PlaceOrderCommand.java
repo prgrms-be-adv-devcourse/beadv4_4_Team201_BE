@@ -1,7 +1,7 @@
 package app.giftify.order.application.inbound.command;
 
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethod;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.payment.domain.type.PaymentMethod;
 
 import java.util.EnumSet;
 import java.util.List;

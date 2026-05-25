@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.payment.domain.event.PaymentSucceededEvent;
+import app.giftify.payment.domain.type.PaymentType;
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;
 import lombok.RequiredArgsConstructor;

@@ -11,7 +11,7 @@ import app.giftify.member.adapter.in.web.dto.RegistrationStatusResponse;
 import app.giftify.member.adapter.in.web.dto.SignupRequest;
 import app.giftify.security.common.CurrentAuthSub;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

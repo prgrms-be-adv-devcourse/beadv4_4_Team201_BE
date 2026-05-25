@@ -1,6 +1,6 @@
 package app.giftify.wishlist.adapter.in.web.responseDto;
 
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.PageResponse;
 import app.giftify.wishlist.application.port.in.WishlistOverview;
 import app.giftify.wishlist.core.domain.Visibility;
 import app.giftify.wishlist.core.domain.Wishlist;

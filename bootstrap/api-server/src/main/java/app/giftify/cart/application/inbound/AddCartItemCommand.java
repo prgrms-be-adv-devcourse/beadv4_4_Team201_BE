@@ -1,6 +1,6 @@
 package app.giftify.cart.application.inbound;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 public record AddCartItemCommand(
         Long wishlistId,

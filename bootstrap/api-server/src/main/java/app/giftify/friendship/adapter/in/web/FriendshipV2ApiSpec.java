@@ -10,7 +10,7 @@ import app.giftify.friendship.adapter.in.web.dto.FriendResponse;
 import app.giftify.friendship.adapter.in.web.dto.FriendshipResponse;
 import app.giftify.friendship.adapter.in.web.dto.SendFriendRequestDto;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

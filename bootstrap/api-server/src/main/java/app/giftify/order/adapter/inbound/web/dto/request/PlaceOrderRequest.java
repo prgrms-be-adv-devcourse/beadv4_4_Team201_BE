@@ -1,7 +1,7 @@
 package app.giftify.order.adapter.inbound.web.dto.request;
 
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.support.common.money.Money;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 

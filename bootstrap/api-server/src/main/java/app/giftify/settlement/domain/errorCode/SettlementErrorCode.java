@@ -1,6 +1,6 @@
 package app.giftify.settlement.domain.errorCode;
 
-import app.giftify.shared.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;

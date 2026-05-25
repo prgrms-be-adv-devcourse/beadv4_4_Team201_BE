@@ -2,7 +2,7 @@ package app.giftify.settlement.domain.model;
 
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import app.giftify.settlement.domain.status.SettlementQueueStatus;
-import app.giftify.shared.api.exception.DomainException;
+import app.giftify.support.common.api.exception.DomainException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

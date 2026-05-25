@@ -26,9 +26,9 @@ import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberRepository;
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.funding.domain.event.FundingCanceledEvent;
+import app.giftify.funding.domain.type.FundingStatus;
 
 @ExtendWith(MockitoExtension.class)
 class FundingCloseUseCaseTest {

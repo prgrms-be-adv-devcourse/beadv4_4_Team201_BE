@@ -6,7 +6,7 @@ import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
 import app.giftify.product.domain.Product;
 import app.giftify.security.common.config.SharedSecurityAutoConfiguration;
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.PageResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;

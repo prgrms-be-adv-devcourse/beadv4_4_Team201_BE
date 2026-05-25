@@ -21,8 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingFailAcceptEvent;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.funding.domain.event.FundingFailAcceptEvent;
 
 @ExtendWith(MockitoExtension.class)
 class FundingFailAcceptUseCaseTest {

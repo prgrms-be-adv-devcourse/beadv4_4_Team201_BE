@@ -3,7 +3,7 @@ package app.giftify.friendship.domain;
 import java.time.LocalDateTime;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.friendship.domain.exception.FriendshipErrorCode;
-import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.support.common.base.BaseDomainModel;
 
 public class Friendship extends BaseDomainModel {
 

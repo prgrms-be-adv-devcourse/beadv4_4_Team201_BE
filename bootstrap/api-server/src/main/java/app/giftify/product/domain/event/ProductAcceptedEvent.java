@@ -1,6 +1,6 @@
 package app.giftify.product.domain.event;
 
-import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.support.common.event.BaseDomainEvent;
 import lombok.Getter;
 
 @Getter

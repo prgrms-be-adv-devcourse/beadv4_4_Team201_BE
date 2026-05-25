@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import app.giftify.member.application.port.in.GetMemberUseCase;
 import app.giftify.member.application.port.in.RegisterMemberUseCase;
 import app.giftify.member.domain.member.Member;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberInfo;
 import lombok.RequiredArgsConstructor;
 
 @RestController

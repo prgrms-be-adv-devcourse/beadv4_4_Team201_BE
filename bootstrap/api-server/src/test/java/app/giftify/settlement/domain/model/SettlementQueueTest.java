@@ -1,7 +1,7 @@
 package app.giftify.settlement.domain.model;
 
 import app.giftify.settlement.domain.status.SettlementQueueStatus;
-import app.giftify.shared.api.exception.DomainException;
+import app.giftify.support.common.api.exception.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

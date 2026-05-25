@@ -1,6 +1,6 @@
 package app.giftify.friendship.domain.exception;
 
-import app.giftify.shared.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.ErrorCode;
 
 public enum FriendshipErrorCode implements ErrorCode {
     SELF_FRIEND_REQUEST     (400, "F001", "자기 자신에게 친구 요청을 보낼 수 없습니다."),

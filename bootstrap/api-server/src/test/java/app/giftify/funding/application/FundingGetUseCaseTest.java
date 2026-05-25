@@ -34,9 +34,9 @@ import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.funding.readmodel.MemberView;
 import app.giftify.funding.readmodel.MemberViewRepository;
-import app.giftify.shared.api.paging.PageResponse;
-import app.giftify.shared.domain.port.FriendshipVerificationPort;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.support.common.api.paging.PageResponse;
+import app.giftify.funding.domain.port.FriendshipVerificationPort;
+import app.giftify.funding.domain.type.FundingStatus;
 
 @ExtendWith(MockitoExtension.class)
 class FundingGetUseCaseTest {

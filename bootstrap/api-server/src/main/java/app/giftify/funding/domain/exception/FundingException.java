@@ -1,7 +1,7 @@
 package app.giftify.funding.domain.exception;
 
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.DomainException;
+import app.giftify.support.common.api.exception.ErrorCode;
 
 public class FundingException extends DomainException {
 

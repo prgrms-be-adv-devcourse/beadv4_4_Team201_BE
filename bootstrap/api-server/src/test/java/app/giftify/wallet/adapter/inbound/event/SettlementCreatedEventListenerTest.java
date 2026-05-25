@@ -17,11 +17,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
-import app.giftify.shared.domain.event.wallet.WalletSettlementCompletedEvent;
-import app.giftify.shared.domain.event.wallet.WalletSettlementFailedEvent;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.settlement.domain.event.SettlementCreatedEvent;
+import app.giftify.wallet.domain.event.WalletSettlementCompletedEvent;
+import app.giftify.wallet.domain.event.WalletSettlementFailedEvent;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
 import app.giftify.wallet.application.inbound.SettlementPayoutUseCase;
 import app.giftify.wallet.domain.WalletErrorCode;

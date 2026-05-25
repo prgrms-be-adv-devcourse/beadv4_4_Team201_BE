@@ -1,6 +1,6 @@
 package app.giftify.product.domain.exception;
 
-import app.giftify.shared.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 

@@ -2,10 +2,10 @@ package app.giftify.order.adapter.inbound.web.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import app.giftify.shared.api.exception.BusinessException;
-import app.giftify.shared.api.exception.ErrorCode;
-import app.giftify.shared.api.exception.InfraException;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.exception.BusinessException;
+import app.giftify.support.common.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
+import app.giftify.support.common.api.response.RsData;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

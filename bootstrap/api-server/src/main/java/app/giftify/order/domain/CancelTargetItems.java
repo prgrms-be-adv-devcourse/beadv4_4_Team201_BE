@@ -1,7 +1,7 @@
 package app.giftify.order.domain;
 
-import app.giftify.shared.domain.vo.CanceledItemSnapshot;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.order.domain.vo.CanceledItemSnapshot;
+import app.giftify.support.common.money.Money;
 
 import java.util.List;
 

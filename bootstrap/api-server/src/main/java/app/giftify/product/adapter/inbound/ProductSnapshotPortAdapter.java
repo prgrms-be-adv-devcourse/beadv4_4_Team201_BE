@@ -1,8 +1,8 @@
 package app.giftify.product.adapter.inbound;
 
 import app.giftify.product.application.port.in.GetProductSnapshotUseCase;
-import app.giftify.shared.domain.port.ProductSnapshotPort;
-import app.giftify.shared.domain.vo.ProductSnapshot;
+import app.giftify.product.domain.port.ProductSnapshotPort;
+import app.giftify.product.domain.vo.ProductSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -6,7 +6,7 @@ import app.giftify.order.adapter.inbound.web.dto.request.PlaceOrderRequest;
 import app.giftify.order.adapter.inbound.web.dto.response.GetOrderDetailResponse;
 import app.giftify.order.adapter.inbound.web.dto.response.GetOrdersResponse;
 import app.giftify.order.adapter.inbound.web.dto.response.OrderCancelResponse;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;

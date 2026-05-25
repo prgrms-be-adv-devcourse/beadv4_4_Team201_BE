@@ -1,7 +1,7 @@
 package giftify.support.web.handler;
 
-import app.giftify.shared.api.exception.ErrorCode;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.exception.ErrorCode;
+import app.giftify.support.common.api.response.RsData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

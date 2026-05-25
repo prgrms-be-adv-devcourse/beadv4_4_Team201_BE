@@ -1,7 +1,7 @@
 package app.giftify.order.adapter.outbound.persistence.jpa;
 
 import app.giftify.order.domain.OrderItem;
-import app.giftify.shared.domain.type.TargetType;
+import app.giftify.order.domain.type.TargetType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

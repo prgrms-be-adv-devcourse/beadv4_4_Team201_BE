@@ -14,8 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.giftify.payment.application.inbound.CancelPaymentCommand;
 import app.giftify.payment.application.inbound.CancelPaymentUseCase;
-import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.order.domain.event.OrderCancelRequestedEvent;
+import app.giftify.support.common.money.Money;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("OrderCancelEventHandler 테스트")

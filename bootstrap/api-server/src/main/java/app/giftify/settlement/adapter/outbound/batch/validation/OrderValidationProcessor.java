@@ -2,7 +2,7 @@ package app.giftify.settlement.adapter.outbound.batch.validation;
 
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementQueue;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 

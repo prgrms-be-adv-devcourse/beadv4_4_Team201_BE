@@ -1,7 +1,7 @@
 package giftify.support.web.manager;
 
-import app.giftify.shared.api.exception.IdempotencyErrorCode;
-import app.giftify.shared.api.exception.InfraException;
+import app.giftify.support.common.api.exception.IdempotencyErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
 import app.giftify.support.common.AbstractRedisTest;
 import app.giftify.support.common.config.RedisConfig;
 import giftify.support.web.idempotency.IdempotencyStatus;

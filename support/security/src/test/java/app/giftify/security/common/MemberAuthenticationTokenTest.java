@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 
 import app.giftify.security.test.TestMemberFactory;
-import app.giftify.shared.domain.type.MemberRole;
+import app.giftify.support.common.security.MemberRole;
 
 @DisplayName("MemberAuthenticationToken")
 class MemberAuthenticationTokenTest {

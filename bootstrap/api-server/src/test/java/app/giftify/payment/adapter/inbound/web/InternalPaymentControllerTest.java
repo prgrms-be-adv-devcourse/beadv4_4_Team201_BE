@@ -29,9 +29,9 @@ import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
 import app.giftify.payment.application.inbound.InternalPaymentQueryUseCase;
 import app.giftify.payment.application.inbound.InternalPaymentResult;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("InternalPaymentController 테스트")

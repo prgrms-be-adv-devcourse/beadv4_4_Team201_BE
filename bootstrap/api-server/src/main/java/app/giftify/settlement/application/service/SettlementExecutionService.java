@@ -9,8 +9,8 @@ import app.giftify.settlement.application.outbound.port.SettlementQueueRepositor
 import app.giftify.settlement.domain.model.SettlementAmountSummary;
 import app.giftify.settlement.domain.model.SettlementHistory;
 import app.giftify.settlement.domain.model.SettlementQueue;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.settlement.domain.event.SettlementCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

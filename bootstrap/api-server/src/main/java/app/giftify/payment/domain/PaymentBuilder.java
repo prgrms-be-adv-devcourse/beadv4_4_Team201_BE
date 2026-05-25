@@ -1,8 +1,8 @@
 package app.giftify.payment.domain;
 
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 
 import java.time.LocalDateTime;
 

@@ -9,8 +9,8 @@ import org.springframework.data.domain.Slice;
 
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.api.paging.Page;
-import app.giftify.shared.api.paging.PageRequest;
+import app.giftify.support.common.api.paging.Page;
+import app.giftify.support.common.api.paging.PageRequest;
 
 public interface PaymentRepository {
 	Payment save(Payment payment);

@@ -1,6 +1,6 @@
 package app.giftify.payment.application.inbound;
 
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.PageResponse;
 
 public interface QueryPaymentUseCase {
 	PaymentDetailResult getPayment(PaymentDetailQuery query);

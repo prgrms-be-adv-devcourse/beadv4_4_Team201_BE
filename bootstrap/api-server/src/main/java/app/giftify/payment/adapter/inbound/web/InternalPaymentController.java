@@ -18,7 +18,7 @@ import app.giftify.payment.adapter.inbound.web.dto.PaymentInfoResponse;
 import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
 import app.giftify.payment.application.inbound.InternalPaymentQueryUseCase;
 import app.giftify.security.common.annotation.InternalApiOnly;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

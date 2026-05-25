@@ -1,7 +1,7 @@
 package app.giftify.funding.adapter.inbound.dto;
 
 import app.giftify.funding.adapter.outbound.jpa.Funding;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.funding.domain.type.FundingStatus;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;

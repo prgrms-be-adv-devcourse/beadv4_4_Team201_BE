@@ -1,10 +1,10 @@
 package app.giftify.funding.adapter.inbound;
 
 import app.giftify.funding.application.WithdrawFundingUseCase;
-import app.giftify.shared.domain.event.order.OrderCanceledEvent;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.CanceledItemSnapshot;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.order.domain.event.OrderCanceledEvent;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.order.domain.vo.CanceledItemSnapshot;
+import app.giftify.support.common.money.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

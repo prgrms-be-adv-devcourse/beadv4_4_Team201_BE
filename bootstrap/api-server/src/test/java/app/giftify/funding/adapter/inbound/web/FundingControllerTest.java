@@ -2,7 +2,7 @@ package app.giftify.funding.adapter.inbound.web;
 
 import app.giftify.funding.adapter.inbound.dto.FundingCompleteResponseDto;
 import app.giftify.funding.application.FundingFacade;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.funding.domain.type.FundingStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

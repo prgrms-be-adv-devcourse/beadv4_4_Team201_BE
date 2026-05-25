@@ -1,8 +1,8 @@
 package app.giftify.settlement.adapter.inbound.web.controller;
 
 import app.giftify.settlement.application.service.dto.SettlementSummary;
-import app.giftify.shared.api.paging.PageResponse;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.paging.PageResponse;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -2,7 +2,7 @@ package app.giftify.cart.adapter.outbound.mapper;
 
 import app.giftify.cart.adapter.outbound.jpa.JpaCartItem;
 import app.giftify.cart.core.domain.CartItem;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import org.springframework.stereotype.Component;
 
 @Component

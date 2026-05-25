@@ -1,6 +1,6 @@
 package app.giftify.wishlist.core.domain;
 
-import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.support.common.base.BaseDomainModel;
 import app.giftify.wishlist.core.domain.exception.WishlistItemInvalidStatusTransitionException;
 import com.mysema.commons.lang.Assert;
 

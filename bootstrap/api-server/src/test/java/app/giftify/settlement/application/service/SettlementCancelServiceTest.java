@@ -1,9 +1,9 @@
 package app.giftify.settlement.application.service;
 
 import app.giftify.settlement.application.inbound.CancelSettlementCommand;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.api.exception.InfraException;
-import app.giftify.shared.api.exception.InfraErrorCode;
+import app.giftify.support.common.api.exception.DomainException;
+import app.giftify.support.common.api.exception.InfraException;
+import app.giftify.support.common.api.exception.InfraErrorCode;
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

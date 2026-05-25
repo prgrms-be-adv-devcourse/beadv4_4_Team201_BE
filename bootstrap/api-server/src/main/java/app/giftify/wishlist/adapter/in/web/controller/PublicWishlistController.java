@@ -1,7 +1,7 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.product.application.support.ProductSupport;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import app.giftify.wishlist.readmodel.MemberView;
 import app.giftify.wishlist.readmodel.MemberViewRepository;
 import app.giftify.wishlist.adapter.in.web.responseDto.MemberWishlistSummaryResponse;

@@ -4,7 +4,7 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import app.giftify.cart.application.inbound.usecase.CartCreateUseCase;
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.member.domain.event.MemberSignedEvent;
 import app.giftify.support.common.annotation.EventIdempotent;
 import lombok.RequiredArgsConstructor;
 

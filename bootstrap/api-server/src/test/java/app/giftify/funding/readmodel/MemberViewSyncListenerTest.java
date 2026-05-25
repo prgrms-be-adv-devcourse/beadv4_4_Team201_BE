@@ -1,8 +1,8 @@
 package app.giftify.funding.readmodel;
 
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
-import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
-import app.giftify.shared.domain.type.MemberRole;
+import app.giftify.member.domain.event.MemberSignedEvent;
+import app.giftify.member.domain.event.MemberUpdatedEvent;
+import app.giftify.support.common.security.MemberRole;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

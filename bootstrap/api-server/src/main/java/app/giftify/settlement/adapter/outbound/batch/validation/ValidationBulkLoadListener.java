@@ -5,7 +5,7 @@ import app.giftify.settlement.adapter.outbound.client.OrderClient;
 import app.giftify.settlement.adapter.outbound.client.PaymentClient;
 import app.giftify.settlement.application.service.SettlementItemService;
 import app.giftify.settlement.application.outbound.port.SettlementItemRepository;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.listener.StepExecutionListener;

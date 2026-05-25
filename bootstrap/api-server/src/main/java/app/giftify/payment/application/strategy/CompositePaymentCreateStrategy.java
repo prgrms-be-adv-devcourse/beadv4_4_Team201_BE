@@ -7,7 +7,7 @@ import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.DeductWalletCommand;
 import app.giftify.wallet.application.inbound.DeductWalletResult;
 import app.giftify.wallet.application.inbound.DeductWalletUseCase;

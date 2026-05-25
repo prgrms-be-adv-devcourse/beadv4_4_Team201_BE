@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

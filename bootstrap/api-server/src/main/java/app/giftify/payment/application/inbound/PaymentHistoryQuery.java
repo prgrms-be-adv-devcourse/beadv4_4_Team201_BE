@@ -2,7 +2,7 @@ package app.giftify.payment.application.inbound;
 
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.api.paging.PageRequest;
+import app.giftify.support.common.api.paging.PageRequest;
 
 public record PaymentHistoryQuery(
 	Long memberId,

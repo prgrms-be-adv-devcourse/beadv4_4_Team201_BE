@@ -1,7 +1,7 @@
 package app.giftify.wishlist.application.port.out;
 
-import app.giftify.shared.api.paging.Page;
-import app.giftify.shared.api.paging.PageRequest;
+import app.giftify.support.common.api.paging.Page;
+import app.giftify.support.common.api.paging.PageRequest;
 import app.giftify.wishlist.core.domain.WishlistItem;
 
 import java.time.LocalDateTime;

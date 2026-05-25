@@ -6,7 +6,7 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 
 import app.giftify.security.common.MemberAuthenticationToken;
 import app.giftify.security.common.MemberPrincipal;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberInfo;
 
 /**
  * @WithMockMemberPrincipal 어노테이션을 처리하여 SecurityContext를 생성하는 팩토리.

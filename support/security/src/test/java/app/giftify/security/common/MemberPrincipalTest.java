@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 
 import app.giftify.security.test.TestMemberFactory;
-import app.giftify.shared.domain.type.MemberRole;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberRole;
+import app.giftify.support.common.security.MemberInfo;
 
 @DisplayName("MemberPrincipal")
 class MemberPrincipalTest {

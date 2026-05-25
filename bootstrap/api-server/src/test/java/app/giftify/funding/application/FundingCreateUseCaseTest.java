@@ -26,13 +26,13 @@ import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingException;
 import app.giftify.order.domain.OrderItemSnapshot;
 import app.giftify.order.domain.OrderSnapshot;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
-import app.giftify.shared.domain.port.WishlistItemSnapshotPort;
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.funding.domain.event.FundingCreatedEvent;
+import app.giftify.wishlist.domain.port.WishlistItemSnapshotPort;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.support.common.money.Money;
+import app.giftify.wishlist.domain.vo.WishlistItemSnapshot;
 
 @ExtendWith(MockitoExtension.class)
 class FundingCreateUseCaseTest {

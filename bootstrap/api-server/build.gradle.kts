@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bc:shared"))
     implementation(project(":support:common"))
     implementation(project(":support:logging"))
     implementation(project(":support:security"))

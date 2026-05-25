@@ -3,7 +3,7 @@ package app.giftify.product.application.service;
 import app.giftify.product.application.support.ProductSupport;
 import app.giftify.product.domain.Product;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.shared.domain.vo.ProductSnapshot;
+import app.giftify.product.domain.vo.ProductSnapshot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

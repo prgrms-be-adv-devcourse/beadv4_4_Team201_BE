@@ -2,9 +2,9 @@ package app.giftify.product.domain;
 
 import app.giftify.product.domain.event.ProductStockUpdatedEvent;
 import app.giftify.product.domain.exception.ProductException;
-import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.event.product.ProductSaleDisabledEvent;
-import app.giftify.shared.domain.event.product.ProductSaleEnabledEvent;
+import app.giftify.support.common.base.BaseDomainModel;
+import app.giftify.product.domain.event.ProductSaleDisabledEvent;
+import app.giftify.product.domain.event.ProductSaleEnabledEvent;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.util.StringUtils;

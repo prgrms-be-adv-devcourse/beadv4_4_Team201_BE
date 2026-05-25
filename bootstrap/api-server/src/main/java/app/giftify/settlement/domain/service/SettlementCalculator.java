@@ -1,7 +1,7 @@
 package app.giftify.settlement.domain.service;
 
 import app.giftify.settlement.domain.model.SettlementCore;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 import java.math.BigDecimal;
 

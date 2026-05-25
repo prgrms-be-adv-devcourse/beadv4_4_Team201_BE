@@ -25,8 +25,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 import app.giftify.auth.adapter.outbound.client.MemberApiClient;
 import app.giftify.security.common.MemberPrincipal;
-import app.giftify.shared.domain.type.MemberRole;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberRole;
+import app.giftify.support.common.security.MemberInfo;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MemberPrincipalFilter")

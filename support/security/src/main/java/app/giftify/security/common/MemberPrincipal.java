@@ -7,8 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import app.giftify.shared.domain.type.MemberRole;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberRole;
+import app.giftify.support.common.security.MemberInfo;
 
 /**
  * Spring Security의 UserDetails를 구현한 인증 Principal.

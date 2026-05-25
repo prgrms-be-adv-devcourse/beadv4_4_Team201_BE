@@ -3,7 +3,7 @@ package app.giftify.wishlist.adapter.in.web;
 import app.giftify.product.adapter.inbound.web.handler.ProductExceptionHandler;
 import app.giftify.product.domain.exception.ProductNotActiveException;
 import app.giftify.product.domain.exception.ProductOutOfStockException;
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.wishlist.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.adapter.in.web.controller.InternalWishlistController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;

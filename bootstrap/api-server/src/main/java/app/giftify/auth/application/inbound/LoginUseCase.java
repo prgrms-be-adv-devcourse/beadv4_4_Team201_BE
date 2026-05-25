@@ -1,6 +1,6 @@
 package app.giftify.auth.application.inbound;
 
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberInfo;
 
 import java.util.Optional;
 

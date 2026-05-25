@@ -2,7 +2,7 @@ package app.giftify.wallet.application.inbound;
 
 import java.time.LocalDateTime;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.domain.WalletHistory;
 

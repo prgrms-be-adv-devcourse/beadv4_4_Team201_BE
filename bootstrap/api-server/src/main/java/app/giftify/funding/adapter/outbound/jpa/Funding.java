@@ -2,7 +2,7 @@ package app.giftify.funding.adapter.outbound.jpa;
 
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.funding.domain.type.FundingStatus;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

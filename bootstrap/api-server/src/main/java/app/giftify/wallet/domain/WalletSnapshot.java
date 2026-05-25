@@ -1,6 +1,6 @@
 package app.giftify.wallet.domain;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 public record WalletSnapshot(
 	Long id,

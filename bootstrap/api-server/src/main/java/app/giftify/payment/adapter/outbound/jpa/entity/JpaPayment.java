@@ -2,9 +2,9 @@ package app.giftify.payment.adapter.outbound.jpa.entity;
 
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

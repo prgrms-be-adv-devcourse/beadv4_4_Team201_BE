@@ -1,7 +1,7 @@
 package app.giftify.wishlist.adapter.in;
 
-import app.giftify.shared.domain.port.WishlistItemSnapshotPort;
-import app.giftify.shared.domain.vo.WishlistItemSnapshot;
+import app.giftify.wishlist.domain.port.WishlistItemSnapshotPort;
+import app.giftify.wishlist.domain.vo.WishlistItemSnapshot;
 import app.giftify.wishlist.application.port.in.GetWishlistItemSnapshotUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

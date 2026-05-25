@@ -13,7 +13,7 @@ import app.giftify.wallet.domain.Wallet;
 import app.giftify.wallet.domain.WalletErrorCode;
 import app.giftify.wallet.domain.WalletException;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
-import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.support.common.event.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -7,7 +7,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.support.common.event.BaseDomainEvent;
 import app.giftify.support.common.annotation.EventIdempotent;
 import giftify.support.web.idempotency.manager.IdempotencyManager;
 import giftify.support.web.idempotency.util.PayloadHasher;

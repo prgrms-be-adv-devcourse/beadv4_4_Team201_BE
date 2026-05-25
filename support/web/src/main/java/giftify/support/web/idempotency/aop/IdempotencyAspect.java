@@ -1,10 +1,10 @@
 package giftify.support.web.idempotency.aop;
 
-import app.giftify.shared.api.exception.IdempotencyErrorCode;
-import app.giftify.shared.api.exception.InfraErrorCode;
-import app.giftify.shared.api.exception.InfraException;
-import app.giftify.shared.api.exception.PolicyException;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.exception.IdempotencyErrorCode;
+import app.giftify.support.common.api.exception.InfraErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
+import app.giftify.support.common.api.exception.PolicyException;
+import app.giftify.support.common.api.response.RsData;
 import app.giftify.support.common.annotation.Idempotent;
 import giftify.support.web.idempotency.IdempotencyValue;
 import giftify.support.web.idempotency.manager.IdempotencyManager;

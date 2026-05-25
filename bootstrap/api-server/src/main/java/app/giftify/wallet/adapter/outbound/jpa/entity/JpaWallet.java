@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import app.giftify.wallet.domain.WalletSnapshot;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import app.giftify.support.jpa.BaseJpaEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

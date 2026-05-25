@@ -1,6 +1,6 @@
 package app.giftify.order.adapter.inbound.web.dto.request;
 
-import app.giftify.shared.domain.type.OrderItemType;
+import app.giftify.order.domain.type.OrderItemType;
 import jakarta.validation.constraints.NotNull;
 
 /**

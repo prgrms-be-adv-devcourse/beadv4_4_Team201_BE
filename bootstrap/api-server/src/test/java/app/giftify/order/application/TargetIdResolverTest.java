@@ -2,12 +2,12 @@ package app.giftify.order.application;
 
 import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.domain.type.FundingStatus;
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.FundingInfo;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.exception.DomainException;
+import app.giftify.funding.domain.type.FundingStatus;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.funding.domain.vo.FundingInfo;
+import app.giftify.support.common.money.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

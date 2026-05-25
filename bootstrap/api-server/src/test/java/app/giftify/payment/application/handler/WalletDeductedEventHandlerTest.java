@@ -27,9 +27,9 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.domain.event.WalletDeductedEvent;
 
 @ExtendWith(MockitoExtension.class)

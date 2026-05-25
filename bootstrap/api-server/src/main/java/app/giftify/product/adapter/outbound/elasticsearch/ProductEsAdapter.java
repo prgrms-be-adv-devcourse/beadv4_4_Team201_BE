@@ -16,7 +16,7 @@ import app.giftify.product.domain.exception.ProductErrorCode;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.product.readmodel.MemberView;
 import app.giftify.product.readmodel.MemberViewRepository;
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.PageResponse;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

@@ -2,8 +2,8 @@ package app.giftify.funding.adapter.inbound;
 
 import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
-import app.giftify.shared.domain.port.FundingQueryPort;
-import app.giftify.shared.domain.vo.FundingInfo;
+import app.giftify.funding.domain.port.FundingQueryPort;
+import app.giftify.funding.domain.vo.FundingInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

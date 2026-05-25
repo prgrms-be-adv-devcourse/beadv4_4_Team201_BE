@@ -1,7 +1,7 @@
 package app.giftify.order.application.dto;
 
 import app.giftify.order.domain.ResultCode;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 public record OrderItemCancelResult(
         Long itemId,

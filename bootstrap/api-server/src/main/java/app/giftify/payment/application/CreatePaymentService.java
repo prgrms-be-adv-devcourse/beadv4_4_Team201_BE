@@ -9,8 +9,8 @@ import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentCreateContext;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

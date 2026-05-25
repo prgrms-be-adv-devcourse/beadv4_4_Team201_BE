@@ -2,9 +2,9 @@ package app.giftify.order.application;
 
 import app.giftify.order.application.inbound.command.PlaceOrderItemCommand;
 import app.giftify.order.domain.errorCode.OrderErrorCode;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.FundingInfo;
+import app.giftify.support.common.api.exception.DomainException;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.funding.domain.vo.FundingInfo;
 import org.springframework.stereotype.Service;
 
 @Service

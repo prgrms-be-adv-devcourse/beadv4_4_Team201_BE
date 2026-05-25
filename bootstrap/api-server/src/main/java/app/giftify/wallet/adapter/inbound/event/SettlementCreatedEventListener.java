@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
-import app.giftify.shared.domain.event.wallet.WalletSettlementCompletedEvent;
-import app.giftify.shared.domain.event.wallet.WalletSettlementFailedEvent;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.settlement.domain.event.SettlementCreatedEvent;
+import app.giftify.wallet.domain.event.WalletSettlementCompletedEvent;
+import app.giftify.wallet.domain.event.WalletSettlementFailedEvent;
 import app.giftify.wallet.application.inbound.SettlementPayoutCommand;
 import app.giftify.wallet.application.inbound.SettlementPayoutUseCase;
 import app.giftify.wallet.domain.WalletException;

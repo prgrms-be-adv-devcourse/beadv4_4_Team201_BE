@@ -7,7 +7,7 @@ import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentChargeResponse;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmRequest;
 import app.giftify.payment.adapter.inbound.web.dto.PaymentConfirmResponse;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

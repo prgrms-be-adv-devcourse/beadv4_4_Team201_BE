@@ -11,8 +11,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import app.giftify.security.common.MemberAuthenticationToken;
 import app.giftify.security.common.MemberPrincipal;
-import app.giftify.shared.domain.type.MemberRole;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberRole;
+import app.giftify.support.common.security.MemberInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

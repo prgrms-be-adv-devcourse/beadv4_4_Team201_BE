@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletBalanceResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WalletHistoryResponse;
 import app.giftify.wallet.adapter.inbound.web.dto.WithdrawWalletRequest;

@@ -3,7 +3,7 @@ package app.giftify.funding.adapter.outbound.repository;
 import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.jpa.FundingParticipantMember;
 import app.giftify.funding.application.MyFundingInfo;
-import app.giftify.shared.domain.type.FundingStatus;
+import app.giftify.funding.domain.type.FundingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

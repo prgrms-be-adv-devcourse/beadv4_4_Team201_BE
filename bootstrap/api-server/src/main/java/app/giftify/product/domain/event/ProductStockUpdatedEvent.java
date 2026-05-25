@@ -1,7 +1,7 @@
 package app.giftify.product.domain.event;
 
 import app.giftify.product.domain.StockChangeResult;
-import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.support.common.event.BaseDomainEvent;
 
 public class ProductStockUpdatedEvent extends BaseDomainEvent {
     private final StockChangeResult result;

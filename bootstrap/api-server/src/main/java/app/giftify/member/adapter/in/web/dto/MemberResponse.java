@@ -2,7 +2,7 @@ package app.giftify.member.adapter.in.web.dto;
 
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.shared.domain.type.MemberRole;
+import app.giftify.support.common.security.MemberRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;

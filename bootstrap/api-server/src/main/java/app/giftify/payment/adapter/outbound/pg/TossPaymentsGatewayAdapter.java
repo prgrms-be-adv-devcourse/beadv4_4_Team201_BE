@@ -3,7 +3,7 @@ package app.giftify.payment.adapter.outbound.pg;
 import org.springframework.stereotype.Component;
 
 import app.giftify.payment.application.outbound.PaymentGateway;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 @Component
 public class TossPaymentsGatewayAdapter implements PaymentGateway {

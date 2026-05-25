@@ -1,7 +1,7 @@
 package app.giftify.payment.adapter.inbound.web.exception;
 
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.api.response.ErrorResponse;
+import app.giftify.support.common.api.response.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

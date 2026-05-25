@@ -22,8 +22,8 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import app.giftify.shared.domain.event.settlement.SettlementCreatedEvent;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.settlement.domain.event.SettlementCreatedEvent;
+import app.giftify.support.common.money.Money;
 
 @SpringBootTest(
 	classes = EventExternalizationTestApp.class,

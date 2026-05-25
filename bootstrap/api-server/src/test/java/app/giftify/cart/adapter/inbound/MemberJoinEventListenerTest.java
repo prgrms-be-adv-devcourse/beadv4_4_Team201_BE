@@ -1,7 +1,7 @@
 package app.giftify.cart.adapter.inbound;
 
 import app.giftify.cart.application.inbound.usecase.CartCreateUseCase;
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
+import app.giftify.member.domain.event.MemberSignedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

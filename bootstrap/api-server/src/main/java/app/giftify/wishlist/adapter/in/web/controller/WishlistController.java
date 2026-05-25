@@ -2,7 +2,7 @@ package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.security.common.CurrentMemberId;
 import app.giftify.security.common.util.SecurityUtil;
-import app.giftify.shared.api.paging.PageRequest;
+import app.giftify.support.common.api.paging.PageRequest;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;
 import app.giftify.wishlist.adapter.in.web.responseDto.WishlistResponse;
 import app.giftify.wishlist.application.port.in.GetWishlistUseCase;

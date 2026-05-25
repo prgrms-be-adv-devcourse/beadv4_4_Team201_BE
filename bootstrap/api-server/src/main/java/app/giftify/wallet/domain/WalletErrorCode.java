@@ -1,6 +1,6 @@
 package app.giftify.wallet.domain;
 
-import app.giftify.shared.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 public enum WalletErrorCode implements ErrorCode {

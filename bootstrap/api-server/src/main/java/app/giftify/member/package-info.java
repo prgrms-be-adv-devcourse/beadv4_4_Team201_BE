@@ -1,6 +1,6 @@
 @ApplicationModule(
 	displayName = "Member",
-	allowedDependencies = { "auth::*", "shared", "security", "support" }
+	allowedDependencies = { "auth::*", "security", "support" }
 )
 package app.giftify.member;
 

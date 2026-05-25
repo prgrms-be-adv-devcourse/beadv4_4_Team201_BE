@@ -1,10 +1,10 @@
 package app.giftify.support.common.validator;
 
-import app.giftify.shared.domain.type.DomainPolicyType;
-import app.giftify.shared.domain.vo.Money;
-import app.giftify.support.common.annotation.Amount;
-import app.giftify.support.common.annotation.Price;
-import app.giftify.support.common.annotation.Quantity;
+import app.giftify.support.common.money.DomainPolicyType;
+import app.giftify.support.common.money.Money;
+import app.giftify.support.common.money.annotation.Amount;
+import app.giftify.support.common.money.annotation.Price;
+import app.giftify.support.common.money.annotation.Quantity;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;

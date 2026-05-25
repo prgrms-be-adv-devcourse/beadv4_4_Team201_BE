@@ -11,8 +11,8 @@ import app.giftify.payment.domain.Cancel;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.type.CancelType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.CancelType;
+import app.giftify.support.common.money.Money;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

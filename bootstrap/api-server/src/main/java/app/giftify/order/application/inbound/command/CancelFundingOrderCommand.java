@@ -1,6 +1,6 @@
 package app.giftify.order.application.inbound.command;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 public record CancelFundingOrderCommand(
         Long fundingId,

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import app.giftify.payment.application.inbound.CancelPaymentCommand;
 import app.giftify.payment.application.inbound.CancelPaymentUseCase;
-import app.giftify.shared.domain.event.order.OrderCancelRequestedEvent;
+import app.giftify.order.domain.event.OrderCancelRequestedEvent;
 import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor

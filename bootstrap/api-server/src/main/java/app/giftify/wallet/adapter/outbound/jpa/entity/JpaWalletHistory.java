@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.domain.ReferenceType;
 import app.giftify.wallet.domain.TransactionType;
 import app.giftify.wallet.domain.WalletHistory;

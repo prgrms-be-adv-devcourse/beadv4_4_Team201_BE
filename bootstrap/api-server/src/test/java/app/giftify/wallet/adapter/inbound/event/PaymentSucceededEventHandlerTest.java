@@ -16,11 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import app.giftify.shared.domain.event.payment.PaymentSuccessData;
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.event.PaymentSuccessData;
+import app.giftify.payment.domain.event.PaymentSucceededEvent;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.ChargeWalletCommand;
 import app.giftify.wallet.application.inbound.ChargeWalletResult;
 import app.giftify.wallet.application.inbound.ChargeWalletUseCase;

@@ -1,7 +1,7 @@
 package giftify.support.web.idempotency.util;
 
-import app.giftify.shared.api.exception.InfraErrorCode;
-import app.giftify.shared.api.exception.InfraException;
+import app.giftify.support.common.api.exception.InfraErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

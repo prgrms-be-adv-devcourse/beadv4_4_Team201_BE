@@ -1,7 +1,7 @@
 package app.giftify.product.adapter.inbound.web.controller;
 
 import app.giftify.product.application.port.in.GetProductSnapshotUseCase;
-import app.giftify.shared.domain.vo.ProductSnapshot;
+import app.giftify.product.domain.vo.ProductSnapshot;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

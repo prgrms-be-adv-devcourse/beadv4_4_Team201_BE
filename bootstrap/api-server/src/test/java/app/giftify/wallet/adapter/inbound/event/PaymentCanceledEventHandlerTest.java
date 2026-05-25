@@ -11,12 +11,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentCancelData;
-import app.giftify.shared.domain.type.CancelType;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.event.PaymentCanceledEvent;
+import app.giftify.payment.domain.event.PaymentCancelData;
+import app.giftify.payment.domain.type.CancelType;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.RestoreWalletCommand;
 import app.giftify.wallet.application.inbound.RestoreWalletUseCase;
 import app.giftify.wallet.domain.ReferenceType;

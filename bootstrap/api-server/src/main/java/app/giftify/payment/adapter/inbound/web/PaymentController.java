@@ -20,8 +20,8 @@ import app.giftify.payment.application.inbound.ConfirmPaymentUseCase;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.application.inbound.QueryPaymentUseCase;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.response.RsData;
+import app.giftify.support.common.money.Money;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 @RestController

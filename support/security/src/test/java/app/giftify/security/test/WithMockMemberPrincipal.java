@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.security.test.context.support.WithSecurityContext;
 
-import app.giftify.shared.domain.type.MemberRole;
+import app.giftify.support.common.security.MemberRole;
 
 /**
  * 테스트에서 MemberPrincipal 기반 인증 컨텍스트를 설정하는 어노테이션.

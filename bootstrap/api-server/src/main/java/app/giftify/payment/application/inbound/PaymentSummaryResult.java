@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 public record PaymentSummaryResult(
 	Long paymentId,

@@ -7,7 +7,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import app.giftify.notification.adapter.inbound.web.dto.NotificationResponse;
 import app.giftify.notification.adapter.inbound.web.dto.UnreadCountResponse;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

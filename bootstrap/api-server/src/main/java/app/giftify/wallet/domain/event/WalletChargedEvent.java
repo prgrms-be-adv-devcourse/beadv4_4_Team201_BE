@@ -2,8 +2,8 @@ package app.giftify.wallet.domain.event;
 
 import java.time.LocalDateTime;
 
-import app.giftify.shared.domain.event.BaseDomainEvent;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.event.BaseDomainEvent;
+import app.giftify.support.common.money.Money;
 
 /**
  * 지갑 충전 완료 이벤트.

@@ -1,7 +1,7 @@
 package app.giftify.payment.domain;
 
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
 
 /**
  * 결제 생성에 필요한 컨텍스트 정보.

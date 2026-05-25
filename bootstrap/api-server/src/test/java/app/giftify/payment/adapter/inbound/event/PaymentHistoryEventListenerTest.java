@@ -15,18 +15,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import app.giftify.payment.adapter.outbound.jpa.JpaPaymentHistoryRepository;
 import app.giftify.payment.adapter.outbound.jpa.entity.JpaPaymentHistory;
 import app.giftify.payment.domain.PaymentEventType;
-import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentCancelData;
-import app.giftify.shared.domain.event.payment.PaymentCancelFailedData;
-import app.giftify.shared.domain.event.payment.PaymentFailureData;
-import app.giftify.shared.domain.event.payment.PaymentSuccessData;
-import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.type.CancelType;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.event.PaymentCancelFailedEvent;
+import app.giftify.payment.domain.event.PaymentCanceledEvent;
+import app.giftify.payment.domain.event.PaymentCancelData;
+import app.giftify.payment.domain.event.PaymentCancelFailedData;
+import app.giftify.payment.domain.event.PaymentFailureData;
+import app.giftify.payment.domain.event.PaymentSuccessData;
+import app.giftify.payment.domain.event.PaymentFailedEvent;
+import app.giftify.payment.domain.event.PaymentSucceededEvent;
+import app.giftify.payment.domain.type.CancelType;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentHistoryEventListener 테스트")

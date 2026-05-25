@@ -1,12 +1,12 @@
 package app.giftify.order.domain;
 
 import app.giftify.order.domain.errorCode.OrderErrorCode;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.api.exception.PolicyException;
-import app.giftify.shared.domain.event.order.OrderItemCreatedEvent;
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.exception.DomainException;
+import app.giftify.support.common.api.exception.PolicyException;
+import app.giftify.order.domain.event.OrderItemCreatedEvent;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.support.common.money.Money;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;

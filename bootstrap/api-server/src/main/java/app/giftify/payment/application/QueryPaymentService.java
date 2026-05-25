@@ -14,8 +14,8 @@ import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.api.paging.Page;
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.Page;
+import app.giftify.support.common.api.paging.PageResponse;
 
 @Service
 @Transactional(readOnly = true)

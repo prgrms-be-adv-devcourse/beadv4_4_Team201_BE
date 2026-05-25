@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bc:shared"))
+    implementation(project(":support:common"))
     implementation(libs.spring.boot.starter.data.jpa)
 
     testImplementation(libs.archunit)

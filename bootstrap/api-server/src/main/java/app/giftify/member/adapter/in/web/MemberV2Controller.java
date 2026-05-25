@@ -28,7 +28,7 @@ import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.security.common.CurrentAuthSub;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;

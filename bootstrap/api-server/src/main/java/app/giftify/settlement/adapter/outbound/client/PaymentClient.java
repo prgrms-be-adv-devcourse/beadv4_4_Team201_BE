@@ -1,7 +1,7 @@
 package app.giftify.settlement.adapter.outbound.client;
 
-import app.giftify.shared.api.exception.InfraException;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.exception.InfraException;
+import app.giftify.support.common.money.Money;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.service.annotation.HttpExchange;

@@ -2,7 +2,7 @@ package app.giftify.wishlist.adapter.in.web;
 
 import app.giftify.product.domain.ProductCategory;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.paging.Page;
+import app.giftify.support.common.api.paging.Page;
 import app.giftify.wishlist.adapter.in.web.controller.WishlistController;
 import app.giftify.wishlist.adapter.in.web.exceptionHandler.WishlistExceptionHandler;
 import app.giftify.wishlist.adapter.in.web.requestDto.UpdateWishlistSettingsRequest;

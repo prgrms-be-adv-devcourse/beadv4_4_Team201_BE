@@ -9,7 +9,7 @@ import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.domain.exception.ProductException;
 import app.giftify.product.readmodel.MemberView;
 import app.giftify.product.readmodel.MemberViewRepository;
-import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.support.common.event.EventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,8 +2,8 @@ package app.giftify.cart.core.domain;
 
 import app.giftify.cart.core.domain.exception.CartErrorCode;
 import app.giftify.cart.core.domain.exception.CartException;
-import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.base.BaseDomainModel;
+import app.giftify.support.common.money.Money;
 
 /**
  * 설계에선 수량필드가 있었는데, 이는 일반결제일때만 필요하고 펀딩카트에선 필요 없으므로 우선 지움

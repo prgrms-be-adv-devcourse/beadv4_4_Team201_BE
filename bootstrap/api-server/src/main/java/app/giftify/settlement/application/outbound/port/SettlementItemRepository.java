@@ -4,7 +4,7 @@ import app.giftify.settlement.application.service.dto.SettlementSummary;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementItemType;
 import app.giftify.settlement.domain.status.SettlementItemStatus;
-import app.giftify.shared.api.AmountSummaryProjection;
+import app.giftify.settlement.domain.projection.AmountSummaryProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

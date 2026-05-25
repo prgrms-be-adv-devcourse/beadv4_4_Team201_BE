@@ -1,7 +1,7 @@
 package app.giftify.settlement.adapter.outbound.aop;
 
-import app.giftify.shared.api.exception.InfraErrorCode;
-import app.giftify.shared.api.exception.InfraException;
+import app.giftify.support.common.api.exception.InfraErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

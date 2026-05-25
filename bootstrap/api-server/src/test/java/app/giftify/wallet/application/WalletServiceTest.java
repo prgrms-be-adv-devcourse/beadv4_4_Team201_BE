@@ -1,7 +1,7 @@
 package app.giftify.wallet.application;
 
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.*;
 import app.giftify.wallet.application.outbound.WalletHistoryRepository;
 import app.giftify.wallet.application.outbound.WalletRepository;

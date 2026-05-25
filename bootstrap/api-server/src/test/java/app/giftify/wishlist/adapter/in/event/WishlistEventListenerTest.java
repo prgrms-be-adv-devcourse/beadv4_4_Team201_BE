@@ -1,8 +1,8 @@
 package app.giftify.wishlist.adapter.in.event;
 
-import app.giftify.shared.domain.event.funding.*;
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
-import app.giftify.shared.domain.vo.FundingDetail;
+import app.giftify.funding.domain.event.*;
+import app.giftify.member.domain.event.MemberSignedEvent;
+import app.giftify.funding.domain.vo.FundingDetail;
 import app.giftify.wishlist.application.port.out.WishlistItemRepositoryPort;
 import app.giftify.wishlist.application.port.out.WishlistRepositoryPort;
 import app.giftify.wishlist.core.domain.Visibility;

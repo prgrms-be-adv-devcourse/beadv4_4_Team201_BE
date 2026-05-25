@@ -1,10 +1,10 @@
 package app.giftify.settlement.domain.snapshot;
 
 import app.giftify.settlement.domain.errorCode.SettlementErrorCode;
-import app.giftify.shared.api.exception.DomainException;
-import app.giftify.shared.domain.event.order.OrderItemConfirmedEvent;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.exception.DomainException;
+import app.giftify.order.domain.event.OrderItemConfirmedEvent;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.support.common.money.Money;
 
 import java.time.LocalDateTime;
 

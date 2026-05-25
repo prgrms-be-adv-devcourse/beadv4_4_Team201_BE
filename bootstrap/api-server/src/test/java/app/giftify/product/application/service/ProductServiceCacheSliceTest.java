@@ -33,7 +33,7 @@ import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductStatus;
 import app.giftify.product.readmodel.MemberView;
 import app.giftify.product.readmodel.MemberViewRepository;
-import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.support.common.event.EventPublisher;
 
 @SpringJUnitConfig(ProductServiceCacheSliceTest.SliceConfig.class)
 class ProductServiceCacheSliceTest {

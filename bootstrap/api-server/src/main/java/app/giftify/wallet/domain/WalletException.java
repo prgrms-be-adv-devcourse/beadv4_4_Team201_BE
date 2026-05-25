@@ -1,6 +1,6 @@
 package app.giftify.wallet.domain;
 
-import app.giftify.shared.api.exception.DomainException;
+import app.giftify.support.common.api.exception.DomainException;
 
 public class WalletException extends DomainException {
 

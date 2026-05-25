@@ -13,7 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import app.giftify.notification.application.CloudEventEnvelope;
 import app.giftify.notification.domain.Notification;
-import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.support.common.event.BaseDomainEvent;
 import lombok.RequiredArgsConstructor;
 
 @Component

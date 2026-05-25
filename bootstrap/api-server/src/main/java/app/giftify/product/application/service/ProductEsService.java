@@ -5,7 +5,7 @@ import app.giftify.product.application.port.in.ProductEsSyncUseCase;
 import app.giftify.product.application.port.in.ProductResult;
 import app.giftify.product.application.port.out.ProductEsPort;
 import app.giftify.product.application.port.out.ProductEsSearchCommand;
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

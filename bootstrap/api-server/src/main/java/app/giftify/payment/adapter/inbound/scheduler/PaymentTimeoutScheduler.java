@@ -7,7 +7,7 @@ import app.giftify.payment.application.inbound.CancelPaymentUseCase;
 import app.giftify.payment.application.inbound.FailPaymentUseCase;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;

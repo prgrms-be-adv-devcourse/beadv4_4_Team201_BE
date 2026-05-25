@@ -4,7 +4,7 @@ import app.giftify.member.adapter.out.jpa.entity.MemberJpaEntity;
 import app.giftify.member.adapter.out.jpa.respository.MemberJpaRepository;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.shared.domain.type.MemberRole;
+import app.giftify.support.common.security.MemberRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

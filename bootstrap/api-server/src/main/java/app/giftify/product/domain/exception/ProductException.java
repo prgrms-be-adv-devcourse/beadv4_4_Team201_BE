@@ -1,6 +1,6 @@
 package app.giftify.product.domain.exception;
 
-import app.giftify.shared.api.exception.DomainException;
+import app.giftify.support.common.api.exception.DomainException;
 
 public class ProductException extends DomainException {
     // todo 에러 종류별로 코드 분리

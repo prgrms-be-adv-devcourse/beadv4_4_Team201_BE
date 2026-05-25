@@ -3,7 +3,7 @@ package app.giftify.payment.adapter.inbound.web.dto;
 import java.math.BigDecimal;
 
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 /**
  * 예치금 충전 응답 DTO.

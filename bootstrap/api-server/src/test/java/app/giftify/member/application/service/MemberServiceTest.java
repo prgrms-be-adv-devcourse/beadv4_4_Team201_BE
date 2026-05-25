@@ -25,9 +25,9 @@ import app.giftify.member.domain.exception.MemberNotFoundException;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
 import app.giftify.member.domain.member.NicknameGenerator;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
-import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.member.domain.event.MemberSignedEvent;
+import app.giftify.member.domain.event.MemberUpdatedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {

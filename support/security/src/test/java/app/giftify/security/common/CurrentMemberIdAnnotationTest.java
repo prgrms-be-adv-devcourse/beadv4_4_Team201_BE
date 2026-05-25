@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.giftify.security.test.TestMemberFactory;
-import app.giftify.shared.domain.type.MemberRole;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberRole;
+import app.giftify.support.common.security.MemberInfo;
 
 @DisplayName("@CurrentMemberId / @CurrentAuthSub 어노테이션 통합 테스트")
 class CurrentMemberIdAnnotationTest {

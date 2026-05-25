@@ -1,7 +1,7 @@
 package app.giftify.order.application.dto;
 
 import app.giftify.order.domain.CancelTargetItems;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 import java.util.List;
 

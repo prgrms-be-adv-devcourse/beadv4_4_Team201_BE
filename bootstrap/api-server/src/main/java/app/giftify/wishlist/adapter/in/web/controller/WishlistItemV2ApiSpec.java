@@ -1,7 +1,7 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

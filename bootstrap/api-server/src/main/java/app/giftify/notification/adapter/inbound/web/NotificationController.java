@@ -18,7 +18,7 @@ import app.giftify.notification.application.inbound.NotificationCommandUseCase;
 import app.giftify.notification.application.inbound.NotificationQueryUseCase;
 import app.giftify.notification.application.inbound.SseSubscribeUseCase;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import lombok.RequiredArgsConstructor;
 
 @RestController

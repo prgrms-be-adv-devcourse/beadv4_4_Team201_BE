@@ -1,6 +1,6 @@
 package app.giftify.wallet.adapter.inbound.web;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import app.giftify.wallet.application.inbound.QueryWalletHistoryUseCase;
 import app.giftify.wallet.application.inbound.QueryWalletUseCase;
 import app.giftify.wallet.application.inbound.WalletBalanceResult;
@@ -32,7 +32,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import app.giftify.wallet.adapter.inbound.web.dto.*;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 
 import java.math.BigDecimal;
 

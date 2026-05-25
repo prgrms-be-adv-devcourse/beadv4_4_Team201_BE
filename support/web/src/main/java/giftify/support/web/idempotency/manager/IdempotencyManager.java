@@ -1,8 +1,8 @@
 package giftify.support.web.idempotency.manager;
 
-import app.giftify.shared.api.exception.IdempotencyErrorCode;
-import app.giftify.shared.api.exception.InfraErrorCode;
-import app.giftify.shared.api.exception.InfraException;
+import app.giftify.support.common.api.exception.IdempotencyErrorCode;
+import app.giftify.support.common.api.exception.InfraErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
 import giftify.support.web.idempotency.IdempotencyValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

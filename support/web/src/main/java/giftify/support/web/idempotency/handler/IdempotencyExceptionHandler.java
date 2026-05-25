@@ -1,9 +1,9 @@
 package giftify.support.web.idempotency.handler;
 
-import app.giftify.shared.api.exception.BusinessException;
-import app.giftify.shared.api.exception.ErrorCode;
-import app.giftify.shared.api.exception.InfraException;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.exception.BusinessException;
+import app.giftify.support.common.api.exception.ErrorCode;
+import app.giftify.support.common.api.exception.InfraException;
+import app.giftify.support.common.api.response.RsData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -10,7 +10,7 @@ import app.giftify.product.application.port.out.ProductEsSearchCommand;
 import app.giftify.product.domain.ProductCategory;
 import app.giftify.product.domain.ProductSearchSortType;
 import app.giftify.product.domain.ProductStatus;
-import app.giftify.shared.api.paging.PageResponse;
+import app.giftify.support.common.api.paging.PageResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

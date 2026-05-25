@@ -15,8 +15,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import app.giftify.auth.application.inbound.LoginUseCase;
 import app.giftify.auth.application.inbound.LogoutUseCase;
-import app.giftify.shared.domain.type.MemberRole;
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberRole;
+import app.giftify.support.common.security.MemberInfo;
 
 @DisplayName("AuthController 테스트")
 class AuthControllerTest {

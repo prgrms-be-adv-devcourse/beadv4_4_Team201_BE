@@ -2,8 +2,8 @@ package app.giftify.order.application.inbound.vo;
 
 import app.giftify.order.domain.Order;
 import app.giftify.order.domain.OrderStatus;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.support.common.money.Money;
 
 import java.time.LocalDateTime;
 

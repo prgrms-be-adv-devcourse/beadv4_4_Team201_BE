@@ -3,8 +3,8 @@ package app.giftify.payment.domain;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.base.BaseDomainModel;
+import app.giftify.support.common.money.Money;
 
 public class Cancel extends BaseDomainModel {
 

@@ -1,6 +1,6 @@
 package app.giftify.wishlist.adapter.in.web.controller;
 
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import app.giftify.wishlist.adapter.in.web.responseDto.MemberWishlistSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

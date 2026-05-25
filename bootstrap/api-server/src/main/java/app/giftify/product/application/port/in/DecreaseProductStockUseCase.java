@@ -1,6 +1,6 @@
 package app.giftify.product.application.port.in;
 
-import app.giftify.shared.domain.vo.SellerOrderItem;
+import app.giftify.order.domain.vo.SellerOrderItem;
 
 import java.util.List;
 import java.util.Map;

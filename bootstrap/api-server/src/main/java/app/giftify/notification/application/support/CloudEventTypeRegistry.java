@@ -3,19 +3,19 @@ package app.giftify.notification.application.support;
 import java.net.URI;
 import java.util.Map;
 
-import app.giftify.shared.domain.event.funding.*;
+import app.giftify.funding.domain.event.*;
 import org.springframework.stereotype.Component;
 
 import app.giftify.notification.domain.NotificationType;
-import app.giftify.shared.domain.event.funding.FundingAchievedEvent;
-import app.giftify.shared.domain.event.funding.FundingCanceledEvent;
-import app.giftify.shared.domain.event.funding.FundingCreatedEvent;
-import app.giftify.shared.domain.event.funding.FundingExpiredEvent;
-import app.giftify.shared.domain.event.payment.PaymentCancelFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentCanceledEvent;
-import app.giftify.shared.domain.event.payment.PaymentFailedEvent;
-import app.giftify.shared.domain.event.payment.PaymentSucceededEvent;
-import app.giftify.shared.domain.event.product.ProductSellerOrderReceivedEvent;
+import app.giftify.funding.domain.event.FundingAchievedEvent;
+import app.giftify.funding.domain.event.FundingCanceledEvent;
+import app.giftify.funding.domain.event.FundingCreatedEvent;
+import app.giftify.funding.domain.event.FundingExpiredEvent;
+import app.giftify.payment.domain.event.PaymentCancelFailedEvent;
+import app.giftify.payment.domain.event.PaymentCanceledEvent;
+import app.giftify.payment.domain.event.PaymentFailedEvent;
+import app.giftify.payment.domain.event.PaymentSucceededEvent;
+import app.giftify.product.domain.event.ProductSellerOrderReceivedEvent;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;

@@ -1,7 +1,7 @@
 package app.giftify.wallet.domain;
 
-import app.giftify.shared.domain.base.BaseDomainModel;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.base.BaseDomainModel;
+import app.giftify.support.common.money.Money;
 
 public class Wallet extends BaseDomainModel {
 	private static final Money MINIMUM_CHARGE_AMOUNT = Money.of(1000);

@@ -1,7 +1,7 @@
 package app.giftify.order.application.inbound.command;
 
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.support.common.money.Money;
 
 public record ParticipateFundingItemCommand(
         Long productId,

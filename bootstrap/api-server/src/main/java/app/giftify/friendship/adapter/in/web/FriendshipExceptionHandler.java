@@ -8,7 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import app.giftify.friendship.domain.exception.FriendshipException;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 @RestControllerAdvice(assignableTypes = FriendshipV2Controller.class)
 public class FriendshipExceptionHandler {
 	private static final Logger log = LoggerFactory.getLogger(FriendshipExceptionHandler.class);

@@ -5,7 +5,7 @@ import app.giftify.funding.adapter.outbound.repository.FundingParticipantMemberR
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

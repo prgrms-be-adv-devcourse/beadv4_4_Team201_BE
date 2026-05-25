@@ -2,7 +2,7 @@ package app.giftify.payment.application.outbound;
 
 import app.giftify.payment.adapter.outbound.pg.TossCancelResult;
 import app.giftify.payment.adapter.outbound.pg.TossConfirmResult;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 /**
  * PG 에 대한 추상화

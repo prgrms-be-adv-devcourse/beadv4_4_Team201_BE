@@ -1,7 +1,7 @@
 package app.giftify.wishlist.readmodel;
 
-import app.giftify.shared.domain.event.member.MemberSignedEvent;
-import app.giftify.shared.domain.event.member.MemberUpdatedEvent;
+import app.giftify.member.domain.event.MemberSignedEvent;
+import app.giftify.member.domain.event.MemberUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;

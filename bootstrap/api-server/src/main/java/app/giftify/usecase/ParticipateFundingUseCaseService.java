@@ -8,8 +8,8 @@ import app.giftify.order.application.inbound.vo.PlaceOrderResult;
 import app.giftify.order.domain.OrderSnapshot;
 import app.giftify.payment.application.CreatePaymentService;
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
-import app.giftify.shared.domain.type.PaymentType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.payment.domain.type.PaymentType;
+import app.giftify.support.common.money.Money;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

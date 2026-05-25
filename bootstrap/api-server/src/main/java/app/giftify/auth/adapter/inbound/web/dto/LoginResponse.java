@@ -1,6 +1,6 @@
 package app.giftify.auth.adapter.inbound.web.dto;
 
-import app.giftify.shared.domain.vo.MemberInfo;
+import app.giftify.support.common.security.MemberInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "로그인 응답")

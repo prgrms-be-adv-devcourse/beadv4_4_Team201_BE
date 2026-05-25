@@ -1,6 +1,6 @@
 package app.giftify.support.jpa;
 
-import app.giftify.shared.api.paging.PageRequest;
+import app.giftify.support.common.api.paging.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 

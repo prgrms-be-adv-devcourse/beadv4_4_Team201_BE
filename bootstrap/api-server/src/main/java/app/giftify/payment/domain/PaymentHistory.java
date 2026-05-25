@@ -3,7 +3,7 @@ package app.giftify.payment.domain;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import app.giftify.shared.domain.base.BaseDomainModel;
+import app.giftify.support.common.base.BaseDomainModel;
 
 public class PaymentHistory extends BaseDomainModel {
 

@@ -1,7 +1,7 @@
 package app.giftify.order.adapter.inbound.web.controller;
 
 import app.giftify.order.application.OrderService;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -4,10 +4,10 @@ import app.giftify.order.domain.Order;
 import app.giftify.order.domain.OrderItem;
 import app.giftify.order.domain.OrderItemStatus;
 import app.giftify.order.domain.OrderStatus;
-import app.giftify.shared.domain.type.OrderItemType;
-import app.giftify.shared.domain.type.PaymentMethod;
-import app.giftify.shared.domain.type.TargetType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.order.domain.type.OrderItemType;
+import app.giftify.payment.domain.type.PaymentMethod;
+import app.giftify.order.domain.type.TargetType;
+import app.giftify.support.common.money.Money;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;

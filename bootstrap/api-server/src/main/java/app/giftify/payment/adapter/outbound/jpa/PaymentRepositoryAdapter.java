@@ -4,7 +4,7 @@ import app.giftify.payment.adapter.outbound.jpa.entity.JpaPayment;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.api.paging.Page;
+import app.giftify.support.common.api.paging.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -101,7 +101,7 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<Payment> findByMemberId(Long memberId, app.giftify.shared.api.paging.PageRequest pageRequest) {
+	public Page<Payment> findByMemberId(Long memberId, app.giftify.support.common.api.paging.PageRequest pageRequest) {
 		PageRequest springPageRequest = PageRequest.of(pageRequest.page(), pageRequest.size());
 		org.springframework.data.domain.Page<JpaPayment> springPage =
 			jpaPaymentRepository.findByMemberId(memberId, springPageRequest);

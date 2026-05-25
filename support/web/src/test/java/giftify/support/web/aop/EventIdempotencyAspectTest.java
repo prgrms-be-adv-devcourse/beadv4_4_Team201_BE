@@ -1,6 +1,6 @@
 package giftify.support.web.aop;
 
-import app.giftify.shared.domain.event.BaseDomainEvent;
+import app.giftify.support.common.event.BaseDomainEvent;
 import app.giftify.support.common.annotation.EventIdempotent;
 import giftify.support.web.idempotency.aop.EventIdempotencyAspect;
 import giftify.support.web.idempotency.manager.IdempotencyManager;

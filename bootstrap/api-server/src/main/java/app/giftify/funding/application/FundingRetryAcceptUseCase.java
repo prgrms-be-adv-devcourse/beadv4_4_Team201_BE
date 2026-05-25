@@ -5,8 +5,8 @@ import app.giftify.funding.adapter.outbound.jpa.Funding;
 import app.giftify.funding.adapter.outbound.repository.FundingRepository;
 import app.giftify.funding.domain.exception.FundingErrorCode;
 import app.giftify.funding.domain.exception.FundingException;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.funding.FundingConfirmPendingEvent;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.funding.domain.event.FundingConfirmPendingEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
 package app.giftify.wallet.application.inbound;
 
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 /**
  * 지갑 출금 요청 커맨드

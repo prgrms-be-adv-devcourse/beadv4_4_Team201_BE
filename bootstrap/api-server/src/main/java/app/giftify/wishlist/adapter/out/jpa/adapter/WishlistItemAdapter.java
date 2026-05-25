@@ -1,7 +1,7 @@
 package app.giftify.wishlist.adapter.out.jpa.adapter;
 
-import app.giftify.shared.api.paging.Page;
-import app.giftify.shared.api.paging.PageRequest;
+import app.giftify.support.common.api.paging.Page;
+import app.giftify.support.common.api.paging.PageRequest;
 import app.giftify.wishlist.adapter.out.jpa.entity.WishlistItemJpaEntity;
 import app.giftify.wishlist.adapter.out.jpa.mapper.WishlistItemMapper;
 import app.giftify.wishlist.adapter.out.jpa.repository.WishlistItemJpaRepository;

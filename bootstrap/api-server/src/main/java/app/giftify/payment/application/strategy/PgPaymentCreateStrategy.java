@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import app.giftify.payment.application.inbound.CreatePaymentCommand;
 import app.giftify.payment.application.inbound.PaymentCreatedResult;
 import app.giftify.payment.domain.Payment;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 

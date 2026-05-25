@@ -1,6 +1,6 @@
 package app.giftify.wallet.adapter.inbound.web.exception;
 
-import app.giftify.shared.api.response.ErrorResponse;
+import app.giftify.support.common.api.response.ErrorResponse;
 import app.giftify.wallet.domain.WalletException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

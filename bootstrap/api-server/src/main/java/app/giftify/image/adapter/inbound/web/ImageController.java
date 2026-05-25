@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import app.giftify.image.application.port.in.IssuePresignedDownloadUseCase;
 import app.giftify.image.application.port.in.IssuePresignedUploadUseCase;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import jakarta.validation.Valid;
 
 @RestController

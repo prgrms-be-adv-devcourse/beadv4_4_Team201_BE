@@ -16,9 +16,9 @@ import app.giftify.friendship.domain.exception.FriendshipErrorCode;
 import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.domain.member.Member;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.friendship.FriendshipAcceptedEvent;
-import app.giftify.shared.domain.event.friendship.FriendshipRequestSentEvent;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.friendship.domain.event.FriendshipAcceptedEvent;
+import app.giftify.friendship.domain.event.FriendshipRequestSentEvent;
 import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor

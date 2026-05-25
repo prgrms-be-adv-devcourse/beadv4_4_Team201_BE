@@ -13,8 +13,8 @@ import app.giftify.payment.application.inbound.BulkPaymentAmountUseCase;
 import app.giftify.payment.application.outbound.PaymentRepository;
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.PaymentStatus;
-import app.giftify.shared.api.exception.BusinessException;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.api.exception.BusinessException;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 @Service
 @Transactional(readOnly = true)

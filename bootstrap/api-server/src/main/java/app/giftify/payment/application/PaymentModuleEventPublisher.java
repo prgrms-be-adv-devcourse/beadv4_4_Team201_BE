@@ -2,10 +2,10 @@ package app.giftify.payment.application;
 
 import app.giftify.payment.domain.Payment;
 import app.giftify.payment.domain.event.PaymentDomainEvent;
-import app.giftify.shared.domain.event.EventPublisher;
-import app.giftify.shared.domain.event.payment.*;
-import app.giftify.shared.domain.type.CancelType;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.event.EventPublisher;
+import app.giftify.payment.domain.event.*;
+import app.giftify.payment.domain.type.CancelType;
+import app.giftify.support.common.money.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

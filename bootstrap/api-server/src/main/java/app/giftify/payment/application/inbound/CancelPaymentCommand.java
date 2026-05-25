@@ -2,7 +2,7 @@ package app.giftify.payment.application.inbound;
 
 import app.giftify.payment.domain.PaymentErrorCode;
 import app.giftify.payment.domain.PaymentException;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 public record CancelPaymentCommand(
 	Long paymentId,

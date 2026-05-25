@@ -3,7 +3,7 @@ package app.giftify.settlement.adapter.outbound.batch.validation;
 import app.giftify.settlement.adapter.outbound.batch.common.BatchProperties;
 import app.giftify.settlement.domain.model.SettlementItem;
 import app.giftify.settlement.domain.model.SettlementQueue;
-import app.giftify.shared.api.exception.InfraException;
+import app.giftify.support.common.api.exception.InfraException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;

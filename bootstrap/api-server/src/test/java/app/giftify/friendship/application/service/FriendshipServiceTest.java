@@ -22,7 +22,7 @@ import app.giftify.friendship.domain.exception.FriendshipException;
 import app.giftify.member.application.port.out.MemberRepositoryPort;
 import app.giftify.member.domain.member.Member;
 import app.giftify.member.domain.member.MemberStatus;
-import app.giftify.shared.domain.event.EventPublisher;
+import app.giftify.support.common.event.EventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class FriendshipServiceTest {

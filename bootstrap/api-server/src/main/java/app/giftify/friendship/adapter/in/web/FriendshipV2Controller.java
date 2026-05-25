@@ -24,7 +24,7 @@ import app.giftify.friendship.application.port.in.RemoveFriendUseCase;
 import app.giftify.friendship.application.port.in.SendFriendRequestUseCase;
 import app.giftify.friendship.domain.Friendship;
 import app.giftify.security.common.CurrentMemberId;
-import app.giftify.shared.api.response.RsData;
+import app.giftify.support.common.api.response.RsData;
 import lombok.RequiredArgsConstructor;
 
 @RestController

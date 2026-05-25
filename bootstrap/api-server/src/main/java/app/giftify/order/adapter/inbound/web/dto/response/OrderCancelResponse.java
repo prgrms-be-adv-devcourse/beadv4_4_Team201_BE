@@ -2,7 +2,7 @@ package app.giftify.order.adapter.inbound.web.dto.response;
 
 import app.giftify.order.application.dto.OrderItemCancelResult;
 import app.giftify.order.application.dto.OrderCancelSummary;
-import app.giftify.shared.domain.vo.Money;
+import app.giftify.support.common.money.Money;
 
 import java.util.List;
 
